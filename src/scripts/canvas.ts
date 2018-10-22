@@ -1,18 +1,15 @@
-import * as jQuery from 'jquery';
-import * as _ from 'lodash';
-import * as $ from 'backbone';
-import * as joint from 'jointjs/dist/joint.js';
+import {dia, shapes} from 'jointjs';
 
-import { Surrounding } from 'model';
+import {Operator, Surrounding} from './model';
 
 export class JointComponent {
-  private graph: joint.dia.Graph = new joint.dia.Graph();
-  private paper: joint.dia.Paper;
+  private graph: dia.Graph = new dia.Graph();
+  private paper: dia.Paper;
 
-  constructor(private id: String, private surr: Surrounding) {
-    this.paper =  new joint.dia.Paper({
+  constructor(private id: string, private surr: Surrounding) {
+    this.paper =  new dia.Paper({
         el: document.getElementById(id),
-        model: graph,
+        model: this.graph,
         width: 600,
         height: 100,
         gridSize: 1
@@ -22,7 +19,7 @@ export class JointComponent {
   }
 
   private addOperator(op: Operator) {
-    const rect = new joint.shapes.standard.Rectangle();
+    const rect = new shapes.standard.Rectangle();
     rect.position(100, 30);
     rect.resize(100, 40);
     rect.attr({
@@ -38,17 +35,3 @@ export class JointComponent {
   }
 
 }
-
-
-
-/*
-const rect2 = rect.clone();
-rect2.translate(300, 0);
-rect2.attr('label/text', 'World!');
-rect2.addTo(graph);
-
-const link = new joint.shapes.standard.Link();
-link.source(rect);
-link.target(rect2);
-link.addTo(graph);
-*/
