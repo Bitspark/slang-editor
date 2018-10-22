@@ -1,5 +1,4 @@
 import { Subject } from 'rxjs';
-import { Surrounding } from './model.ts';
 
 export class Surrounding {
 
@@ -15,7 +14,7 @@ export class Surrounding {
     this.operatorAdded.next(op);
   }
 
-  public subscribeOperatorAdded(callback: (Operator) => void) {
+  public subscribeOperatorAdded(callback: (op: Operator) => void) {
     this.operatorAdded.subscribe(callback);
   }
 

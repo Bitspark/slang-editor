@@ -3,6 +3,8 @@ import * as _ from 'lodash';
 import * as $ from 'backbone';
 import * as joint from 'jointjs/dist/joint.js';
 
+import { Surrounding } from 'model';
+
 export class JointComponent {
   private graph: joint.dia.Graph = new joint.dia.Graph();
   private paper: joint.dia.Paper;
