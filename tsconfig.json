@@ -1,12 +1,12 @@
 {
-  "compilerOptions": {
-    "outDir": "./build/",
-    "noImplicitAny": true,
-    "module": "es6",
-    "target": "es6",
-    "jsx": "react",
-    "allowJs": true,
+	"compilerOptions": {
+		"outDir": "./build/",
+		"noImplicitAny": true,
+		"module": "es6",
+		"target": "es6",
+		"jsx": "react",
+		"allowJs": true,
 		"strictNullChecks": true,
-    "moduleResolution": "node"
-  }
+		"moduleResolution": "node"
+	}
 }
