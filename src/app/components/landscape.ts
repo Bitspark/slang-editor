@@ -54,7 +54,7 @@ export class LandscapeComponent {
             blueprint.select();
         });
         rect.on('pointerdblclick', function (evt: Event, x: number, y: number) {
-            blueprint.delete();
+            blueprint.open();
         });
 
         // Model -> JointJS

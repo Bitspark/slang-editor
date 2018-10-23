@@ -8,7 +8,7 @@ export class LandscapeModel {
 
     private blueprints: Array<BlueprintModel> = [];
     private selectedBlueprint = new BehaviorSubject<BlueprintModel | null>(null);
-
+    
     // Actions
 
     public addBlueprint(blueprint: BlueprintModel): boolean {

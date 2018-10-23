@@ -11,6 +11,7 @@ export class BlueprintModel {
     // Topics
     private removed = new Subject<void>();
     private selected = new BehaviorSubject<boolean>(false);
+    private opened = new BehaviorSubject<boolean>(false);
 
     private readonly hierarchy: Array<string> = [];
 
@@ -59,11 +60,19 @@ export class BlueprintModel {
     public delete() {
         this.removed.next();
     }
+    
+    public open() {
+        this.opened.next(true);
+    }
 
     // Subscriptions
 
     public subscribeSelectChanged(cb: (selected: boolean) => void): void {
         this.selected.subscribe(cb);
+    }
+
+    public subscribeOpenedChanged(cb: (opened: boolean) => void): void {
+        this.opened.subscribe(cb);
     }
 
     public subscribeDeleted(cb: () => void): void {

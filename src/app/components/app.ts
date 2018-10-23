@@ -12,6 +12,17 @@ export class AppComponent {
         this.landscapeModel = new LandscapeModel();
         this.landscapeComponent = new LandscapeComponent(this.landscapeModel, id);
         this.storageComponent = new StorageComponent(this.landscapeModel, new ApiService(host));
+        this.subscribe();
+    }
+    
+    private subscribe(): void {
+        this.landscapeModel.subscribeBlueprintAdded(blueprint => {
+            blueprint.subscribeOpenedChanged(opened => {
+                if (opened) {
+                    alert(`Open blueprint ${blueprint.getFullName()}`);
+                }
+            });
+        });
     }
 
     public async start(): Promise<void> {
