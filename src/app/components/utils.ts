@@ -1,9 +1,9 @@
+import {dia} from "jointjs";
+
 /**
  * Passes events triggered on a paper to the according cells.
  * @param paper to redirect events for
  */
-import {dia} from "jointjs";
-
 export function redirectPaperEvents(paper: dia.Paper) {
     ['mousewheel'].forEach(event => {
         (function (event) {
