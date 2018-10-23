@@ -3,6 +3,7 @@ import {Event} from 'jquery';
 
 import {LandscapeModel} from '../model/landscape';
 import {BlueprintModel} from '../model/blueprint';
+import {redirectPaperEvents} from "./utils";
 
 export class LandscapeComponent {
     private graph = new dia.Graph();
@@ -28,38 +29,9 @@ export class LandscapeComponent {
             height: 600,
             gridSize: 1
         });
-        this.redirectPaperEvents(this.paper);
+        redirectPaperEvents(this.paper);
     }
 
-    /**
-     * Passes events triggered on a paper to the according cells.
-     * @param paper to redirect events for
-     */
-    private redirectPaperEvents(paper: dia.Paper) {
-        ['mousewheel'].forEach(event => {
-            (function (event) {
-                paper.on('cell:' + event, function (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) {
-                    cellView.model.trigger(event, evt, x, y, delta);
-                });
-            })(event);
-        });
-
-        ['pointerdblclick', 'pointerclick', 'contextmenu', 'pointerdown', 'pointermove', 'pointerup'].forEach(event => {
-            (function (event) {
-                paper.on('cell:' + event, function (cellView: dia.CellView, evt: Event, x: number, y: number) {
-                    cellView.model.trigger(event, evt, x, y);
-                });
-            })(event);
-        });
-
-        ['mouseover', 'mouseout', 'mouseenter', 'mouseleave'].forEach(event => {
-            (function (event) {
-                paper.on('cell:' + event, function (cellView: dia.CellView, evt: Event) {
-                    cellView.model.trigger(event, evt);
-                });
-            })(event);
-        });
-    }
 
     public addBlueprint(blueprint: BlueprintModel) {
         const rect = new shapes.standard.Rectangle();
