@@ -1,13 +1,20 @@
 import {BehaviorSubject, Subject} from "rxjs";
 
+export enum BlueprintType {
+    Local,
+    Global,
+    Library
+}
+
 export class BlueprintModel {
 
+    // Topics
     private removed = new Subject<void>();
     private selected = new BehaviorSubject<boolean>(false);
 
     private readonly hierarchy: Array<string> = [];
 
-    constructor(private fullName: string) {
+    constructor(private fullName: string, private type: BlueprintType) {
         this.hierarchy = fullName.split('.');
     }
 
@@ -25,6 +32,14 @@ export class BlueprintModel {
 
     public getShortName(): string {
         return this.hierarchy[this.hierarchy.length - 1];
+    }
+
+    public isSelected(): boolean {
+        return this.selected.getValue();
+    }
+    
+    public getType(): BlueprintType {
+        return this.type;
     }
 
     // Actions
