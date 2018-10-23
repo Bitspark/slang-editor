@@ -1,8 +1,8 @@
-import {BlueprintModel} from "../model/blueprint";
+import {BlueprintModel} from '../model/blueprint';
 
 export class BlueprintComponent {
-    
+
     constructor(private blueprint: BlueprintModel) {
     }
-    
+
 }
