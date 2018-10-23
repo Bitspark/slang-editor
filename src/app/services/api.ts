@@ -1,4 +1,4 @@
-import {BlueprintModel} from "../model/blueprint";
+import {BlueprintModel, BlueprintType} from "../model/blueprint";
 
 export class ApiService {
 
@@ -12,8 +12,6 @@ export class ApiService {
                 .then((data: any) => resolve(process(data)))
                 .catch(error);
         });
-
-
     }
 
     public async getBlueprints(): Promise<Array<BlueprintModel>> {
@@ -21,7 +19,25 @@ export class ApiService {
             '/operator',
             (data: any) => {
                 const objects = (data as { objects: any }).objects;
-                return objects.map((each: any) => new BlueprintModel(each.name))
+                return objects.map((each: any) => {
+                    let type: BlueprintType | null = null;
+                    switch (each.type) {
+                        case 'local':
+                            type = BlueprintType.Local;
+                            break;
+                        case 'library':
+                            type = BlueprintType.Library;
+                            break;
+                        case 'elementary':
+                            type = BlueprintType.Elementary;
+                            break;
+                    }
+                    if (type !== null) {
+                        return new BlueprintModel(each.name, type);
+                    } else {
+                        throw `unknown blueprint type '${each.type}'`;
+                    }
+                })
             },
             (err: any) => console.error(err)
         );

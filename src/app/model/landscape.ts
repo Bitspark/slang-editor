@@ -25,7 +25,6 @@ export class LandscapeModel {
 
         // Subscribe on selection to keep track over selected blueprint
         blueprint.subscribeSelectChanged(function (selected: boolean) {
-            console.log(blueprint, selected);
             if (selected) {
                 const selectedBlueprintOrNull = that.selectedBlueprint.getValue();
                 if (selectedBlueprintOrNull !== null) {

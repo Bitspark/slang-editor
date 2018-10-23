@@ -2,7 +2,7 @@ import {BehaviorSubject, Subject} from "rxjs";
 
 export enum BlueprintType {
     Local,
-    Global,
+    Elementary,
     Library
 }
 
@@ -37,7 +37,7 @@ export class BlueprintModel {
     public isSelected(): boolean {
         return this.selected.getValue();
     }
-    
+
     public getType(): BlueprintType {
         return this.type;
     }
