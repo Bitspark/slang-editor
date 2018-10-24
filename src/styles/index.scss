@@ -1,5 +1,12 @@
 $body-color: #232323;
 
-body {
+html, body {
   color: $body-color;
+  margin: 0;
+  padding: 0;
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
 }

@@ -3,6 +3,7 @@ import {StorageComponent} from "./storage";
 import {ApiService} from "../services/api";
 import {LandscapeComponent} from "./landscape";
 import {BlueprintComponent} from "./blueprint";
+import {BlueprintType} from "../model/blueprint";
 
 export class AppComponent {
     private readonly landscapeModel: LandscapeModel;
@@ -11,7 +12,7 @@ export class AppComponent {
 
     constructor(private id: string, host: string) {
         this.landscapeModel = new LandscapeModel();
-        this.landscapeComponent = new LandscapeComponent(this.landscapeModel, id);
+        this.landscapeComponent = new LandscapeComponent(this.landscapeModel, id, (bp) => bp.getType() === BlueprintType.Local);
         this.storageComponent = new StorageComponent(this.landscapeModel, new ApiService(host));
         this.subscribe();
     }
@@ -32,5 +33,9 @@ export class AppComponent {
             await this.storageComponent.load();
             resolve();
         });
+    }
+    
+    public resize() {
+        this.landscapeComponent.resize();
     }
 }
