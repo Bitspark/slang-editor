@@ -38,30 +38,74 @@ export class BlueprintComponent {
         redirectPaperEvents(this.paper);
 
         const that = this;
-        this.graph.on('change:position', function (elem: dia.Element) {
-            const parentId = elem.get('parent');
-            if (!parentId) {
-                return;
+
+        /******* src: https://resources.jointjs.com/tutorial/hierarchy ********/
+        this.graph.on('change:size', function (cell: dia.Cell, newPosition: dia.Point, opt: any) {
+
+            if (opt.skipParentHandler) return;
+
+            if (cell.get('embeds') && cell.get('embeds').length) {
+                // If we're manipulating a parent element, let's store
+                // it's original size to a special property so that
+                // we can shrink the parent element back while manipulating
+                // its children.
+                cell.set('originalSize', cell.get('size'));
             }
-
-            const parent = that.graph.getCell(parentId);
-            const parentBbox = (parent as dia.Element).getBBox();
-            const elemBbox = elem.getBBox();
-
-            if (parentBbox.containsPoint(elemBbox.origin()) &&
-                parentBbox.containsPoint(elemBbox.topRight()) &&
-                parentBbox.containsPoint(elemBbox.corner()) &&
-                parentBbox.containsPoint(elemBbox.bottomLeft())) {
-
-                // All the four corners of the child are inside
-                // the parent area.
-                return;
-            }
-
-            // Revert the child position.
-            elem.set('position', elem.previous('position'));
         });
 
+        this.graph.on('change:position', function (cell: dia.Cell, newPosition: dia.Point, opt: any) {
+
+            if (opt.skipParentHandler) return;
+
+            if (cell.get('embeds') && cell.get('embeds').length) {
+                // If we're manipulating a parent element, let's store
+                // it's original position to a special property so that
+                // we can shrink the parent element back while manipulating
+                // its children.
+                cell.set('originalPosition', cell.get('position'));
+            }
+
+            const parentId = cell.get('parent');
+            if (!parentId) return;
+
+            const parent = that.graph.getCell(parentId);
+
+            if (!parent.get('originalPosition')) parent.set('originalPosition', parent.get('position'));
+            if (!parent.get('originalSize')) parent.set('originalSize', parent.get('size'));
+
+            const originalPosition = parent.get('originalPosition');
+            const originalSize = parent.get('originalSize');
+
+            let newX = originalPosition.x;
+            let newY = originalPosition.y;
+            let newCornerX = originalPosition.x + originalSize.width;
+            let newCornerY = originalPosition.y + originalSize.height;
+
+            Array.from(parent.getEmbeddedCells()).forEach((child: dia.Element) => {
+                const childBbox = child.getBBox();
+                if (childBbox.x < newX) {
+                    newX = childBbox.x;
+                }
+                if (childBbox.y < newY) {
+                    newY = childBbox.y;
+                }
+                if (childBbox.corner().x > newCornerX) {
+                    newCornerX = childBbox.corner().x;
+                }
+                if (childBbox.corner().y > newCornerY) {
+                    newCornerY = childBbox.corner().y;
+                }
+            });
+
+            // Note that we also pass a flag so that we know we shouldn't adjust the
+            // `originalPosition` and `originalSize` in our handlers as a reaction
+            // on the following `set()` call.
+            parent.set({
+                position: {x: newX, y: newY},
+                size: {width: newCornerX - newX, height: newCornerY - newY}
+            }, ({skipParentHandler: true} as any));
+        });
+        /*********/
     }
 
     private subscribe() {
