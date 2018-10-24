@@ -36,6 +36,32 @@ export class BlueprintComponent {
             }
         });
         redirectPaperEvents(this.paper);
+
+        const that = this;
+        this.graph.on('change:position', function (elem: dia.Element) {
+            const parentId = elem.get('parent');
+            if (!parentId) {
+                return;
+            }
+
+            const parent = that.graph.getCell(parentId);
+            const parentBbox = (parent as dia.Element).getBBox();
+            const elemBbox = elem.getBBox();
+
+            if (parentBbox.containsPoint(elemBbox.origin()) &&
+                parentBbox.containsPoint(elemBbox.topRight()) &&
+                parentBbox.containsPoint(elemBbox.corner()) &&
+                parentBbox.containsPoint(elemBbox.bottomLeft())) {
+
+                // All the four corners of the child are inside
+                // the parent area.
+                return;
+            }
+
+            // Revert the child position.
+            elem.set('position', elem.previous('position'));
+        });
+
     }
 
     private subscribe() {
