@@ -8,7 +8,13 @@ export class LandscapeModel {
 
     private blueprints: Array<BlueprintModel> = [];
     private selectedBlueprint = new BehaviorSubject<BlueprintModel | null>(null);
-    
+
+    public getBlueprint(fullName: string): BlueprintModel | undefined {
+        return this.blueprints.find((each: BlueprintModel) => {
+            return each.getFullName() == fullName;
+        })
+    }
+
     // Actions
 
     public addBlueprint(blueprint: BlueprintModel): boolean {
@@ -51,6 +57,7 @@ export class LandscapeModel {
         this.blueprints.splice(index, 1);
         return true;
     }
+
 
     // Subscriptions
 
