@@ -4,7 +4,7 @@ export class Canvas {
     private graph = new dia.Graph();
     private paper: dia.Paper;
 
-    constructor(private el: HTMLElement) {
+    constructor(private container: HTMLElement) {
         this.createPaper();
         this.redirectPaperEvents();
         this.addZooming();
@@ -20,8 +20,12 @@ export class Canvas {
     }
 
     private createPaper() {
+        this.container.innerHTML = '';
+        const inner = document.createElement('div');
+        this.container.appendChild(inner);
+
         this.paper = new dia.Paper({
-            el: this.el,
+            el: inner,
             model: this.graph,
             gridSize: 10,
             drawGrid: true
