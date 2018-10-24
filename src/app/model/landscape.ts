@@ -5,6 +5,7 @@ export class LandscapeModel {
 
     private blueprintAdded = new Subject<BlueprintModel>();
     private blueprintRemoved = new Subject<BlueprintModel>();
+    private opened = new BehaviorSubject<boolean>(false);
 
     private blueprints: Array<BlueprintModel> = [];
     private selectedBlueprint = new BehaviorSubject<BlueprintModel | null>(null);
@@ -52,6 +53,18 @@ export class LandscapeModel {
 
         return true;
     }
+    
+    public open() {
+        if (!this.opened.getValue()) {
+            this.opened.next(true);
+        }
+    }
+
+    public close() {
+        if (this.opened.getValue()) {
+            this.opened.next(false);
+        }
+    }
 
     private removeBlueprint(blueprint: BlueprintModel): boolean {
         const index = this.blueprints.indexOf(blueprint);
@@ -74,6 +87,10 @@ export class LandscapeModel {
 
     public subscribeSelectionChanged(cb: (blueprint: BlueprintModel) => void): void {
         this.selectedBlueprint.subscribe(cb);
+    }
+    
+    public subscribeOpenedChanged(cb: (opened: boolean) => void) {
+        this.opened.subscribe(cb);
     }
 
 }

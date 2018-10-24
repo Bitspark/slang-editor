@@ -24,16 +24,32 @@ export class AppModel {
         landscape.subscribeBlueprintAdded(blueprint => {
             this.subscribeBlueprint(blueprint);
         });
+        landscape.subscribeOpenedChanged(opened => {
+            if (opened) {
+                const openedBlueprint = this.openedBlueprint.getValue();
+                if (openedBlueprint !== null) {
+                    openedBlueprint.close();
+                }
+                this.openedLandscape.next(landscape);
+            } else {
+                if (landscape === this.openedLandscape.getValue()) {
+                    this.openedLandscape.next(null);
+                }
+            }
+        })
     }
     
     private subscribeBlueprint(blueprint: BlueprintModel) {
         blueprint.subscribeOpenedChanged(opened => {
             if (opened) {
+                const openedLandscape = this.openedLandscape.getValue();
+                if (openedLandscape !== null) {
+                    openedLandscape.close();
+                }
                 this.openedBlueprint.next(blueprint);
             } else {
                 if (blueprint === this.openedBlueprint.getValue()) {
                     this.openedBlueprint.next(null);
-                    this.openedLandscape.next(this.landscape);
                 }
             }
         });

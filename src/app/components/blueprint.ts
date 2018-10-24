@@ -87,7 +87,6 @@ export class BlueprintComponent {
     private subscribe() {
         const that = this;
         this.blueprint.subscribeOperatorAdded(function (op: OperatorModel) {
-            console.log(" +++", op);
             that.addOperator(op);
         });
     }

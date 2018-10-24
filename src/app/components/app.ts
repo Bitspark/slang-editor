@@ -19,7 +19,7 @@ export class AppComponent {
         
         const landscapeModel = appModel.getLandscape();
         
-        this.routerComponent = new RouterComponent(landscapeModel);
+        this.routerComponent = new RouterComponent(appModel);
         this.landscapeComponent = new LandscapeComponent(this.canvas.getGraph(), landscapeModel, (bp) => bp.getType() === BlueprintType.Local);
         this.storageComponent = new StorageComponent(landscapeModel, new ApiService(host));
         
