@@ -4,11 +4,10 @@ import {LandscapeModel} from '../model/landscape';
 import {BlueprintModel} from '../model/blueprint';
 
 export class LandscapeComponent {
-    private filter: (blueprint: BlueprintModel) => boolean | null;
-
-    constructor(private graph: dia.Graph, landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
+    constructor(private graph: dia.Graph, private landscape: LandscapeModel, private filter?: (blueprint: BlueprintModel) => boolean) {
         this.graph.clear();
         this.subscribe(landscape);
+        this.drawBlueprints();
         if (filter !== undefined) {
             this.filter = filter;
         }
@@ -17,10 +16,20 @@ export class LandscapeComponent {
     private subscribe(landscape: LandscapeModel) {
         const that = this;
         landscape.subscribeBlueprintAdded(function (bp: BlueprintModel) {
-            if (that.filter(bp) === null || that.filter(bp)) {
+            if (!that.filter || that.filter(bp)) {
                 that.addBlueprint(bp);
             }
         });
+    }
+
+    private drawBlueprints() {
+        let blueprints = this.landscape.getBlueprints();
+        if (this.filter) {
+            blueprints = blueprints.filter(this.filter);
+        }
+        for (const bp of blueprints) {
+            this.addBlueprint(bp);
+        }
     }
 
     private addBlueprint(blueprint: BlueprintModel) {

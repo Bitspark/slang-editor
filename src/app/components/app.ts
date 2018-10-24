@@ -3,20 +3,27 @@ import {StorageComponent} from "./storage";
 import {ApiService} from "../services/api";
 import {LandscapeComponent} from "./landscape";
 import {BlueprintComponent} from "./blueprint";
-import {BlueprintType} from "../model/blueprint";
+import {BlueprintModel, BlueprintType} from "../model/blueprint";
 import {Canvas} from "../ui/cavas";
+import {RouterComponent} from "./router";
 
 export class AppComponent {
     private readonly landscapeModel: LandscapeModel;
     private landscapeComponent: LandscapeComponent;
     private storageComponent: StorageComponent;
+    private routerComponent: RouterComponent;
+    private openendBlueprint: BlueprintModel | null = null;
     private canvas: Canvas;
 
     constructor(private el: HTMLElement, host: string) {
-        this.canvas = new Canvas(el);
         this.landscapeModel = new LandscapeModel();
+        
+        this.canvas = new Canvas(el);
+        
+        this.routerComponent = new RouterComponent(this.landscapeModel);
         this.landscapeComponent = new LandscapeComponent(this.canvas.getGraph(), this.landscapeModel, (bp) => bp.getType() === BlueprintType.Local);
         this.storageComponent = new StorageComponent(this.landscapeModel, new ApiService(host));
+        
         this.subscribe();
     }
 
@@ -26,6 +33,15 @@ export class AppComponent {
             blueprint.subscribeOpenedChanged(opened => {
                 if (opened) {
                     new BlueprintComponent(this.canvas.getGraph(), blueprint);
+                    that.openendBlueprint = blueprint;
+                } else {
+                    if (blueprint === that.openendBlueprint) {
+                        this.landscapeComponent = 
+                            new LandscapeComponent(
+                                this.canvas.getGraph(), 
+                                this.landscapeModel, 
+                                (bp) => bp.getType() === BlueprintType.Local);
+                    }
                 }
             });
         });
@@ -34,6 +50,7 @@ export class AppComponent {
     public async start(): Promise<void> {
         return new Promise<void>(async resolve => {
             await this.storageComponent.load();
+            this.routerComponent.checkRoute();
             resolve();
         });
     }
