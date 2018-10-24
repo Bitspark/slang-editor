@@ -27,7 +27,8 @@ export class LandscapeComponent {
             model: this.graph,
             width: 800,
             height: 600,
-            gridSize: 1
+            gridSize: 10,
+            drawGrid: true
         });
         redirectPaperEvents(this.paper);
         addZooming(this.paper);
@@ -37,7 +38,9 @@ export class LandscapeComponent {
     public addBlueprint(blueprint: BlueprintModel) {
         const rect = new shapes.standard.Rectangle();
 
-        rect.position(100, 30);
+        rect.position(
+            Math.random() * 2000 - 500, 
+            Math.random() * 2000 - 500);
         rect.resize(100, 40);
         rect.attr({
             body: {
@@ -45,7 +48,8 @@ export class LandscapeComponent {
             },
             label: {
                 text: blueprint.getShortName(),
-                fill: 'white'
+                fill: 'white',
+                cursor: 'default'
             }
         });
         rect.addTo(this.graph);
