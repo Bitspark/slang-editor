@@ -9,16 +9,23 @@ export class LandscapeComponent {
     private paper: dia.Paper;
     private container: HTMLElement | null;
     private canvas: HTMLElement | null;
+    private filter: (blueprint: BlueprintModel) => boolean | null;
 
-    constructor(landscape: LandscapeModel, id: string) {
+    constructor(landscape: LandscapeModel, id: string, filter?: (blueprint: BlueprintModel) => boolean) {
         this.createPaper(id);
         this.subscribe(landscape);
+        
+        if (filter !== undefined) {
+            this.filter = filter;
+        }
     }
 
     private subscribe(landscape: LandscapeModel) {
         const that = this;
         landscape.subscribeBlueprintAdded(function (bp: BlueprintModel) {
-            that.addBlueprint(bp);
+            if (that.filter(bp) === null || that.filter(bp)) {
+                that.addBlueprint(bp);
+            }
         });
     }
 
