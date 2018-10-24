@@ -3,7 +3,7 @@ import {Event} from 'jquery';
 
 import {LandscapeModel} from '../model/landscape';
 import {BlueprintModel} from '../model/blueprint';
-import {redirectPaperEvents} from "./utils";
+import {addPanning, addZooming, redirectPaperEvents} from "./utils";
 
 export class LandscapeComponent {
     private graph = new dia.Graph();
@@ -30,8 +30,9 @@ export class LandscapeComponent {
             gridSize: 1
         });
         redirectPaperEvents(this.paper);
+        addZooming(this.paper);
+        addPanning(this.paper);
     }
-
 
     public addBlueprint(blueprint: BlueprintModel) {
         const rect = new shapes.standard.Rectangle();
