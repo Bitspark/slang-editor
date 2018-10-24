@@ -32,6 +32,7 @@ export class AppComponent {
         this.landscapeModel.subscribeBlueprintAdded(blueprint => {
             blueprint.subscribeOpenedChanged(opened => {
                 if (opened) {
+                    // TODO: Kill LandscapeComponent
                     new BlueprintComponent(this.canvas.getGraph(), blueprint);
                     that.openendBlueprint = blueprint;
                 } else {
@@ -41,6 +42,7 @@ export class AppComponent {
                                 this.canvas.getGraph(), 
                                 this.landscapeModel, 
                                 (bp) => bp.getType() === BlueprintType.Local);
+                        // TODO: Kill BlueprintComponent
                     }
                 }
             });

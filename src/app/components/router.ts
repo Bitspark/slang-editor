@@ -10,7 +10,28 @@ export class RouterComponent {
     }
     
     public checkRoute(): void {
+        const url = window.location.pathname;
+        const paths = url.split('/');
+        if (paths.length === 1) {
+            if (this.openedBlueprint) {
+                this.openedBlueprint.close();
+            }
+            return;
+        } else {
+            switch (paths[1]) {
+                case 'blueprint':
+                    this.openBlueprint(paths[2]);
+            }
+        }
         this.checkState(window.history.state);
+    }
+    
+    private openBlueprint(fullName: string) {
+        const blueprint = this.landscapeModel.findBlueprint(fullName);
+        if (blueprint) {
+            blueprint.open();
+            this.openedBlueprint = blueprint;
+        }
     }
     
     private checkState(state: any): void {
@@ -24,11 +45,7 @@ export class RouterComponent {
             if (type) {
                 switch (type as string) {
                     case 'blueprint':
-                        const blueprint = this.landscapeModel.findBlueprint(state.fullName as string);
-                        if (blueprint) {
-                            blueprint.open();
-                            this.openedBlueprint = blueprint;
-                        }
+                        this.openBlueprint(state.fullName as string);
                         break;
                 }
             }
