@@ -1,5 +1,4 @@
 import {dia} from "jointjs";
-import * as $ from 'jquery';
 
 /**
  * Passes events triggered on a paper to the according cells.
@@ -62,7 +61,7 @@ export function addPanning(paper: dia.Paper) {
     paper.on('cell:pointerup', function (cellView: dia.CellView, evt: Event, x: number, y: number) {
         stopPanning();
     });
-    $(paper.svg).on('mousemove', function (event: any) {
+    paper.svg.addEventListener('mousemove', function (event: any) {
         doPanning(event.offsetX, event.offsetY);
     });
 }
@@ -71,7 +70,7 @@ export function addZooming(paper: dia.Paper, speed = 0.15, min = 0.1, max = 10.0
     const zoom = function (x: number, y: number, delta: number) {
         const scale = paper.scale();
         const oldScale = scale.sx;
-        
+
         let newScale = oldScale + oldScale * delta * speed;
         if (newScale < min) {
             newScale = min;
@@ -79,7 +78,7 @@ export function addZooming(paper: dia.Paper, speed = 0.15, min = 0.1, max = 10.0
         if (newScale > max) {
             newScale = max;
         }
-        
+
         paper.scale(newScale, newScale);
 
         const translation = paper.translate();
@@ -95,4 +94,8 @@ export function addZooming(paper: dia.Paper, speed = 0.15, min = 0.1, max = 10.0
     paper.on('cell:mousewheel', function (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) {
         zoom(x, y, delta);
     });
+}
+
+export function fillParent(paper: dia.Paper, el: HTMLElement) {
+    paper.setDimensions(el.clientWidth!, el.clientHeight!);
 }

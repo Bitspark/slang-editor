@@ -31,4 +31,8 @@ export class AppComponent {
             resolve();
         });
     }
+    
+    public resize() {
+        this.landscapeComponent.resize();
+    }
 }
