@@ -1,5 +1,19 @@
 import {BlueprintModel, BlueprintType} from "../model/blueprint";
 
+interface OperatorApiResponse {
+    operator: string,
+}
+
+export interface BlueprintDefApiResponse {
+    operators: Map<string, OperatorApiResponse>
+}
+
+export interface BlueprintApiResponse {
+    type: string,
+    name: string,
+    def: BlueprintDefApiResponse,
+}
+
 export class ApiService {
 
     constructor(private host: string = '') {
@@ -14,30 +28,13 @@ export class ApiService {
         });
     }
 
-    public async getBlueprints(): Promise<Array<BlueprintModel>> {
-        return this.fetch<Array<BlueprintModel>>(
+    public async getBlueprints(): Promise<Array<BlueprintApiResponse>> {
+        return this.fetch<Array<BlueprintApiResponse>>(
             '/operator',
             (data: any) => {
-                const objects = (data as { objects: any }).objects;
-                return objects.map((each: any) => {
-                    let type: BlueprintType | null = null;
-                    switch (each.type) {
-                        case 'local':
-                            type = BlueprintType.Local;
-                            break;
-                        case 'library':
-                            type = BlueprintType.Library;
-                            break;
-                        case 'elementary':
-                            type = BlueprintType.Elementary;
-                            break;
-                    }
-                    if (type !== null) {
-                        return new BlueprintModel(each.name, type);
-                    } else {
-                        throw `unknown blueprint type '${each.type}'`;
-                    }
-                })
+                return (data as { objects: any }).objects.map((each: BlueprintApiResponse) => {
+                    return each;
+                });
             },
             (err: any) => console.error(err)
         );
