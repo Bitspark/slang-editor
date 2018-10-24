@@ -36,9 +36,9 @@ export class LandscapeComponent {
         const rect = new shapes.standard.Rectangle();
 
         rect.position(
-            Math.random() * 2000 - 500,
-            Math.random() * 2000 - 500);
-        rect.resize(100, 40);
+            Math.random() * 2000 - 1000,
+            Math.random() * 2000 - 1000);
+        rect.resize(120, 120);
         rect.attr({
             body: {
                 fill: 'blue'
