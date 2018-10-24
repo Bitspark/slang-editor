@@ -2,19 +2,13 @@ import {dia, shapes} from 'jointjs';
 
 import {LandscapeModel} from '../model/landscape';
 import {BlueprintModel} from '../model/blueprint';
-import {addPanning, addZooming, fillParent, redirectPaperEvents} from "./utils";
 
 export class LandscapeComponent {
-    private graph = new dia.Graph();
-    private paper: dia.Paper;
-    private container: HTMLElement | null;
-    private canvas: HTMLElement | null;
     private filter: (blueprint: BlueprintModel) => boolean | null;
 
-    constructor(landscape: LandscapeModel, id: string, filter?: (blueprint: BlueprintModel) => boolean) {
-        this.createPaper(id);
+    constructor(private graph: dia.Graph, landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
+        this.graph.clear();
         this.subscribe(landscape);
-        
         if (filter !== undefined) {
             this.filter = filter;
         }
@@ -27,25 +21,6 @@ export class LandscapeComponent {
                 that.addBlueprint(bp);
             }
         });
-    }
-
-    private createPaper(id: string) {
-        this.container = document.getElementById(id)!;
-        this.container.innerHTML = '';
-        this.canvas = document.createElement('div');
-        this.container.appendChild(this.canvas);
-
-        this.paper = new dia.Paper({
-            el: this.canvas,
-            model: this.graph,
-            width: this.container.clientWidth,
-            height: this.container.clientHeight,
-            gridSize: 10,
-            drawGrid: true
-        });
-        redirectPaperEvents(this.paper);
-        addZooming(this.paper);
-        addPanning(this.paper);
     }
 
     private addBlueprint(blueprint: BlueprintModel) {
@@ -87,9 +62,4 @@ export class LandscapeComponent {
             }
         });
     }
-
-    public resize() {
-        fillParent(this.paper, this.container!);
-    }
-
 }
