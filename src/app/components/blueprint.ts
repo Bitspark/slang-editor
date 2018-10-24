@@ -26,11 +26,28 @@ export class BlueprintComponent {
                 color: "#000000",
             },
             background: {
-                color: '#d7dcf2',
+                color: 'snow',
             }
         });
 
         redirectPaperEvents(this.paper);
+
+        this.drawBlueprint();
+    }
+
+    private drawBlueprint() {
+        const bp = this.blueprint;
+        const outer = new shapes.basic.Rect({
+            position: {x: 20, y: 20},
+            size: {width: 400, height: 400},
+            attrs: {
+                rect: {fill: 'orange', stroke: 'orange'},
+                text: {text: `${bp.getPackageName(0)}\n${bp.getShortName()}`}
+            }
+        });
+
+        outer.addTo(this.graph);
+
     }
 
 }
