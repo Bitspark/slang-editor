@@ -4,41 +4,17 @@ import {redirectPaperEvents} from "./utils";
 import {OperatorModel} from "../model/operator";
 
 export class BlueprintComponent {
-    private graph = new dia.Graph();
-    private paper: dia.Paper;
     private outer: dia.Element;
 
-    constructor(private blueprint: BlueprintModel, private id: string) {
-        this.createPaper(id);
-        this.drawBlueprint();
+    constructor(private graph: dia.Graph, private blueprint: BlueprintModel) {
+        graph.clear();
+        this.attachEventHandlers();
         this.subscribe();
+        this.drawBlueprint();
     }
 
-    private createPaper(id: string) {
-        const elem = document.getElementById(id);
-        const newElem = document.createElement('div');
-        const p = elem!.parentElement;
-        newElem.id = id;
-        elem!.remove();
-        p!.appendChild(newElem);
-        this.paper = new dia.Paper({
-            el: document.getElementById(id),
-            model: this.graph,
-            width: 600,
-            height: 600,
-            gridSize: 10,
-            drawGrid: {
-                name: "fixedDot",
-                color: "#000000",
-            },
-            background: {
-                color: 'snow',
-            }
-        });
-        redirectPaperEvents(this.paper);
-
+    private attachEventHandlers() {
         const that = this;
-
         /******* src: https://resources.jointjs.com/tutorial/hierarchy ********/
         this.graph.on('change:size', function (cell: dia.Cell, newPosition: dia.Point, opt: any) {
 

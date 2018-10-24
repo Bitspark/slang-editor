@@ -25,6 +25,7 @@ export class AppComponent {
         this.landscapeModel.subscribeBlueprintAdded(blueprint => {
             blueprint.subscribeOpenedChanged(opened => {
                 if (opened) {
+                    new BlueprintComponent(this.canvas.getGraph(), blueprint);
                 }
             });
         });
