@@ -1,6 +1,6 @@
-import {BlueprintModel} from '../model/blueprint';
 import {dia, shapes} from "jointjs";
-import {redirectPaperEvents} from "./utils";
+
+import {BlueprintModel} from "../model/blueprint";
 import {OperatorModel} from "../model/operator";
 
 export class BlueprintComponent {

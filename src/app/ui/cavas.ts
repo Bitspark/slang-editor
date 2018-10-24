@@ -18,6 +18,11 @@ export class Canvas {
     public getGraph(): dia.Graph {
         return this.graph;
     }
+    
+    public reset() {
+        this.paper.translate(0.0, 0.0);
+        this.paper.scale(1.0);
+    }
 
     private createPaper() {
         this.container.innerHTML = '';
