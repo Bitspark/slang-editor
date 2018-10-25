@@ -5,6 +5,7 @@ import {OperatorModel} from "../model/operator";
 
 export class BlueprintComponent {
     private outer: dia.Element;
+    private outerPadding = 20;
 
     constructor(private graph: dia.Graph, private blueprint: BlueprintModel) {
         graph.clear();
@@ -59,17 +60,17 @@ export class BlueprintComponent {
 
             Array.from(parent.getEmbeddedCells()).forEach((child: dia.Element) => {
                 const childBbox = child.getBBox();
-                if (childBbox.x < newX) {
-                    newX = childBbox.x;
+                if (childBbox.x < (newX + that.outerPadding)) {
+                    newX = (childBbox.x - that.outerPadding);
                 }
-                if (childBbox.y < newY) {
-                    newY = childBbox.y;
+                if (childBbox.y < (newY + that.outerPadding)) {
+                    newY = (childBbox.y - that.outerPadding);
                 }
-                if (childBbox.corner().x > newCornerX) {
-                    newCornerX = childBbox.corner().x;
+                if (childBbox.corner().x > (newCornerX - that.outerPadding)) {
+                    newCornerX = (childBbox.corner().x + that.outerPadding);
                 }
-                if (childBbox.corner().y > newCornerY) {
-                    newCornerY = childBbox.corner().y;
+                if (childBbox.corner().y > (newCornerY - that.outerPadding)) {
+                    newCornerY = (childBbox.corner().y + that.outerPadding);
                 }
             });
 
@@ -94,7 +95,6 @@ export class BlueprintComponent {
     private drawBlueprint() {
         const bp = this.blueprint;
         this.outer = JointJSElements.createBlueprintElement(bp);
-        this.outer.resize(400, 400);
         this.outer.attr('body/fill', 'orange');
         this.outer.attr('body/fill-opacity', '.2');
         this.outer.addTo(this.graph);
@@ -103,7 +103,7 @@ export class BlueprintComponent {
             this.addOperator(op);
         }
 
-        this.outer.fitEmbeds();
+        this.outer.fitEmbeds({padding: this.outerPadding});
     }
 
     private addOperator(operator: OperatorModel) {
