@@ -4,7 +4,7 @@ export class RouterComponent {
 
     constructor(private appModel: AppModel) {
         this.subscribe();
-        this.publish();
+        this.addEventListeners();
     }
 
     public checkRoute(): void {
@@ -49,7 +49,7 @@ export class RouterComponent {
         });
     }
 
-    private publish() {
+    private addEventListeners() {
         const that = this;
         window.addEventListener('popstate', function (event: PopStateEvent) {
             that.checkRoute();

@@ -1,5 +1,6 @@
 import {BlueprintModel} from './blueprint';
 import {BehaviorSubject, Subject} from 'rxjs';
+import {OperatorModel} from "./operator";
 
 export class LandscapeModel {
 
@@ -16,8 +17,8 @@ export class LandscapeModel {
         })
     }
     
-    public getBlueprints(): Array<BlueprintModel> {
-        return this.blueprints;
+    public getBlueprints(): IterableIterator<BlueprintModel> {
+        return this.blueprints.values();
     }
 
     // Actions

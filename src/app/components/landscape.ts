@@ -23,7 +23,7 @@ export class LandscapeComponent {
     }
 
     private drawBlueprints() {
-        let blueprints = this.landscape.getBlueprints();
+        let blueprints = Array.from(this.landscape.getBlueprints());
         if (this.filter) {
             blueprints = blueprints.filter(this.filter);
         }
