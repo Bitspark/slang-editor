@@ -1,15 +1,14 @@
-import {LandscapeModel} from "../model/landscape";
 import {StorageComponent} from "./storage";
 import {ApiService} from "../services/api";
 import {LandscapeComponent} from "./landscape";
 import {BlueprintComponent} from "./blueprint";
-import {BlueprintModel, BlueprintType} from "../model/blueprint";
+import { BlueprintType} from "../model/blueprint";
 import {Canvas} from "../ui/cavas";
 import {RouterComponent} from "./router";
 import {AppModel} from '../model/app';
 
 export class AppComponent {
-    private landscapeComponent: LandscapeComponent;
+    private landscapeComponent: LandscapeComponent | null;
     private storageComponent: StorageComponent;
     private routerComponent: RouterComponent;
     private canvas: Canvas;
@@ -20,7 +19,6 @@ export class AppComponent {
         const landscapeModel = appModel.getLandscape();
         
         this.routerComponent = new RouterComponent(appModel);
-        this.landscapeComponent = new LandscapeComponent(this.canvas.getGraph(), landscapeModel, (bp) => bp.getType() === BlueprintType.Local);
         this.storageComponent = new StorageComponent(landscapeModel, new ApiService(host));
         
         this.subscribe();
@@ -37,10 +35,9 @@ export class AppComponent {
         this.appModel.subscribeOpenedLandscapeChanged(landscape => {
             if (landscape !== null) {
                 this.canvas.reset();
-                new LandscapeComponent(
-                    this.canvas.getGraph(),
-                    landscape,
-                    (bp) => bp.getType() === BlueprintType.Local);
+                // TODO: Destroy
+                this.landscapeComponent = new LandscapeComponent(this.canvas.getGraph(), landscape, bp => bp.getType() === BlueprintType.Local);
+                this.landscapeComponent.reorder(this.canvas.getWidth(), this.canvas.getHeight());
             }
         });
     }
@@ -55,5 +52,8 @@ export class AppComponent {
 
     public resize() {
         this.canvas.resize(this.el.clientWidth, this.el.clientHeight);
+        if (this.landscapeComponent) {
+            this.landscapeComponent.reorder(this.canvas.getWidth(), this.canvas.getHeight());
+        }
     }
 }
