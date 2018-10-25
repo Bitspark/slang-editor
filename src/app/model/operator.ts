@@ -23,6 +23,10 @@ export class OperatorModel {
         return this.blueprint.getType();
     }
 
+    public getBlueprint(): BlueprintModel {
+        return this.blueprint;
+    }
+
     // Actions
 
     public select() {

@@ -1,6 +1,6 @@
 import {BlueprintModel} from '../model/blueprint';
 import {dia, shapes} from "jointjs";
-import {redirectPaperEvents} from "./utils";
+import {JointJSElements} from "../utils";
 import {OperatorModel} from "../model/operator";
 
 export class BlueprintComponent {
@@ -87,66 +87,45 @@ export class BlueprintComponent {
     private subscribe() {
         const that = this;
         this.blueprint.subscribeOperatorAdded(function (op: OperatorModel) {
-            console.log(" +++", op);
             that.addOperator(op);
         });
     }
 
     private drawBlueprint() {
         const bp = this.blueprint;
-        this.outer = new shapes.standard.Rectangle({
-            position: {x: 20, y: 20},
-            size: {width: 400, height: 400},
-            attrs: {
-                body: {
-                    fill: 'orange',
-                    stroke: 'orange',
-                },
-                label: {
-                    text: `${bp.getPackageName(0)}\n${bp.getShortName()}`,
-                    fill: 'white',
-                },
-            }
-        });
+        this.outer = JointJSElements.createBlueprintElement(bp);
+        this.outer.resize(400, 400);
+        this.outer.attr('body/fill', 'orange');
+        this.outer.attr('body/fill-opacity', '.2');
         this.outer.addTo(this.graph);
 
         for (const op of bp.getOperators()) {
             this.addOperator(op);
         }
+
+        this.outer.fitEmbeds();
     }
 
     private addOperator(operator: OperatorModel) {
-        const rect = new shapes.standard.Rectangle();
-
-        rect.position(100, 30);
-        rect.resize(100, 40);
-        rect.attr({
-            body: {
-                fill: 'blue'
-            },
-            label: {
-                text: operator.getFullName(),
-                fill: 'white'
-            }
-        });
-        this.outer.embed(rect);
-        this.graph.addCell(rect);
+        const opElem = JointJSElements.createOperatorElement(operator);
+        this.outer.embed(opElem);
+        this.graph.addCell(opElem);
 
 
         // JointJS -> Model
-        rect.on('pointerclick', function (evt: Event, x: number, y: number) {
+        opElem.on('pointerclick', function (evt: Event, x: number, y: number) {
             operator.select();
         });
 
         // Model -> JointJS
         operator.subscribeDeleted(function () {
-            rect.remove();
+            opElem.remove();
         });
         operator.subscribeSelectChanged(function (selected: boolean) {
             if (selected) {
-                rect.attr('body/fill', 'orange');
+                opElem.attr('body/fill', 'orange');
             } else {
-                rect.attr('body/fill', 'blue');
+                opElem.attr('body/fill', 'blue');
             }
         });
     }
