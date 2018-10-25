@@ -6,7 +6,6 @@ export class JointJSElements {
     public static createBlueprintElement(blueprint: BlueprintModel): dia.Element {
         return new shapes.standard.Rectangle({
             size: {width: 100, height: 100},
-            position: {x: 100, y: 100},
             attrs: {
                 root: {},
                 body: {

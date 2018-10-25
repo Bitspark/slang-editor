@@ -5,7 +5,7 @@ import {OperatorModel} from "../model/operator";
 
 export class BlueprintComponent {
     private outer: dia.Element;
-    private outerPadding = 20;
+    private outerPadding = 40;
 
     constructor(private graph: dia.Graph, private blueprint: BlueprintModel) {
         graph.clear();
