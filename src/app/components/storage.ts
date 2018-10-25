@@ -25,11 +25,8 @@ export class StorageComponent {
                 if (type === null) {
                     throw `unknown blueprint type '${bpData.type}'`;
                 }
-
-                const bp = new BlueprintModel(bpData.name, type);
-                this.landscape.addBlueprint(bp);
-
-                blueprintToOperator.set(bp, bpData.def);
+                const blueprint = this.landscape.createBlueprint(bpData.name, type);
+                blueprintToOperator.set(blueprint, bpData.def);
             });
 
             // 2) Add Operators. Use previously defined Blueprints for assigning Operator.blueprint
@@ -43,9 +40,7 @@ export class StorageComponent {
                         if (blueprint == undefined) {
                             throw `unknown blueprint '${opObj.operator}'`;
                         }
-
-                        const op = new OperatorModel(opName, blueprint);
-                        outerBlueprint.addOperator(op);
+                        outerBlueprint.createOperator(opName, blueprint);
                     });
                 }
             });

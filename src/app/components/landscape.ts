@@ -230,9 +230,7 @@ export class LandscapeComponent {
 
         const that = this;
         rect.on('pointerclick', function (evt: Event, x: number, y: number) {
-            const bp = new BlueprintModel(`Unnamed${new Date().getTime()}`, BlueprintType.Local);
-            that.landscape.addBlueprint(bp);
-            bp.open();
+            that.landscape.createBlueprint(`Unnamed${new Date().getTime()}`, BlueprintType.Local).open();
         });
 
         this.addBlueprintButton = rect;

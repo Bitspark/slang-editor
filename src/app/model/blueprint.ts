@@ -28,6 +28,16 @@ export class BlueprintModel {
         this.hierarchy = fullName.split('.');
     }
 
+    public createOperator(name: string, blueprint: BlueprintModel): OperatorModel {
+        const operator = blueprint.instantiateOperator(name);
+        this.addOperator(operator);
+        return operator;
+    }
+
+    private instantiateOperator(name: string): OperatorModel {
+        return new OperatorModel(name, this);
+    }
+
     public getFullName(): string {
         return this.fullName;
     }

@@ -1,4 +1,4 @@
-import {BlueprintModel} from './blueprint';
+import {BlueprintModel, BlueprintType} from './blueprint';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {OperatorModel} from "./operator";
 
@@ -11,19 +11,38 @@ export class LandscapeModel {
     private blueprints: Array<BlueprintModel> = [];
     private selectedBlueprint = new BehaviorSubject<BlueprintModel | null>(null);
 
+
+    public createBlueprint(fullName: string, type: BlueprintType): BlueprintModel {
+        const blueprint = new BlueprintModel(fullName, type);
+        this.addBlueprint(blueprint);
+        return blueprint;
+    }
+
     public findBlueprint(fullName: string): BlueprintModel | undefined {
         return this.blueprints.find((each: BlueprintModel) => {
             return each.getFullName() == fullName;
         })
     }
-    
+
     public getBlueprints(): IterableIterator<BlueprintModel> {
         return this.blueprints.values();
     }
 
     // Actions
 
-    public addBlueprint(blueprint: BlueprintModel): boolean {
+    public open() {
+        if (!this.opened.getValue()) {
+            this.opened.next(true);
+        }
+    }
+
+    public close() {
+        if (this.opened.getValue()) {
+            this.opened.next(false);
+        }
+    }
+
+    private addBlueprint(blueprint: BlueprintModel): boolean {
         this.blueprints.push(blueprint);
         this.blueprintAdded.next(blueprint);
 
@@ -54,18 +73,6 @@ export class LandscapeModel {
 
         return true;
     }
-    
-    public open() {
-        if (!this.opened.getValue()) {
-            this.opened.next(true);
-        }
-    }
-
-    public close() {
-        if (this.opened.getValue()) {
-            this.opened.next(false);
-        }
-    }
 
     private removeBlueprint(blueprint: BlueprintModel): boolean {
         const index = this.blueprints.indexOf(blueprint);
@@ -89,7 +96,7 @@ export class LandscapeModel {
     public subscribeSelectionChanged(cb: (blueprint: BlueprintModel) => void): void {
         this.selectedBlueprint.subscribe(cb);
     }
-    
+
     public subscribeOpenedChanged(cb: (opened: boolean) => void) {
         this.opened.subscribe(cb);
     }
