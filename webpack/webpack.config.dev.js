@@ -13,7 +13,10 @@ module.exports = merge(common, {
   },
   devServer: {
     contentBase: dest,
-    inline: true
+    inline: true,
+	  historyApiFallback: {
+		  disableDotRule: true
+	  }
   },
   plugins: [
     new Webpack.DefinePlugin({

@@ -3,37 +3,52 @@ import {StorageComponent} from "./storage";
 import {ApiService} from "../services/api";
 import {LandscapeComponent} from "./landscape";
 import {BlueprintComponent} from "./blueprint";
-import {BlueprintType} from "../model/blueprint";
+import {BlueprintModel, BlueprintType} from "../model/blueprint";
 import {Canvas} from "../ui/cavas";
+import {RouterComponent} from "./router";
+import {AppModel} from '../model/app';
 
 export class AppComponent {
-    private readonly landscapeModel: LandscapeModel;
     private landscapeComponent: LandscapeComponent;
     private storageComponent: StorageComponent;
+    private routerComponent: RouterComponent;
     private canvas: Canvas;
 
-    constructor(private el: HTMLElement, host: string) {
+    constructor(private appModel: AppModel, private el: HTMLElement, host: string) {
         this.canvas = new Canvas(el);
-        this.landscapeModel = new LandscapeModel();
-        this.landscapeComponent = new LandscapeComponent(this.canvas.getGraph(), this.landscapeModel, (bp) => bp.getType() === BlueprintType.Local);
-        this.storageComponent = new StorageComponent(this.landscapeModel, new ApiService(host));
+        
+        const landscapeModel = appModel.getLandscape();
+        
+        this.routerComponent = new RouterComponent(appModel);
+        this.landscapeComponent = new LandscapeComponent(this.canvas.getGraph(), landscapeModel, (bp) => bp.getType() === BlueprintType.Local);
+        this.storageComponent = new StorageComponent(landscapeModel, new ApiService(host));
+        
         this.subscribe();
     }
 
     private subscribe(): void {
-        const that = this;
-        this.landscapeModel.subscribeBlueprintAdded(blueprint => {
-            blueprint.subscribeOpenedChanged(opened => {
-                if (opened) {
-                    new BlueprintComponent(this.canvas.getGraph(), blueprint);
-                }
-            });
+        this.appModel.subscribeOpenedBlueprintChanged(blueprint => {
+            if (blueprint !== null) {
+                this.canvas.reset();
+                new BlueprintComponent(this.canvas.getGraph(), blueprint);
+            }
+        });
+        
+        this.appModel.subscribeOpenedLandscapeChanged(landscape => {
+            if (landscape !== null) {
+                this.canvas.reset();
+                new LandscapeComponent(
+                    this.canvas.getGraph(),
+                    landscape,
+                    (bp) => bp.getType() === BlueprintType.Local);
+            }
         });
     }
 
     public async start(): Promise<void> {
         return new Promise<void>(async resolve => {
             await this.storageComponent.load();
+            this.routerComponent.checkRoute();
             resolve();
         });
     }

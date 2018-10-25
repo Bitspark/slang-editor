@@ -1,6 +1,6 @@
-import {BlueprintModel} from '../model/blueprint';
 import {dia, shapes} from "jointjs";
-import {redirectPaperEvents} from "./utils";
+
+import {BlueprintModel} from "../model/blueprint";
 import {OperatorModel} from "../model/operator";
 
 export class BlueprintComponent {
@@ -87,7 +87,6 @@ export class BlueprintComponent {
     private subscribe() {
         const that = this;
         this.blueprint.subscribeOperatorAdded(function (op: OperatorModel) {
-            console.log(" +++", op);
             that.addOperator(op);
         });
     }

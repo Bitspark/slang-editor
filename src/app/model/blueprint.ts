@@ -119,6 +119,10 @@ export class BlueprintModel {
         this.opened.next(true);
     }
 
+    public close() {
+        this.opened.next(false);
+    }
+
     // Subscriptions
 
     public subscribeOperatorAdded(cb: (op: OperatorModel) => void): void {

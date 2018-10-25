@@ -1,18 +1,24 @@
 import {BlueprintModel} from './blueprint';
 import {BehaviorSubject, Subject} from 'rxjs';
+import {OperatorModel} from "./operator";
 
 export class LandscapeModel {
 
     private blueprintAdded = new Subject<BlueprintModel>();
     private blueprintRemoved = new Subject<BlueprintModel>();
+    private opened = new BehaviorSubject<boolean>(false);
 
     private blueprints: Array<BlueprintModel> = [];
     private selectedBlueprint = new BehaviorSubject<BlueprintModel | null>(null);
 
-    public getBlueprint(fullName: string): BlueprintModel | undefined {
+    public findBlueprint(fullName: string): BlueprintModel | undefined {
         return this.blueprints.find((each: BlueprintModel) => {
             return each.getFullName() == fullName;
         })
+    }
+    
+    public getBlueprints(): IterableIterator<BlueprintModel> {
+        return this.blueprints.values();
     }
 
     // Actions
@@ -48,6 +54,18 @@ export class LandscapeModel {
 
         return true;
     }
+    
+    public open() {
+        if (!this.opened.getValue()) {
+            this.opened.next(true);
+        }
+    }
+
+    public close() {
+        if (this.opened.getValue()) {
+            this.opened.next(false);
+        }
+    }
 
     private removeBlueprint(blueprint: BlueprintModel): boolean {
         const index = this.blueprints.indexOf(blueprint);
@@ -57,7 +75,6 @@ export class LandscapeModel {
         this.blueprints.splice(index, 1);
         return true;
     }
-
 
     // Subscriptions
 
@@ -71,6 +88,10 @@ export class LandscapeModel {
 
     public subscribeSelectionChanged(cb: (blueprint: BlueprintModel) => void): void {
         this.selectedBlueprint.subscribe(cb);
+    }
+    
+    public subscribeOpenedChanged(cb: (opened: boolean) => void) {
+        this.opened.subscribe(cb);
     }
 
 }
