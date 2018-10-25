@@ -19,7 +19,7 @@ export class Canvas {
     public getGraph(): dia.Graph {
         return this.graph;
     }
-    
+
     public reset() {
         this.paper.scale(1.0);
         this.paper.translate(this.paper.getArea().width / 2, this.paper.getArea().height / 2);
@@ -34,7 +34,10 @@ export class Canvas {
             el: inner,
             model: this.graph,
             gridSize: 10,
-            drawGrid: true
+            drawGrid: true,
+            interactive: function (cellView: dia.CellView) {
+                return cellView.model.attr('draggable') !== false;
+            }
         });
     }
 
@@ -124,6 +127,11 @@ export class Canvas {
         paper.on('blank:pointerdown', function (evt: Event, x: number, y: number) {
             startPanning(x, y);
         });
+        paper.on('cell:pointerdown', function (cellView: dia.CellView, evt: Event, x: number, y: number) {
+            if (cellView.model.attr("draggable") === false) {
+                startPanning(x, y);
+            }
+        });
         paper.on('blank:pointerup', function (evt: Event, x: number, y: number) {
             stopPanning();
         });
@@ -133,6 +141,14 @@ export class Canvas {
         paper.svg.addEventListener('mousemove', function (event: any) {
             doPanning(event.offsetX, event.offsetY);
         });
+    }
+
+    public getWidth(): number {
+        return this.paper.getArea().width;
+    }
+
+    public getHeight(): number {
+        return this.paper.getArea().height;
     }
 
 }

@@ -1,5 +1,5 @@
 import {BlueprintModel} from './blueprint';
-import {BehaviorSubject, Subject} from 'rxjs';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {OperatorModel} from "./operator";
 
 export class LandscapeModel {
