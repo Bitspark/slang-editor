@@ -1,11 +1,25 @@
-import {BlueprintModel, BlueprintType} from "../model/blueprint";
-
-interface OperatorApiResponse {
-    operator: string,
+interface PortApiResponse {
+    type: "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic"
+    map?: {
+        [portName: string]: PortApiResponse,
+    }
+    stream?: PortApiResponse
+    generic?: string
 }
 
 export interface BlueprintDefApiResponse {
-    operators: Map<string, OperatorApiResponse>
+    operators: {
+        [operatorName: string]: {
+            operator: string
+        }
+    }
+
+    services: {
+        [serviceName: string]: {
+            in: PortApiResponse,
+            out: PortApiResponse,
+        }
+    }
 }
 
 export interface BlueprintApiResponse {

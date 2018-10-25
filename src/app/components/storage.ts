@@ -26,19 +26,22 @@ export class StorageComponent {
                     throw `unknown blueprint type '${bpData.type}'`;
                 }
                 const blueprint = this.landscape.createBlueprint(bpData.name, type);
-                blueprintToOperator.set(blueprint, bpData.def);
+                const def = bpData.def;
+
+
+
+
+                blueprintToOperator.set(blueprint, def);
             });
 
             // 2) Add Operators. Use previously defined Blueprints for assigning Operator.blueprint
             blueprintToOperator.forEach((bpDef: BlueprintDefApiResponse, outerBlueprint: BlueprintModel) => {
                 if (bpDef.operators) {
-                    const opObj = (bpDef.operators as any);
-                    Object.keys(opObj).forEach((opName: string) => {
-                        const opData = opObj[opName];
+                    Object.keys(bpDef.operators).forEach((opName: string) => {
+                        const opData = bpDef.operators[opName];
                         const blueprint = this.landscape.findBlueprint(opData.operator);
-
-                        if (blueprint == undefined) {
-                            throw `unknown blueprint '${opObj.operator}'`;
+                        if (!blueprint) {
+                            throw `unknown blueprint '${opData.operator}'`;
                         }
                         outerBlueprint.createOperator(opName, blueprint);
                     });
