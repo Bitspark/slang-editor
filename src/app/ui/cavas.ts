@@ -13,10 +13,16 @@ export class Canvas {
 
     public resize(width: number, height: number) {
         this.paper.setDimensions(width, height);
+        this.paper.translate(width / 2, height / 2);
     }
 
     public getGraph(): dia.Graph {
         return this.graph;
+    }
+    
+    public reset() {
+        this.paper.scale(1.0);
+        this.paper.translate(this.paper.getArea().width / 2, this.paper.getArea().height / 2);
     }
 
     private createPaper() {

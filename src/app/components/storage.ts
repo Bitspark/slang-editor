@@ -38,7 +38,7 @@ export class StorageComponent {
                     const opObj = (bpDef.operators as any);
                     Object.keys(opObj).forEach((opName: string) => {
                         const opData = opObj[opName];
-                        const blueprint = this.landscape.getBlueprint(opData.operator);
+                        const blueprint = this.landscape.findBlueprint(opData.operator);
 
                         if (blueprint == undefined) {
                             throw `unknown blueprint '${opObj.operator}'`;
