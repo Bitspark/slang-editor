@@ -80,6 +80,14 @@ export class BlueprintModel {
         return true;
     }
 
+    public getPortIn(): PortModel | null {
+        return this.portIn
+    }
+
+    public getPortOut(): PortModel | null {
+        return this.portOut
+    }
+
     public addOperator(operator: OperatorModel): boolean {
         this.operators.push(operator);
         this.operatorAdded.next(operator);

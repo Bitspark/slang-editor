@@ -1,4 +1,4 @@
-interface PortApiResponse {
+export interface PortApiResponse {
     type: "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic"
     map?: {
         [portName: string]: PortApiResponse,

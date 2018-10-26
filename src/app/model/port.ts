@@ -19,14 +19,29 @@ export class PortModel {
     // self
     private removed = new Subject<void>();
     private selected = new BehaviorSubject<boolean>(false);
+    private subPorts = new Map<string, PortModel>();
 
     constructor(private type: PortType) {
+    }
+
+    public addPort(name: string, port: PortModel): PortModel {
+        if (this.type !== PortType.Map) {
+            throw `You cannot add port to a port of type '${this.type}'.`;
+        }
+        this.subPorts.set(name, port);
+        return this;
+    }
+
+    public findPort(name: string): PortModel | undefined {
+        if (this.type !== PortType.Map) {
+            throw `You cannot access port of a port of type '${this.type}'.`;
+        }
+        return this.subPorts.get(name);
     }
 
     public getType(): PortType {
         return this.type;
     }
-
 
     public isSelected(): boolean {
         return this.selected.getValue();

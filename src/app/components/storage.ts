@@ -1,11 +1,35 @@
 import {LandscapeModel} from "../model/landscape";
 import {BlueprintModel, BlueprintType} from "../model/blueprint";
-import {ApiService, BlueprintApiResponse, BlueprintDefApiResponse} from "../services/api";
+import {ApiService, BlueprintApiResponse, BlueprintDefApiResponse, PortApiResponse} from "../services/api";
 import {OperatorModel} from "../model/operator";
+import {PortModel, PortType} from "../model/port";
 
 export class StorageComponent {
     constructor(private landscape: LandscapeModel, private api: ApiService) {
 
+    }
+
+    private createPort(portDef: PortApiResponse): PortModel {
+        const type: PortType | null = ({
+            number: PortType.Number,
+            binary: PortType.Binary,
+            boolean: PortType.Boolean,
+            string: PortType.String,
+            trigger: PortType.Trigger,
+            primitive: PortType.Primitive,
+            generic: PortType.Generic,
+            stream: PortType.Stream,
+            map: PortType.Map,
+        } as any)[portDef.type];
+
+        if (type === null) {
+            throw `unknown port type '${portDef.type}'`;
+        }
+
+        const p = new PortModel(type);
+
+
+        return p;
     }
 
     public async load(): Promise<void> {
@@ -26,10 +50,11 @@ export class StorageComponent {
                     throw `unknown blueprint type '${bpData.type}'`;
                 }
                 const blueprint = this.landscape.createBlueprint(bpData.name, type);
+                const inPortDef: PortApiResponse = bpData.def.services["main"].in;
+                const outPortDef: PortApiResponse = bpData.def.services["main"].out;
+                blueprint.setPortIn(this.createPort(inPortDef));
+                blueprint.setPortOut(this.createPort(outPortDef));
                 const def = bpData.def;
-
-
-
 
                 blueprintToOperator.set(blueprint, def);
             });
