@@ -102,8 +102,8 @@ export class BlueprintComponent {
         const bp = this.blueprint;
         const jointElements = JointJSElements.createBlueprintOrOperatorElement(bp);
         this.outer = jointElements[0];
-        this.outer.attr('body/fill', 'orange');
-        this.outer.attr('body/fill-opacity', '.2');
+        this.outer.attr('body/fill', 'blue');
+        this.outer.attr('body/fill-opacity', '.05');
         this.outer.addTo(this.graph);
 
         this.blueprintOrOperatorModelToElement.set(this.blueprint, this.outer);
