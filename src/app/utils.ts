@@ -85,7 +85,7 @@ export class JointJSElements {
                 root: {},
                 body: this.blueprintAttrs,
                 label: {
-                    text: `${blueprint.getPackageName(0)}\n${blueprint.getShortName()}`,
+                    text: blueprint.getShortName(),
                     fill: 'white',
                 },
             },
