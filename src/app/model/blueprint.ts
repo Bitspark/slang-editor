@@ -1,5 +1,6 @@
 import {BehaviorSubject, Subject} from "rxjs";
 import {OperatorModel} from "./operator";
+import {PortModel} from "./port";
 
 export enum BlueprintType {
     Local,
@@ -18,10 +19,12 @@ export class BlueprintModel {
     // children
     private operatorAdded = new Subject<OperatorModel>();
     private operatorRemoved = new Subject<OperatorModel>();
-    private selectedOperator = new BehaviorSubject<OperatorModel | null>(null);
+    private operatorSelected = new BehaviorSubject<OperatorModel | null>(null);
 
 
     private operators: Array<OperatorModel> = [];
+    private portIn: PortModel | null = null;
+    private portOut: PortModel | null = null;
     private readonly hierarchy: Array<string> = [];
 
     constructor(private fullName: string, private type: BlueprintType) {
@@ -67,6 +70,21 @@ export class BlueprintModel {
     }
 
     // Actions
+    public setPortIn(port: PortModel) {
+        this.portIn = port;
+    }
+
+    public setPortOut(port: PortModel) {
+        this.portOut = port;
+    }
+
+    public getPortIn(): PortModel | null {
+        return this.portIn
+    }
+
+    public getPortOut(): PortModel | null {
+        return this.portOut
+    }
 
     public addOperator(operator: OperatorModel): boolean {
         this.operators.push(operator);
@@ -82,16 +100,16 @@ export class BlueprintModel {
         // Subscribe on Select
         operator.subscribeSelectChanged(function (selected: boolean) {
             if (selected) {
-                const selectedOperatorOrNull = that.selectedOperator.getValue();
+                const selectedOperatorOrNull = that.operatorSelected.getValue();
                 if (selectedOperatorOrNull !== null) {
                     selectedOperatorOrNull.deselect();
                 }
-                that.selectedOperator.next(operator);
+                that.operatorSelected.next(operator);
             } else {
-                if (that.selectedOperator.getValue() === operator) {
-                    that.selectedOperator.next(null);
+                if (that.operatorSelected.getValue() === operator) {
+                    that.operatorSelected.next(null);
                 } else {
-                    // This can happen if that.selectedOperator has already been set to the new value
+                    // This can happen if that.operatorSelected has already been set to the new value
                 }
             }
         });
