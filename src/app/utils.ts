@@ -20,7 +20,8 @@ export class JointJSElements {
     private static outPortAttrs = JointJSElements.inPortAttrs;
 
     private static blueprintAttrs: SVGAttributes = {
-        fillOpacity: .2,
+        fill: "blue",
+        fillOpacity: .3,
         stroke: "black",
         strokeWidth: 1,
         rx: 6,
