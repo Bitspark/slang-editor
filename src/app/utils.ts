@@ -21,7 +21,6 @@ export class JointJSElements {
 
     private static blueprintAttrs: SVGAttributes = {
         fill: "blue",
-        fillOpacity: .3,
         stroke: "black",
         strokeWidth: 1,
         rx: 6,
