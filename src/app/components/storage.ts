@@ -33,6 +33,9 @@ export class StorageComponent {
                     p.addPort(portName, this.createPort(portDef.map![portName]))
                 });
                 break;
+            case PortType.Stream:
+                p.setPort(this.createPort(portDef.stream!))
+
         }
 
         return p;

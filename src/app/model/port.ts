@@ -19,28 +19,43 @@ export class PortModel {
     // self
     private removed = new Subject<void>();
     private selected = new BehaviorSubject<boolean>(false);
-    private subPorts = new Map<string, PortModel>();
+    private mapSubPorts = new Map<string, PortModel>();
+    private streamSubPort: PortModel | undefined;
 
     constructor(private type: PortType) {
     }
 
     public addPort(name: string, port: PortModel): PortModel {
         if (this.type !== PortType.Map) {
-            throw `You cannot add port to a port of type '${this.type}'.`;
+            throw `add port to a port of type '${this.type}' is not allowed`;
         }
-        this.subPorts.set(name, port);
+        this.mapSubPorts.set(name, port);
         return this;
     }
 
     public getPorts(): IterableIterator<[string, PortModel]> {
-        return this.subPorts.entries();
+        return this.mapSubPorts.entries();
     }
 
     public findPort(name: string): PortModel | undefined {
         if (this.type !== PortType.Map) {
-            throw `You cannot access port of a port of type '${this.type}'.`;
+            throw `access port of a port of type '${this.type}' is not allowed`;
         }
-        return this.subPorts.get(name);
+        return this.mapSubPorts.get(name);
+    }
+
+    public setPort(port: PortModel) {
+        if (this.type !== PortType.Stream) {
+            throw `set port to a port of type '${this.type}' is not allowed`;
+        }
+        return this.streamSubPort = port;
+    }
+
+    public getPort(): PortModel | undefined {
+        if (this.type !== PortType.Stream) {
+            throw `set port to a port of type '${this.type}' is not allowed`;
+        }
+        return this.streamSubPort;
     }
 
     public getType(): PortType {

@@ -8,14 +8,25 @@ export class JointJSElements {
     private static createPortItems(group: string, port: PortModel): Array<Port> {
         let portItems: Array<Port> = [];
 
-        if (port.getType() === PortType.Map) {
-            for (const [portName, each] of port.getPorts()) {
-                portItems = portItems.concat(this.createPortItems(group, each));
-            }
-        } else {
-            portItems.push({
-                group: group,
-            });
+        switch (port.getType()) {
+            case PortType.Map:
+                for (const [portName, each] of port.getPorts()) {
+                    portItems = portItems.concat(this.createPortItems(group, each));
+                }
+                break;
+
+            case PortType.Stream:
+                const subPort = port.getPort();
+                if (subPort) {
+                    portItems = portItems.concat(this.createPortItems(group, subPort));
+                }
+                break;
+
+            default:
+                portItems.push({
+                    group: group,
+                });
+
         }
         return portItems;
     }

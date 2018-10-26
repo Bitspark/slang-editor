@@ -70,14 +70,12 @@ export class BlueprintModel {
     }
 
     // Actions
-    public setPortIn(port: PortModel): boolean {
+    public setPortIn(port: PortModel) {
         this.portIn = port;
-        return true;
     }
 
-    public setPortOut(port: PortModel): boolean {
+    public setPortOut(port: PortModel) {
         this.portOut = port;
-        return true;
     }
 
     public getPortIn(): PortModel | null {
