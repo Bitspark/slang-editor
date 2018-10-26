@@ -1,7 +1,8 @@
 import {BehaviorSubject, Subject} from "rxjs";
-import {BlueprintModel, BlueprintType} from "./blueprint";
+import {BlueprintModel, BlueprintOrOperator, BlueprintType} from "./blueprint";
+import {PortModel} from "./port";
 
-export class OperatorModel {
+export class OperatorModel implements BlueprintOrOperator {
 
     // Topics
     // self
@@ -11,7 +12,11 @@ export class OperatorModel {
     constructor(private name: string, private blueprint: BlueprintModel) {
     }
 
-    public getFullName(): string {
+    public getName(): string {
+        return this.name;
+    }
+    
+    public getBlueprintFullName(): string {
         return this.blueprint.getFullName();
     }
 
@@ -25,6 +30,16 @@ export class OperatorModel {
 
     public getBlueprint(): BlueprintModel {
         return this.blueprint;
+    }
+
+    getPortIn(): PortModel | null {
+        // TODO: Fix this, we need a copy of ports for operators!
+        return this.blueprint.getPortIn();
+    }
+
+    getPortOut(): PortModel | null {
+        // TODO: Fix this, we need a copy of ports for operators!
+        return this.blueprint.getPortIn();
     }
 
     // Actions

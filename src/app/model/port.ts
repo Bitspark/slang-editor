@@ -20,6 +20,9 @@ export class PortModel {
     private selected = new BehaviorSubject<boolean>(false);
     private mapSubPorts: Map<string, PortModel> | undefined;
     private streamSubPort: PortModel | undefined;
+    
+    // Properties
+    private destinations: Array<PortModel> | undefined;
 
     constructor(private type: PortType) {
         if (this.type === PortType.Map) {
@@ -70,6 +73,13 @@ export class PortModel {
     public isSelected(): boolean {
         return this.selected.getValue();
     }
+    
+    public getDestinations(): IterableIterator<PortModel> | undefined {
+        if (!this.destinations) {
+            return undefined;
+        }
+        return this.destinations.values();
+    } 
 
     // Actions
 
