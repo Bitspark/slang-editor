@@ -3,10 +3,11 @@ import {dia, shapes} from 'jointjs';
 import {LandscapeModel} from '../model/landscape';
 import {BlueprintModel, BlueprintType} from '../model/blueprint';
 import {Subject} from "rxjs";
+import {JointJSElements} from "../utils";
 
 export class LandscapeComponent {
     private graph: dia.Graph | null;
-    private filter: (blueprint: BlueprintModel) => boolean | null;
+    private readonly filter: (blueprint: BlueprintModel) => boolean | null;
     private blueprintRects = new Map<string, shapes.standard.Rectangle>();
     private addBlueprintButton: dia.Element;
     private slangLogo: dia.Element;
@@ -213,11 +214,13 @@ export class LandscapeComponent {
         }
 
         const rect = new shapes.standard.Rectangle();
-        rect.resize(120, 120);
+        rect.resize(100, 100);
         rect.attr({
             body: {
                 fill: "red",
-                cursor: "pointer"
+                cursor: "pointer",
+                rx: 8,
+                ry: 8,
             },
             label: {
                 text: "+",
@@ -241,7 +244,7 @@ export class LandscapeComponent {
             return;
         }
 
-        var image = new shapes.basic.Image({
+        let image = new shapes.basic.Image({
             size: {
                 width: 177,
                 height: 203
@@ -267,42 +270,30 @@ export class LandscapeComponent {
             return;
         }
 
-        const rect = new shapes.standard.Rectangle();
-        rect.resize(120, 120);
-        rect.attr({
+        const blueprintRect = JointJSElements.createBlueprintElement(blueprint);
+        blueprintRect.attr({
             body: {
-                fill: 'blue',
-                cursor: 'default'
+                cursor: "pointer",
             },
             label: {
-                text: blueprint.getShortName(),
-                fill: 'white',
-                cursor: 'default'
+                cursor: "pointer"
             }
         });
-        rect.attr('draggable', false);
-        rect.addTo(this.graph);
+        blueprintRect.attr("draggable", false);
+        blueprintRect.addTo(this.graph);
 
-        this.blueprintRects.set(blueprint.getFullName(), rect);
+        this.blueprintRects.set(blueprint.getFullName(), blueprintRect);
 
         // JointJS -> Model
-        rect.on('pointerclick', function (evt: Event, x: number, y: number) {
-            blueprint.select();
-        });
-        rect.on('pointerdblclick', function (evt: Event, x: number, y: number) {
+        blueprintRect.on("pointerclick", function (evt: Event, x: number, y: number) {
             blueprint.open();
+        });
+        blueprintRect.on("pointerdblclick", function (evt: Event, x: number, y: number) {
         });
 
         // Model -> JointJS
         blueprint.subscribeDeleted(function () {
-            rect.remove();
-        });
-        blueprint.subscribeSelectChanged(function (selected: boolean) {
-            if (selected) {
-                rect.attr('body/fill', 'orange');
-            } else {
-                rect.attr('body/fill', 'blue');
-            }
+            blueprintRect.remove();
         });
     }
 }
