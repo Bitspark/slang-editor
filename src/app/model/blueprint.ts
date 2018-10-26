@@ -35,7 +35,7 @@ export class BlueprintModel implements BlueprintOrOperator {
     private portOut: PortModel | null = null;
     private readonly operators: Array<OperatorModel> = [];
     
-    constructor(private fullName: string, private type: BlueprintType) {
+    constructor(private fullName: string, private type: BlueprintType) {        
         this.hierarchy = fullName.split('.');
     }
 
@@ -180,10 +180,12 @@ export class BlueprintModel implements BlueprintOrOperator {
     // Actions
     public setPortIn(port: PortModel) {
         this.portIn = port;
+        port.setOwner(this);
     }
 
     public setPortOut(port: PortModel) {
         this.portOut = port;
+        port.setOwner(this);
     }
 
     public getPortIn(): PortModel | null {

@@ -20,6 +20,10 @@ export interface BlueprintDefApiResponse {
             out: PortApiResponse,
         }
     }
+    
+    connections: {
+        [sourcePortReference: string]: [string]
+    }
 }
 
 export interface BlueprintApiResponse {

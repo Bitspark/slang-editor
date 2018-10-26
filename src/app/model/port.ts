@@ -1,4 +1,5 @@
 import {BehaviorSubject, Subject} from "rxjs";
+import {BlueprintOrOperator} from "./blueprint";
 
 export enum PortType {
     Number,
@@ -20,9 +21,10 @@ export class PortModel {
     private selected = new BehaviorSubject<boolean>(false);
     
     // Properties
+    private owner: BlueprintOrOperator | null = null;
     private mapSubPorts: Map<string, PortModel> | undefined;
     private streamSubPort: PortModel | undefined;
-    private destinations: Array<PortModel> | undefined;
+    private destinations: Array<PortModel> = [];
 
     constructor(private type: PortType) {
         if (this.type === PortType.Map) {
@@ -74,12 +76,30 @@ export class PortModel {
         return this.selected.getValue();
     }
     
-    public getDestinations(): IterableIterator<PortModel> | undefined {
-        if (!this.destinations) {
-            return undefined;
-        }
+    public getDestinations(): IterableIterator<PortModel> {
         return this.destinations.values();
     } 
+    
+    public setOwner(owner: BlueprintOrOperator) {
+        this.owner = owner;
+        switch (this.type) {
+            case PortType.Map:
+                for (const subPort of this.getMapSubPorts()) {
+                    subPort[1].setOwner(owner);
+                }
+                break;
+            case PortType.Stream:
+                const streamSubPort = this.getStreamSubPort();
+                if (streamSubPort) {
+                    streamSubPort.setOwner(owner);
+                }
+                break;
+        }
+    }
+    
+    public getOwner(): BlueprintOrOperator | null {
+        return this.owner;
+    }
 
     // Actions
 
@@ -99,6 +119,12 @@ export class PortModel {
         this.removed.next();
     }
 
+    public connect(destination: PortModel) {
+        if (this.destinations.indexOf(destination) !== -1) {
+            throw `already connected with that destination`;
+        }
+        this.destinations.push(destination);
+    }
 
     // Subscriptions
 

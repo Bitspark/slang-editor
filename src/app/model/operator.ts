@@ -10,12 +10,18 @@ export class OperatorModel implements BlueprintOrOperator {
     private selected = new BehaviorSubject<boolean>(false);
 
     constructor(private name: string, private blueprint: BlueprintModel, private portIn: PortModel | null, private portOut: PortModel | null) {
+        if (portIn) {
+            portIn.setOwner(this);
+        }
+        if (portOut) {
+            portOut.setOwner(this);
+        }
     }
 
     public getName(): string {
         return this.name;
     }
-    
+
     public getBlueprintFullName(): string {
         return this.blueprint.getFullName();
     }

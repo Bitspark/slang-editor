@@ -1,12 +1,10 @@
 import {dia, shapes} from "jointjs";
-import {OperatorModel} from "./model/operator";
-import {BlueprintModel, BlueprintOrOperator} from "./model/blueprint";
-import Port = dia.Element.Port;
+import {BlueprintOrOperator} from "./model/blueprint";
 import {PortModel, PortType} from "./model/port";
 
 export class JointJSElements {
-    private static createPortItems(group: string, port: PortModel): Array<Port> {
-        let portItems: Array<Port> = [];
+    private static createPortItems(group: string, port: PortModel): Array<[PortModel, dia.Element.Port]> {
+        let portItems: Array<[PortModel, dia.Element.Port]> = [];
 
         switch (port.getType()) {
             case PortType.Map:
@@ -23,16 +21,17 @@ export class JointJSElements {
                 break;
 
             default:
-                portItems.push({
+                portItems.push([port, {
+                    id: `${Math.random()}`,
                     group: group,
-                });
+                }]);
 
         }
         return portItems;
     }
 
-    public static createBlueprintOrOperatorElement(blueprint: BlueprintOrOperator): dia.Element {
-        let portItems: Array<Port> = [];
+    public static createBlueprintOrOperatorElement(blueprint: BlueprintOrOperator): [dia.Element, Array<[PortModel, dia.Element.Port]>] {
+        let portItems: Array<[PortModel, dia.Element.Port]> = [];
 
         const inPort = blueprint.getPortIn();
         if (inPort) {
@@ -44,7 +43,7 @@ export class JointJSElements {
             portItems = portItems.concat(this.createPortItems("MainOut", outPort))
         }
 
-        return new shapes.standard.Rectangle({
+        return [new shapes.standard.Rectangle({
             size: {width: 100, height: 100},
             attrs: {
                 root: {},
@@ -83,9 +82,9 @@ export class JointJSElements {
                         }
                     }
                 },
-                items: portItems,
+                items: portItems.map(portItem => portItem[1]),
             }
-        });
+        }), portItems];
     }
 }
 

@@ -25,20 +25,20 @@ export class StorageComponent {
             throw `unknown port type '${portDef.type}'`;
         }
 
-        const p = new PortModel(type);
+        const port = new PortModel(type);
 
-        switch (p.getType()) {
+        switch (port.getType()) {
             case PortType.Map:
                 Object.keys(portDef.map!).forEach((portName: string) => {
-                    p.addMapSubPort(portName, this.createPort(portDef.map![portName]))
+                    port.addMapSubPort(portName, this.createPort(portDef.map![portName]))
                 });
                 break;
             case PortType.Stream:
-                p.setStreamSubPort(this.createPort(portDef.stream!))
+                port.setStreamSubPort(this.createPort(portDef.stream!))
 
         }
 
-        return p;
+        return port;
     }
 
     public async load(): Promise<void> {
@@ -78,6 +78,33 @@ export class StorageComponent {
                             throw `unknown blueprint '${opData.operator}'`;
                         }
                         outerBlueprint.createOperator(opName, blueprint);
+                    });
+                }
+            });
+            
+            // 3) Connect operator and blueprint ports
+            blueprintToOperator.forEach((bpDef: BlueprintDefApiResponse, outerBlueprint: BlueprintModel) => {
+                if (bpDef.connections) {
+                    Object.keys(bpDef.connections).forEach((sourcePortReference: string) => {
+                        const destinationPortReferences = bpDef.connections[sourcePortReference];
+                        for (const destinationPortReference of destinationPortReferences) {
+                            // Connect sourcePortReference -> destinationPortReference
+                            try {
+                                const sourcePort = outerBlueprint.resolvePortReference(sourcePortReference);
+                                const destinationPort = outerBlueprint.resolvePortReference(destinationPortReference);
+
+                                if (!sourcePort) {
+                                    throw `source port ${sourcePortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
+                                }
+                                if (!destinationPort) {
+                                    throw `destination port ${destinationPortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
+                                }
+
+                                sourcePort.connect(destinationPort);
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        }
                     });
                 }
             });
