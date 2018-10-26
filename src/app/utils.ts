@@ -10,13 +10,13 @@ export class JointJSElements {
 
         switch (port.getType()) {
             case PortType.Map:
-                for (const [portName, each] of port.getPorts()) {
+                for (const [portName, each] of port.getMapSubPorts()) {
                     portItems = portItems.concat(this.createPortItems(group, each));
                 }
                 break;
 
             case PortType.Stream:
-                const subPort = port.getPort();
+                const subPort = port.getStreamSubPort();
                 if (subPort) {
                     portItems = portItems.concat(this.createPortItems(group, subPort));
                 }

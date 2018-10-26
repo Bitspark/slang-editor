@@ -30,11 +30,11 @@ export class StorageComponent {
         switch (p.getType()) {
             case PortType.Map:
                 Object.keys(portDef.map!).forEach((portName: string) => {
-                    p.addPort(portName, this.createPort(portDef.map![portName]))
+                    p.addMapSubPort(portName, this.createPort(portDef.map![portName]))
                 });
                 break;
             case PortType.Stream:
-                p.setPort(this.createPort(portDef.stream!))
+                p.setStreamSubPort(this.createPort(portDef.stream!))
 
         }
 

@@ -1,5 +1,4 @@
 import {BehaviorSubject, Subject} from "rxjs";
-import {BlueprintModel, BlueprintType} from "./blueprint";
 
 export enum PortType {
     Number,
@@ -19,41 +18,47 @@ export class PortModel {
     // self
     private removed = new Subject<void>();
     private selected = new BehaviorSubject<boolean>(false);
-    private mapSubPorts = new Map<string, PortModel>();
+    private mapSubPorts: Map<string, PortModel> | undefined;
     private streamSubPort: PortModel | undefined;
 
     constructor(private type: PortType) {
+        if (this.type === PortType.Map) {
+            this.mapSubPorts = new Map<string, PortModel>();
+        }
     }
 
-    public addPort(name: string, port: PortModel): PortModel {
+    public addMapSubPort(name: string, port: PortModel): PortModel {
         if (this.type !== PortType.Map) {
-            throw `add port to a port of type '${this.type}' is not allowed`;
+            throw `add map sub port to a port of type '${this.type}' not possible`;
         }
-        this.mapSubPorts.set(name, port);
+        this.mapSubPorts!.set(name, port);
         return this;
     }
 
-    public getPorts(): IterableIterator<[string, PortModel]> {
-        return this.mapSubPorts.entries();
-    }
-
-    public findPort(name: string): PortModel | undefined {
+    public getMapSubPorts(): IterableIterator<[string, PortModel]> {
         if (this.type !== PortType.Map) {
-            throw `access port of a port of type '${this.type}' is not allowed`;
+            throw `access of map sub ports of a port of type '${this.type}' not possible`;
         }
-        return this.mapSubPorts.get(name);
+        return this.mapSubPorts!.entries();
     }
 
-    public setPort(port: PortModel) {
+    public findMapSubPort(name: string): PortModel | undefined {
+        if (this.type !== PortType.Map) {
+            throw `access of map sub port of a port of type '${this.type}' not possible`;
+        }
+        return this.mapSubPorts!.get(name);
+    }
+
+    public setStreamSubPort(port: PortModel) {
         if (this.type !== PortType.Stream) {
-            throw `set port to a port of type '${this.type}' is not allowed`;
+            throw `set stream sub port of a port of type '${this.type}' not possible`;
         }
         return this.streamSubPort = port;
     }
 
-    public getPort(): PortModel | undefined {
+    public getStreamSubPort(): PortModel | undefined {
         if (this.type !== PortType.Stream) {
-            throw `set port to a port of type '${this.type}' is not allowed`;
+            throw `access of stream port of a port of type '${this.type}' not possible`;
         }
         return this.streamSubPort;
     }
