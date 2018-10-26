@@ -32,6 +32,10 @@ export class PortModel {
         return this;
     }
 
+    public getPorts(): IterableIterator<[string, PortModel]> {
+        return this.subPorts.entries();
+    }
+
     public findPort(name: string): PortModel | undefined {
         if (this.type !== PortType.Map) {
             throw `You cannot access port of a port of type '${this.type}'.`;

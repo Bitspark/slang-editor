@@ -2,48 +2,37 @@ import {dia, shapes} from "jointjs";
 import {OperatorModel} from "./model/operator";
 import {BlueprintModel} from "./model/blueprint";
 import Port = dia.Element.Port;
-import {PortType} from "./model/port";
+import {PortModel, PortType} from "./model/port";
 
 export class JointJSElements {
+    private static createPortItems(group: string, port: PortModel): Array<Port> {
+        let portItems: Array<Port> = [];
+
+        if (port.getType() === PortType.Map) {
+            for (const [portName, each] of port.getPorts()) {
+                portItems = portItems.concat(this.createPortItems(group, each));
+            }
+        } else {
+            portItems.push({
+                group: group,
+            });
+        }
+        return portItems;
+    }
+
+
     public static createBlueprintElement(blueprint: BlueprintModel): dia.Element {
-        const portItems: Array<Port> = [];
+        let portItems: Array<Port> = [];
 
         const inPort = blueprint.getPortIn();
         if (inPort) {
-            const circleAttrs = {
-                fill: "yellow"
-            };
-
-            if (inPort.getType() === PortType.Map) {
-                circleAttrs["fill"] = "green";
-            }
-
-            portItems.push({
-                group: 'MainIn',
-                attrs: {
-                    circle: circleAttrs,
-                },
-            })
+            portItems = portItems.concat(this.createPortItems("MainIn", inPort))
         }
 
         const outPort = blueprint.getPortOut();
         if (outPort) {
-            const circleAttrs = {
-                fill: "yellow"
-            };
-
-            if (outPort.getType() === PortType.Map) {
-                circleAttrs["fill"] = "green";
-            }
-
-            portItems.push({
-                group: 'MainOut',
-                attrs: {
-                    circle: circleAttrs,
-                },
-            })
+            portItems = portItems.concat(this.createPortItems("MainOut", outPort))
         }
-
 
         return new shapes.standard.Rectangle({
             size: {width: 100, height: 100},
@@ -64,22 +53,22 @@ export class JointJSElements {
                     'MainIn': {
                         position: {
                             name: "top",
-                            args: {},
                         },
                         attrs: {
                             circle: {
                                 r: 4,
+                                fill: "yellow",
                             }
                         }
                     },
                     'MainOut': {
                         position: {
                             name: "bottom",
-                            args: {},
                         },
                         attrs: {
                             circle: {
                                 r: 4,
+                                fill: "cyan",
                             }
                         }
                     }

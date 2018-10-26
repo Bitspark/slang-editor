@@ -1,7 +1,6 @@
 import {LandscapeModel} from "../model/landscape";
 import {BlueprintModel, BlueprintType} from "../model/blueprint";
 import {ApiService, BlueprintApiResponse, BlueprintDefApiResponse, PortApiResponse} from "../services/api";
-import {OperatorModel} from "../model/operator";
 import {PortModel, PortType} from "../model/port";
 
 export class StorageComponent {
@@ -28,6 +27,13 @@ export class StorageComponent {
 
         const p = new PortModel(type);
 
+        switch (p.getType()) {
+            case PortType.Map:
+                Object.keys(portDef.map!).forEach((portName: string) => {
+                    p.addPort(portName, this.createPort(portDef.map![portName]))
+                });
+                break;
+        }
 
         return p;
     }
