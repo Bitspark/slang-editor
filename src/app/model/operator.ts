@@ -9,7 +9,7 @@ export class OperatorModel implements BlueprintOrOperator {
     private removed = new Subject<void>();
     private selected = new BehaviorSubject<boolean>(false);
 
-    constructor(private name: string, private blueprint: BlueprintModel) {
+    constructor(private name: string, private blueprint: BlueprintModel, private portIn: PortModel | null, private portOut: PortModel | null) {
     }
 
     public getName(): string {
@@ -33,13 +33,15 @@ export class OperatorModel implements BlueprintOrOperator {
     }
 
     getPortIn(): PortModel | null {
-        // TODO: Fix this, we need a copy of ports for operators!
-        return this.blueprint.getPortIn();
+        return this.portIn;
     }
 
     getPortOut(): PortModel | null {
-        // TODO: Fix this, we need a copy of ports for operators!
-        return this.blueprint.getPortIn();
+        return this.portOut;
+    }
+
+    public getDisplayName() {
+        return this.getBlueprintFullName();
     }
 
     // Actions

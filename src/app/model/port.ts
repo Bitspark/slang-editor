@@ -18,10 +18,10 @@ export class PortModel {
     // self
     private removed = new Subject<void>();
     private selected = new BehaviorSubject<boolean>(false);
-    private mapSubPorts: Map<string, PortModel> | undefined;
-    private streamSubPort: PortModel | undefined;
     
     // Properties
+    private mapSubPorts: Map<string, PortModel> | undefined;
+    private streamSubPort: PortModel | undefined;
     private destinations: Array<PortModel> | undefined;
 
     constructor(private type: PortType) {

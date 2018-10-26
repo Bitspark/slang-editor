@@ -94,7 +94,7 @@ export class BlueprintComponent {
 
     private drawBlueprint() {
         const bp = this.blueprint;
-        this.outer = JointJSElements.createBlueprintElement(bp);
+        this.outer = JointJSElements.createBlueprintOrOperatorElement(bp);
         this.outer.attr('body/fill', 'orange');
         this.outer.attr('body/fill-opacity', '.2');
         this.outer.addTo(this.graph);
@@ -107,11 +107,10 @@ export class BlueprintComponent {
     }
 
     private addOperator(operator: OperatorModel) {
-        const opElem = JointJSElements.createOperatorElement(operator);
+        const opElem = JointJSElements.createBlueprintOrOperatorElement(operator);
         this.outer.embed(opElem);
         this.graph.addCell(opElem);
-
-
+        
         // JointJS -> Model
         opElem.on('pointerclick', function (evt: Event, x: number, y: number) {
             operator.select();

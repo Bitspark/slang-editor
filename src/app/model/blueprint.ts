@@ -12,6 +12,7 @@ export enum BlueprintType {
 export interface BlueprintOrOperator {
     getPortIn(): PortModel | null
     getPortOut(): PortModel | null
+    getDisplayName(): string
 }
 
 export class BlueprintModel implements BlueprintOrOperator {
@@ -45,7 +46,30 @@ export class BlueprintModel implements BlueprintOrOperator {
     }
 
     private instantiateOperator(name: string): OperatorModel {
-        return new OperatorModel(name, this);
+        function copyPort(port: PortModel): PortModel {
+            const portCopy = new PortModel(port.getType());
+            switch (portCopy.getType()) {
+                case PortType.Map:
+                    for (const entry of port.getMapSubPorts()) {
+                        portCopy.addMapSubPort(entry[0], copyPort(entry[1]));
+                    }
+                    break;
+                case PortType.Stream:
+                    const streamSubPort = port.getStreamSubPort();
+                    if (streamSubPort) {
+                        portCopy.setStreamSubPort(copyPort(streamSubPort));
+                    } else {
+                        throw `no stream sub port set`;
+                    }
+                    break;
+            }
+            return portCopy;
+        }
+        
+        const operatorPortIn = this.portIn ? copyPort(this.portIn) : null;
+        const operatorPortOut = this.portOut ? copyPort(this.portOut) : null;
+        
+        return new OperatorModel(name, this, operatorPortIn, operatorPortOut);
     }
 
     public getFullName(): string {
@@ -147,6 +171,10 @@ export class BlueprintModel implements BlueprintOrOperator {
         }
 
         return port;
+    }
+    
+    public getDisplayName() {
+        return this.getFullName();
     }
 
     // Actions

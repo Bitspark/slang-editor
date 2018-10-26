@@ -1,6 +1,6 @@
 import {dia, shapes} from "jointjs";
 import {OperatorModel} from "./model/operator";
-import {BlueprintModel} from "./model/blueprint";
+import {BlueprintModel, BlueprintOrOperator} from "./model/blueprint";
 import Port = dia.Element.Port;
 import {PortModel, PortType} from "./model/port";
 
@@ -31,7 +31,7 @@ export class JointJSElements {
         return portItems;
     }
 
-    public static createBlueprintElement(blueprint: BlueprintModel): dia.Element {
+    public static createBlueprintOrOperatorElement(blueprint: BlueprintOrOperator): dia.Element {
         let portItems: Array<Port> = [];
 
         const inPort = blueprint.getPortIn();
@@ -54,7 +54,7 @@ export class JointJSElements {
                     ry: 8,
                 },
                 label: {
-                    text: blueprint.getShortName(),
+                    text: blueprint.getDisplayName(),
                     fill: 'white',
                 }
             },
@@ -86,10 +86,6 @@ export class JointJSElements {
                 items: portItems,
             }
         });
-    }
-
-    public static createOperatorElement(operator: OperatorModel): dia.Element {
-        return JointJSElements.createBlueprintElement(operator.getBlueprint());
     }
 }
 
