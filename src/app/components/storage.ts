@@ -8,8 +8,8 @@ export class StorageComponent {
 
     }
 
-    private createPort(portDef: PortApiResponse): PortModel {
-        const type: PortType | null = ({
+    private createPort(portDef: PortApiResponse, directionIn: boolean): PortModel {
+        const type: PortType = {
             number: PortType.Number,
             binary: PortType.Binary,
             boolean: PortType.Boolean,
@@ -19,23 +19,22 @@ export class StorageComponent {
             generic: PortType.Generic,
             stream: PortType.Stream,
             map: PortType.Map,
-        } as any)[portDef.type];
+        }[portDef.type];
 
         if (type === null) {
             throw `unknown port type '${portDef.type}'`;
         }
 
-        const port = new PortModel(type);
+        const port = new PortModel(null, type, directionIn);
 
         switch (port.getType()) {
             case PortType.Map:
                 Object.keys(portDef.map!).forEach((portName: string) => {
-                    port.addMapSubPort(portName, this.createPort(portDef.map![portName]))
+                    port.addMapSubPort(portName, this.createPort(portDef.map![portName], directionIn))
                 });
                 break;
             case PortType.Stream:
-                port.setStreamSubPort(this.createPort(portDef.stream!))
-
+                port.setStreamSubPort(this.createPort(portDef.stream!, directionIn))
         }
 
         return port;
@@ -61,8 +60,8 @@ export class StorageComponent {
                 const blueprint = this.landscape.createBlueprint(bpData.name, type);
                 const inPortDef: PortApiResponse = bpData.def.services["main"].in;
                 const outPortDef: PortApiResponse = bpData.def.services["main"].out;
-                blueprint.setPortIn(this.createPort(inPortDef));
-                blueprint.setPortOut(this.createPort(outPortDef));
+                blueprint.setPortIn(this.createPort(inPortDef, true));
+                blueprint.setPortOut(this.createPort(outPortDef, false));
                 const def = bpData.def;
 
                 blueprintToOperator.set(blueprint, def);

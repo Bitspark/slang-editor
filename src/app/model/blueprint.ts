@@ -46,18 +46,18 @@ export class BlueprintModel implements BlueprintOrOperator {
     }
 
     private instantiateOperator(name: string): OperatorModel {
-        function copyPort(port: PortModel): PortModel {
-            const portCopy = new PortModel(port.getType());
+        function copyPort(parent: PortModel | null, port: PortModel): PortModel {
+            const portCopy = new PortModel(parent, port.getType(), port.isDirectionIn());
             switch (portCopy.getType()) {
                 case PortType.Map:
                     for (const entry of port.getMapSubPorts()) {
-                        portCopy.addMapSubPort(entry[0], copyPort(entry[1]));
+                        portCopy.addMapSubPort(entry[0], copyPort(portCopy, entry[1]));
                     }
                     break;
                 case PortType.Stream:
                     const streamSubPort = port.getStreamSubPort();
                     if (streamSubPort) {
-                        portCopy.setStreamSubPort(copyPort(streamSubPort));
+                        portCopy.setStreamSubPort(copyPort(portCopy, streamSubPort));
                     } else {
                         throw `no stream sub port set`;
                     }
@@ -66,8 +66,8 @@ export class BlueprintModel implements BlueprintOrOperator {
             return portCopy;
         }
         
-        const operatorPortIn = this.portIn ? copyPort(this.portIn) : null;
-        const operatorPortOut = this.portOut ? copyPort(this.portOut) : null;
+        const operatorPortIn = this.portIn ? copyPort(null, this.portIn) : null;
+        const operatorPortOut = this.portOut ? copyPort(null, this.portOut) : null;
         
         return new OperatorModel(name, this, operatorPortIn, operatorPortOut);
     }

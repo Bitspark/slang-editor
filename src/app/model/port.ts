@@ -1,5 +1,6 @@
 import {BehaviorSubject, Subject} from "rxjs";
-import {BlueprintOrOperator} from "./blueprint";
+import {BlueprintModel, BlueprintOrOperator} from "./blueprint";
+import {OperatorModel} from "./operator";
 
 export enum PortType {
     Number,
@@ -26,7 +27,7 @@ export class PortModel {
     private streamSubPort: PortModel | undefined;
     private destinations: Array<PortModel> = [];
 
-    constructor(private type: PortType) {
+    constructor(private parent: PortModel | null, private type: PortType, private inDirection: boolean) {
         if (this.type === PortType.Map) {
             this.mapSubPorts = new Map<string, PortModel>();
         }
@@ -71,6 +72,20 @@ export class PortModel {
     public getType(): PortType {
         return this.type;
     }
+    
+    public getName(): string {
+        if (!this.parent || this.parent.getType() !== PortType.Map) {
+            throw `not a map entry`;
+        }
+        
+        for (const entry of this.parent.getMapSubPorts()) {
+            if (entry[1] === this) {
+                return entry[0];
+            }
+        }
+        
+        return "";
+    }
 
     public isSelected(): boolean {
         return this.selected.getValue();
@@ -78,7 +93,51 @@ export class PortModel {
     
     public getDestinations(): IterableIterator<PortModel> {
         return this.destinations.values();
-    } 
+    }
+
+    private getReferenceString(): string {
+        if (!this.parent) {
+            return '';
+        }
+        const parentRefString = this.parent.getReferenceString();
+        if (this.parent.getType() === PortType.Map) {
+            if (parentRefString === '') {
+                return this.getName();
+            }
+            return parentRefString + '.' + this.getName();
+        } else if (this.parent.getType() === PortType.Stream) {
+            if (parentRefString === '') {
+                return '~';
+            }
+            return parentRefString + '.~';
+        }
+        return parentRefString;
+    }
+    
+    public getPortReferenceString(): string {
+        const referenceString = this.getReferenceString();
+        const owner = this.getOwner();
+        let ownerName: string;
+        if (owner instanceof BlueprintModel) {
+            ownerName = "";
+        } else if (owner instanceof OperatorModel) {
+            ownerName = owner.getName();
+        } else {
+            throw `wrong class`;
+        }
+        /*if (this.groupType === 'service') {
+            if (this.groupName !== 'main') {
+                ownerName = this.groupName + '@' + ownerName;
+            }
+        } else if (this.groupType === 'delegate') {
+            ownerName = ownerName + '.' + this.groupName;
+        }*/
+        if (this.inDirection) {
+            return referenceString + '(' + ownerName;
+        } else {
+            return ownerName + ')' + referenceString;
+        }
+    }
     
     public setOwner(owner: BlueprintOrOperator) {
         this.owner = owner;
@@ -99,6 +158,10 @@ export class PortModel {
     
     public getOwner(): BlueprintOrOperator | null {
         return this.owner;
+    }
+    
+    public isDirectionIn(): boolean {
+        return this.inDirection;
     }
 
     // Actions
