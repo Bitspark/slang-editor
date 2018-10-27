@@ -1,6 +1,6 @@
-import {dia, shapes} from "jointjs";
+import {dia} from "jointjs";
 import {JointJSElements} from "../utils";
-import {BlueprintModel, BlueprintOrOperator} from "../model/blueprint";
+import {BlueprintModel} from "../model/blueprint";
 import {OperatorModel} from "../model/operator";
 import {PortModel} from "../model/port";
 
@@ -8,11 +8,9 @@ export class BlueprintComponent {
     private outer: dia.Element;
     private outerPadding = 40;
     private portModelToElement: Map<PortModel, dia.Element.Port>;
-    private blueprintOrOperatorModelToElement: Map<BlueprintOrOperator, dia.Element>;
 
     constructor(private graph: dia.Graph, private blueprint: BlueprintModel) {
         this.portModelToElement = new Map<PortModel, dia.Element.Port>();
-        this.blueprintOrOperatorModelToElement = new Map<BlueprintOrOperator, dia.Element>();
         graph.clear();
         
         this.attachEventHandlers();
@@ -105,8 +103,6 @@ export class BlueprintComponent {
         this.outer.attr('body/fill-opacity', '.05');
         this.outer.addTo(this.graph);
 
-        this.blueprintOrOperatorModelToElement.set(this.blueprint, this.outer);
-
         for (const op of bp.getOperators()) {
             this.addOperator(op);
         }
@@ -117,8 +113,20 @@ export class BlueprintComponent {
     }
     
     private drawConnections() {
-        for (const operator of this.blueprint.getOperators()) {
-            const portIn = operator.getPortIn();
+        for (const connection of this.blueprint.getConnections().getConnections()) {
+            console.log(connection);
+            const link = new dia.Link({
+                source: {
+                    id: connection.source.getOwner()!.getIdentity(),
+                    port: connection.source.getPortReferenceString()
+                },
+                target: {
+                    id: connection.destination.getOwner()!.getIdentity(),
+                    port: connection.destination.getPortReferenceString()
+                }
+            });
+            console.log(link);
+            link.addTo(this.graph);
         }
     }
 
@@ -126,8 +134,6 @@ export class BlueprintComponent {
         const opElem = JointJSElements.createBlueprintOrOperatorElement(operator);
         this.outer.embed(opElem);
         this.graph.addCell(opElem);
-
-        this.blueprintOrOperatorModelToElement.set(operator, opElem);
         
         // JointJS -> Model
         opElem.on('pointerclick', function (evt: Event, x: number, y: number) {

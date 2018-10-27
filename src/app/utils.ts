@@ -63,26 +63,27 @@ export class JointJSElements {
         return portItems;
     }
 
-    public static createBlueprintOrOperatorElement(blueprint: BlueprintOrOperator): dia.Element {
+    public static createBlueprintOrOperatorElement(blueprintOrOperator: BlueprintOrOperator): dia.Element {
         let portItems: Array<[PortModel, dia.Element.Port]> = [];
 
-        const inPort = blueprint.getPortIn();
+        const inPort = blueprintOrOperator.getPortIn();
         if (inPort) {
             portItems = portItems.concat(this.createPortItems("MainIn", inPort))
         }
 
-        const outPort = blueprint.getPortOut();
+        const outPort = blueprintOrOperator.getPortOut();
         if (outPort) {
             portItems = portItems.concat(this.createPortItems("MainOut", outPort))
         }
 
         return new shapes.standard.Rectangle({
+            id: blueprintOrOperator.getIdentity(),
             size: {width: 100, height: 100},
             attrs: {
                 root: {},
                 body: this.blueprintAttrs,
                 label: {
-                    text: blueprint.getDisplayName(),
+                    text: blueprintOrOperator.getDisplayName(),
                     fill: 'white',
                 },
             },

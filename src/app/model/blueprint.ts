@@ -13,6 +13,33 @@ export interface BlueprintOrOperator {
     getPortIn(): PortModel | null
     getPortOut(): PortModel | null
     getDisplayName(): string
+    getIdentity(): string
+}
+
+export interface Connection {
+    source: PortModel
+    destination: PortModel
+}
+
+export class Connections {
+    private connections: Array<Connection> = [];
+    
+    constructor() {
+    }
+    
+    public getConnections(): IterableIterator<Connection> {
+        return this.connections.values();
+    }
+    
+    public addConnection(connection: Connection) {
+        this.connections.push(connection);
+    }
+
+    public addConnections(connections: Connections) {
+        for (const connection of connections.getConnections()) {
+            this.connections.push(connection);
+        }
+    }
 }
 
 export class BlueprintModel implements BlueprintOrOperator {
@@ -173,8 +200,31 @@ export class BlueprintModel implements BlueprintOrOperator {
         return port;
     }
     
-    public getDisplayName() {
+    public getDisplayName(): string {
         return this.getFullName();
+    }
+    
+    public getIdentity(): string {
+        return this.getFullName().replace('.', '-');
+    }
+    
+    public getConnections(): Connections {
+        const connections = new Connections();
+        
+        // First, handle blueprint in-ports
+        if (this.portIn) {
+            connections.addConnections(this.portIn.getConnections());
+        }
+        
+        // Then, handle operator out-ports
+        for (const operator of this.operators) {
+            const operatorPortOut = operator.getPortOut();
+            if (operatorPortOut) {
+                connections.addConnections(operatorPortOut.getConnections());
+            }
+        }
+        
+        return connections;
     }
 
     // Actions

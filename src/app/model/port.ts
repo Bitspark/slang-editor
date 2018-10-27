@@ -1,5 +1,5 @@
 import {BehaviorSubject, Subject} from "rxjs";
-import {BlueprintModel, BlueprintOrOperator} from "./blueprint";
+import {BlueprintModel, BlueprintOrOperator, Connection, Connections} from "./blueprint";
 import {OperatorModel} from "./operator";
 
 export enum PortType {
@@ -25,7 +25,7 @@ export class PortModel {
     private owner: BlueprintOrOperator | null = null;
     private mapSubPorts: Map<string, PortModel> | undefined;
     private streamSubPort: PortModel | undefined;
-    private destinations: Array<PortModel> = [];
+    private destinations: Array<PortModel> | null;
 
     constructor(private parent: PortModel | null, private type: PortType, private inDirection: boolean) {
         if (this.type === PortType.Map) {
@@ -93,8 +93,31 @@ export class PortModel {
         return this.selected.getValue();
     }
     
-    public getDestinations(): IterableIterator<PortModel> {
-        return this.destinations.values();
+    public getConnections(): Connections {
+        if (!this.destinations) {
+            throw `does not have connections`;
+        }
+        const connections = new Connections();
+        for (const destination of this.destinations) {
+            connections.addConnection({ source: this, destination: destination });
+        }
+        switch (this.type) {
+            case PortType.Map:
+                if (!this.mapSubPorts) {
+                    throw `map port without map sub ports`;
+                }
+                for (const mapSubPort of this.mapSubPorts) {
+                    connections.addConnections(mapSubPort[1].getConnections());
+                }
+                break;
+            case PortType.Stream:
+                if (!this.streamSubPort) {
+                    throw `stream port without stream sub port`;
+                }
+                connections.addConnections(this.streamSubPort.getConnections());
+                break;
+        }
+        return connections;
     }
 
     private getReferenceString(): string {
@@ -156,6 +179,14 @@ export class PortModel {
                 }
                 break;
         }
+        
+        if (owner instanceof BlueprintModel && this.inDirection) {
+            // Blueprints can have their in-ports connected with operator in-ports or blueprint out-ports
+            this.destinations = [];
+        } else if (owner instanceof OperatorModel && !this.inDirection) {
+            // Operators can have their out-ports connected with operator in-ports or blueprint out-ports
+            this.destinations = [];
+        }
     }
     
     public getOwner(): BlueprintOrOperator | null {
@@ -185,6 +216,9 @@ export class PortModel {
     }
 
     public connect(destination: PortModel) {
+        if (!this.destinations) {
+            throw `cannot connect`;
+        }
         if (this.destinations.indexOf(destination) !== -1) {
             throw `already connected with that destination`;
         }

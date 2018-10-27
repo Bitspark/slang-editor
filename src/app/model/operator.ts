@@ -22,10 +22,6 @@ export class OperatorModel implements BlueprintOrOperator {
         return this.name;
     }
 
-    public getBlueprintFullName(): string {
-        return this.blueprint.getFullName();
-    }
-
     public isSelected(): boolean {
         return this.selected.getValue();
     }
@@ -38,16 +34,20 @@ export class OperatorModel implements BlueprintOrOperator {
         return this.blueprint;
     }
 
-    getPortIn(): PortModel | null {
+    public getPortIn(): PortModel | null {
         return this.portIn;
     }
 
-    getPortOut(): PortModel | null {
+    public getPortOut(): PortModel | null {
         return this.portOut;
     }
 
-    public getDisplayName() {
-        return this.getBlueprintFullName();
+    public getDisplayName(): string {
+        return this.blueprint.getFullName();
+    }
+
+    public getIdentity(): string {
+        return this.getBlueprint().getIdentity() + '#' + this.getName();
     }
 
     // Actions
