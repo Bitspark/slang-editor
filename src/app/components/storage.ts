@@ -115,6 +115,7 @@ export class StorageComponent {
                                 if (!sourcePort) {
                                     throw `source port ${sourcePortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
                                 }
+
                                 if (!destinationPort) {
                                     throw `destination port ${destinationPortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
                                 }

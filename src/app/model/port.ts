@@ -1,7 +1,6 @@
 import {BehaviorSubject, Subject} from "rxjs";
-import {BlueprintModel, PortOwner, Connection, Connections} from "./blueprint";
+import {BlueprintModel, PortOwner, Connections} from "./blueprint";
 import {OperatorModel} from "./operator";
-import {DelegateModel} from "./delegate";
 
 export enum PortType {
     Number,
@@ -31,6 +30,7 @@ export class PortModel {
         if (this.type === PortType.Map) {
             this.mapSubPorts = new Map<string, PortModel>();
         }
+        this.setOwner(owner);
     }
 
     public addMapSubPort(name: string, port: PortModel): PortModel {
