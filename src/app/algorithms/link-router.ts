@@ -10,45 +10,36 @@ const joint = {
 const config = {
     maxAllowedDirectionChange: 45,
 
-    // cost of a diagonal step
-    diagonalCost: function() {
-
-        var step = this.step;
-        return Math.ceil(Math.sqrt(step * step << 1));
+    diagonalCost: function () {
+        return 1.4142 * this.step;
     },
 
-    // an array of directions to find next points on the route
-    // different from start/end directions
-    directions: function() {
-
-        var step = this.step;
-        var cost = this.cost();
-        var diagonalCost = this.diagonalCost();
+    directions: function () {
+        const step = this.step;
+        const cost = this.cost();
+        const diagonalCost = this.diagonalCost();
 
         return [
-            { offsetX: step  , offsetY: 0     , cost: cost },
-            { offsetX: step  , offsetY: step  , cost: diagonalCost },
-            { offsetX: 0     , offsetY: step  , cost: cost },
-            { offsetX: -step , offsetY: step  , cost: diagonalCost },
-            { offsetX: -step , offsetY: 0     , cost: cost },
-            { offsetX: -step , offsetY: -step , cost: diagonalCost },
-            { offsetX: 0     , offsetY: -step , cost: cost },
-            { offsetX: step  , offsetY: -step , cost: diagonalCost }
+            {offsetX: step, offsetY: 0, cost: cost},
+            {offsetX: step, offsetY: step, cost: diagonalCost},
+            {offsetX: 0, offsetY: step, cost: cost},
+            {offsetX: -step, offsetY: step, cost: diagonalCost},
+            {offsetX: -step, offsetY: 0, cost: cost},
+            {offsetX: -step, offsetY: -step, cost: diagonalCost},
+            {offsetX: 0, offsetY: -step, cost: cost},
+            {offsetX: step, offsetY: -step, cost: diagonalCost}
         ];
     },
 
-    // a simple route used in situations when main routing method fails
-    // (exceed max number of loop iterations, inaccessible)
-    fallbackRoute: function(from: any, to: any, opt: any) {
-
+    fallbackRoute: function (from: any, to: any, opt: any) {
         // Find a route which breaks by 45 degrees ignoring all obstacles.
 
         var theta = from.theta(to);
 
         var route = [];
 
-        var a = { x: to.x, y: from.y };
-        var b = { x: from.x, y: to.y };
+        var a = {x: to.x, y: from.y};
+        var b = {x: from.x, y: to.y};
 
         if (theta % 180 > 90) {
             var t = a;
@@ -81,7 +72,7 @@ const config = {
 
         return route;
     },
-    
+
     // size of the step to find a route (the grid of the manhattan pathfinder)
     step: 10,
 
@@ -134,16 +125,14 @@ const config = {
     },
 
     // padding applied on the element bounding boxes
-    paddingBox: function () {
-
-        let step = this.step;
-
-        return {
-            x: -step,
-            y: -step,
-            width: 2 * step,
-            height: 2 * step
-        };
+    paddingBox: function (): g.Rect {
+        let step = this.step * 2;
+        return new g.Rect(
+            -step,
+            -step,
+            2 * step,
+            2 * step
+        );
     },
 
     // a router to use when the manhattan router fails
@@ -171,6 +160,7 @@ class ObstacleMap {
     // tells how to divide the paper when creating the elements map
     public mapGridSize = 100;
     public options: any;
+    public restricted: g.Rect = new g.Rect({x: -10000, y: -10000, width: 20000, height: 20000});
 
     constructor(public opt: any) {
         this.options = opt;
@@ -218,15 +208,18 @@ class ObstacleMap {
         // don't need to go through all obstacles, we check only those in a particular cell.
         let mapGridSize = this.mapGridSize;
 
+        const that = this;
+        
         graph.getElements().reduce(function (map: any, element: any) {
-
-            let isExcludedType = util.toArray(opt.excludeTypes).includes(element.get('type'));
-            let isExcludedEnd = excludedEnds.find(function (excluded: any) {
+            const isExcludedType = util.toArray(opt.excludeTypes).includes(element.get('type'));
+            const isExcludedEnd = excludedEnds.find(function (excluded: any) {
                 return excluded.id === element.id
             });
-            let isExcludedAncestor = excludedAncestors.includes(element.id);
+            const isExcludedAncestor = excludedAncestors.includes(element.id);
+            const isExcludedExplicitly = element.get('inward') === false;
+            const isExcludedInward = element.get('inward') === true;
 
-            let isExcluded = isExcludedType || isExcludedEnd || isExcludedAncestor;
+            const isExcluded = isExcludedType || isExcludedEnd || isExcludedAncestor || isExcludedExplicitly || isExcludedInward;
             if (!isExcluded) {
                 let bbox = element.getBBox().moveAndExpand(opt.paddingBox);
 
@@ -241,6 +234,10 @@ class ObstacleMap {
                     }
                 }
             }
+            
+            if (isExcludedInward) {
+                that.restricted = element.getBBox().moveAndExpand(opt.paddingBox).moveAndExpand(opt.paddingBox).moveAndExpand(opt.paddingBox).moveAndExpand(opt.paddingBox).moveAndExpand(opt.paddingBox).moveAndExpand(opt.paddingBox).moveAndExpand(opt.paddingBox).moveAndExpand(opt.paddingBox).moveAndExpand(opt.paddingBox).moveAndExpand(opt.paddingBox);
+            }
 
             return map;
         }, this.map);
@@ -249,7 +246,11 @@ class ObstacleMap {
     };
 
     isPointAccessible(point: any) {
-
+        if (!this.restricted.containsPoint(point)) {
+            console.log(point, this.restricted);
+            return false;
+        }
+        
         let mapKey = point.clone().snapToGrid(this.mapGridSize).toString();
 
         return util.toArray(this.map[mapKey]).every(function (obstacle: any) {
@@ -593,7 +594,7 @@ function findRoute(from: any, to: any, map: any, opt: any) {
     // Get grid for this route.
 
     let sourceAnchor, targetAnchor;
-
+    
     if (from instanceof g.Rect) { // `from` is sourceBBox
         sourceAnchor = getSourceAnchor(this, opt).clone();
     } else {

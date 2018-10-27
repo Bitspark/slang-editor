@@ -87,27 +87,32 @@ export class BlueprintComponent {
     }
 
     private drawBlueprint() {
-        this.outer = JointJSElements.createPortOwnerElement(this.blueprint);
-        this.outer.attr('body/fill', 'blue');
-        this.outer.attr('body/fill-opacity', '.05');
-        this.outer.addTo(this.graph);
+        const outer = JointJSElements.createPortOwnerElement(this.blueprint);
+        outer.attr('body/fill', 'blue');
+        outer.attr('body/fill-opacity', '.05');
+        outer.set('obstacle', false);
+        outer.set('inward', true);
+        outer.addTo(this.graph);
+        this.outer = outer;
 
-        this.outerParent = new shapes.standard.Rectangle({});
-        this.outerParent.attr('body/stroke-opacity', '0');
-        this.outerParent.attr('body/fill-opacity', '0');
-        this.outerParent.addTo(this.graph);
+        const outerParent = new shapes.standard.Rectangle({});
+        outerParent.attr('body/stroke-opacity', '0');
+        outerParent.attr('body/fill-opacity', '0');
+        outer.set('obstacle', false);
+        outer.set('inward', true);
+        outerParent.addTo(this.graph);
+        this.outerParent = outerParent;
         
-        const that = this;
-        this.outer.on('change:position', function (cell: dia.Cell) {
-            that.outer.set({
+        outer.on('change:position', function (cell: dia.Cell) {
+            outer.set({
                 position: cell.get('position')
             });
         });
-        this.outerParent.on('change:position change:size', function (cell: dia.CellView) {
+        outerParent.on('change:position change:size', function (cell: dia.CellView) {
             const set = {
-                size: that.outerParent.size()
+                size: outerParent.size()
             };
-            that.outer.set(set, ({skipParentHandler: true} as any));
+            outer.set(set, ({skipParentHandler: true} as any));
         });
     }
 
@@ -162,6 +167,8 @@ export class BlueprintComponent {
 
     private addOperator(operator: OperatorModel) {
         const portOwnerElement = JointJSElements.createPortOwnerElement(operator);
+        portOwnerElement.set('obstacle', true);
+        portOwnerElement.set('inward', false);
         this.outerParent.embed(portOwnerElement);
         this.graph.addCell(portOwnerElement);
 
