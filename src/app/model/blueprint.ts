@@ -25,6 +25,8 @@ export interface PortOwner {
 export interface Operator extends PortOwner {
     getDisplayName(): string
 
+    findDelegate(name: string): DelegateModel | undefined
+
     getDelegates(): IterableIterator<DelegateModel>
 }
 
@@ -115,6 +117,18 @@ export class BlueprintModel implements PortOwner {
             return portCopy;
         }
 
+        function copyDelegate(owner: PortOwner, delegate: DelegateModel): DelegateModel {
+            const delegateCopy = new DelegateModel(owner, delegate.getName());
+            if (delegate.getPortIn()) {
+                delegateCopy.setPortIn(copyPort(delegate, null, delegate.getPortIn()!));
+            }
+            if (delegate.getPortOut()) {
+                delegateCopy.setPortOut(copyPort(delegate, null, delegate.getPortOut()!));
+            }
+            return delegateCopy;
+
+        }
+
         const operator = new OperatorModel(name, this);
 
         if (this.portIn) {
@@ -122,6 +136,9 @@ export class BlueprintModel implements PortOwner {
         }
         if (this.portOut) {
             operator.setPortOut(copyPort(operator, null, this.portOut));
+        }
+        for (const delegate of this.delegates) {
+            operator.addDelegate(copyDelegate(operator, delegate));
         }
 
         return operator
@@ -155,22 +172,31 @@ export class BlueprintModel implements PortOwner {
         return this.operators.values();
     }
 
-    public getDelegates(): IterableIterator<DelegateModel> {
-        return this.delegates.values();
-    }
-
     public findOperator(name: string): OperatorModel | undefined {
         return this.operators.find(operator => operator.getName() === name);
     }
 
+    public getDelegates(): IterableIterator<DelegateModel> {
+        return this.delegates.values();
+    }
+
+    public findDelegate(name: string): DelegateModel | undefined {
+        return this.delegates.find(delegate => delegate.getName() === name);
+    }
+
     public resolvePortReference(portReference: string): PortModel | null | undefined {
         const portInfo = SlangParsing.parseReferenceString(portReference);
+
+        console.log("    ", portReference, " ===> ", portInfo);
+
+
         if (!portInfo || typeof portInfo.instance === 'undefined') {
             return undefined;
         }
 
-        let operatorOrBlueprint: PortOwner | undefined = undefined;
+        let operatorOrBlueprint: Operator | undefined = undefined;
         let port: PortModel | null | undefined = undefined;
+
         if (portInfo.instance === '') {
             operatorOrBlueprint = this;
         } else {
@@ -181,23 +207,27 @@ export class BlueprintModel implements PortOwner {
             return undefined;
         }
 
-        if (portInfo.service === 'main') {
-            if (portInfo.directionIn) {
-                port = operatorOrBlueprint.getPortIn();
-            } else {
-                port = operatorOrBlueprint.getPortOut();
-            }
-        } else if (portInfo.service) {
+        if (portInfo.service) {
             if (portInfo.service !== "main" && portInfo.service !== "") {
-                throw `services other than main are not supported yet`;
+                throw `services other than main are not supported yet: ${portInfo.service}`;
             }
             if (portInfo.directionIn) {
                 port = operatorOrBlueprint.getPortIn();
             } else {
                 port = operatorOrBlueprint.getPortOut();
             }
-        } else if (portInfo.delegate) {
-            throw `delegates are not supported yet`;
+        }
+
+        if (portInfo.delegate) {
+            const delegate = operatorOrBlueprint.findDelegate(portInfo.delegate);
+            if (!delegate) {
+                throw `delegate ${portInfo.delegate} not found`;
+            }
+            if (portInfo.directionIn) {
+                port = delegate.getPortIn();
+            } else {
+                port = delegate.getPortOut();
+            }
         }
 
         if (!port) {

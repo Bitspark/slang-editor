@@ -1,6 +1,7 @@
 import {BehaviorSubject, Subject} from "rxjs";
 import {BlueprintModel, PortOwner, Connections} from "./blueprint";
 import {OperatorModel} from "./operator";
+import {DelegateModel} from "./delegate";
 
 export enum PortType {
     Number,
@@ -142,14 +143,6 @@ export class PortModel {
     public getIdentity(): string {
         const referenceString = this.getReferenceString();
         const ownerName: string = this.getOwner().getIdentity();
-
-        /*if (this.groupType === 'service') {
-            if (this.groupName !== 'main') {
-                ownerName = this.groupName + '@' + ownerName;
-            }
-        } else if (this.groupType === 'delegate') {
-            ownerName = ownerName + '.' + this.groupName;
-        }*/
         if (this.inDirection) {
             return referenceString + '(' + ownerName;
         } else {
@@ -173,10 +166,12 @@ export class PortModel {
                 break;
         }
 
-        if (owner instanceof BlueprintModel && this.inDirection) {
+        const actualOwner: PortOwner = (owner instanceof DelegateModel) ? owner.getOwner() : owner;
+
+        if (actualOwner instanceof BlueprintModel && this.inDirection) {
             // Blueprints can have their in-ports connected with operator in-ports or blueprint out-ports
             this.destinations = [];
-        } else if (owner instanceof OperatorModel && !this.inDirection) {
+        } else if (actualOwner instanceof OperatorModel && !this.inDirection) {
             // Operators can have their out-ports connected with operator in-ports or blueprint out-ports
             this.destinations = [];
         }
@@ -210,7 +205,7 @@ export class PortModel {
 
     public connect(destination: PortModel) {
         if (!this.destinations) {
-            throw `cannot connect`;
+            throw `cannot connect: ${this.getIdentity()} --> ${destination.getIdentity()}`;
         }
         if (this.destinations.indexOf(destination) !== -1) {
             throw `already connected with that destination`;
