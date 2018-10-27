@@ -40,10 +40,6 @@ export class Connections {
 
     public addConnections(connections: Connections) {
         for (const connection of connections.getConnections()) {
-            if (connection.source.getOwner() instanceof BlueprintModel || connection.destination.getOwner() instanceof BlueprintModel) {
-                // TODO: Find a better solution for this
-                continue;
-            }
             this.connections.push(connection);
         }
     }
