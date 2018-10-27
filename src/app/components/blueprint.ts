@@ -1,17 +1,22 @@
-import {dia, shapes} from "jointjs";
+import {dia, layout} from "jointjs";
 import {JointJSElements} from "../utils";
 import {BlueprintModel} from "../model/blueprint";
 import {OperatorModel} from "../model/operator";
+import {PortModel} from "../model/port";
 
 export class BlueprintComponent {
     private outer: dia.Element;
     private outerPadding = 40;
+    private portModelToElement: Map<PortModel, dia.Element.Port>;
 
     constructor(private graph: dia.Graph, private blueprint: BlueprintModel) {
+        this.portModelToElement = new Map<PortModel, dia.Element.Port>();
         graph.clear();
+        
         this.attachEventHandlers();
         this.subscribe();
         this.drawBlueprint();
+        this.autoLayout();
     }
 
     private attachEventHandlers() {
@@ -93,39 +98,64 @@ export class BlueprintComponent {
     }
 
     private drawBlueprint() {
-        const bp = this.blueprint;
-        this.outer = JointJSElements.createBlueprintElement(bp);
+        const blueprint = this.blueprint;
+        this.outer = JointJSElements.createPortOwnerElement(blueprint);
         this.outer.attr('body/fill', 'blue');
         this.outer.attr('body/fill-opacity', '.05');
         this.outer.addTo(this.graph);
 
-        for (const op of bp.getOperators()) {
+        for (const op of blueprint.getOperators()) {
             this.addOperator(op);
         }
+        
+        this.drawConnections();
 
         this.outer.fitEmbeds({padding: this.outerPadding});
     }
+    
+    private drawConnections() {
+        for (const connection of this.blueprint.getConnections().getConnections()) {
+            const link = new dia.Link({
+                source: {
+                    id: connection.source.getOwner()!.getIdentity(),
+                    port: connection.source.getPortReferenceString()
+                },
+                target: {
+                    id: connection.destination.getOwner()!.getIdentity(),
+                    port: connection.destination.getPortReferenceString()
+                }
+            });
+            link.addTo(this.graph);
+        }
+    }
+    
+    private autoLayout() {
+        const graphBBox = layout.DirectedGraph.layout(this.graph, {
+            nodeSep: 50,
+            edgeSep: 80,
+            rankDir: "TB"
+        });
+    }
 
     private addOperator(operator: OperatorModel) {
-        const opElem = JointJSElements.createOperatorElement(operator);
-        this.outer.embed(opElem);
-        this.graph.addCell(opElem);
-
-
+        const portOwnerElement = JointJSElements.createPortOwnerElement(operator);
+        this.outer.embed(portOwnerElement);
+        this.graph.addCell(portOwnerElement);
+        
         // JointJS -> Model
-        opElem.on('pointerclick', function (evt: Event, x: number, y: number) {
+        portOwnerElement.on('pointerclick', function (evt: Event, x: number, y: number) {
             operator.select();
         });
 
         // Model -> JointJS
         operator.subscribeDeleted(function () {
-            opElem.remove();
+            portOwnerElement.remove();
         });
         operator.subscribeSelectChanged(function (selected: boolean) {
             if (selected) {
-                opElem.attr('body/fill', 'orange');
+                portOwnerElement.attr('body/fill', 'orange');
             } else {
-                opElem.attr('body/fill', 'blue');
+                portOwnerElement.attr('body/fill', 'blue');
             }
         });
     }

@@ -1,18 +1,25 @@
 import {BehaviorSubject, Subject} from "rxjs";
-import {BlueprintModel, BlueprintType} from "./blueprint";
+import {BlueprintModel, PortOwner, BlueprintType} from "./blueprint";
+import {PortModel} from "./port";
 
-export class OperatorModel {
+export class OperatorModel implements PortOwner {
 
     // Topics
     // self
     private removed = new Subject<void>();
     private selected = new BehaviorSubject<boolean>(false);
 
-    constructor(private name: string, private blueprint: BlueprintModel) {
+    constructor(private name: string, private blueprint: BlueprintModel, private portIn: PortModel | null, private portOut: PortModel | null) {
+        if (portIn) {
+            portIn.setOwner(this);
+        }
+        if (portOut) {
+            portOut.setOwner(this);
+        }
     }
 
-    public getFullName(): string {
-        return this.blueprint.getFullName();
+    public getName(): string {
+        return this.name;
     }
 
     public isSelected(): boolean {
@@ -25,6 +32,22 @@ export class OperatorModel {
 
     public getBlueprint(): BlueprintModel {
         return this.blueprint;
+    }
+
+    public getPortIn(): PortModel | null {
+        return this.portIn;
+    }
+
+    public getPortOut(): PortModel | null {
+        return this.portOut;
+    }
+
+    public getDisplayName(): string {
+        return this.blueprint.getFullName();
+    }
+
+    public getIdentity(): string {
+        return this.getBlueprint().getIdentity() + '#' + this.getName();
     }
 
     // Actions
