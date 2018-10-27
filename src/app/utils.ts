@@ -1,21 +1,18 @@
-import {PortOwner} from "./model/blueprint";
+import {Operator} from "./model/blueprint";
 import {attributes, dia, shapes} from "jointjs";
 import {PortModel, PortType} from "./model/port";
 import SVGAttributes = attributes.SVGAttributes;
 
 export class JointJSElements {
-    private static inPortMarkup: string = "<path class='sl-port sl-port-in' d=''></path>";
-    private static outPortMarkup: string = "<path class='sl-port sl-port-out' d=''></path>";
 
-    private static inPortAttrs: SVGAttributes = {
+
+    private static portAttrs: SVGAttributes = {
         paintOrder: "stroke fill",
         d: "M 0 0 L 10 0 L 5 8 z",
-        transform: "translate(0,-3)",
         magnet: true,
         stroke: "black",
         strokeWidth: 1,
     };
-    private static outPortAttrs = JointJSElements.inPortAttrs;
 
     private static blueprintAttrs: SVGAttributes = {
         fill: "blue",
@@ -31,8 +28,29 @@ export class JointJSElements {
         }
     );
 
-    private static createPortItems(group: string, port: PortModel): Array<[PortModel, dia.Element.Port]> {
-        let portItems: Array<[PortModel, dia.Element.Port]> = [];
+    private static getPortAttributes(group: string, direction: boolean): SVGAttributes {
+        const attrs: SVGAttributes = {
+            fill: "cyan",
+        };
+
+        switch (group) {
+            case "MainIn":
+            case "MainOut":
+                attrs.transform = "translate(0,-3)";
+                break;
+
+            case "Delegate":
+                attrs.transform = `rotate(${(direction) ? 90 : -90})`;
+                break;
+
+        }
+
+
+        return attrs;
+    }
+
+    private static createPortItems(group: string, port: PortModel): Array<dia.Element.Port> {
+        let portItems: Array<dia.Element.Port> = [];
 
         switch (port.getType()) {
             case PortType.Map:
@@ -49,40 +67,48 @@ export class JointJSElements {
                 break;
 
             default:
-                portItems.push([port, {
-                    id: `${port.getPortReferenceString()}`,
+                portItems.push({
+                    id: `${port.getIdentity()}`,
                     group: group,
                     attrs: {
-                        ".sl-port": {
-                            fill: "cyan",
-                        }
+                        '.sl-port': JointJSElements.getPortAttributes(group, port.isDirectionIn()),
                     }
-                }]);
+                });
         }
         return portItems;
     }
 
-    public static createPortOwnerElement(portOwner: PortOwner): dia.Element {
-        let portItems: Array<[PortModel, dia.Element.Port]> = [];
 
-        const inPort = portOwner.getPortIn();
+    public static createOperatorElement(operator: Operator): dia.Element {
+        let portItems: Array<dia.Element.Port> = [];
+
+        const inPort = operator.getPortIn();
         if (inPort) {
             portItems = portItems.concat(this.createPortItems("MainIn", inPort))
         }
 
-        const outPort = portOwner.getPortOut();
+        const outPort = operator.getPortOut();
         if (outPort) {
             portItems = portItems.concat(this.createPortItems("MainOut", outPort))
         }
 
+        for (const delegate of operator.getDelegates()) {
+            if (delegate.getPortIn()) {
+                portItems = portItems.concat(this.createPortItems("Delegate", delegate.getPortIn()!));
+            }
+            if (delegate.getPortOut()) {
+                portItems = portItems.concat(this.createPortItems("Delegate", delegate.getPortOut()!));
+            }
+        }
+
         return new shapes.standard.Rectangle({
-            id: portOwner.getIdentity(),
+            id: operator.getIdentity(),
             size: {width: 100, height: 100},
             attrs: {
                 root: {},
                 body: this.blueprintAttrs,
                 label: {
-                    text: portOwner.getDisplayName(),
+                    text: operator.getDisplayName(),
                     fill: 'white',
                 },
             },
@@ -92,22 +118,31 @@ export class JointJSElements {
                         position: {
                             name: "top",
                         },
-                        markup: JointJSElements.inPortMarkup,
+                        markup: "<path class='sl-srv-main sl-port sl-port-in' d=''></path>",
                         attrs: {
-                            ".sl-port-in": JointJSElements.inPortAttrs,
+                            ".sl-srv-main.sl-port": JointJSElements.portAttrs,
                         },
                     },
                     'MainOut': {
                         position: {
                             name: "bottom",
                         },
-                        markup: JointJSElements.outPortMarkup,
+                        markup: "<path class='sl-srv-main sl-port sl-port-in' d=''></path>",
                         attrs: {
-                            ".sl-port-out": JointJSElements.outPortAttrs,
+                            ".sl-srv-main.sl-port": JointJSElements.portAttrs,
+                        },
+                    },
+                    'Delegate': {
+                        position: {
+                            name: "right",
+                        },
+                        markup: "<path class='sl-dlg sl-port' d=''></path>",
+                        attrs: {
+                            ".sl-dlg.sl-port": JointJSElements.portAttrs,
                         },
                     }
                 },
-                items: portItems.map(portItem => portItem[1]),
+                items: portItems,
             }
         });
     }

@@ -99,7 +99,7 @@ export class BlueprintComponent {
 
     private drawBlueprint() {
         const blueprint = this.blueprint;
-        this.outer = JointJSElements.createPortOwnerElement(blueprint);
+        this.outer = JointJSElements.createOperatorElement(blueprint);
         this.outer.attr('body/fill', 'blue');
         this.outer.attr('body/fill-opacity', '.05');
         this.outer.addTo(this.graph);
@@ -118,11 +118,11 @@ export class BlueprintComponent {
             const link = new dia.Link({
                 source: {
                     id: connection.source.getOwner()!.getIdentity(),
-                    port: connection.source.getPortReferenceString()
+                    port: connection.source.getIdentity()
                 },
                 target: {
                     id: connection.destination.getOwner()!.getIdentity(),
-                    port: connection.destination.getPortReferenceString()
+                    port: connection.destination.getIdentity()
                 }
             });
             link.addTo(this.graph);
@@ -138,7 +138,7 @@ export class BlueprintComponent {
     }
 
     private addOperator(operator: OperatorModel) {
-        const portOwnerElement = JointJSElements.createPortOwnerElement(operator);
+        const portOwnerElement = JointJSElements.createOperatorElement(operator);
         this.outer.embed(portOwnerElement);
         this.graph.addCell(portOwnerElement);
         
