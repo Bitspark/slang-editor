@@ -1,21 +1,18 @@
 import {BehaviorSubject, Subject} from "rxjs";
 import {BlueprintModel, PortOwner, BlueprintType} from "./blueprint";
 import {PortModel} from "./port";
+import {DelegateModel} from "./delegate";
 
 export class OperatorModel implements PortOwner {
 
     // Topics
     // self
     private removed = new Subject<void>();
+    private portIn: PortModel | null = null;
+    private portOut: PortModel | null = null;
     private selected = new BehaviorSubject<boolean>(false);
 
-    constructor(private name: string, private blueprint: BlueprintModel, private portIn: PortModel | null, private portOut: PortModel | null) {
-        if (portIn) {
-            portIn.setOwner(this);
-        }
-        if (portOut) {
-            portOut.setOwner(this);
-        }
+    constructor(private name: string, private blueprint: BlueprintModel) {
     }
 
     public getName(): string {
@@ -32,6 +29,18 @@ export class OperatorModel implements PortOwner {
 
     public getBlueprint(): BlueprintModel {
         return this.blueprint;
+    }
+
+    public getDelegates(): IterableIterator<DelegateModel> {
+        return this.blueprint.getDelegates();
+    }
+
+    public setPortIn(port: PortModel) {
+        this.portIn = port;
+    }
+
+    public setPortOut(port: PortModel) {
+        this.portOut = port;
     }
 
     public getPortIn(): PortModel | null {

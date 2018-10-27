@@ -10,15 +10,24 @@ export enum BlueprintType {
     Library
 }
 
+
 /**
  * PortOwners have in and out-ports ans possibly delegates as well as an identity
  */
 export interface PortOwner {
     getPortIn(): PortModel | null
+
     getPortOut(): PortModel | null
-    getDisplayName(): string
+
     getIdentity(): string
 }
+
+export interface Operator extends PortOwner {
+    getDisplayName(): string
+
+    getDelegates(): IterableIterator<DelegateModel>
+}
+
 
 export interface Connection {
     source: PortModel
@@ -80,24 +89,24 @@ export class BlueprintModel implements PortOwner {
         return this.addOperator(operator);
     }
 
-    public createDelegate(name: string, portIn: PortModel, portOut: PortModel): DelegateModel {
-        const delegate = new DelegateModel(name, portIn, portOut);
+    public createDelegate(owner: PortOwner, name: string): DelegateModel {
+        const delegate = new DelegateModel(this, name);
         return this.addDelegate(delegate);
     }
 
     private instantiateOperator(name: string): OperatorModel {
-        function copyPort(parent: PortModel | null, port: PortModel): PortModel {
-            const portCopy = new PortModel(parent, port.getType(), port.isDirectionIn());
+        function copyPort(owner: PortOwner, parent: PortModel | null, port: PortModel): PortModel {
+            const portCopy = new PortModel(parent, owner, port.getType(), port.isDirectionIn());
             switch (portCopy.getType()) {
                 case PortType.Map:
                     for (const entry of port.getMapSubPorts()) {
-                        portCopy.addMapSubPort(entry[0], copyPort(portCopy, entry[1]));
+                        portCopy.addMapSubPort(entry[0], copyPort(owner, portCopy, entry[1]));
                     }
                     break;
                 case PortType.Stream:
                     const streamSubPort = port.getStreamSubPort();
                     if (streamSubPort) {
-                        portCopy.setStreamSubPort(copyPort(portCopy, streamSubPort));
+                        portCopy.setStreamSubPort(copyPort(owner, portCopy, streamSubPort));
                     } else {
                         throw `no stream sub port set`;
                     }
@@ -106,10 +115,16 @@ export class BlueprintModel implements PortOwner {
             return portCopy;
         }
 
-        const operatorPortIn = this.portIn ? copyPort(null, this.portIn) : null;
-        const operatorPortOut = this.portOut ? copyPort(null, this.portOut) : null;
+        const operator = new OperatorModel(name, this);
 
-        return new OperatorModel(name, this, operatorPortIn, operatorPortOut);
+        if (this.portIn) {
+            operator.setPortIn(copyPort(operator, null, this.portIn));
+        }
+        if (this.portOut) {
+            operator.setPortOut(copyPort(operator, null, this.portOut));
+        }
+
+        return operator
     }
 
     public getFullName(): string {

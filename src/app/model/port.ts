@@ -1,6 +1,7 @@
 import {BehaviorSubject, Subject} from "rxjs";
 import {BlueprintModel, PortOwner, Connection, Connections} from "./blueprint";
 import {OperatorModel} from "./operator";
+import {DelegateModel} from "./delegate";
 
 export enum PortType {
     Number,
@@ -20,14 +21,13 @@ export class PortModel {
     // self
     private removed = new Subject<void>();
     private selected = new BehaviorSubject<boolean>(false);
-    
+
     // Properties
-    private owner: PortOwner | null = null;
     private mapSubPorts: Map<string, PortModel> | undefined;
     private streamSubPort: PortModel | undefined;
     private destinations: Array<PortModel> | null;
 
-    constructor(private parent: PortModel | null, private type: PortType, private inDirection: boolean) {
+    constructor(private parent: PortModel | null, private owner: PortOwner, private type: PortType, private inDirection: boolean) {
         if (this.type === PortType.Map) {
             this.mapSubPorts = new Map<string, PortModel>();
         }
@@ -74,32 +74,32 @@ export class PortModel {
     public getType(): PortType {
         return this.type;
     }
-    
+
     public getName(): string {
         if (!this.parent || this.parent.getType() !== PortType.Map) {
             throw `not a map entry`;
         }
-        
+
         for (const entry of this.parent.getMapSubPorts()) {
             if (entry[1] === this) {
                 return entry[0];
             }
         }
-        
+
         throw `entry not found`;
     }
 
     public isSelected(): boolean {
         return this.selected.getValue();
     }
-    
+
     public getConnections(): Connections {
         if (!this.destinations) {
             throw `does not have connections`;
         }
         const connections = new Connections();
         for (const destination of this.destinations) {
-            connections.addConnection({ source: this, destination: destination });
+            connections.addConnection({source: this, destination: destination});
         }
         switch (this.type) {
             case PortType.Map:
@@ -138,18 +138,11 @@ export class PortModel {
         }
         return parentRefString;
     }
-    
-    public getPortReferenceString(): string {
+
+    public getIdentity(): string {
         const referenceString = this.getReferenceString();
-        const owner = this.getOwner();
-        let ownerName: string;
-        if (owner instanceof BlueprintModel) {
-            ownerName = owner.getFullName().replace('.', '-');
-        } else if (owner instanceof OperatorModel) {
-            ownerName = owner.getName();
-        } else {
-            throw `wrong class`;
-        }
+        const ownerName: string = this.getOwner().getIdentity();
+
         /*if (this.groupType === 'service') {
             if (this.groupName !== 'main') {
                 ownerName = this.groupName + '@' + ownerName;
@@ -163,7 +156,7 @@ export class PortModel {
             return ownerName + ')' + referenceString;
         }
     }
-    
+
     public setOwner(owner: PortOwner) {
         this.owner = owner;
         switch (this.type) {
@@ -179,7 +172,7 @@ export class PortModel {
                 }
                 break;
         }
-        
+
         if (owner instanceof BlueprintModel && this.inDirection) {
             // Blueprints can have their in-ports connected with operator in-ports or blueprint out-ports
             this.destinations = [];
@@ -188,11 +181,11 @@ export class PortModel {
             this.destinations = [];
         }
     }
-    
-    public getOwner(): PortOwner | null {
+
+    public getOwner(): PortOwner {
         return this.owner;
     }
-    
+
     public isDirectionIn(): boolean {
         return this.inDirection;
     }
