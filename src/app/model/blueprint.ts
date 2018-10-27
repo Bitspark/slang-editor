@@ -90,11 +90,7 @@ export class BlueprintModel implements PortOwner {
                     break;
                 case PortType.Stream:
                     const streamSubPort = port.getStreamSubPort();
-                    if (streamSubPort) {
-                        portCopy.setStreamSubPort(copyPort(portCopy, streamSubPort));
-                    } else {
-                        throw `no stream sub port set`;
-                    }
+                    portCopy.setStreamSubPort(copyPort(portCopy, streamSubPort));
                     break;
             }
             return portCopy;
@@ -187,9 +183,6 @@ export class BlueprintModel implements PortOwner {
         for (let i = 0; i < pathSplit.length; i++) {
             if (pathSplit[i] === '~') {
                 port = port.getStreamSubPort();
-                if (!port) {
-                    return null;
-                }
                 continue;
             }
 

@@ -49,11 +49,15 @@ export class PortModel {
         return this.mapSubPorts!.entries();
     }
 
-    public findMapSubPort(name: string): PortModel | undefined {
+    public findMapSubPort(name: string): PortModel {
         if (this.type !== PortType.Map) {
             throw `access of map sub port of a port of type '${this.type}' not possible`;
         }
-        return this.mapSubPorts!.get(name);
+        const mapSubPort = this.mapSubPorts!.get(name);
+        if (!mapSubPort) {
+            throw `map sub port ${name} not found`
+        }
+        return mapSubPort;
     }
 
     public setStreamSubPort(port: PortModel) {
@@ -64,9 +68,12 @@ export class PortModel {
         this.streamSubPort = port;
     }
 
-    public getStreamSubPort(): PortModel | undefined {
+    public getStreamSubPort(): PortModel {
         if (this.type !== PortType.Stream) {
             throw `access of stream port of a port of type '${this.type}' not possible`;
+        }
+        if (!this.streamSubPort) {
+            throw `stream port not having sub stream port`;
         }
         return this.streamSubPort;
     }
@@ -173,10 +180,7 @@ export class PortModel {
                 }
                 break;
             case PortType.Stream:
-                const streamSubPort = this.getStreamSubPort();
-                if (streamSubPort) {
-                    streamSubPort.setOwner(owner);
-                }
+                this.getStreamSubPort().setOwner(owner);
                 break;
         }
         
@@ -222,7 +226,19 @@ export class PortModel {
         if (this.destinations.indexOf(destination) !== -1) {
             throw `already connected with that destination`;
         }
-        this.destinations.push(destination);
+        switch (this.type) {
+            case PortType.Map:
+                for (const subPort of this.getMapSubPorts()) {
+                    subPort[1].connect(destination.findMapSubPort(subPort[0]));
+                }
+                break;
+            case PortType.Stream:
+                this.getStreamSubPort().connect(destination.getStreamSubPort());
+                break;
+            default:
+                this.destinations.push(destination);
+                break;
+        }
     }
 
     // Subscriptions
