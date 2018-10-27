@@ -1,5 +1,5 @@
 import {BehaviorSubject, Subject} from "rxjs";
-import {BlueprintModel, BlueprintOrOperator, Connection, Connections} from "./blueprint";
+import {BlueprintModel, PortOwner, Connection, Connections} from "./blueprint";
 import {OperatorModel} from "./operator";
 
 export enum PortType {
@@ -22,7 +22,7 @@ export class PortModel {
     private selected = new BehaviorSubject<boolean>(false);
     
     // Properties
-    private owner: BlueprintOrOperator | null = null;
+    private owner: PortOwner | null = null;
     private mapSubPorts: Map<string, PortModel> | undefined;
     private streamSubPort: PortModel | undefined;
     private destinations: Array<PortModel> | null;
@@ -164,7 +164,7 @@ export class PortModel {
         }
     }
     
-    public setOwner(owner: BlueprintOrOperator) {
+    public setOwner(owner: PortOwner) {
         this.owner = owner;
         switch (this.type) {
             case PortType.Map:
@@ -189,7 +189,7 @@ export class PortModel {
         }
     }
     
-    public getOwner(): BlueprintOrOperator | null {
+    public getOwner(): PortOwner | null {
         return this.owner;
     }
     

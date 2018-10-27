@@ -9,7 +9,10 @@ export enum BlueprintType {
     Library
 }
 
-export interface BlueprintOrOperator {
+/**
+ * PortOwners have in and out-ports ans possibly delegates as well as an identity
+ */
+export interface PortOwner {
     getPortIn(): PortModel | null
     getPortOut(): PortModel | null
     getDisplayName(): string
@@ -37,12 +40,16 @@ export class Connections {
 
     public addConnections(connections: Connections) {
         for (const connection of connections.getConnections()) {
+            if (connection.source.getOwner() instanceof BlueprintModel || connection.destination.getOwner() instanceof BlueprintModel) {
+                // TODO: Find a better solution for this
+                continue;
+            }
             this.connections.push(connection);
         }
     }
 }
 
-export class BlueprintModel implements BlueprintOrOperator {
+export class BlueprintModel implements PortOwner {
 
     // Topics
     // self
@@ -137,7 +144,7 @@ export class BlueprintModel implements BlueprintOrOperator {
             return undefined;
         }
 
-        let operatorOrBlueprint: BlueprintOrOperator | undefined = undefined;
+        let operatorOrBlueprint: PortOwner | undefined = undefined;
         let port: PortModel | null | undefined = undefined;
         if (portInfo.instance === '') {
             operatorOrBlueprint = this;

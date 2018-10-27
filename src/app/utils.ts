@@ -1,4 +1,4 @@
-import {BlueprintOrOperator} from "./model/blueprint";
+import {PortOwner} from "./model/blueprint";
 import {attributes, dia, shapes} from "jointjs";
 import {PortModel, PortType} from "./model/port";
 import SVGAttributes = attributes.SVGAttributes;
@@ -63,27 +63,27 @@ export class JointJSElements {
         return portItems;
     }
 
-    public static createBlueprintOrOperatorElement(blueprintOrOperator: BlueprintOrOperator): dia.Element {
+    public static createPortOwnerElement(portOwner: PortOwner): dia.Element {
         let portItems: Array<[PortModel, dia.Element.Port]> = [];
 
-        const inPort = blueprintOrOperator.getPortIn();
+        const inPort = portOwner.getPortIn();
         if (inPort) {
             portItems = portItems.concat(this.createPortItems("MainIn", inPort))
         }
 
-        const outPort = blueprintOrOperator.getPortOut();
+        const outPort = portOwner.getPortOut();
         if (outPort) {
             portItems = portItems.concat(this.createPortItems("MainOut", outPort))
         }
 
         return new shapes.standard.Rectangle({
-            id: blueprintOrOperator.getIdentity(),
+            id: portOwner.getIdentity(),
             size: {width: 100, height: 100},
             attrs: {
                 root: {},
                 body: this.blueprintAttrs,
                 label: {
-                    text: blueprintOrOperator.getDisplayName(),
+                    text: portOwner.getDisplayName(),
                     fill: 'white',
                 },
             },

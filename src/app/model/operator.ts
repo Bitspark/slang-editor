@@ -1,8 +1,8 @@
 import {BehaviorSubject, Subject} from "rxjs";
-import {BlueprintModel, BlueprintOrOperator, BlueprintType} from "./blueprint";
+import {BlueprintModel, PortOwner, BlueprintType} from "./blueprint";
 import {PortModel} from "./port";
 
-export class OperatorModel implements BlueprintOrOperator {
+export class OperatorModel implements PortOwner {
 
     // Topics
     // self
