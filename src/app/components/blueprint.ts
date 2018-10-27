@@ -1,14 +1,14 @@
-import {dia, layout, shapes} from "jointjs";
-import {JointJSElements} from "../utils";
-import {BlueprintModel} from "../model/blueprint";
-import {OperatorModel} from "../model/operator";
-import {slangRouter} from "../algorithms/link-router";
-import {slangConnector} from "../algorithms/link-connector";
+import {dia, layout, shapes} from 'jointjs';
+import {JointJSElements} from '../utils';
+import {BlueprintModel} from '../model/blueprint';
+import {OperatorModel} from '../model/operator';
+import {slangRouter} from '../algorithms/link-router';
+import {slangConnector} from '../algorithms/link-connector';
 
 export class BlueprintComponent {
     private outer: dia.Element;
     private outerParent: dia.Element;
-    private outerPadding = 40;
+    private outerPadding = 80;
 
     constructor(private graph: dia.Graph, private blueprint: BlueprintModel) {
         graph.clear();
@@ -36,7 +36,7 @@ export class BlueprintComponent {
                     position: that.outer.position()
                 });
             }
-            
+
             const parentId = cell.get('parent');
             if (!parentId) return;
 
@@ -49,27 +49,30 @@ export class BlueprintComponent {
 
             Array.from(parent.getEmbeddedCells()).forEach((child: dia.Element) => {
                 const childBbox = child.getBBox();
-                if (!newX || childBbox.x < (newX + that.outerPadding)) {
-                    newX = (childBbox.x - that.outerPadding);
+                if (!newX || childBbox.x < newX) {
+                    newX = childBbox.x;
                 }
-                if (!newY || childBbox.y < (newY + that.outerPadding)) {
-                    newY = (childBbox.y - that.outerPadding);
+                if (!newY || childBbox.y < newY) {
+                    newY = childBbox.y;
                 }
-                if (!newCornerX || childBbox.corner().x > (newCornerX - that.outerPadding)) {
-                    newCornerX = (childBbox.corner().x + that.outerPadding);
+                if (!newCornerX || childBbox.corner().x > newCornerX) {
+                    newCornerX = childBbox.corner().x;
                 }
-                if (!newCornerY || childBbox.corner().y > (newCornerY - that.outerPadding)) {
-                    newCornerY = (childBbox.corner().y + that.outerPadding);
+                if (!newCornerY || childBbox.corner().y > newCornerY) {
+                    newCornerY = childBbox.corner().y;
                 }
             });
-            
-            if (typeof newX !== "undefined" &&
-                typeof newY !== "undefined" &&
-                typeof newCornerX !== "undefined" &&
-                typeof newCornerY !== "undefined") {
+
+            if (typeof newX !== 'undefined' &&
+                typeof newY !== 'undefined' &&
+                typeof newCornerX !== 'undefined' &&
+                typeof newCornerY !== 'undefined') {
                 const set = {
-                    position: {x: newX, y: newY},
-                    size: {width: newCornerX - newX, height: newCornerY - newY}
+                    position: {x: newX - that.outerPadding, y: newY - that.outerPadding},
+                    size: {
+                        width: newCornerX - newX + 2 * that.outerPadding,
+                        height: newCornerY - newY + 2 * that.outerPadding
+                    }
                 };
                 parent.set(set, ({skipParentHandler: true} as any));
                 if (parent === that.outerParent) {
@@ -98,11 +101,11 @@ export class BlueprintComponent {
         const outerParent = new shapes.standard.Rectangle({});
         outerParent.attr('body/stroke-opacity', '0');
         outerParent.attr('body/fill-opacity', '0');
-        outer.set('obstacle', false);
-        outer.set('inward', true);
+        outerParent.set('obstacle', false);
+        outerParent.set('inward', true);
         outerParent.addTo(this.graph);
         this.outerParent = outerParent;
-        
+
         outer.on('change:position', function (cell: dia.Cell) {
             outer.set({
                 position: cell.get('position')
@@ -122,7 +125,7 @@ export class BlueprintComponent {
         }
     }
 
-    private drawConnections() {        
+    private drawConnections() {
         for (const connection of this.blueprint.getConnections().getConnections()) {
             const link = new dia.Link({
                 source: {
@@ -133,6 +136,7 @@ export class BlueprintComponent {
                     id: connection.destination.getOwner()!.getIdentity(),
                     port: connection.destination.getPortReferenceString()
                 },
+                //router: {name: 'metro'},
                 router: slangRouter,
                 connector: slangConnector,
                 attrs: {
@@ -151,7 +155,7 @@ export class BlueprintComponent {
             nodeSep: 80,
             rankSep: 80,
             edgeSep: 240,
-            rankDir: "TB"
+            rankDir: 'TB'
         });
     }
 
