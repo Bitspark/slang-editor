@@ -2,18 +2,15 @@ import {dia, layout} from "jointjs";
 import {JointJSElements} from "../utils";
 import {BlueprintModel} from "../model/blueprint";
 import {OperatorModel} from "../model/operator";
-import {PortModel} from "../model/port";
 
 export class BlueprintComponent {
     private outer: dia.Element;
     private outerPadding = 40;
-    private portModelToElement: Map<PortModel, dia.Element.Port>;
 
     constructor(private graph: dia.Graph, private blueprint: BlueprintModel) {
-        this.portModelToElement = new Map<PortModel, dia.Element.Port>();
         graph.clear();
 
-        // this.attachEventHandlers();
+        this.attachEventHandlers();
         this.subscribe();
         this.drawBlueprint();
         this.autoLayout();
@@ -23,29 +20,19 @@ export class BlueprintComponent {
 
     private attachEventHandlers() {
         const that = this;
-        /******* src: https://resources.jointjs.com/tutorial/hierarchy ********/
+        
         this.graph.on('change:size', function (cell: dia.Cell, newPosition: dia.Point, opt: any) {
-
             if (opt.skipParentHandler) return;
-
+            
             if (cell.get('embeds') && cell.get('embeds').length) {
-                // If we're manipulating a parent element, let's store
-                // it's original size to a special property so that
-                // we can shrink the parent element back while manipulating
-                // its children.
                 cell.set('originalSize', cell.get('size'));
             }
         });
 
         this.graph.on('change:position', function (cell: dia.Cell, newPosition: dia.Point, opt: any) {
-
             if (opt.skipParentHandler) return;
 
             if (cell.get('embeds') && cell.get('embeds').length) {
-                // If we're manipulating a parent element, let's store
-                // it's original position to a special property so that
-                // we can shrink the parent element back while manipulating
-                // its children.
                 cell.set('originalPosition', cell.get('position'));
             }
 
@@ -81,15 +68,11 @@ export class BlueprintComponent {
                 }
             });
 
-            // Note that we also pass a flag so that we know we shouldn't adjust the
-            // `originalPosition` and `originalSize` in our handlers as a reaction
-            // on the following `set()` call.
             parent.set({
                 position: {x: newX, y: newY},
                 size: {width: newCornerX - newX, height: newCornerY - newY}
             }, ({skipParentHandler: true} as any));
         });
-        /*********/
     }
 
     private subscribe() {
@@ -123,6 +106,18 @@ export class BlueprintComponent {
                 target: {
                     id: connection.destination.getOwner()!.getIdentity(),
                     port: connection.destination.getPortReferenceString()
+                },
+                router: {
+                    name: 'metro'
+                },
+                connector: {
+                    name: 'rounded'
+                },
+                attrs: {
+                    '.connection': {
+                        stroke: '#777777',
+                        'stroke-width': 2
+                    }
                 }
             });
             link.addTo(this.graph);

@@ -5,7 +5,7 @@ import {BlueprintComponent} from "./blueprint";
 import { BlueprintType} from "../model/blueprint";
 import {Canvas} from "../ui/cavas";
 import {RouterComponent} from "./router";
-import {AppModel} from '../model/app';
+import {AppModel} from "../model/app";
 
 export class AppComponent {
     private landscapeComponent: LandscapeComponent | null;
