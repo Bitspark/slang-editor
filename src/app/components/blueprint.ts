@@ -1,4 +1,4 @@
-import {dia} from "jointjs";
+import {dia, layout} from "jointjs";
 import {JointJSElements} from "../utils";
 import {BlueprintModel} from "../model/blueprint";
 import {OperatorModel} from "../model/operator";
@@ -16,6 +16,7 @@ export class BlueprintComponent {
         this.attachEventHandlers();
         this.subscribe();
         this.drawBlueprint();
+        this.autoLayout();
     }
 
     private attachEventHandlers() {
@@ -128,6 +129,14 @@ export class BlueprintComponent {
             console.log(link);
             link.addTo(this.graph);
         }
+    }
+    
+    private autoLayout() {
+        const graphBBox = layout.DirectedGraph.layout(this.graph, {
+            nodeSep: 50,
+            edgeSep: 80,
+            rankDir: "TB"
+        });
     }
 
     private addOperator(operator: OperatorModel) {
