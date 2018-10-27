@@ -58,7 +58,6 @@ export class JointJSElements {
                         }
                     }
                 }]);
-                console.log(port.getPortReferenceString());
         }
         return portItems;
     }

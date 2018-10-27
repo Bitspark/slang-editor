@@ -115,7 +115,6 @@ export class BlueprintComponent {
     
     private drawConnections() {
         for (const connection of this.blueprint.getConnections().getConnections()) {
-            console.log(connection);
             const link = new dia.Link({
                 source: {
                     id: connection.source.getOwner()!.getIdentity(),
@@ -126,7 +125,6 @@ export class BlueprintComponent {
                     port: connection.destination.getPortReferenceString()
                 }
             });
-            console.log(link);
             link.addTo(this.graph);
         }
     }
