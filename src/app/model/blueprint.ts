@@ -1,6 +1,7 @@
 import {BehaviorSubject, Subject} from "rxjs";
 import {OperatorModel} from "./operator";
 import {PortModel, PortType} from "./port";
+import {DelegateModel} from "./delegate";
 import {SlangParsing} from "../utils";
 
 export enum BlueprintType {
@@ -9,15 +10,26 @@ export enum BlueprintType {
     Library
 }
 
+
 /**
  * PortOwners have in and out-ports ans possibly delegates as well as an identity
  */
 export interface PortOwner {
     getPortIn(): PortModel | null
+
     getPortOut(): PortModel | null
-    getDisplayName(): string
+
     getIdentity(): string
 }
+
+export interface Operator extends PortOwner {
+    getDisplayName(): string
+
+    findDelegate(name: string): DelegateModel | undefined
+
+    getDelegates(): IterableIterator<DelegateModel>
+}
+
 
 export interface Connection {
     source: PortModel
@@ -26,14 +38,14 @@ export interface Connection {
 
 export class Connections {
     private connections: Array<Connection> = [];
-    
+
     constructor() {
     }
-    
+
     public getConnections(): IterableIterator<Connection> {
         return this.connections.values();
     }
-    
+
     public addConnection(connection: Connection) {
         this.connections.push(connection);
     }
@@ -65,33 +77,38 @@ export class BlueprintModel implements PortOwner {
     // Properties
     private readonly hierarchy: Array<string> = [];
 
+    private delegates: Array<DelegateModel> = [];
     private portIn: PortModel | null = null;
     private portOut: PortModel | null = null;
     private readonly operators: Array<OperatorModel> = [];
-    
-    constructor(private fullName: string, private type: BlueprintType) {        
+
+    constructor(private fullName: string, private type: BlueprintType) {
         this.hierarchy = fullName.split('.');
     }
 
     public createOperator(name: string, blueprint: BlueprintModel): OperatorModel {
         const operator = blueprint.instantiateOperator(name);
-        this.addOperator(operator);
-        return operator;
+        return this.addOperator(operator);
+    }
+
+    public createDelegate(owner: PortOwner, name: string): DelegateModel {
+        const delegate = new DelegateModel(this, name);
+        return this.addDelegate(delegate);
     }
 
     private instantiateOperator(name: string): OperatorModel {
-        function copyPort(parent: PortModel | null, port: PortModel): PortModel {
-            const portCopy = new PortModel(parent, port.getType(), port.isDirectionIn());
+        function copyPort(owner: PortOwner, parent: PortModel | null, port: PortModel): PortModel {
+            const portCopy = new PortModel(parent, owner, port.getType(), port.isDirectionIn());
             switch (portCopy.getType()) {
                 case PortType.Map:
                     for (const entry of port.getMapSubPorts()) {
-                        portCopy.addMapSubPort(entry[0], copyPort(portCopy, entry[1]));
+                        portCopy.addMapSubPort(entry[0], copyPort(owner, portCopy, entry[1]));
                     }
                     break;
                 case PortType.Stream:
                     const streamSubPort = port.getStreamSubPort();
                     if (streamSubPort) {
-                        portCopy.setStreamSubPort(copyPort(portCopy, streamSubPort));
+                        portCopy.setStreamSubPort(copyPort(owner, portCopy, streamSubPort));
                     } else {
                         throw `no stream sub port set`;
                     }
@@ -99,11 +116,32 @@ export class BlueprintModel implements PortOwner {
             }
             return portCopy;
         }
-        
-        const operatorPortIn = this.portIn ? copyPort(null, this.portIn) : null;
-        const operatorPortOut = this.portOut ? copyPort(null, this.portOut) : null;
-        
-        return new OperatorModel(name, this, operatorPortIn, operatorPortOut);
+
+        function copyDelegate(owner: PortOwner, delegate: DelegateModel): DelegateModel {
+            const delegateCopy = new DelegateModel(owner, delegate.getName());
+            if (delegate.getPortIn()) {
+                delegateCopy.setPortIn(copyPort(delegate, null, delegate.getPortIn()!));
+            }
+            if (delegate.getPortOut()) {
+                delegateCopy.setPortOut(copyPort(delegate, null, delegate.getPortOut()!));
+            }
+            return delegateCopy;
+
+        }
+
+        const operator = new OperatorModel(name, this);
+
+        if (this.portIn) {
+            operator.setPortIn(copyPort(operator, null, this.portIn));
+        }
+        if (this.portOut) {
+            operator.setPortOut(copyPort(operator, null, this.portOut));
+        }
+        for (const delegate of this.delegates) {
+            operator.addDelegate(copyDelegate(operator, delegate));
+        }
+
+        return operator
     }
 
     public getFullName(): string {
@@ -133,52 +171,69 @@ export class BlueprintModel implements PortOwner {
     public getOperators(): IterableIterator<OperatorModel> {
         return this.operators.values();
     }
-    
+
     public findOperator(name: string): OperatorModel | undefined {
         return this.operators.find(operator => operator.getName() === name);
     }
-    
+
+    public getDelegates(): IterableIterator<DelegateModel> {
+        return this.delegates.values();
+    }
+
+    public findDelegate(name: string): DelegateModel | undefined {
+        return this.delegates.find(delegate => delegate.getName() === name);
+    }
+
     public resolvePortReference(portReference: string): PortModel | null | undefined {
         const portInfo = SlangParsing.parseReferenceString(portReference);
+
+        console.log("    ", portReference, " ===> ", portInfo);
+
+
         if (!portInfo || typeof portInfo.instance === 'undefined') {
             return undefined;
         }
 
-        let operatorOrBlueprint: PortOwner | undefined = undefined;
+        let operatorOrBlueprint: Operator | undefined = undefined;
         let port: PortModel | null | undefined = undefined;
+
         if (portInfo.instance === '') {
             operatorOrBlueprint = this;
         } else {
             operatorOrBlueprint = this.findOperator(portInfo.instance);
         }
-        
+
         if (!operatorOrBlueprint) {
             return undefined;
         }
 
-        if (portInfo.service === 'main') {
-            if (portInfo.directionIn) {
-                port = operatorOrBlueprint.getPortIn();
-            } else {
-                port = operatorOrBlueprint.getPortOut();
-            }
-        } else if (portInfo.service) {
+        if (portInfo.service) {
             if (portInfo.service !== "main" && portInfo.service !== "") {
-                throw `services other than main are not supported yet`;
+                throw `services other than main are not supported yet: ${portInfo.service}`;
             }
             if (portInfo.directionIn) {
                 port = operatorOrBlueprint.getPortIn();
             } else {
                 port = operatorOrBlueprint.getPortOut();
             }
-        } else if (portInfo.delegate) {
-            throw `delegates are not supported yet`;
+        }
+
+        if (portInfo.delegate) {
+            const delegate = operatorOrBlueprint.findDelegate(portInfo.delegate);
+            if (!delegate) {
+                throw `delegate ${portInfo.delegate} not found`;
+            }
+            if (portInfo.directionIn) {
+                port = delegate.getPortIn();
+            } else {
+                port = delegate.getPortOut();
+            }
         }
 
         if (!port) {
             return port;
         }
-        
+
         const pathSplit = portInfo.port.split('.');
         if (pathSplit.length === 1 && pathSplit[0] === '') {
             return port;
@@ -206,23 +261,23 @@ export class BlueprintModel implements PortOwner {
 
         return port;
     }
-    
+
     public getDisplayName(): string {
         return this.getFullName();
     }
-    
+
     public getIdentity(): string {
         return this.getFullName().replace('.', '-');
     }
-    
+
     public getConnections(): Connections {
         const connections = new Connections();
-        
+
         // First, handle blueprint in-ports
         if (this.portIn) {
             connections.addConnections(this.portIn.getConnections());
         }
-        
+
         // Then, handle operator out-ports
         for (const operator of this.operators) {
             const operatorPortOut = operator.getPortOut();
@@ -230,9 +285,18 @@ export class BlueprintModel implements PortOwner {
                 connections.addConnections(operatorPortOut.getConnections());
             }
         }
-        
+
         return connections;
     }
+
+    public getPortIn(): PortModel | null {
+        return this.portIn
+    }
+
+    public getPortOut(): PortModel | null {
+        return this.portOut
+    }
+
 
     // Actions
     public setPortIn(port: PortModel) {
@@ -245,15 +309,12 @@ export class BlueprintModel implements PortOwner {
         port.setOwner(this);
     }
 
-    public getPortIn(): PortModel | null {
-        return this.portIn
+    public addDelegate(delegate: DelegateModel): DelegateModel {
+        this.delegates.push(delegate);
+        return delegate;
     }
 
-    public getPortOut(): PortModel | null {
-        return this.portOut
-    }
-
-    public addOperator(operator: OperatorModel): boolean {
+    public addOperator(operator: OperatorModel): OperatorModel {
         this.operators.push(operator);
         this.operatorAdded.next(operator);
         const that = this;
@@ -281,7 +342,7 @@ export class BlueprintModel implements PortOwner {
             }
         });
 
-        return true;
+        return operator;
     }
 
     private removeOperator(operator: OperatorModel): boolean {
