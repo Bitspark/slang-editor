@@ -8,11 +8,11 @@ export class DelegateModel {
         return this.name;
     }
 
-    public getPortIn(): PortModel | null {
+    public getPortIn(): PortModel {
         return this.portIn
     }
 
-    public getPortOut(): PortModel | null {
+    public getPortOut(): PortModel {
         return this.portOut
     }
 }

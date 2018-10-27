@@ -77,14 +77,12 @@ export class BlueprintModel implements PortOwner {
 
     public createOperator(name: string, blueprint: BlueprintModel): OperatorModel {
         const operator = blueprint.instantiateOperator(name);
-        this.addOperator(operator);
-        return operator;
+        return this.addOperator(operator);
     }
 
     public createDelegate(name: string, portIn: PortModel, portOut: PortModel): DelegateModel {
         const delegate = new DelegateModel(name, portIn, portOut);
-        //this.addOperator(delegate);
-        return delegate;
+        return this.addDelegate(delegate);
     }
 
     private instantiateOperator(name: string): OperatorModel {
@@ -140,6 +138,10 @@ export class BlueprintModel implements PortOwner {
 
     public getOperators(): IterableIterator<OperatorModel> {
         return this.operators.values();
+    }
+
+    public getDelegates(): IterableIterator<DelegateModel> {
+        return this.delegates.values();
     }
 
     public findOperator(name: string): OperatorModel | undefined {
@@ -262,7 +264,12 @@ export class BlueprintModel implements PortOwner {
         port.setOwner(this);
     }
 
-    public addOperator(operator: OperatorModel): boolean {
+    public addDelegate(delegate: DelegateModel): DelegateModel {
+        this.delegates.push(delegate);
+        return delegate;
+    }
+
+    public addOperator(operator: OperatorModel): OperatorModel {
         this.operators.push(operator);
         this.operatorAdded.next(operator);
         const that = this;
@@ -290,7 +297,7 @@ export class BlueprintModel implements PortOwner {
             }
         });
 
-        return true;
+        return operator;
     }
 
     private removeOperator(operator: OperatorModel): boolean {
