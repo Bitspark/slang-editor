@@ -100,16 +100,12 @@ export class BlueprintComponent {
 
     private drawBlueprint() {
         const bp = this.blueprint;
-        const jointElements = JointJSElements.createBlueprintOrOperatorElement(bp);
-        this.outer = jointElements[0];
+        this.outer = JointJSElements.createBlueprintOrOperatorElement(bp);
         this.outer.attr('body/fill', 'blue');
         this.outer.attr('body/fill-opacity', '.05');
         this.outer.addTo(this.graph);
 
         this.blueprintOrOperatorModelToElement.set(this.blueprint, this.outer);
-        jointElements[1].forEach(portItem => {
-            this.portModelToElement.set(portItem[0], portItem[1]);
-        });
 
         for (const op of bp.getOperators()) {
             this.addOperator(op);
@@ -121,42 +117,17 @@ export class BlueprintComponent {
     }
     
     private drawConnections() {
-        this.portModelToElement.forEach((sourceElement, source) => {
-            for (const destination of source.getDestinations()) {
-                const destinationElement = this.portModelToElement.get(destination);
-                if (!destinationElement) {
-                    throw `port element missing for destination port`;
-                }
-
-                const sourceOwnerElement = this.blueprintOrOperatorModelToElement.get(source.getOwner()!);
-                const destinationOwnerElement = this.blueprintOrOperatorModelToElement.get(destination.getOwner()!);
-                
-                const link = new shapes.devs.Link({
-                    source: {
-                        id: sourceOwnerElement!.id,
-                        port: sourceElement.id
-                    },
-                    target: {
-                        id: destinationOwnerElement!.id,
-                        port: destinationElement.id
-                    }
-                });
-
-                link.addTo(this.graph);
-            }
-        });
+        for (const operator of this.blueprint.getOperators()) {
+            const portIn = operator.getPortIn();
+        }
     }
 
     private addOperator(operator: OperatorModel) {
-        const jointElements = JointJSElements.createBlueprintOrOperatorElement(operator);
-        const opElem = jointElements[0];
+        const opElem = JointJSElements.createBlueprintOrOperatorElement(operator);
         this.outer.embed(opElem);
         this.graph.addCell(opElem);
 
         this.blueprintOrOperatorModelToElement.set(operator, opElem);
-        jointElements[1].forEach(portItem => {
-            this.portModelToElement.set(portItem[0], portItem[1]);
-        });
         
         // JointJS -> Model
         opElem.on('pointerclick', function (evt: Event, x: number, y: number) {

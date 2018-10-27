@@ -1,8 +1,5 @@
 import {BlueprintOrOperator} from "./model/blueprint";
 import {attributes, dia, shapes} from "jointjs";
-import {OperatorModel} from "./model/operator";
-import {BlueprintModel} from "./model/blueprint";
-import Port = dia.Element.Port;
 import {PortModel, PortType} from "./model/port";
 import SVGAttributes = attributes.SVGAttributes;
 
@@ -53,7 +50,7 @@ export class JointJSElements {
 
             default:
                 portItems.push([port, {
-                    id: `${Math.random()}`,
+                    id: `${port.getPortReferenceString()}`,
                     group: group,
                     attrs: {
                         ".sl-port": {
@@ -61,11 +58,12 @@ export class JointJSElements {
                         }
                     }
                 }]);
+                console.log(port.getPortReferenceString());
         }
         return portItems;
     }
 
-    public static createBlueprintOrOperatorElement(blueprint: BlueprintOrOperator): [dia.Element, Array<[PortModel, dia.Element.Port]>] {
+    public static createBlueprintOrOperatorElement(blueprint: BlueprintOrOperator): dia.Element {
         let portItems: Array<[PortModel, dia.Element.Port]> = [];
 
         const inPort = blueprint.getPortIn();
@@ -78,7 +76,7 @@ export class JointJSElements {
             portItems = portItems.concat(this.createPortItems("MainOut", outPort))
         }
 
-        return [new shapes.standard.Rectangle({
+        return new shapes.standard.Rectangle({
             size: {width: 100, height: 100},
             attrs: {
                 root: {},
@@ -111,7 +109,7 @@ export class JointJSElements {
                 },
                 items: portItems.map(portItem => portItem[1]),
             }
-        }), portItems];
+        });
     }
 }
 

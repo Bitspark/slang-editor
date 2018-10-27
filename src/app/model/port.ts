@@ -38,6 +38,7 @@ export class PortModel {
             throw `add map sub port to a port of type '${this.type}' not possible`;
         }
         this.mapSubPorts!.set(name, port);
+        port.parent = this;
         return this;
     }
 
@@ -59,7 +60,8 @@ export class PortModel {
         if (this.type !== PortType.Stream) {
             throw `set stream sub port of a port of type '${this.type}' not possible`;
         }
-        return this.streamSubPort = port;
+        port.parent = this;
+        this.streamSubPort = port;
     }
 
     public getStreamSubPort(): PortModel | undefined {
@@ -84,7 +86,7 @@ export class PortModel {
             }
         }
         
-        return "";
+        throw `entry not found`;
     }
 
     public isSelected(): boolean {
@@ -119,7 +121,7 @@ export class PortModel {
         const owner = this.getOwner();
         let ownerName: string;
         if (owner instanceof BlueprintModel) {
-            ownerName = "";
+            ownerName = owner.getFullName().replace('.', '-');
         } else if (owner instanceof OperatorModel) {
             ownerName = owner.getName();
         } else {

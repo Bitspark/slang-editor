@@ -67,7 +67,7 @@ export class Canvas {
         });
     }
 
-    private addZooming(speed = 0.1, min = .5, max = 2.5) {
+    private addZooming(speed = 0.1, min = 0.5, max = 2.5) {
         const paper = this.paper;
         const zoom = function (x: number, y: number, delta: number) {
             const scale = paper.scale();
