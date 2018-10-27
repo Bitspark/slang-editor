@@ -1,7 +1,8 @@
 import {LandscapeModel} from "../model/landscape";
 import {BlueprintModel, BlueprintType} from "../model/blueprint";
-import {ApiService, BlueprintApiResponse, BlueprintDefApiResponse, PortApiResponse} from "../services/api";
+import {ApiService, BlueprintApiResponse, BlueprintDefApiResponse, PortApiResponse, PortGroupApiResponse} from "../services/api";
 import {PortModel, PortType} from "../model/port";
+import {DelegateModel} from "../model/delegate";
 
 export class StorageComponent {
     constructor(private landscape: LandscapeModel, private api: ApiService) {
@@ -40,6 +41,23 @@ export class StorageComponent {
         return port;
     }
 
+    private setBlueprintServices(blueprint: BlueprintModel, services: PortGroupApiResponse) {
+        const portInDef: PortApiResponse = services["main"].in;
+        const outPortDef: PortApiResponse = services["main"].out;
+        blueprint.setPortIn(this.createPort(portInDef, true));
+        blueprint.setPortOut(this.createPort(outPortDef, false));
+    }
+
+    private setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupApiResponse) {
+        Object.keys(delegates).forEach((delegateName: string) => {
+            blueprint.createDelegate(
+                delegateName,
+                this.createPort(delegates[delegateName].in, true),
+                this.createPort(delegates[delegateName].out, false),
+            );
+        });
+    }
+
     public async load(): Promise<void> {
         const bpDataList: Array<BlueprintApiResponse> = await this.api.getBlueprints();
         return new Promise<void>(resolve => {
@@ -57,11 +75,12 @@ export class StorageComponent {
                 if (type === null) {
                     throw `unknown blueprint type '${bpData.type}'`;
                 }
+
                 const blueprint = this.landscape.createBlueprint(bpData.name, type);
-                const inPortDef: PortApiResponse = bpData.def.services["main"].in;
-                const outPortDef: PortApiResponse = bpData.def.services["main"].out;
-                blueprint.setPortIn(this.createPort(inPortDef, true));
-                blueprint.setPortOut(this.createPort(outPortDef, false));
+                this.setBlueprintServices(blueprint, bpData.def.services);
+                if (bpData.def.delegates) {
+                    this.setBlueprintDelegates(blueprint, bpData.def.delegates);
+                }
                 const def = bpData.def;
 
                 blueprintToOperator.set(blueprint, def);
@@ -80,7 +99,7 @@ export class StorageComponent {
                     });
                 }
             });
-            
+
             // 3) Connect operator and blueprint ports
             blueprintToOperator.forEach((bpDef: BlueprintDefApiResponse, outerBlueprint: BlueprintModel) => {
                 if (bpDef.connections) {

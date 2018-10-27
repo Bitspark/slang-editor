@@ -1,6 +1,7 @@
 import {BehaviorSubject, Subject} from "rxjs";
 import {OperatorModel} from "./operator";
 import {PortModel, PortType} from "./port";
+import {DelegateModel} from "./delegate";
 import {SlangParsing} from "../utils";
 
 export enum BlueprintType {
@@ -26,14 +27,14 @@ export interface Connection {
 
 export class Connections {
     private connections: Array<Connection> = [];
-    
+
     constructor() {
     }
-    
+
     public getConnections(): IterableIterator<Connection> {
         return this.connections.values();
     }
-    
+
     public addConnection(connection: Connection) {
         this.connections.push(connection);
     }
@@ -65,11 +66,12 @@ export class BlueprintModel implements PortOwner {
     // Properties
     private readonly hierarchy: Array<string> = [];
 
+    private delegates: Array<DelegateModel> = [];
     private portIn: PortModel | null = null;
     private portOut: PortModel | null = null;
     private readonly operators: Array<OperatorModel> = [];
-    
-    constructor(private fullName: string, private type: BlueprintType) {        
+
+    constructor(private fullName: string, private type: BlueprintType) {
         this.hierarchy = fullName.split('.');
     }
 
@@ -77,6 +79,12 @@ export class BlueprintModel implements PortOwner {
         const operator = blueprint.instantiateOperator(name);
         this.addOperator(operator);
         return operator;
+    }
+
+    public createDelegate(name: string, portIn: PortModel, portOut: PortModel): DelegateModel {
+        const delegate = new DelegateModel(name, portIn, portOut);
+        //this.addOperator(delegate);
+        return delegate;
     }
 
     private instantiateOperator(name: string): OperatorModel {
@@ -99,10 +107,10 @@ export class BlueprintModel implements PortOwner {
             }
             return portCopy;
         }
-        
+
         const operatorPortIn = this.portIn ? copyPort(null, this.portIn) : null;
         const operatorPortOut = this.portOut ? copyPort(null, this.portOut) : null;
-        
+
         return new OperatorModel(name, this, operatorPortIn, operatorPortOut);
     }
 
@@ -133,11 +141,11 @@ export class BlueprintModel implements PortOwner {
     public getOperators(): IterableIterator<OperatorModel> {
         return this.operators.values();
     }
-    
+
     public findOperator(name: string): OperatorModel | undefined {
         return this.operators.find(operator => operator.getName() === name);
     }
-    
+
     public resolvePortReference(portReference: string): PortModel | null | undefined {
         const portInfo = SlangParsing.parseReferenceString(portReference);
         if (!portInfo || typeof portInfo.instance === 'undefined') {
@@ -151,7 +159,7 @@ export class BlueprintModel implements PortOwner {
         } else {
             operatorOrBlueprint = this.findOperator(portInfo.instance);
         }
-        
+
         if (!operatorOrBlueprint) {
             return undefined;
         }
@@ -178,7 +186,7 @@ export class BlueprintModel implements PortOwner {
         if (!port) {
             return port;
         }
-        
+
         const pathSplit = portInfo.port.split('.');
         if (pathSplit.length === 1 && pathSplit[0] === '') {
             return port;
@@ -206,23 +214,23 @@ export class BlueprintModel implements PortOwner {
 
         return port;
     }
-    
+
     public getDisplayName(): string {
         return this.getFullName();
     }
-    
+
     public getIdentity(): string {
         return this.getFullName().replace('.', '-');
     }
-    
+
     public getConnections(): Connections {
         const connections = new Connections();
-        
+
         // First, handle blueprint in-ports
         if (this.portIn) {
             connections.addConnections(this.portIn.getConnections());
         }
-        
+
         // Then, handle operator out-ports
         for (const operator of this.operators) {
             const operatorPortOut = operator.getPortOut();
@@ -230,9 +238,18 @@ export class BlueprintModel implements PortOwner {
                 connections.addConnections(operatorPortOut.getConnections());
             }
         }
-        
+
         return connections;
     }
+
+    public getPortIn(): PortModel | null {
+        return this.portIn
+    }
+
+    public getPortOut(): PortModel | null {
+        return this.portOut
+    }
+
 
     // Actions
     public setPortIn(port: PortModel) {
@@ -243,14 +260,6 @@ export class BlueprintModel implements PortOwner {
     public setPortOut(port: PortModel) {
         this.portOut = port;
         port.setOwner(this);
-    }
-
-    public getPortIn(): PortModel | null {
-        return this.portIn
-    }
-
-    public getPortOut(): PortModel | null {
-        return this.portOut
     }
 
     public addOperator(operator: OperatorModel): boolean {
