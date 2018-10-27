@@ -12,11 +12,13 @@ export class BlueprintComponent {
     constructor(private graph: dia.Graph, private blueprint: BlueprintModel) {
         this.portModelToElement = new Map<PortModel, dia.Element.Port>();
         graph.clear();
-        
-        this.attachEventHandlers();
+
+        // this.attachEventHandlers();
         this.subscribe();
         this.drawBlueprint();
         this.autoLayout();
+        this.fitEmbedding();
+        this.positionCenter();
     }
 
     private attachEventHandlers() {
@@ -107,12 +109,10 @@ export class BlueprintComponent {
         for (const op of blueprint.getOperators()) {
             this.addOperator(op);
         }
-        
-        this.drawConnections();
 
-        this.outer.fitEmbeds({padding: this.outerPadding});
+        this.drawConnections();
     }
-    
+
     private drawConnections() {
         for (const connection of this.blueprint.getConnections().getConnections()) {
             const link = new dia.Link({
@@ -128,20 +128,31 @@ export class BlueprintComponent {
             link.addTo(this.graph);
         }
     }
-    
+
     private autoLayout() {
-        const graphBBox = layout.DirectedGraph.layout(this.graph, {
-            nodeSep: 50,
-            edgeSep: 80,
+        layout.DirectedGraph.layout(this.graph, {
+            nodeSep: 80,
+            rankSep: 80,
+            edgeSep: 240,
             rankDir: "TB"
         });
+    }
+
+    private fitEmbedding() {
+        this.outer.fitEmbeds({padding: this.outerPadding});
+    }
+
+    private positionCenter() {
+        const position = this.outer.position();
+        const bbox = this.outer.getBBox();
+        this.outer.translate(-(position.x + bbox.width / 2), -(position.y + bbox.height / 2));
     }
 
     private addOperator(operator: OperatorModel) {
         const portOwnerElement = JointJSElements.createPortOwnerElement(operator);
         this.outer.embed(portOwnerElement);
         this.graph.addCell(portOwnerElement);
-        
+
         // JointJS -> Model
         portOwnerElement.on('pointerclick', function (evt: Event, x: number, y: number) {
             operator.select();
