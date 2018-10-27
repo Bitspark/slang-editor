@@ -2,6 +2,8 @@ import {dia, layout, shapes} from "jointjs";
 import {JointJSElements} from "../utils";
 import {BlueprintModel} from "../model/blueprint";
 import {OperatorModel} from "../model/operator";
+import {slangRouter} from "../algorithms/link-router";
+import {slangConnector} from "../algorithms/link-connector";
 
 export class BlueprintComponent {
     private outer: dia.Element;
@@ -115,7 +117,7 @@ export class BlueprintComponent {
         }
     }
 
-    private drawConnections() {
+    private drawConnections() {        
         for (const connection of this.blueprint.getConnections().getConnections()) {
             const link = new dia.Link({
                 source: {
@@ -126,12 +128,8 @@ export class BlueprintComponent {
                     id: connection.destination.getOwner()!.getIdentity(),
                     port: connection.destination.getPortReferenceString()
                 },
-                router: {
-                    name: 'metro'
-                },
-                connector: {
-                    name: 'rounded'
-                },
+                router: slangRouter,
+                connector: slangConnector,
                 attrs: {
                     '.connection': {
                         stroke: '#777777',
