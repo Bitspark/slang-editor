@@ -35,7 +35,7 @@ export class BlueprintModel extends BlackBox {
     private portIn: BlueprintPortModel | null = null;
     private portOut: BlueprintPortModel | null = null;
     private readonly operators: Array<OperatorModel> = [];
-
+    
     constructor(private landscape: LandscapeModel, private fullName: string, private type: BlueprintType) {
         super();
         this.hierarchy = fullName.split('.');

@@ -4,7 +4,6 @@ import {BlueprintModel} from '../model/blueprint';
 import {OperatorModel} from '../model/operator';
 import {slangRouter} from '../custom/router';
 import {slangConnector} from '../custom/connector';
-import {DelegateModel} from '../model/delegate';
 import {BlackBox} from '../custom/nodes';
 
 export class BlueprintComponent {
@@ -129,8 +128,8 @@ export class BlueprintComponent {
 
     private drawConnections() {
         for (const connection of this.blueprint.getConnections().getConnections()) {
-            const sourceOwner = connection.source.getAncestorNode<DelegateModel>(["BlueprintModel", "OperatorModel"]);
-            const destinationOwner = connection.destination.getAncestorNode<DelegateModel>(["BlueprintModel", "OperatorModel"]);
+            const sourceOwner = connection.source.getAncestorNode<BlackBox>(BlackBox);
+            const destinationOwner = connection.destination.getAncestorNode<BlackBox>(BlackBox);
             
             const link = new dia.Link({
                 source: {

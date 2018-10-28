@@ -1,6 +1,8 @@
 import {PortModel} from '../model/port';
 import {DelegateModel} from '../model/delegate';
 
+type Type<T> = Function & { prototype: T }
+
 export abstract class SlangNode {
 
     abstract isClass(className: string): boolean
@@ -9,26 +11,33 @@ export abstract class SlangNode {
 
     abstract getParentNode(): SlangNode | null
 
-    getAncestorNode<T extends SlangNode>(classNames: Array<string>): T | undefined {
-        console.log(this, classNames);
-        if (!classNames.every(name => !this.isClass(name))) {
-            console.log('RETURN');
-            return this as any;
-        }
-        if (!this.getParentNode()) {
-            console.log('NO PARENT');
+    getAncestorNode<T extends SlangNode>(...types: Array<Type<T>>): T | undefined {
+        if (types.length === 0) {
             return undefined;
         }
-        return this.getParentNode()!.getAncestorNode<T>(classNames);
+        for (const t of types) {
+            if (this instanceof t) {
+                return this as any;
+            }
+        }
+        if (!this.getParentNode()) {
+            return undefined;
+        }
+        return this.getParentNode()!.getAncestorNode<T>(...types);
     }
 
-    getDescendentNodes<T extends SlangNode>(className: string): IterableIterator<T> {
+    getDescendentNodes<T extends SlangNode>(...types: Array<Type<T>>): IterableIterator<T> {
         const children: Array<T> = [];
+        if (types.length === 0) {
+            return children.values();
+        }
         for (const childNode of this.getChildNodes()) {
-            if (childNode.isClass(className)) {
-                children.push(childNode as T);
+            for (const t of types) {
+                if (childNode instanceof t) {
+                    children.push(childNode as T);
+                }
             }
-            children.push.apply(children, childNode.getDescendentNodes<T>(className));
+            children.push.apply(children, childNode.getDescendentNodes<T>(...types));
         }
         return children.values();
     }
