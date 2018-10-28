@@ -32,11 +32,12 @@ export class MainComponent extends PluginComponent {
     private subscribe(): void {
         this.app.subscribeOpenedBlueprintChanged(blueprint => {
             if (blueprint !== null) {
-                this.canvas.reset();
                 new BlueprintComponent(this.canvas.getGraph(), blueprint);
-                this.canvas.getPaper().scaleContentToFit();
-                const scale = this.canvas.getPaper().scale().sx;
-                this.canvas.getPaper().scale(Math.min(1.0, scale * 0.8));
+                
+                this.canvas.getPaper().scaleContentToFit({preserveAspectRatio: true});
+                const scale = Math.min(1.0, this.canvas.getPaper().scale().sx * 0.8);
+                this.canvas.getPaper().scale(scale);
+                this.canvas.center();
             }
         });
 
