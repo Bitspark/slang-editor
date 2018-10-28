@@ -1,14 +1,15 @@
 import {LandscapeModel} from "../model/landscape";
-import {BlueprintModel, BlueprintType} from "../model/blueprint";
-import {ApiService, BlueprintApiResponse, BlueprintDefApiResponse, PortApiResponse} from "../services/api";
+import {BlueprintModel, BlueprintType, PortOwner} from "../model/blueprint";
+import {ApiService, BlueprintApiResponse, BlueprintDefApiResponse, PortApiResponse, PortGroupApiResponse} from "../services/api";
 import {PortModel, PortType} from "../model/port";
+import {DelegateModel} from "../model/delegate";
 
 export class StorageComponent {
     constructor(private landscape: LandscapeModel, private api: ApiService) {
 
     }
 
-    private createPort(portDef: PortApiResponse, directionIn: boolean): PortModel {
+    private createPort(portDef: PortApiResponse, owner: PortOwner, directionIn: boolean): PortModel {
         const type: PortType = {
             number: PortType.Number,
             binary: PortType.Binary,
@@ -25,19 +26,37 @@ export class StorageComponent {
             throw `unknown port type '${portDef.type}'`;
         }
 
-        const port = new PortModel(null, type, directionIn);
+        const port = new PortModel(null, owner, type, directionIn);
 
         switch (port.getType()) {
             case PortType.Map:
                 Object.keys(portDef.map!).forEach((portName: string) => {
-                    port.addMapSubPort(portName, this.createPort(portDef.map![portName], directionIn))
+                    port.addMapSubPort(portName, this.createPort(portDef.map![portName], owner, directionIn))
                 });
                 break;
             case PortType.Stream:
-                port.setStreamSubPort(this.createPort(portDef.stream!, directionIn))
+                port.setStreamSubPort(this.createPort(portDef.stream!, owner, directionIn))
         }
 
         return port;
+    }
+
+    private setBlueprintServices(blueprint: BlueprintModel, services: PortGroupApiResponse) {
+        const portInDef: PortApiResponse = services["main"].in;
+        const outPortDef: PortApiResponse = services["main"].out;
+        blueprint.setPortIn(this.createPort(portInDef, blueprint, true));
+        blueprint.setPortOut(this.createPort(outPortDef, blueprint, false));
+    }
+
+    private setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupApiResponse) {
+        Object.keys(delegates).forEach((delegateName: string) => {
+            const delegate = blueprint.createDelegate(
+                blueprint,
+                delegateName,
+            );
+            delegate.setPortIn(this.createPort(delegates[delegateName].in, delegate, true));
+            delegate.setPortOut(this.createPort(delegates[delegateName].out, delegate, false));
+        });
     }
 
     public async load(): Promise<void> {
@@ -57,11 +76,12 @@ export class StorageComponent {
                 if (type === null) {
                     throw `unknown blueprint type '${bpData.type}'`;
                 }
+
                 const blueprint = this.landscape.createBlueprint(bpData.name, type);
-                const inPortDef: PortApiResponse = bpData.def.services["main"].in;
-                const outPortDef: PortApiResponse = bpData.def.services["main"].out;
-                blueprint.setPortIn(this.createPort(inPortDef, true));
-                blueprint.setPortOut(this.createPort(outPortDef, false));
+                this.setBlueprintServices(blueprint, bpData.def.services);
+                if (bpData.def.delegates) {
+                    this.setBlueprintDelegates(blueprint, bpData.def.delegates);
+                }
                 const def = bpData.def;
 
                 blueprintToOperator.set(blueprint, def);
@@ -80,7 +100,7 @@ export class StorageComponent {
                     });
                 }
             });
-            
+
             // 3) Connect operator and blueprint ports
             blueprintToOperator.forEach((bpDef: BlueprintDefApiResponse, outerBlueprint: BlueprintModel) => {
                 if (bpDef.connections) {
@@ -95,6 +115,7 @@ export class StorageComponent {
                                 if (!sourcePort) {
                                     throw `source port ${sourcePortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
                                 }
+
                                 if (!destinationPort) {
                                     throw `destination port ${destinationPortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
                                 }

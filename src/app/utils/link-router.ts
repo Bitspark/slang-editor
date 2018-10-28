@@ -311,7 +311,7 @@ class SortedSet {
 
         this.values[item] = value;
 
-        let index = joint.util.sortedIndex(this.items, item, function (i: number) {
+        let index = joint.util.sortedIndex(this.items, item, function (this: any, i: number) {
             return this.values[i];
         }.bind(this));
 
@@ -614,7 +614,7 @@ function getRectPoints(anchor: any, bbox: any, directionList: any, grid: any, op
 
 // finds the route between two points/rectangles (`from`, `to`) implementing A* algorithm
 // rectangles get rect points assigned by getRectPoints()
-function findRoute(from: any, to: any, map: any, opt: any) {
+function findRoute(this: any, from: any, to: any, map: any, opt: any) {
 
     // Get grid for this route.
 

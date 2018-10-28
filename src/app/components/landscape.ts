@@ -270,7 +270,7 @@ export class LandscapeComponent {
             return;
         }
 
-        const blueprintRect = JointJSElements.createPortOwnerElement(blueprint);
+        const blueprintRect = JointJSElements.createOperatorElement(blueprint);
         blueprintRect.attr({
             body: {
                 cursor: "pointer",

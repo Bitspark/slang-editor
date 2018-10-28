@@ -90,7 +90,7 @@ export class BlueprintComponent {
     }
 
     private drawBlueprint() {
-        const outer = JointJSElements.createPortOwnerElement(this.blueprint);
+        const outer = JointJSElements.createOperatorElement(this.blueprint);
         outer.attr('body/fill', 'blue');
         outer.attr('body/fill-opacity', '.05');
         outer.set('obstacle', false);
@@ -130,11 +130,11 @@ export class BlueprintComponent {
             const link = new dia.Link({
                 source: {
                     id: connection.source.getOwner()!.getIdentity(),
-                    port: connection.source.getPortReferenceString()
+                    port: connection.source.getIdentity()
                 },
                 target: {
                     id: connection.destination.getOwner()!.getIdentity(),
-                    port: connection.destination.getPortReferenceString()
+                    port: connection.destination.getIdentity()
                 },
                 //router: {name: 'metro'},
                 router: slangRouter,
@@ -170,7 +170,7 @@ export class BlueprintComponent {
     }
 
     private addOperator(operator: OperatorModel) {
-        const portOwnerElement = JointJSElements.createPortOwnerElement(operator);
+        const portOwnerElement = JointJSElements.createOperatorElement(operator);
         portOwnerElement.set('obstacle', true);
         portOwnerElement.set('inward', false);
         this.outerParent.embed(portOwnerElement);

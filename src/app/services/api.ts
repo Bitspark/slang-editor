@@ -7,20 +7,21 @@ export interface PortApiResponse {
     generic?: string
 }
 
+export interface PortGroupApiResponse {
+    [portGroupName: string]: {
+        in: PortApiResponse,
+        out: PortApiResponse,
+    }
+}
+
 export interface BlueprintDefApiResponse {
     operators: {
         [operatorName: string]: {
             operator: string
         }
     }
-
-    services: {
-        [serviceName: string]: {
-            in: PortApiResponse,
-            out: PortApiResponse,
-        }
-    }
-    
+    services: PortGroupApiResponse
+    delegates: PortGroupApiResponse
     connections: {
         [sourcePortReference: string]: [string]
     }
