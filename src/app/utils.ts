@@ -1,4 +1,4 @@
-import {Operator} from "./model/blueprint";
+import {Blackbox} from "./model/blueprint";
 import {attributes, dia, shapes} from "jointjs";
 import {PortModel, PortType} from "./model/port";
 import SVGAttributes = attributes.SVGAttributes;
@@ -54,16 +54,13 @@ export class JointJSElements {
 
         switch (port.getType()) {
             case PortType.Map:
-                for (const [portName, each] of port.getMapSubPorts()) {
+                for (const [_, each] of port.getMapSubPorts()) {
                     portItems = portItems.concat(this.createPortItems(group, each));
                 }
                 break;
 
             case PortType.Stream:
-                const subPort = port.getStreamSubPort();
-                if (subPort) {
-                    portItems = portItems.concat(this.createPortItems(group, subPort));
-                }
+                portItems = portItems.concat(this.createPortItems(group, port.getStreamSubPort()));
                 break;
 
             default:
@@ -79,7 +76,7 @@ export class JointJSElements {
     }
 
 
-    public static createOperatorElement(operator: Operator): dia.Element {
+    public static createOperatorElement(operator: Blackbox): dia.Element {
         let portItems: Array<dia.Element.Port> = [];
 
         const inPort = operator.getPortIn();
@@ -93,11 +90,11 @@ export class JointJSElements {
         }
 
         for (const delegate of operator.getDelegates()) {
-            if (delegate.getPortIn()) {
-                portItems = portItems.concat(this.createPortItems("Delegate", delegate.getPortIn()!));
-            }
             if (delegate.getPortOut()) {
                 portItems = portItems.concat(this.createPortItems("Delegate", delegate.getPortOut()!));
+            }
+            if (delegate.getPortIn()) {
+                portItems = portItems.concat(this.createPortItems("Delegate", delegate.getPortIn()!));
             }
         }
 

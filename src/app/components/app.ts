@@ -8,7 +8,7 @@ import {RouterComponent} from "./router";
 import {AppModel} from "../model/app";
 
 export class AppComponent {
-    private landscapeComponent: LandscapeComponent | null;
+    private landscapeComponent: LandscapeComponent | null = null;
     private storageComponent: StorageComponent;
     private routerComponent: RouterComponent;
     private canvas: Canvas;

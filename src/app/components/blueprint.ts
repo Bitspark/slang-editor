@@ -1,9 +1,10 @@
 import {dia, layout, shapes} from 'jointjs';
 import {JointJSElements} from '../utils';
-import {BlueprintModel} from '../model/blueprint';
+import {BlueprintModel, PortOwner} from '../model/blueprint';
 import {OperatorModel} from '../model/operator';
-import {slangRouter} from '../algorithms/link-router';
-import {slangConnector} from '../algorithms/link-connector';
+import {slangRouter} from '../utils/link-router';
+import {slangConnector} from '../utils/link-connector';
+import {DelegateModel} from '../model/delegate';
 
 export class BlueprintComponent {
     private outer: dia.Element;
@@ -16,7 +17,7 @@ export class BlueprintComponent {
         this.attachEventHandlers();
         this.subscribe();
 
-        this.drawBlueprint();
+        [this.outer, this.outerParent] = this.drawBlueprint();
         this.drawOperators();
         this.drawConnections();
 
@@ -47,8 +48,8 @@ export class BlueprintComponent {
             let newCornerX: number | undefined = undefined;
             let newCornerY: number | undefined = undefined;
 
-            Array.from(parent.getEmbeddedCells()).forEach((child: dia.Element) => {
-                const childBbox = child.getBBox();
+            Array.from(parent.getEmbeddedCells()).forEach((child: dia.Cell, index: number, array: Array<dia.Cell>) => {
+                const childBbox = (child as dia.Element).getBBox();
                 if (!newX || childBbox.x < newX) {
                     newX = childBbox.x;
                 }
@@ -89,14 +90,13 @@ export class BlueprintComponent {
         });
     }
 
-    private drawBlueprint() {
+    private drawBlueprint(): [dia.Element, dia.Element] {
         const outer = JointJSElements.createOperatorElement(this.blueprint);
         outer.attr('body/fill', 'blue');
         outer.attr('body/fill-opacity', '.05');
         outer.set('obstacle', false);
         outer.set('inward', true);
         outer.addTo(this.graph);
-        this.outer = outer;
 
         const outerParent = new shapes.standard.Rectangle({});
         outerParent.attr('body/stroke-opacity', '0');
@@ -104,7 +104,6 @@ export class BlueprintComponent {
         outerParent.set('obstacle', false);
         outerParent.set('inward', true);
         outerParent.addTo(this.graph);
-        this.outerParent = outerParent;
 
         outer.on('change:position', function (cell: dia.Cell) {
             outer.set({
@@ -117,6 +116,8 @@ export class BlueprintComponent {
             };
             outer.set(set, ({skipParentHandler: true} as any));
         });
+        
+        return [outer, outerParent];
     }
 
     private drawOperators() {
@@ -127,16 +128,20 @@ export class BlueprintComponent {
 
     private drawConnections() {
         for (const connection of this.blueprint.getConnections().getConnections()) {
+            const sourceOwner = connection.source.getOwner();
+            const actualSourceOwner: PortOwner = (sourceOwner instanceof DelegateModel) ? sourceOwner.getOwner() : sourceOwner;
+            const destinationOwner = connection.destination.getOwner();
+            const actualDestinationOwner: PortOwner = (destinationOwner instanceof DelegateModel) ? destinationOwner.getOwner() : destinationOwner;
+            
             const link = new dia.Link({
                 source: {
-                    id: connection.source.getOwner()!.getIdentity(),
+                    id: actualSourceOwner.getIdentity(),
                     port: connection.source.getIdentity()
                 },
                 target: {
-                    id: connection.destination.getOwner()!.getIdentity(),
+                    id: actualDestinationOwner.getIdentity(),
                     port: connection.destination.getIdentity()
                 },
-                //router: {name: 'metro'},
                 router: slangRouter,
                 connector: slangConnector,
                 attrs: {

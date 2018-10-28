@@ -93,7 +93,7 @@ export class LandscapeModel {
         this.blueprintRemoved.subscribe(cb);
     }
 
-    public subscribeSelectionChanged(cb: (blueprint: BlueprintModel) => void): void {
+    public subscribeSelectionChanged(cb: (blueprint: BlueprintModel | null) => void): void {
         this.selectedBlueprint.subscribe(cb);
     }
 

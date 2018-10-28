@@ -1,7 +1,7 @@
-import {BehaviorSubject, Subject} from "rxjs";
-import {BlueprintModel, PortOwner, Connections} from "./blueprint";
-import {OperatorModel} from "./operator";
-import {DelegateModel} from "./delegate";
+import {BehaviorSubject, Subject} from 'rxjs';
+import {BlueprintModel, PortOwner, Connections} from './blueprint';
+import {OperatorModel} from './operator';
+import {BlueprintDelegateModel, DelegateModel, OperatorDelegateModel} from './delegate';
 
 export enum PortType {
     Number,
@@ -15,7 +15,7 @@ export enum PortType {
     Map,
 }
 
-export class PortModel {
+export abstract class PortModel {
 
     // Topics
     // self
@@ -23,11 +23,11 @@ export class PortModel {
     private selected = new BehaviorSubject<boolean>(false);
 
     // Properties
-    private mapSubPorts: Map<string, PortModel> | undefined;
+    private readonly mapSubPorts: Map<string, PortModel> | undefined;
     private streamSubPort: PortModel | undefined;
-    private destinations: Array<PortModel> | null;
+    private destinations: Array<PortModel> | null = null;
 
-    constructor(private parent: PortModel | null, private owner: PortOwner, private type: PortType, private inDirection: boolean) {
+    protected constructor(private parent: PortModel | null, private owner: PortOwner, private type: PortType, private inDirection: boolean) {
         if (this.type === PortType.Map) {
             this.mapSubPorts = new Map<string, PortModel>();
         }
@@ -71,10 +71,10 @@ export class PortModel {
 
     public getStreamSubPort(): PortModel {
         if (this.type !== PortType.Stream) {
-            throw `access of stream port of a port of type '${this.type}' not possible`;
+            throw `${this.getIdentity()}: access of stream port of a port of type '${this.type}' not possible`;
         }
         if (!this.streamSubPort) {
-            throw `stream port not having sub stream port`;
+            throw `${this.getIdentity()}: stream port not having sub stream port`;
         }
         return this.streamSubPort;
     }
@@ -149,29 +149,17 @@ export class PortModel {
 
     public getIdentity(): string {
         const referenceString = this.getReferenceString();
-        const ownerName: string = this.getOwner().getIdentity();
+        const ownerIdentity: string = this.getOwner().getIdentity();
         if (this.inDirection) {
-            return referenceString + '(' + ownerName;
+            return referenceString + '(' + ownerIdentity;
         } else {
-            return ownerName + ')' + referenceString;
+            return ownerIdentity + ')' + referenceString;
         }
     }
 
     public setOwner(owner: PortOwner) {
         this.owner = owner;
-        switch (this.type) {
-            case PortType.Map:
-                for (const subPort of this.getMapSubPorts()) {
-                    subPort[1].setOwner(owner);
-                }
-                break;
-            case PortType.Stream:
-                this.getStreamSubPort().setOwner(owner);
-                break;
-        }
-
         const actualOwner: PortOwner = (owner instanceof DelegateModel) ? owner.getOwner() : owner;
-
         if (actualOwner instanceof BlueprintModel && this.inDirection) {
             // Blueprints can have their in-ports connected with operator in-ports or blueprint out-ports
             this.destinations = [];
@@ -237,5 +225,17 @@ export class PortModel {
 
     public subscribeDeleted(cb: () => void): void {
         this.removed.subscribe(cb);
+    }
+}
+
+export class BlueprintPortModel extends PortModel {
+    public constructor(parent: PortModel | null, owner: BlueprintModel | BlueprintDelegateModel, type: PortType, inDirection: boolean) {
+        super(parent, owner, type, inDirection);
+    }
+}
+
+export class OperatorPortModel extends PortModel {
+    public constructor(parent: PortModel | null, owner: OperatorModel | OperatorDelegateModel, type: PortType, inDirection: boolean) {
+        super(parent, owner, type, inDirection);
     }
 }

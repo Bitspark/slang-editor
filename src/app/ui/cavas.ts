@@ -2,10 +2,10 @@ import {dia} from "jointjs";
 
 export class Canvas {
     private graph = new dia.Graph();
-    private paper: dia.Paper;
+    private readonly paper: dia.Paper;
 
     constructor(private container: HTMLElement) {
-        this.createPaper();
+        this.paper = this.createPaper();
         this.redirectPaperEvents();
         this.addZooming();
         this.addPanning();
@@ -25,12 +25,12 @@ export class Canvas {
         this.paper.translate(this.paper.getArea().width / 2, this.paper.getArea().height / 2);
     }
 
-    private createPaper() {
+    private createPaper(): dia.Paper {
         this.container.innerHTML = '';
         const inner = document.createElement('div');
         this.container.appendChild(inner);
 
-        this.paper = new dia.Paper({
+        return new dia.Paper({
             el: inner,
             model: this.graph,
             gridSize: 10,
