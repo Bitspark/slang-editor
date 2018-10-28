@@ -1,11 +1,17 @@
 const Path = require('path');
 const Webpack = require('webpack');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const merge = require('webpack-merge');
 const common = require('./webpack.common.js');
 
 const dest = Path.join(__dirname, '../dist');
 
 module.exports = merge(common, {
+    entry: {
+        app: Path.resolve(__dirname, '../src/app/app-embedded.ts')
+    },
     mode: 'development',
     devtool: 'cheap-eval-source-map',
     output: {
@@ -19,8 +25,12 @@ module.exports = merge(common, {
         }
     },
     plugins: [
-        new Webpack.DefinePlugin({
-            'process.env.NODE_ENV': JSON.stringify('development')
+        new CleanWebpackPlugin(['build'], {root: Path.resolve(__dirname, '..')}),
+        new CopyWebpackPlugin([
+            {from: Path.resolve(__dirname, '../public'), to: 'public'}
+        ]),
+        new HtmlWebpackPlugin({
+            template: Path.resolve(__dirname, '../src/index-embedded.html')
         })
     ],
     module: {

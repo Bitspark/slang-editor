@@ -12,6 +12,7 @@ export class LandscapeComponent {
     private addBlueprintButton: dia.Element;
     private slangLogo: dia.Element;
     private destroyed = new Subject<void>();
+    private dimensions: [number, number] = [0, 0];
 
     constructor(graph: dia.Graph, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
         this.graph = graph;
@@ -53,18 +54,18 @@ export class LandscapeComponent {
         }
     }
 
-    public reorder(width?: number, height?: number) {
+    public resize(width: number, height: number) {
+        this.dimensions = [width, height];
+        this.reorder();
+    }
+    
+    private reorder() {        
         const blueprintFullnames = Array.from(this.blueprintRects.keys());
         blueprintFullnames.sort();
-
-        if (width && height) {
-            this.reorderEqually(blueprintFullnames, width, height);
-        } else {
-            this.reorderEqually(blueprintFullnames, 1000, 600);
-        }
+        this.reorderEqually(blueprintFullnames, this.dimensions[0], this.dimensions[1]);
     }
 
-    public redraw(width?: number, height?: number) {
+    public redraw() {
         if (!this.graph) {
             return;
         }
@@ -75,7 +76,7 @@ export class LandscapeComponent {
         this.slangLogo = this.createSlangLogo();
         this.addBlueprints(this.landscape);
 
-        this.reorder(width, height);
+        this.reorder();
     }
 
     private reorderCircle(blueprintFullnames: Array<string>) {

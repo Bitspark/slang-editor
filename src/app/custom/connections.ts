@@ -16,10 +16,6 @@ export class Connections {
     }
 
     public addConnection(connection: Connection) {
-        // if (connection.destination.getOwner() instanceof DelegateModel) {
-        //     console.log('!!!!!!!!!', connection.destination.getIdentity());
-        //     return;
-        // }
         this.connections.push(connection);
     }
 

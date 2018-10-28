@@ -1,16 +1,21 @@
 import '../styles/index.scss';
 import 'jointjs/css/layout.css';
-import {AppComponent} from "./components/app";
+
 import {AppModel} from './model/app';
+import {MainComponent} from "./components/app";
+import {HTTPStorageComponent} from './components/storage';
+import {RouterComponent} from './components/router';
 
-const appModel = new AppModel();
-const app = new AppComponent(appModel, document.getElementById("app")!, 'http://localhost:5149/');
-app.start();
+function SlangStudio(el: HTMLElement) {
+    const app = new AppModel();
+    const mainComponent = new MainComponent(app, el);
 
-window.addEventListener('resize', function () {
-    app.resize();
-});
+    new HTTPStorageComponent(app, 'http://localhost:5149/');
+    const router = new RouterComponent(app);
 
-window.addEventListener('load', function () {
-    app.resize();
-});
+    mainComponent.load().then(() => {
+        router.checkRoute();
+    });
+}
+
+SlangStudio(document.getElementById("app")!);

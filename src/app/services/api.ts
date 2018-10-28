@@ -1,5 +1,7 @@
+type SlangType = "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic";
+
 export interface PortApiResponse {
-    type: "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic"
+    type: SlangType,
     map?: {
         [portName: string]: PortApiResponse,
     }
@@ -15,14 +17,14 @@ export interface PortGroupApiResponse {
 }
 
 export interface BlueprintDefApiResponse {
-    operators: {
+    operators?: {
         [operatorName: string]: {
             operator: string
         }
     }
-    services: PortGroupApiResponse
-    delegates: PortGroupApiResponse
-    connections: {
+    services?: PortGroupApiResponse
+    delegates?: PortGroupApiResponse
+    connections?: {
         [sourcePortReference: string]: [string]
     }
 }

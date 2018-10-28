@@ -1,8 +1,10 @@
 import {AppModel} from '../model/app';
+import {PluginComponent} from './app';
 
-export class RouterComponent {
+export class RouterComponent extends PluginComponent {
 
-    constructor(private appModel: AppModel) {
+    constructor(app: AppModel) {
+        super(app);
         this.subscribe();
         this.addEventListeners();
     }
@@ -22,25 +24,31 @@ export class RouterComponent {
     }
 
     private openBlueprint(fullName: string) {
-        const blueprint = this.appModel.getLandscape().findBlueprint(fullName);
+        const blueprint = this.app.getLandscape().findBlueprint(fullName);
         if (blueprint) {
             blueprint.open();
         }
     }
 
     private openLandscape() {
-        this.appModel.getLandscape().open();
+        this.app.getLandscape().open();
     }
-    
+
     private subscribe(): void {
-        this.appModel.subscribeOpenedBlueprintChanged(blueprint => {
+        this.app.subscribeLoadRequested((): Promise<void> => {
+            return new Promise<void>(resolve => {
+                this.checkRoute();
+                resolve();
+            });
+        });
+        this.app.subscribeOpenedBlueprintChanged(blueprint => {
             if (blueprint !== null) {
                 const title = `${blueprint.getFullName()} Blueprint | Slang Studio`;
                 const url = `blueprint/${blueprint.getFullName()}`;
                 window.history.pushState({type: 'blueprint', fullName: blueprint.getFullName()}, title, url);
             }
         });
-        this.appModel.subscribeOpenedLandscapeChanged(blueprint => {
+        this.app.subscribeOpenedLandscapeChanged(blueprint => {
             if (blueprint !== null) {
                 const title = `Blueprint Landscape | Slang Studio`;
                 const url = `/`;

@@ -24,6 +24,10 @@ export class Canvas {
         this.paper.scale(1.0);
         this.paper.translate(this.paper.getArea().width / 2, this.paper.getArea().height / 2);
     }
+    
+    public getPaper(): dia.Paper {
+        return this.paper;
+    }
 
     private createPaper(): dia.Paper {
         this.container.innerHTML = '';
