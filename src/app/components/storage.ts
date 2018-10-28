@@ -1,8 +1,8 @@
 import {LandscapeModel} from "../model/landscape";
-import {BlueprintModel, BlueprintType, PortOwner} from "../model/blueprint";
+import {BlueprintModel, BlueprintType} from "../model/blueprint";
 import {ApiService, BlueprintApiResponse, BlueprintDefApiResponse, PortApiResponse, PortGroupApiResponse} from "../services/api";
-import {BlueprintPortModel, PortModel, PortType} from '../model/port';
-import {BlueprintDelegateModel, DelegateModel} from '../model/delegate';
+import {BlueprintPortModel, PortType} from '../model/port';
+import {BlueprintDelegateModel} from '../model/delegate';
 
 export class StorageComponent {
     constructor(private landscape: LandscapeModel, private api: ApiService) {

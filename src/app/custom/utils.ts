@@ -1,7 +1,7 @@
-import {Blackbox} from "./model/blueprint";
 import {attributes, dia, shapes} from "jointjs";
-import {PortModel, PortType} from "./model/port";
+import {PortModel, PortType} from "../model/port";
 import SVGAttributes = attributes.SVGAttributes;
+import {BlackBox} from './nodes';
 
 export class JointJSElements {
 
@@ -76,7 +76,7 @@ export class JointJSElements {
     }
 
 
-    public static createOperatorElement(operator: Blackbox): dia.Element {
+    public static createOperatorElement(operator: BlackBox): dia.Element {
         let portItems: Array<dia.Element.Port> = [];
 
         const inPort = operator.getPortIn();

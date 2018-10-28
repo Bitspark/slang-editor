@@ -3,7 +3,7 @@ import {dia, shapes} from 'jointjs';
 import {LandscapeModel} from '../model/landscape';
 import {BlueprintModel, BlueprintType} from '../model/blueprint';
 import {Subject} from "rxjs";
-import {JointJSElements} from "../utils";
+import {JointJSElements} from "../custom/utils";
 
 export class LandscapeComponent {
     private graph: dia.Graph | null;

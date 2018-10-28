@@ -1,9 +1,11 @@
 import {BehaviorSubject, Subject} from "rxjs";
-import {BlueprintModel, BlueprintType, Blackbox, Connections} from './blueprint';
-import {OperatorPortModel, PortModel} from './port';
-import {DelegateModel, OperatorDelegateModel} from './delegate';
+import {BlueprintModel, BlueprintType} from './blueprint';
+import {OperatorPortModel} from './port';
+import {OperatorDelegateModel} from './delegate';
+import {BlackBox} from '../custom/nodes';
+import {Connections} from '../custom/connections';
 
-export class OperatorModel implements Blackbox {
+export class OperatorModel extends BlackBox {
 
     // Topics
     // self
@@ -15,6 +17,7 @@ export class OperatorModel implements Blackbox {
     private portOut: OperatorPortModel | null = null;
 
     constructor(private owner: BlueprintModel, private name: string, private blueprint: BlueprintModel) {
+        super();
     }
 
     public getName(): string {
@@ -33,19 +36,25 @@ export class OperatorModel implements Blackbox {
         return this.blueprint;
     }
 
-    public getDelegates(): IterableIterator<DelegateModel> {
+    public getDelegates(): IterableIterator<OperatorDelegateModel> {
         return this.delegates.values();
     }
 
-    public findDelegate(name: string): DelegateModel | undefined {
+    public findDelegate(name: string): OperatorDelegateModel | undefined {
         return this.delegates.find(delegate => delegate.getName() === name);
     }
 
     public setPortIn(port: OperatorPortModel) {
+        if (port.getParentNode() !== this) {
+            throw `wrong parent ${port.getParentNode().getIdentity()}, should be ${this.getIdentity()}`;
+        }
         this.portIn = port;
     }
 
     public setPortOut(port: OperatorPortModel) {
+        if (port.getParentNode() !== this) {
+            throw `wrong parent ${port.getParentNode().getIdentity()}, should be ${this.getIdentity()}`;
+        }
         this.portOut = port;
     }
 
@@ -82,7 +91,7 @@ export class OperatorModel implements Blackbox {
     }
 
     // Actions
-    public addDelegate(delegate: OperatorDelegateModel): DelegateModel {
+    public addDelegate(delegate: OperatorDelegateModel): OperatorDelegateModel {
         this.delegates.push(delegate);
         return delegate;
     }
@@ -112,5 +121,29 @@ export class OperatorModel implements Blackbox {
 
     public subscribeDeleted(cb: () => void): void {
         this.removed.subscribe(cb);
+    }
+
+    // Slang tree
+    
+    isClass(className: string): boolean {
+        return className === OperatorModel.name;
+    }
+
+    getChildNodes(): IterableIterator<OperatorPortModel | OperatorDelegateModel> {
+        const children: Array<OperatorPortModel | OperatorDelegateModel> = [];
+        if (this.portIn) {
+            children.push(this.portIn);
+        }
+        if (this.portOut) {
+            children.push(this.portOut);
+        }
+        for (const delegate of this.delegates) {
+            children.push(delegate);
+        }
+        return children.values();
+    }
+
+    getParentNode(): BlueprintModel {
+        return this.owner;
     }
 }

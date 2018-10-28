@@ -1,11 +1,13 @@
 import {BehaviorSubject, Subject} from "rxjs";
 import {OperatorModel} from "./operator";
-import {PortType} from "./port";
-import {BlueprintDelegateModel, DelegateModel, OperatorDelegateModel} from './delegate';
-import {SlangParsing} from "../utils";
+import {PortModel, PortType} from './port';
+import {BlueprintDelegateModel, OperatorDelegateModel} from './delegate';
+import {SlangParsing} from "../custom/utils";
 import {BlueprintPortModel} from './port';
-import {PortModel} from './port';
 import {OperatorPortModel} from './port';
+import {BlackBox} from '../custom/nodes';
+import {LandscapeModel} from './landscape';
+import {Connections} from '../custom/connections';
 
 export enum BlueprintType {
     Local,
@@ -13,58 +15,7 @@ export enum BlueprintType {
     Library
 }
 
-
-/**
- * PortOwners have in and out-ports ans possibly delegates as well as an identity
- */
-export interface PortOwner {
-    getPortIn(): BlueprintPortModel | null
-
-    getPortOut(): BlueprintPortModel | null
-
-    getIdentity(): string
-}
-
-export interface Blackbox extends PortOwner {
-    getDisplayName(): string
-
-    findDelegate(name: string): DelegateModel | undefined
-
-    getDelegates(): IterableIterator<DelegateModel>
-}
-
-
-export interface Connection {
-    source: PortModel
-    destination: PortModel
-}
-
-export class Connections {
-    private connections: Array<Connection> = [];
-
-    constructor() {
-    }
-
-    public getConnections(): IterableIterator<Connection> {
-        return this.connections.values();
-    }
-
-    public addConnection(connection: Connection) {
-        // if (connection.destination.getOwner() instanceof DelegateModel) {
-        //     console.log('!!!!!!!!!', connection.destination.getIdentity());
-        //     return;
-        // }
-        this.connections.push(connection);
-    }
-
-    public addConnections(connections: Connections) {
-        for (const connection of connections.getConnections()) {
-            this.connections.push(connection);
-        }
-    }
-}
-
-export class BlueprintModel implements PortOwner {
+export class BlueprintModel extends BlackBox {
 
     // Topics
     // self
@@ -85,7 +36,8 @@ export class BlueprintModel implements PortOwner {
     private portOut: BlueprintPortModel | null = null;
     private readonly operators: Array<OperatorModel> = [];
 
-    constructor(private fullName: string, private type: BlueprintType) {
+    constructor(private landscape: LandscapeModel, private fullName: string, private type: BlueprintType) {
+        super();
         this.hierarchy = fullName.split('.');
     }
 
@@ -174,11 +126,11 @@ export class BlueprintModel implements PortOwner {
         return this.operators.find(operator => operator.getName() === name);
     }
 
-    public getDelegates(): IterableIterator<DelegateModel> {
+    public getDelegates(): IterableIterator<BlueprintDelegateModel> {
         return this.delegates.values();
     }
 
-    public findDelegate(name: string): DelegateModel | undefined {
+    public findDelegate(name: string): BlueprintDelegateModel | undefined {
         return this.delegates.find(delegate => delegate.getName() === name);
     }
 
@@ -188,7 +140,7 @@ export class BlueprintModel implements PortOwner {
             return undefined;
         }
 
-        let blackbox: Blackbox | undefined = undefined;
+        let blackbox: BlackBox | undefined = undefined;
         let port: PortModel | null | undefined = undefined;
 
         if (portInfo.instance === '') {
@@ -288,13 +240,17 @@ export class BlueprintModel implements PortOwner {
 
     // Actions
     public setPortIn(port: BlueprintPortModel) {
+        if (port.getParentNode() !== this) {
+            throw `wrong parent ${port.getParentNode().getIdentity()}, should be ${this.getIdentity()}`;
+        }
         this.portIn = port;
-        port.setOwner(this);
     }
 
     public setPortOut(port: BlueprintPortModel) {
+        if (port.getParentNode() !== this) {
+            throw `wrong parent ${port.getParentNode().getIdentity()}, should be ${this.getIdentity()}`;
+        }
         this.portOut = port;
-        port.setOwner(this);
     }
 
     public addDelegate(delegate: BlueprintDelegateModel): BlueprintDelegateModel {
@@ -375,8 +331,7 @@ export class BlueprintModel implements PortOwner {
     public subscribeOperatorRemoved(cb: (op: OperatorModel) => void): void {
         this.operatorRemoved.subscribe(cb);
     }
-
-
+    
     public subscribeSelectChanged(cb: (selected: boolean) => void): void {
         this.selected.subscribe(cb);
     }
@@ -387,6 +342,33 @@ export class BlueprintModel implements PortOwner {
 
     public subscribeDeleted(cb: () => void): void {
         this.removed.subscribe(cb);
+    }
+
+    // Slang tree
+
+    getChildNodes(): IterableIterator<BlueprintPortModel | BlueprintDelegateModel | OperatorModel> {
+        const children: Array<BlueprintPortModel | BlueprintDelegateModel | OperatorModel> = [];
+        if (this.portIn) {
+            children.push(this.portIn);
+        }
+        if (this.portOut) {
+            children.push(this.portOut);
+        }
+        for (const delegate of this.delegates) {
+            children.push(delegate);
+        }
+        for (const operator of this.operators) {
+            children.push(operator);
+        }
+        return children.values();
+    }
+
+    getParentNode(): LandscapeModel {
+        return this.landscape;
+    }
+
+    isClass(className: string): boolean {
+        return className === BlueprintModel.name;
     }
 
 }

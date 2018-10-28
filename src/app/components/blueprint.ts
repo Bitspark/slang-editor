@@ -1,10 +1,11 @@
 import {dia, layout, shapes} from 'jointjs';
-import {JointJSElements} from '../utils';
-import {BlueprintModel, PortOwner} from '../model/blueprint';
+import {JointJSElements} from '../custom/utils';
+import {BlueprintModel} from '../model/blueprint';
 import {OperatorModel} from '../model/operator';
-import {slangRouter} from '../utils/link-router';
-import {slangConnector} from '../utils/link-connector';
+import {slangRouter} from '../custom/router';
+import {slangConnector} from '../custom/connector';
 import {DelegateModel} from '../model/delegate';
+import {BlackBox} from '../custom/nodes';
 
 export class BlueprintComponent {
     private outer: dia.Element;
@@ -128,18 +129,16 @@ export class BlueprintComponent {
 
     private drawConnections() {
         for (const connection of this.blueprint.getConnections().getConnections()) {
-            const sourceOwner = connection.source.getOwner();
-            const actualSourceOwner: PortOwner = (sourceOwner instanceof DelegateModel) ? sourceOwner.getOwner() : sourceOwner;
-            const destinationOwner = connection.destination.getOwner();
-            const actualDestinationOwner: PortOwner = (destinationOwner instanceof DelegateModel) ? destinationOwner.getOwner() : destinationOwner;
+            const sourceOwner = connection.source.getAncestorNode<DelegateModel>(["BlueprintModel", "OperatorModel"]);
+            const destinationOwner = connection.destination.getAncestorNode<DelegateModel>(["BlueprintModel", "OperatorModel"]);
             
             const link = new dia.Link({
                 source: {
-                    id: actualSourceOwner.getIdentity(),
+                    id: sourceOwner!.getIdentity(),
                     port: connection.source.getIdentity()
                 },
                 target: {
-                    id: actualDestinationOwner.getIdentity(),
+                    id: destinationOwner!.getIdentity(),
                     port: connection.destination.getIdentity()
                 },
                 router: slangRouter,
@@ -175,7 +174,7 @@ export class BlueprintComponent {
     }
 
     private addOperator(operator: OperatorModel) {
-        const portOwnerElement = JointJSElements.createOperatorElement(operator);
+        const portOwnerElement = JointJSElements.createOperatorElement(operator as BlackBox);
         portOwnerElement.set('obstacle', true);
         portOwnerElement.set('inward', false);
         this.outerParent.embed(portOwnerElement);
