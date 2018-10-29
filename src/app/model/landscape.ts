@@ -10,7 +10,7 @@ export class LandscapeModel extends SlangNode {
 
     private blueprints: Array<BlueprintModel> = [];
     private selectedBlueprint = new BehaviorSubject<BlueprintModel | null>(null);
-    
+
     public createBlueprint(fullName: string, type: BlueprintType): BlueprintModel {
         const blueprint = new BlueprintModel(this, fullName, type);
         this.addBlueprint(blueprint);

@@ -1,25 +1,26 @@
 import {LandscapeModel} from "../model/landscape";
 import {BlueprintModel, BlueprintType} from "../model/blueprint";
-import {ApiService, BlueprintApiResponse, BlueprintDefApiResponse, PortApiResponse, PortGroupApiResponse} from "../services/api";
-import {BlueprintPortModel, PortType} from '../model/port';
+import {ApiService, BlueprintApiResponse, BlueprintDefApiResponse, TypeDefApiResponse, PortGroupApiResponse} from "../services/api";
+import {BlueprintPortModel} from '../model/port';
 import {BlueprintDelegateModel} from '../model/delegate';
+import {SlangType} from "../model/type";
 
 export class StorageComponent {
     constructor(private landscape: LandscapeModel, private api: ApiService) {
 
     }
 
-    private createPort(portDef: PortApiResponse, owner: BlueprintModel | BlueprintDelegateModel, directionIn: boolean): BlueprintPortModel {
-        const type: PortType = {
-            number: PortType.Number,
-            binary: PortType.Binary,
-            boolean: PortType.Boolean,
-            string: PortType.String,
-            trigger: PortType.Trigger,
-            primitive: PortType.Primitive,
-            generic: PortType.Generic,
-            stream: PortType.Stream,
-            map: PortType.Map,
+    private createPort(portDef: TypeDefApiResponse, owner: BlueprintModel | BlueprintDelegateModel, directionIn: boolean): BlueprintPortModel {
+        const type: SlangType = {
+            number: SlangType.Number,
+            binary: SlangType.Binary,
+            boolean: SlangType.Boolean,
+            string: SlangType.String,
+            trigger: SlangType.Trigger,
+            primitive: SlangType.Primitive,
+            generic: SlangType.Generic,
+            stream: SlangType.Stream,
+            map: SlangType.Map,
         }[portDef.type];
 
         if (type === null) {
@@ -29,13 +30,13 @@ export class StorageComponent {
         const port = new BlueprintPortModel(null, owner, type, directionIn);
 
         switch (port.getType()) {
-            case PortType.Map:
+            case SlangType.Map:
                 Object.keys(portDef.map!).forEach((portName: string) => {
-                    port.addMapSubPort(portName, this.createPort(portDef.map![portName], owner, directionIn));
+                    port.addMapSub(portName, this.createPort(portDef.map![portName], owner, directionIn));
                 });
                 break;
-            case PortType.Stream:
-                port.setStreamSubPort(this.createPort(portDef.stream!, owner, directionIn));
+            case SlangType.Stream:
+                port.setStreamSub(this.createPort(portDef.stream!, owner, directionIn));
                 break;
         }
 
@@ -43,8 +44,8 @@ export class StorageComponent {
     }
 
     private setBlueprintServices(blueprint: BlueprintModel, services: PortGroupApiResponse) {
-        const portInDef: PortApiResponse = services["main"].in;
-        const outPortDef: PortApiResponse = services["main"].out;
+        const portInDef: TypeDefApiResponse = services["main"].in;
+        const outPortDef: TypeDefApiResponse = services["main"].out;
         blueprint.setPortIn(this.createPort(portInDef, blueprint, true));
         blueprint.setPortOut(this.createPort(outPortDef, blueprint, false));
     }

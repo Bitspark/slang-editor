@@ -1,7 +1,8 @@
 import {attributes, dia, shapes} from "jointjs";
-import {PortModel, PortType} from "../model/port";
+import {PortModel} from "../model/port";
 import SVGAttributes = attributes.SVGAttributes;
 import {BlackBox} from './nodes';
+import {SlangType} from "../model/type";
 
 export class JointJSElements {
 
@@ -53,14 +54,14 @@ export class JointJSElements {
         let portItems: Array<dia.Element.Port> = [];
 
         switch (port.getType()) {
-            case PortType.Map:
-                for (const [_, each] of port.getMapSubPorts()) {
+            case SlangType.Map:
+                for (const [_, each] of port.getMapSubs()) {
                     portItems = portItems.concat(this.createPortItems(group, each));
                 }
                 break;
 
-            case PortType.Stream:
-                portItems = portItems.concat(this.createPortItems(group, port.getStreamSubPort()));
+            case SlangType.Stream:
+                portItems = portItems.concat(this.createPortItems(group, port.getStreamSub()));
                 break;
 
             default:

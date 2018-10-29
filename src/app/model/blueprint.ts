@@ -1,6 +1,6 @@
 import {BehaviorSubject, Subject} from "rxjs";
 import {OperatorModel} from "./operator";
-import {PortModel, PortType} from './port';
+import {PortModel} from './port';
 import {BlueprintDelegateModel, OperatorDelegateModel} from './delegate';
 import {SlangParsing} from "../custom/utils";
 import {BlueprintPortModel} from './port';
@@ -8,6 +8,7 @@ import {OperatorPortModel} from './port';
 import {BlackBox} from '../custom/nodes';
 import {LandscapeModel} from './landscape';
 import {Connections} from '../custom/connections';
+import {SlangType} from "./type";
 
 export enum BlueprintType {
     Local,
@@ -55,13 +56,13 @@ export class BlueprintModel extends BlackBox {
         function copyPort(owner: OperatorModel | OperatorDelegateModel, parent: OperatorPortModel | null, port: BlueprintPortModel): OperatorPortModel {
             const portCopy = new OperatorPortModel(parent, owner, port.getType(), port.isDirectionIn());
             switch (portCopy.getType()) {
-                case PortType.Map:
-                    for (const entry of port.getMapSubPorts()) {
-                        portCopy.addMapSubPort(entry[0], copyPort(owner, portCopy, entry[1]));
+                case SlangType.Map:
+                    for (const entry of port.getMapSubs()) {
+                        portCopy.addMapSub(entry[0], copyPort(owner, portCopy, entry[1]));
                     }
                     break;
-                case PortType.Stream:
-                    portCopy.setStreamSubPort(copyPort(owner, portCopy, port.getStreamSubPort()));
+                case SlangType.Stream:
+                    portCopy.setStreamSub(copyPort(owner, portCopy, port.getStreamSub()));
                     break;
             }
             return portCopy;
@@ -187,16 +188,16 @@ export class BlueprintModel extends BlackBox {
 
         for (let i = 0; i < pathSplit.length; i++) {
             if (pathSplit[i] === '~') {
-                port = port.getStreamSubPort();
+                port = port.getStreamSub();
                 continue;
             }
 
-            if (port.getType() !== PortType.Map) {
+            if (port.getType() !== SlangType.Map) {
                 return null;
             }
 
-            const mapSubPortName = pathSplit[i];
-            port = port.findMapSubPort(mapSubPortName);
+            const mapSubName = pathSplit[i];
+            port = port.findMapSub(mapSubName);
             if (!port) {
                 return undefined;
             }
