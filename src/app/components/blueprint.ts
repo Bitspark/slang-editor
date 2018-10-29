@@ -1,10 +1,10 @@
 import {dia, layout, shapes} from 'jointjs';
-import {JointJSElements} from '../custom/utils';
 import {BlueprintModel} from '../model/blueprint';
 import {OperatorModel} from '../model/operator';
-import {slangRouter} from '../custom/router';
-import {slangConnector} from '../custom/connector';
+import {slangRouter} from '../joint/router';
+import {slangConnector} from '../joint/connector';
 import {BlackBox} from '../custom/nodes';
+import {JointBlackBox} from "../joint/blackbox";
 
 export class BlueprintComponent {
     private outer: dia.Element;
@@ -91,7 +91,7 @@ export class BlueprintComponent {
     }
 
     private drawBlueprint(): [dia.Element, dia.Element] {
-        const outer = JointJSElements.createOperatorElement(this.blueprint);
+        const outer = new JointBlackBox(this.blueprint);
         outer.attr('body/fill', 'blue');
         outer.attr('body/fill-opacity', '.05');
         outer.set('obstacle', false);
@@ -173,7 +173,7 @@ export class BlueprintComponent {
     }
 
     private addOperator(operator: OperatorModel) {
-        const portOwnerElement = JointJSElements.createOperatorElement(operator as BlackBox);
+        const portOwnerElement = new JointBlackBox(operator);
         portOwnerElement.set('obstacle', true);
         portOwnerElement.set('inward', false);
         this.outerParent.embed(portOwnerElement);

@@ -3,7 +3,7 @@ import {ApiService} from '../services/api';
 import {LandscapeComponent} from './landscape';
 import {BlueprintComponent} from './blueprint';
 import {BlueprintType} from '../model/blueprint';
-import {Canvas} from '../ui/cavas';
+import {Canvas} from '../joint/cavas';
 import {RouterComponent} from './router';
 import {AppModel} from '../model/app';
 

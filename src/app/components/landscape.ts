@@ -3,7 +3,7 @@ import {dia, shapes} from 'jointjs';
 import {LandscapeModel} from '../model/landscape';
 import {BlueprintModel, BlueprintType} from '../model/blueprint';
 import {Subject} from "rxjs";
-import {JointJSElements} from "../custom/utils";
+import {JointBlackBox} from "../joint/blackbox";
 
 export class LandscapeComponent {
     private graph: dia.Graph | null;
@@ -275,7 +275,7 @@ export class LandscapeComponent {
             return;
         }
 
-        const blueprintRect = JointJSElements.createOperatorElement(blueprint);
+        const blueprintRect = new JointBlackBox(blueprint);
         blueprintRect.attr({
             body: {
                 cursor: "pointer",

@@ -2,7 +2,7 @@ import {BehaviorSubject, Subject} from "rxjs";
 import {OperatorModel} from "./operator";
 import {PortModel, PortType} from './port';
 import {BlueprintDelegateModel, OperatorDelegateModel} from './delegate';
-import {SlangParsing} from "../custom/utils";
+import {SlangParsing} from "../custom/parsing";
 import {BlueprintPortModel} from './port';
 import {OperatorPortModel} from './port';
 import {BlackBox} from '../custom/nodes';
