@@ -59,11 +59,11 @@ export class AppModel {
     
     // Subscriptions
 
-    public subscribeOpenedBlueprintChanged(cb: (bp: BlueprintModel) => void) {
+    public subscribeOpenedBlueprintChanged(cb: (bp: BlueprintModel | null) => void) {
         this.openedBlueprint.subscribe(cb);
     }
 
-    public subscribeOpenedLandscapeChanged(cb: (ls: LandscapeModel) => void) {
+    public subscribeOpenedLandscapeChanged(cb: (ls: LandscapeModel | null) => void) {
         this.openedLandscape.subscribe(cb);
     }
     

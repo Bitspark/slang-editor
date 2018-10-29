@@ -1,26 +1,26 @@
-import {StorageComponent} from "./storage";
-import {ApiService} from "../services/api";
-import {LandscapeComponent} from "./landscape";
-import {BlueprintComponent} from "./blueprint";
-import { BlueprintType} from "../model/blueprint";
-import {Canvas} from "../ui/cavas";
-import {RouterComponent} from "./router";
+import {StorageComponent} from './storage';
+import {ApiService} from '../services/api';
+import {LandscapeComponent} from './landscape';
+import {BlueprintComponent} from './blueprint';
+import {BlueprintType} from '../model/blueprint';
+import {Canvas} from '../ui/cavas';
+import {RouterComponent} from './router';
 import {AppModel} from '../model/app';
 
 export class AppComponent {
-    private landscapeComponent: LandscapeComponent | null;
+    private landscapeComponent: LandscapeComponent | null = null;
     private storageComponent: StorageComponent;
     private routerComponent: RouterComponent;
     private canvas: Canvas;
 
     constructor(private appModel: AppModel, private el: HTMLElement, host: string) {
         this.canvas = new Canvas(el);
-        
+
         const landscapeModel = appModel.getLandscape();
-        
+
         this.routerComponent = new RouterComponent(appModel);
         this.storageComponent = new StorageComponent(landscapeModel, new ApiService(host));
-        
+
         this.subscribe();
     }
 
@@ -31,7 +31,7 @@ export class AppComponent {
                 new BlueprintComponent(this.canvas.getGraph(), blueprint);
             }
         });
-        
+
         this.appModel.subscribeOpenedLandscapeChanged(landscape => {
             if (landscape !== null) {
                 this.canvas.reset();

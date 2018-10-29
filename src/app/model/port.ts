@@ -1,7 +1,9 @@
-import {BehaviorSubject, Subject} from "rxjs";
-import {BlueprintModel, PortOwner, Connections} from "./blueprint";
-import {OperatorModel} from "./operator";
-import {DelegateModel} from "./delegate";
+import {BehaviorSubject, Subject} from 'rxjs';
+import {BlueprintModel} from './blueprint';
+import {OperatorModel} from './operator';
+import {BlueprintDelegateModel, OperatorDelegateModel} from './delegate';
+import {PortOwner, SlangNode} from '../custom/nodes';
+import {Connections} from '../custom/connections';
 
 export enum PortType {
     Number,
@@ -15,7 +17,7 @@ export enum PortType {
     Map,
 }
 
-export class PortModel {
+export abstract class PortModel extends SlangNode {
 
     // Topics
     // self
@@ -23,18 +25,19 @@ export class PortModel {
     private selected = new BehaviorSubject<boolean>(false);
 
     // Properties
-    private mapSubPorts: Map<string, PortModel> | undefined;
+    private readonly mapSubPorts: Map<string, PortModel> | undefined;
     private streamSubPort: PortModel | undefined;
-    private destinations: Array<PortModel> | null;
+    protected destinations: Array<PortModel> | null = null;
+    protected owner: PortOwner;
 
-    constructor(private parent: PortModel | null, private owner: PortOwner, private type: PortType, private inDirection: boolean) {
+    protected constructor(protected parent: PortModel | null, private type: PortType, private inDirection: boolean) {
+        super();
         if (this.type === PortType.Map) {
             this.mapSubPorts = new Map<string, PortModel>();
         }
-        this.setOwner(owner);
     }
 
-    public addMapSubPort(name: string, port: PortModel): PortModel {
+    protected addMapSubPort(name: string, port: PortModel): PortModel {
         if (this.type !== PortType.Map) {
             throw `add map sub port to a port of type '${this.type}' not possible`;
         }
@@ -50,14 +53,18 @@ export class PortModel {
         return this.mapSubPorts!.entries();
     }
 
-    public findMapSubPort(name: string): PortModel | undefined {
+    public findMapSubPort(name: string): PortModel {
         if (this.type !== PortType.Map) {
             throw `access of map sub port of a port of type '${this.type}' not possible`;
         }
-        return this.mapSubPorts!.get(name);
+        const mapSubPort = this.mapSubPorts!.get(name);
+        if (!mapSubPort) {
+            throw `map sub port ${name} not found`
+        }
+        return mapSubPort;
     }
 
-    public setStreamSubPort(port: PortModel) {
+    protected setStreamSubPort(port: PortModel) {
         if (this.type !== PortType.Stream) {
             throw `set stream sub port of a port of type '${this.type}' not possible`;
         }
@@ -65,9 +72,12 @@ export class PortModel {
         this.streamSubPort = port;
     }
 
-    public getStreamSubPort(): PortModel | undefined {
+    public getStreamSubPort(): PortModel {
         if (this.type !== PortType.Stream) {
-            throw `access of stream port of a port of type '${this.type}' not possible`;
+            throw `${this.getIdentity()}: access of stream port of a port of type '${this.type}' not possible`;
+        }
+        if (!this.streamSubPort) {
+            throw `${this.getIdentity()}: stream port not having sub stream port`;
         }
         return this.streamSubPort;
     }
@@ -142,43 +152,12 @@ export class PortModel {
 
     public getIdentity(): string {
         const referenceString = this.getReferenceString();
-        const ownerName: string = this.getOwner().getIdentity();
+        const ownerIdentity: string = this.owner.getIdentity();
         if (this.inDirection) {
-            return referenceString + '(' + ownerName;
+            return referenceString + '(' + ownerIdentity;
         } else {
-            return ownerName + ')' + referenceString;
+            return ownerIdentity + ')' + referenceString;
         }
-    }
-
-    public setOwner(owner: PortOwner) {
-        this.owner = owner;
-        switch (this.type) {
-            case PortType.Map:
-                for (const subPort of this.getMapSubPorts()) {
-                    subPort[1].setOwner(owner);
-                }
-                break;
-            case PortType.Stream:
-                const streamSubPort = this.getStreamSubPort();
-                if (streamSubPort) {
-                    streamSubPort.setOwner(owner);
-                }
-                break;
-        }
-
-        const actualOwner: PortOwner = (owner instanceof DelegateModel) ? owner.getOwner() : owner;
-
-        if (actualOwner instanceof BlueprintModel && this.inDirection) {
-            // Blueprints can have their in-ports connected with operator in-ports or blueprint out-ports
-            this.destinations = [];
-        } else if (actualOwner instanceof OperatorModel && !this.inDirection) {
-            // Operators can have their out-ports connected with operator in-ports or blueprint out-ports
-            this.destinations = [];
-        }
-    }
-
-    public getOwner(): PortOwner {
-        return this.owner;
     }
 
     public isDirectionIn(): boolean {
@@ -210,7 +189,19 @@ export class PortModel {
         if (this.destinations.indexOf(destination) !== -1) {
             throw `already connected with that destination`;
         }
-        this.destinations.push(destination);
+        switch (this.type) {
+            case PortType.Map:
+                for (const subPort of this.getMapSubPorts()) {
+                    subPort[1].connect(destination.findMapSubPort(subPort[0]));
+                }
+                break;
+            case PortType.Stream:
+                this.getStreamSubPort().connect(destination.getStreamSubPort());
+                break;
+            default:
+                this.destinations.push(destination);
+                break;
+        }
     }
 
     // Subscriptions
@@ -221,5 +212,111 @@ export class PortModel {
 
     public subscribeDeleted(cb: () => void): void {
         this.removed.subscribe(cb);
+    }
+
+    // Slang tree
+
+    isClass(className: string): boolean {
+        return className === PortModel.name;
+    }
+
+    getChildNodes(): IterableIterator<SlangNode> {
+        const children: Array<SlangNode> = [];
+        switch (this.type) {
+            case PortType.Map:
+            for (const mapSubPort of this.getMapSubPorts()) {
+                children.push(mapSubPort[1]);
+            }
+            break;
+            case PortType.Stream:
+                children.push(this.getStreamSubPort());
+                break;
+        }
+        return children.values();
+    }
+
+    getParentNode(): SlangNode {
+        if (this.parent) {
+            return this.parent;
+        }
+        return this.owner;
+    }
+}
+
+export class BlueprintPortModel extends PortModel {
+    public constructor(parent: PortModel | null, owner: BlueprintModel | BlueprintDelegateModel, type: PortType, inDirection: boolean) {
+        super(parent, type, inDirection);
+        this.setOwner(owner);
+    }
+
+    public addMapSubPort(name: string, port: BlueprintPortModel): BlueprintPortModel {
+        return super.addMapSubPort(name, port) as BlueprintPortModel;
+    }
+
+    public getMapSubPorts(): IterableIterator<[string, BlueprintPortModel]> {
+        return super.getMapSubPorts() as IterableIterator<[string, BlueprintPortModel]>;
+    }
+
+    public findMapSubPort(name: string): BlueprintPortModel {
+        return super.findMapSubPort(name) as BlueprintPortModel;
+    }
+
+    public setStreamSubPort(port: BlueprintPortModel) {
+        super.setStreamSubPort(port);
+    }
+
+    public getStreamSubPort(): BlueprintPortModel {
+        return super.getStreamSubPort() as BlueprintPortModel;
+    }
+
+    public isClass(className: string): boolean {
+        return super.isClass(className) || className === BlueprintPortModel.name;
+    }
+
+    private setOwner(owner: BlueprintModel | BlueprintDelegateModel) {
+        this.owner = owner;
+        if (this.isDirectionIn()) {
+            // Blueprints can have their in-ports connected with operator in-ports or blueprint out-ports
+            this.destinations = [];
+        }
+    }
+}
+
+export class OperatorPortModel extends PortModel {
+    public constructor(parent: PortModel | null, owner: OperatorModel | OperatorDelegateModel, type: PortType, inDirection: boolean) {
+        super(parent, type, inDirection);
+        this.setOwner(owner);
+    }
+
+    public addMapSubPort(name: string, port: OperatorPortModel): OperatorPortModel {
+        return super.addMapSubPort(name, port) as OperatorPortModel;
+    }
+
+    public getMapSubPorts(): IterableIterator<[string, OperatorPortModel]> {
+        return super.getMapSubPorts() as IterableIterator<[string, OperatorPortModel]>;
+    }
+
+    public findMapSubPort(name: string): OperatorPortModel {
+        return super.findMapSubPort(name) as OperatorPortModel;
+    }
+
+    public setStreamSubPort(port: OperatorPortModel) {
+        super.setStreamSubPort(port);
+    }
+
+    public getStreamSubPort(): OperatorPortModel {
+        return super.getStreamSubPort() as OperatorPortModel;
+    }
+
+    public isClass(className: string): boolean {
+        return super.isClass(className) || className === OperatorPortModel.name;
+    }
+    
+    private setOwner(owner: OperatorModel | OperatorDelegateModel) {
+        this.owner = owner;
+        if (!this.isDirectionIn()) {
+            // Operators can have their out-ports connected with operator in-ports or blueprint out-ports
+            this.destinations = [];
+        }
     }
 }

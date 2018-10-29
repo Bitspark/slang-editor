@@ -1,20 +1,23 @@
 import {BehaviorSubject, Subject} from "rxjs";
-import {BlueprintModel, PortOwner, BlueprintType, Operator} from "./blueprint";
-import {PortModel} from "./port";
-import {DelegateModel} from "./delegate";
+import {BlueprintModel, BlueprintType} from './blueprint';
+import {OperatorPortModel} from './port';
+import {OperatorDelegateModel} from './delegate';
+import {BlackBox} from '../custom/nodes';
+import {Connections} from '../custom/connections';
 
-export class OperatorModel implements Operator {
+export class OperatorModel extends BlackBox {
 
     // Topics
     // self
     private removed = new Subject<void>();
     private selected = new BehaviorSubject<boolean>(false);
 
-    private delegates: Array<DelegateModel> = [];
-    private portIn: PortModel | null = null;
-    private portOut: PortModel | null = null;
+    private delegates: Array<OperatorDelegateModel> = [];
+    private portIn: OperatorPortModel | null = null;
+    private portOut: OperatorPortModel | null = null;
 
-    constructor(private name: string, private blueprint: BlueprintModel) {
+    constructor(private owner: BlueprintModel, private name: string, private blueprint: BlueprintModel) {
+        super();
     }
 
     public getName(): string {
@@ -33,27 +36,33 @@ export class OperatorModel implements Operator {
         return this.blueprint;
     }
 
-    public getDelegates(): IterableIterator<DelegateModel> {
+    public getDelegates(): IterableIterator<OperatorDelegateModel> {
         return this.delegates.values();
     }
 
-    public findDelegate(name: string): DelegateModel | undefined {
+    public findDelegate(name: string): OperatorDelegateModel | undefined {
         return this.delegates.find(delegate => delegate.getName() === name);
     }
 
-    public setPortIn(port: PortModel) {
+    public setPortIn(port: OperatorPortModel) {
+        if (port.getParentNode() !== this) {
+            throw `wrong parent ${port.getParentNode().getIdentity()}, should be ${this.getIdentity()}`;
+        }
         this.portIn = port;
     }
 
-    public setPortOut(port: PortModel) {
+    public setPortOut(port: OperatorPortModel) {
+        if (port.getParentNode() !== this) {
+            throw `wrong parent ${port.getParentNode().getIdentity()}, should be ${this.getIdentity()}`;
+        }
         this.portOut = port;
     }
 
-    public getPortIn(): PortModel | null {
+    public getPortIn(): OperatorPortModel | null {
         return this.portIn;
     }
 
-    public getPortOut(): PortModel | null {
+    public getPortOut(): OperatorPortModel | null {
         return this.portOut;
     }
 
@@ -62,11 +71,27 @@ export class OperatorModel implements Operator {
     }
 
     public getIdentity(): string {
-        return this.getBlueprint().getIdentity() + '#' + this.getName();
+        return this.owner.getIdentity() + '#' + this.getName();
+    }
+
+    public getConnections(): Connections {
+        const connections = new Connections();
+
+        // First, handle operator out-ports
+        if (this.portOut) {
+            connections.addConnections(this.portOut.getConnections());
+        }
+
+        // Then, handle delegate out-ports
+        for (const delegate of this.delegates) {
+            connections.addConnections(delegate.getConnections());
+        }
+
+        return connections;
     }
 
     // Actions
-    public addDelegate(delegate: DelegateModel): DelegateModel {
+    public addDelegate(delegate: OperatorDelegateModel): OperatorDelegateModel {
         this.delegates.push(delegate);
         return delegate;
     }
@@ -96,5 +121,29 @@ export class OperatorModel implements Operator {
 
     public subscribeDeleted(cb: () => void): void {
         this.removed.subscribe(cb);
+    }
+
+    // Slang tree
+    
+    isClass(className: string): boolean {
+        return className === OperatorModel.name;
+    }
+
+    getChildNodes(): IterableIterator<OperatorPortModel | OperatorDelegateModel> {
+        const children: Array<OperatorPortModel | OperatorDelegateModel> = [];
+        if (this.portIn) {
+            children.push(this.portIn);
+        }
+        if (this.portOut) {
+            children.push(this.portOut);
+        }
+        for (const delegate of this.delegates) {
+            children.push(delegate);
+        }
+        return children.values();
+    }
+
+    getParentNode(): BlueprintModel {
+        return this.owner;
     }
 }

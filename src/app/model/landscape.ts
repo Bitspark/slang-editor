@@ -1,8 +1,8 @@
 import {BlueprintModel, BlueprintType} from './blueprint';
-import {BehaviorSubject, Observable, Subject} from 'rxjs';
-import {OperatorModel} from "./operator";
+import {BehaviorSubject, Subject} from 'rxjs';
+import {SlangNode} from '../custom/nodes';
 
-export class LandscapeModel {
+export class LandscapeModel extends SlangNode {
 
     private blueprintAdded = new Subject<BlueprintModel>();
     private blueprintRemoved = new Subject<BlueprintModel>();
@@ -10,10 +10,9 @@ export class LandscapeModel {
 
     private blueprints: Array<BlueprintModel> = [];
     private selectedBlueprint = new BehaviorSubject<BlueprintModel | null>(null);
-
-
+    
     public createBlueprint(fullName: string, type: BlueprintType): BlueprintModel {
-        const blueprint = new BlueprintModel(fullName, type);
+        const blueprint = new BlueprintModel(this, fullName, type);
         this.addBlueprint(blueprint);
         return blueprint;
     }
@@ -93,12 +92,34 @@ export class LandscapeModel {
         this.blueprintRemoved.subscribe(cb);
     }
 
-    public subscribeSelectionChanged(cb: (blueprint: BlueprintModel) => void): void {
+    public subscribeSelectionChanged(cb: (blueprint: BlueprintModel | null) => void): void {
         this.selectedBlueprint.subscribe(cb);
     }
 
     public subscribeOpenedChanged(cb: (opened: boolean) => void) {
         this.opened.subscribe(cb);
+    }
+
+    // Slang tree
+
+    getChildNodes(): IterableIterator<BlueprintModel> {
+        const children: Array<BlueprintModel> = [];
+        for (const blueprint of this.blueprints) {
+            children.push(blueprint);
+        }
+        return children.values();
+    }
+
+    getParentNode(): null {
+        return null;
+    }
+
+    getIdentity(): string {
+        return "landscape";
+    }
+
+    isClass(className: string): boolean {
+        return className === LandscapeModel.name;
     }
 
 }

@@ -3,11 +3,11 @@ import {dia, shapes} from 'jointjs';
 import {LandscapeModel} from '../model/landscape';
 import {BlueprintModel, BlueprintType} from '../model/blueprint';
 import {Subject} from "rxjs";
-import {JointJSElements} from "../utils";
+import {JointJSElements} from "../custom/utils";
 
 export class LandscapeComponent {
     private graph: dia.Graph | null;
-    private readonly filter: (blueprint: BlueprintModel) => boolean | null;
+    private readonly filter: ((blueprint: BlueprintModel) => boolean) | null;
     private blueprintRects = new Map<string, shapes.standard.Rectangle>();
     private addBlueprintButton: dia.Element;
     private slangLogo: dia.Element;
@@ -17,7 +17,12 @@ export class LandscapeComponent {
         this.graph = graph;
         if (filter) {
             this.filter = filter;
+        } else {
+            this.filter = null;
         }
+        
+        this.addBlueprintButton = this.createAddBlueprintButton();
+        this.slangLogo = this.createSlangLogo();
 
         this.redraw();
         this.subscribe(landscape);
@@ -66,9 +71,9 @@ export class LandscapeComponent {
 
         this.graph.clear();
 
-        this.addCreateButton();
+        this.addBlueprintButton = this.createAddBlueprintButton();
+        this.slangLogo = this.createSlangLogo();
         this.addBlueprints(this.landscape);
-        this.addSlangLogo();
 
         this.reorder(width, height);
     }
@@ -208,9 +213,9 @@ export class LandscapeComponent {
         logo.position(posX - logo.getBBox().width / 2, posY - logo.getBBox().height / 2);
     }
 
-    private addCreateButton() {
+    private createAddBlueprintButton(): dia.Element {
         if (!this.graph) {
-            return;
+            throw `no graph`;
         }
 
         const rect = new shapes.standard.Rectangle();
@@ -236,12 +241,12 @@ export class LandscapeComponent {
             that.landscape.createBlueprint(`Unnamed${new Date().getTime()}`, BlueprintType.Local).open();
         });
 
-        this.addBlueprintButton = rect;
+        return rect;
     }
 
-    private addSlangLogo() {
+    private createSlangLogo(): dia.Element {
         if (!this.graph) {
-            return;
+            throw `no graph`;
         }
 
         let image = new shapes.basic.Image({
@@ -262,7 +267,7 @@ export class LandscapeComponent {
         image.attr('clickthrough', true);
         this.graph.addCell(image);
 
-        this.slangLogo = image;
+        return image;
     }
 
     private addBlueprint(blueprint: BlueprintModel) {

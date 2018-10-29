@@ -1,50 +1,41 @@
-import {dia, layout} from "jointjs";
-import {JointJSElements} from "../utils";
-import {BlueprintModel} from "../model/blueprint";
-import {OperatorModel} from "../model/operator";
-import {PortModel} from "../model/port";
+import {dia, layout, shapes} from 'jointjs';
+import {JointJSElements} from '../custom/utils';
+import {BlueprintModel} from '../model/blueprint';
+import {OperatorModel} from '../model/operator';
+import {slangRouter} from '../custom/router';
+import {slangConnector} from '../custom/connector';
+import {BlackBox} from '../custom/nodes';
 
 export class BlueprintComponent {
     private outer: dia.Element;
-    private outerPadding = 40;
-    private portModelToElement: Map<PortModel, dia.Element.Port>;
+    private outerParent: dia.Element;
+    private outerPadding = 80;
 
     constructor(private graph: dia.Graph, private blueprint: BlueprintModel) {
-        this.portModelToElement = new Map<PortModel, dia.Element.Port>();
         graph.clear();
-        
+
         this.attachEventHandlers();
         this.subscribe();
-        this.drawBlueprint();
+
+        [this.outer, this.outerParent] = this.drawBlueprint();
+        this.drawOperators();
+        this.drawConnections();
+
         this.autoLayout();
+        this.fitEmbedding();
+        this.positionCenter();
     }
 
     private attachEventHandlers() {
         const that = this;
-        /******* src: https://resources.jointjs.com/tutorial/hierarchy ********/
-        this.graph.on('change:size', function (cell: dia.Cell, newPosition: dia.Point, opt: any) {
-
-            if (opt.skipParentHandler) return;
-
-            if (cell.get('embeds') && cell.get('embeds').length) {
-                // If we're manipulating a parent element, let's store
-                // it's original size to a special property so that
-                // we can shrink the parent element back while manipulating
-                // its children.
-                cell.set('originalSize', cell.get('size'));
-            }
-        });
 
         this.graph.on('change:position', function (cell: dia.Cell, newPosition: dia.Point, opt: any) {
-
             if (opt.skipParentHandler) return;
 
-            if (cell.get('embeds') && cell.get('embeds').length) {
-                // If we're manipulating a parent element, let's store
-                // it's original position to a special property so that
-                // we can shrink the parent element back while manipulating
-                // its children.
-                cell.set('originalPosition', cell.get('position'));
+            if (cell === that.outer) {
+                that.outerParent.set({
+                    position: that.outer.position()
+                });
             }
 
             const parentId = cell.get('parent');
@@ -52,42 +43,44 @@ export class BlueprintComponent {
 
             const parent = that.graph.getCell(parentId);
 
-            if (!parent.get('originalPosition')) parent.set('originalPosition', parent.get('position'));
-            if (!parent.get('originalSize')) parent.set('originalSize', parent.get('size'));
+            let newX: number | undefined = undefined;
+            let newY: number | undefined = undefined;
+            let newCornerX: number | undefined = undefined;
+            let newCornerY: number | undefined = undefined;
 
-            const originalPosition = parent.get('originalPosition');
-            const originalSize = parent.get('originalSize');
-
-            let newX = originalPosition.x;
-            let newY = originalPosition.y;
-            let newCornerX = originalPosition.x + originalSize.width;
-            let newCornerY = originalPosition.y + originalSize.height;
-
-            Array.from(parent.getEmbeddedCells()).forEach((child: dia.Element) => {
-                const childBbox = child.getBBox();
-                if (childBbox.x < (newX + that.outerPadding)) {
-                    newX = (childBbox.x - that.outerPadding);
+            Array.from(parent.getEmbeddedCells()).forEach((child: dia.Cell, index: number, array: Array<dia.Cell>) => {
+                const childBbox = (child as dia.Element).getBBox();
+                if (!newX || childBbox.x < newX) {
+                    newX = childBbox.x;
                 }
-                if (childBbox.y < (newY + that.outerPadding)) {
-                    newY = (childBbox.y - that.outerPadding);
+                if (!newY || childBbox.y < newY) {
+                    newY = childBbox.y;
                 }
-                if (childBbox.corner().x > (newCornerX - that.outerPadding)) {
-                    newCornerX = (childBbox.corner().x + that.outerPadding);
+                if (!newCornerX || childBbox.corner().x > newCornerX) {
+                    newCornerX = childBbox.corner().x;
                 }
-                if (childBbox.corner().y > (newCornerY - that.outerPadding)) {
-                    newCornerY = (childBbox.corner().y + that.outerPadding);
+                if (!newCornerY || childBbox.corner().y > newCornerY) {
+                    newCornerY = childBbox.corner().y;
                 }
             });
 
-            // Note that we also pass a flag so that we know we shouldn't adjust the
-            // `originalPosition` and `originalSize` in our handlers as a reaction
-            // on the following `set()` call.
-            parent.set({
-                position: {x: newX, y: newY},
-                size: {width: newCornerX - newX, height: newCornerY - newY}
-            }, ({skipParentHandler: true} as any));
+            if (typeof newX !== 'undefined' &&
+                typeof newY !== 'undefined' &&
+                typeof newCornerX !== 'undefined' &&
+                typeof newCornerY !== 'undefined') {
+                const set = {
+                    position: {x: newX - that.outerPadding, y: newY - that.outerPadding},
+                    size: {
+                        width: newCornerX - newX + 2 * that.outerPadding,
+                        height: newCornerY - newY + 2 * that.outerPadding
+                    }
+                };
+                parent.set(set, ({skipParentHandler: true} as any));
+                if (parent === that.outerParent) {
+                    that.outer.set(set);
+                }
+            }
         });
-        /*********/
     }
 
     private subscribe() {
@@ -97,51 +90,95 @@ export class BlueprintComponent {
         });
     }
 
-    private drawBlueprint() {
-        const blueprint = this.blueprint;
-        this.outer = JointJSElements.createOperatorElement(blueprint);
-        this.outer.attr('body/fill', 'blue');
-        this.outer.attr('body/fill-opacity', '.05');
-        this.outer.addTo(this.graph);
+    private drawBlueprint(): [dia.Element, dia.Element] {
+        const outer = JointJSElements.createOperatorElement(this.blueprint);
+        outer.attr('body/fill', 'blue');
+        outer.attr('body/fill-opacity', '.05');
+        outer.set('obstacle', false);
+        outer.set('inward', true);
+        outer.addTo(this.graph);
 
-        for (const op of blueprint.getOperators()) {
+        const outerParent = new shapes.standard.Rectangle({});
+        outerParent.attr('body/stroke-opacity', '0');
+        outerParent.attr('body/fill-opacity', '0');
+        outerParent.set('obstacle', false);
+        outerParent.set('inward', true);
+        outerParent.addTo(this.graph);
+
+        outer.on('change:position', function (cell: dia.Cell) {
+            outer.set({
+                position: cell.get('position')
+            });
+        });
+        outerParent.on('change:position change:size', function (cell: dia.CellView) {
+            const set = {
+                size: outerParent.size()
+            };
+            outer.set(set, ({skipParentHandler: true} as any));
+        });
+        
+        return [outer, outerParent];
+    }
+
+    private drawOperators() {
+        for (const op of this.blueprint.getOperators()) {
             this.addOperator(op);
         }
-        
-        this.drawConnections();
-
-        this.outer.fitEmbeds({padding: this.outerPadding});
     }
-    
+
     private drawConnections() {
         for (const connection of this.blueprint.getConnections().getConnections()) {
+            const sourceOwner = connection.source.getAncestorNode<BlackBox>(BlackBox);
+            const destinationOwner = connection.destination.getAncestorNode<BlackBox>(BlackBox);
+            
             const link = new dia.Link({
                 source: {
-                    id: connection.source.getOwner()!.getIdentity(),
+                    id: sourceOwner!.getIdentity(),
                     port: connection.source.getIdentity()
                 },
                 target: {
-                    id: connection.destination.getOwner()!.getIdentity(),
+                    id: destinationOwner!.getIdentity(),
                     port: connection.destination.getIdentity()
+                },
+                router: slangRouter,
+                connector: slangConnector,
+                attrs: {
+                    '.connection': {
+                        stroke: '#777777',
+                        'stroke-width': 2
+                    }
                 }
             });
             link.addTo(this.graph);
         }
     }
-    
+
     private autoLayout() {
-        const graphBBox = layout.DirectedGraph.layout(this.graph, {
-            nodeSep: 50,
-            edgeSep: 80,
-            rankDir: "TB"
+        layout.DirectedGraph.layout(this.graph, {
+            nodeSep: 80,
+            rankSep: 80,
+            edgeSep: 240,
+            rankDir: 'TB'
         });
     }
 
+    private fitEmbedding() {
+        this.outerParent.fitEmbeds({padding: this.outerPadding});
+    }
+
+    private positionCenter() {
+        const position = this.outerParent.position();
+        const bbox = this.outerParent.getBBox();
+        this.outerParent.translate(-(position.x + bbox.width / 2), -(position.y + bbox.height / 2));
+    }
+
     private addOperator(operator: OperatorModel) {
-        const portOwnerElement = JointJSElements.createOperatorElement(operator);
-        this.outer.embed(portOwnerElement);
+        const portOwnerElement = JointJSElements.createOperatorElement(operator as BlackBox);
+        portOwnerElement.set('obstacle', true);
+        portOwnerElement.set('inward', false);
+        this.outerParent.embed(portOwnerElement);
         this.graph.addCell(portOwnerElement);
-        
+
         // JointJS -> Model
         portOwnerElement.on('pointerclick', function (evt: Event, x: number, y: number) {
             operator.select();
