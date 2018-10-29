@@ -5,8 +5,6 @@ type Type<T> = Function & { prototype: T }
 
 export abstract class SlangNode {
 
-    abstract isClass(className: string): boolean
-
     abstract getChildNodes(): IterableIterator<SlangNode>
 
     abstract getParentNode(): SlangNode | null

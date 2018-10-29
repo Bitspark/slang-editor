@@ -118,8 +118,4 @@ export class LandscapeModel extends SlangNode {
         return "landscape";
     }
 
-    isClass(className: string): boolean {
-        return className === LandscapeModel.name;
-    }
-
 }
