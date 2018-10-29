@@ -1,8 +1,8 @@
 import {dia, layout, shapes} from 'jointjs';
 import {BlueprintModel} from '../../model/blueprint';
 import {OperatorModel} from '../../model/operator';
-import {slangRouter} from '../../custom/router';
-import {slangConnector} from '../../custom/connector';
+import {slangRouter} from '../utils/router';
+import {slangConnector} from '../utils/connector';
 import {BlackBox} from '../../custom/nodes';
 import {BlackBoxComponent} from "./blackbox";
 
