@@ -9,6 +9,8 @@ import {BlackBox} from '../custom/nodes';
 import {LandscapeModel} from './landscape';
 import {Connections} from '../custom/connections';
 import {SlangType} from "./type";
+import {PropertyModel} from "./property";
+import {TypeDefApiResponse} from "../services/api";
 
 export enum BlueprintType {
     Local,
@@ -33,10 +35,11 @@ export class BlueprintModel extends BlackBox {
     private readonly hierarchy: Array<string> = [];
 
     private delegates: Array<BlueprintDelegateModel> = [];
+    private properties: Array<PropertyModel> = [];
     private portIn: BlueprintPortModel | null = null;
     private portOut: BlueprintPortModel | null = null;
-    private readonly operators: Array<OperatorModel> = [];
-    
+    private operators: Array<OperatorModel> = [];
+
     constructor(private landscape: LandscapeModel, private fullName: string, private type: BlueprintType) {
         super();
         this.hierarchy = fullName.split('.');
@@ -129,6 +132,10 @@ export class BlueprintModel extends BlackBox {
 
     public getDelegates(): IterableIterator<BlueprintDelegateModel> {
         return this.delegates.values();
+    }
+
+    public getProperties(): IterableIterator<PropertyModel> {
+        return this.properties.values();
     }
 
     public findDelegate(name: string): BlueprintDelegateModel | undefined {
@@ -254,6 +261,11 @@ export class BlueprintModel extends BlackBox {
         this.portOut = port;
     }
 
+    public addProperty(property: PropertyModel): PropertyModel {
+        this.properties.push(property);
+        return property
+    }
+
     public addDelegate(delegate: BlueprintDelegateModel): BlueprintDelegateModel {
         this.delegates.push(delegate);
         return delegate;
@@ -332,7 +344,7 @@ export class BlueprintModel extends BlackBox {
     public subscribeOperatorRemoved(cb: (op: OperatorModel) => void): void {
         this.operatorRemoved.subscribe(cb);
     }
-    
+
     public subscribeSelectChanged(cb: (selected: boolean) => void): void {
         this.selected.subscribe(cb);
     }

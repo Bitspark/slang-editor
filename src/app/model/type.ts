@@ -12,11 +12,11 @@ export enum SlangType {
     Map,
 }
 
-export abstract class TypeModel extends SlangNode {
+export class TypeModel extends SlangNode {
     private readonly mapSubs: Map<string, TypeModel> | undefined;
     private streamSub: TypeModel | undefined;
 
-    protected constructor(protected parent: TypeModel | null, protected type: SlangType) {
+    public constructor(protected parent: TypeModel | null, protected type: SlangType) {
         super();
         if (this.type === SlangType.Map) {
             this.mapSubs = new Map<string, TypeModel>();
