@@ -1,7 +1,7 @@
 import {attributes, dia, shapes} from "jointjs";
 import {BlackBox} from "../../custom/nodes";
 import {PortModel, PortType} from "../../model/port";
-import {PortComponent} from "./port";
+import {PortComponent, PortDirection, PortGroupComponent} from "./port";
 
 export class BlackBoxComponent extends shapes.standard.Rectangle {
     
@@ -18,11 +18,10 @@ export class BlackBoxComponent extends shapes.standard.Rectangle {
                 },
             },
             ports: {
-                groups: {}
+                groups: BlackBoxComponent.createGroups(blackBox)
             }
         });
         
-        this.addPortGroups(this.createGroups());
         this.addPorts(this.createPorts());
     }
     
@@ -56,48 +55,32 @@ export class BlackBoxComponent extends shapes.standard.Rectangle {
 
         for (const delegate of blackBox.getDelegates()) {
             if (delegate.getPortOut()) {
-                portItems.push.apply(portItems, BlackBoxComponent.createPortItems(delegate.getName(), delegate.getPortOut()!));
+                portItems.push.apply(portItems, BlackBoxComponent.createPortItems(`Delegate${delegate.getName()}Out`, delegate.getPortOut()!));
             }
             if (delegate.getPortIn()) {
-                portItems.push.apply(portItems, BlackBoxComponent.createPortItems(delegate.getName(), delegate.getPortIn()!));
+                portItems.push.apply(portItems, BlackBoxComponent.createPortItems(`Delegate${delegate.getName()}In`, delegate.getPortIn()!));
             }
         }
         
         return portItems;
     }
     
-    private createGroups(): { [key: string]: dia.Element.PortGroup} {
+    private static createGroups(blackBox: BlackBox): { [key: string]: dia.Element.PortGroup} {
         const portGroups: { [key: string]: dia.Element.PortGroup} = {
-            'MainIn': {
-                position: {
-                    name: "top",
-                },
-                markup: "<path class='sl-srv-main sl-port sl-port-in' d=''></path>",
-                attrs: {
-                    ".sl-srv-main.sl-port": BlackBoxComponent.portAttrs,
-                },
-            },
-            'MainOut': {
-                position: {
-                    name: "bottom",
-                },
-                markup: "<path class='sl-srv-main sl-port sl-port-in' d=''></path>",
-                attrs: {
-                    ".sl-srv-main.sl-port": BlackBoxComponent.portAttrs,
-                },
-            }
+            'MainIn': new PortGroupComponent(blackBox, PortDirection.In, 0.0, 1.0),
+            'MainOut': new PortGroupComponent(blackBox, PortDirection.Out, 0.0, 1.0)
         };
         
-        for (const delegate of this.blackBox.getDelegates()) {
-            portGroups[delegate.getName()] = {
-                position: {
-                    name: "right",
-                },
-                markup: "<path class='sl-dlg sl-port' d=''></path>",
-                attrs: {
-                    ".sl-dlg.sl-port": BlackBoxComponent.portAttrs,
-                },
-            };
+        const delegates = Array.from(blackBox.getDelegates());
+        
+        const width = 0.5 / delegates.length;
+        const step = 0.5 / delegates.length;
+        let pos = 0;
+        for (const delegate of delegates) {
+            portGroups[`Delegate${delegate.getName()}Out`] = new PortGroupComponent(delegate, PortDirection.Out, pos, width);
+            pos += step;
+            portGroups[`Delegate${delegate.getName()}In`] = new PortGroupComponent(delegate, PortDirection.In, pos, width);
+            pos += step;
         }
         
         return portGroups;
@@ -108,14 +91,6 @@ export class BlackBoxComponent extends shapes.standard.Rectangle {
     }
 
     // STATIC
-    
-    private static portAttrs: attributes.SVGAttributes = {
-        paintOrder: "stroke fill",
-        d: "M 0 0 L 10 0 L 5 8 z",
-        magnet: true,
-        stroke: "black",
-        strokeWidth: 1,
-    };
 
     private static blueprintAttrs: attributes.SVGAttributes = {
         fill: "blue",

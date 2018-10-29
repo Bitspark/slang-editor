@@ -17,7 +17,7 @@ export enum PortType {
     Map,
 }
 
-abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
+export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
     // Topics
     // self

@@ -4,7 +4,7 @@ import {OperatorModel} from './operator';
 import {BlackBox, PortOwner} from '../custom/nodes';
 import {Connections} from '../custom/connections';
 
-abstract class GenericDelegateModel<B extends BlackBox, P extends PortModel> extends PortOwner {
+export abstract class GenericDelegateModel<B extends BlackBox, P extends PortModel> extends PortOwner {
     private portIn: P | null = null;
     private portOut: P | null = null;
 
