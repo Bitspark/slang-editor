@@ -1,25 +1,25 @@
-import {StorageComponent} from './storage';
-import {ApiService} from '../services/api';
-import {LandscapeComponent} from './landscape';
-import {BlueprintComponent} from './blueprint';
+import {StoragePlugin} from '../plugins/storage';
+import {ApiService} from '../custom/api';
+import {LandscapeComponent} from './components/landscape';
+import {BlueprintComponent} from './components/blueprint';
 import {BlueprintType} from '../model/blueprint';
-import {Canvas} from '../joint/cavas';
-import {RouterComponent} from './router';
+import {CanvasComponent} from './components/cavas';
+import {RouterPlugin} from '../plugins/router';
 import {AppModel} from '../model/app';
 
-export class AppComponent {
+export class SlangStudio {
     private landscapeComponent: LandscapeComponent | null = null;
-    private storageComponent: StorageComponent;
-    private routerComponent: RouterComponent;
-    private canvas: Canvas;
+    private storagePlugin: StoragePlugin;
+    private routerPlugin: RouterPlugin;
+    private canvas: CanvasComponent;
 
     constructor(private appModel: AppModel, private el: HTMLElement, host: string) {
-        this.canvas = new Canvas(el);
+        this.canvas = new CanvasComponent(el);
 
         const landscapeModel = appModel.getLandscape();
 
-        this.routerComponent = new RouterComponent(appModel);
-        this.storageComponent = new StorageComponent(landscapeModel, new ApiService(host));
+        this.routerPlugin = new RouterPlugin(appModel);
+        this.storagePlugin = new StoragePlugin(landscapeModel, new ApiService(host));
 
         this.subscribe();
     }
@@ -44,8 +44,8 @@ export class AppComponent {
 
     public async start(): Promise<void> {
         return new Promise<void>(async resolve => {
-            await this.storageComponent.load();
-            this.routerComponent.checkRoute();
+            await this.storagePlugin.load();
+            this.routerPlugin.checkRoute();
             resolve();
         });
     }

@@ -1,6 +1,6 @@
 import {dia} from "jointjs";
 
-export class Canvas {
+export class CanvasComponent {
     private graph = new dia.Graph();
     private readonly paper: dia.Paper;
 

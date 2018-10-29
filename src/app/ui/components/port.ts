@@ -1,7 +1,7 @@
 import {attributes, dia} from "jointjs";
-import {PortModel} from "../model/port";
+import {PortModel} from "../../model/port";
 
-export class JointPort implements dia.Element.Port {
+export class PortComponent implements dia.Element.Port {
 
     public readonly id: string;
     public readonly attrs: dia.Cell.Selectors;
@@ -9,7 +9,7 @@ export class JointPort implements dia.Element.Port {
     constructor(private port: PortModel, public readonly group: string) {
         this.id = `${port.getIdentity()}`;
         this.attrs = {
-            '.sl-port': JointPort.getPortAttributes(group, port.isDirectionIn()),
+            '.sl-port': PortComponent.getPortAttributes(group, port.isDirectionIn()),
         };
     }
     

@@ -1,6 +1,6 @@
 import {AppModel} from '../model/app';
 
-export class RouterComponent {
+export class RouterPlugin {
 
     constructor(private appModel: AppModel) {
         this.subscribe();

@@ -1,9 +1,9 @@
-import {attributes, dia, shapes} from "jointjs";
-import {BlackBox} from "../custom/nodes";
-import {PortModel, PortType} from "../model/port";
-import {JointPort} from "./port";
+import {attributes, shapes} from "jointjs";
+import {BlackBox} from "../../custom/nodes";
+import {PortModel, PortType} from "../../model/port";
+import {PortComponent} from "./port";
 
-export class JointBlackBox extends shapes.standard.Rectangle {
+export class BlackBoxComponent extends shapes.standard.Rectangle {
     
     constructor(private blackBox: BlackBox) {        
         super({
@@ -11,7 +11,7 @@ export class JointBlackBox extends shapes.standard.Rectangle {
             size: {width: 100, height: 100},
             attrs: {
                 root: {},
-                body: JointBlackBox.blueprintAttrs,
+                body: BlackBoxComponent.blueprintAttrs,
                 label: {
                     text: blackBox.getDisplayName(),
                     fill: 'white',
@@ -25,7 +25,7 @@ export class JointBlackBox extends shapes.standard.Rectangle {
                         },
                         markup: "<path class='sl-srv-main sl-port sl-port-in' d=''></path>",
                         attrs: {
-                            ".sl-srv-main.sl-port": JointBlackBox.portAttrs,
+                            ".sl-srv-main.sl-port": BlackBoxComponent.portAttrs,
                         },
                     },
                     'MainOut': {
@@ -34,7 +34,7 @@ export class JointBlackBox extends shapes.standard.Rectangle {
                         },
                         markup: "<path class='sl-srv-main sl-port sl-port-in' d=''></path>",
                         attrs: {
-                            ".sl-srv-main.sl-port": JointBlackBox.portAttrs,
+                            ".sl-srv-main.sl-port": BlackBoxComponent.portAttrs,
                         },
                     },
                     'Delegate': {
@@ -43,7 +43,7 @@ export class JointBlackBox extends shapes.standard.Rectangle {
                         },
                         markup: "<path class='sl-dlg sl-port' d=''></path>",
                         attrs: {
-                            ".sl-dlg.sl-port": JointBlackBox.portAttrs,
+                            ".sl-dlg.sl-port": BlackBoxComponent.portAttrs,
                         },
                     }
                 },
@@ -53,39 +53,43 @@ export class JointBlackBox extends shapes.standard.Rectangle {
         this.addPorts(this.createPorts());
     }
     
-    public addPorts(ports: Array<JointPort>): this {
+    public addPorts(ports: Array<PortComponent>): this {
         super.addPorts(ports);
         return this;
     }
     
-    public getPorts(): Array<JointPort> {
-        return super.getPorts() as Array<JointPort>;
+    public getPorts(): Array<PortComponent> {
+        return super.getPorts() as Array<PortComponent>;
     }
     
-    private createPorts(): Array<JointPort> {        
+    private createPorts(): Array<PortComponent> {        
         const blackBox = this.blackBox;
-        const portItems: Array<JointPort> = [];
+        const portItems: Array<PortComponent> = [];
 
         const inPort = blackBox.getPortIn();
         if (inPort) {
-            portItems.push.apply(portItems, JointBlackBox.createPortItems("MainIn", inPort))
+            portItems.push.apply(portItems, BlackBoxComponent.createPortItems("MainIn", inPort))
         }
 
         const outPort = blackBox.getPortOut();
         if (outPort) {
-            portItems.push.apply(portItems, JointBlackBox.createPortItems("MainOut", outPort))
+            portItems.push.apply(portItems, BlackBoxComponent.createPortItems("MainOut", outPort))
         }
 
         for (const delegate of blackBox.getDelegates()) {
             if (delegate.getPortOut()) {
-                portItems.push.apply(portItems, JointBlackBox.createPortItems("Delegate", delegate.getPortOut()!));
+                portItems.push.apply(portItems, BlackBoxComponent.createPortItems("Delegate", delegate.getPortOut()!));
             }
             if (delegate.getPortIn()) {
-                portItems.push.apply(portItems, JointBlackBox.createPortItems("Delegate", delegate.getPortIn()!));
+                portItems.push.apply(portItems, BlackBoxComponent.createPortItems("Delegate", delegate.getPortIn()!));
             }
         }
         
         return portItems;
+    }
+    
+    public getPort(id: string): PortComponent {
+        return super.getPort(id) as PortComponent;
     }
 
     // STATIC
@@ -106,8 +110,8 @@ export class JointBlackBox extends shapes.standard.Rectangle {
         ry: 6,
     };
 
-    private static createPortItems(group: string, port: PortModel): Array<JointPort> {
-        let portItems: Array<JointPort> = [];
+    private static createPortItems(group: string, port: PortModel): Array<PortComponent> {
+        let portItems: Array<PortComponent> = [];
 
         switch (port.getType()) {
             case PortType.Map:
@@ -121,7 +125,7 @@ export class JointBlackBox extends shapes.standard.Rectangle {
                 break;
 
             default:
-                portItems.push(new JointPort(port, group));
+                portItems.push(new PortComponent(port, group));
         }
         return portItems;
     }

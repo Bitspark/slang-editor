@@ -1,10 +1,10 @@
 import {LandscapeModel} from "../model/landscape";
 import {BlueprintModel, BlueprintType} from "../model/blueprint";
-import {ApiService, BlueprintApiResponse, BlueprintDefApiResponse, PortApiResponse, PortGroupApiResponse} from "../services/api";
+import {ApiService, BlueprintApiResponse, BlueprintDefApiResponse, PortApiResponse, PortGroupApiResponse} from "../custom/api";
 import {BlueprintPortModel, PortType} from '../model/port';
 import {BlueprintDelegateModel} from '../model/delegate';
 
-export class StorageComponent {
+export class StoragePlugin {
     constructor(private landscape: LandscapeModel, private api: ApiService) {
 
     }
