@@ -1,4 +1,4 @@
-import {attributes, shapes} from "jointjs";
+import {attributes, dia, shapes} from "jointjs";
 import {BlackBox} from "../../custom/nodes";
 import {PortModel, PortType} from "../../model/port";
 import {PortComponent} from "./port";
@@ -18,38 +18,11 @@ export class BlackBoxComponent extends shapes.standard.Rectangle {
                 },
             },
             ports: {
-                groups: {
-                    'MainIn': {
-                        position: {
-                            name: "top",
-                        },
-                        markup: "<path class='sl-srv-main sl-port sl-port-in' d=''></path>",
-                        attrs: {
-                            ".sl-srv-main.sl-port": BlackBoxComponent.portAttrs,
-                        },
-                    },
-                    'MainOut': {
-                        position: {
-                            name: "bottom",
-                        },
-                        markup: "<path class='sl-srv-main sl-port sl-port-in' d=''></path>",
-                        attrs: {
-                            ".sl-srv-main.sl-port": BlackBoxComponent.portAttrs,
-                        },
-                    },
-                    'Delegate': {
-                        position: {
-                            name: "right",
-                        },
-                        markup: "<path class='sl-dlg sl-port' d=''></path>",
-                        attrs: {
-                            ".sl-dlg.sl-port": BlackBoxComponent.portAttrs,
-                        },
-                    }
-                },
+                groups: {}
             }
         });
         
+        this.addPortGroups(this.createGroups());
         this.addPorts(this.createPorts());
     }
     
@@ -60,6 +33,11 @@ export class BlackBoxComponent extends shapes.standard.Rectangle {
     
     public getPorts(): Array<PortComponent> {
         return super.getPorts() as Array<PortComponent>;
+    }
+    
+    private addPortGroups(portGroups: { [key: string]: dia.Element.PortGroup}) {
+        const ports = this.get('ports');
+        ports.groups = portGroups;
     }
     
     private createPorts(): Array<PortComponent> {        
@@ -78,14 +56,51 @@ export class BlackBoxComponent extends shapes.standard.Rectangle {
 
         for (const delegate of blackBox.getDelegates()) {
             if (delegate.getPortOut()) {
-                portItems.push.apply(portItems, BlackBoxComponent.createPortItems("Delegate", delegate.getPortOut()!));
+                portItems.push.apply(portItems, BlackBoxComponent.createPortItems(delegate.getName(), delegate.getPortOut()!));
             }
             if (delegate.getPortIn()) {
-                portItems.push.apply(portItems, BlackBoxComponent.createPortItems("Delegate", delegate.getPortIn()!));
+                portItems.push.apply(portItems, BlackBoxComponent.createPortItems(delegate.getName(), delegate.getPortIn()!));
             }
         }
         
         return portItems;
+    }
+    
+    private createGroups(): { [key: string]: dia.Element.PortGroup} {
+        const portGroups: { [key: string]: dia.Element.PortGroup} = {
+            'MainIn': {
+                position: {
+                    name: "top",
+                },
+                markup: "<path class='sl-srv-main sl-port sl-port-in' d=''></path>",
+                attrs: {
+                    ".sl-srv-main.sl-port": BlackBoxComponent.portAttrs,
+                },
+            },
+            'MainOut': {
+                position: {
+                    name: "bottom",
+                },
+                markup: "<path class='sl-srv-main sl-port sl-port-in' d=''></path>",
+                attrs: {
+                    ".sl-srv-main.sl-port": BlackBoxComponent.portAttrs,
+                },
+            }
+        };
+        
+        for (const delegate of this.blackBox.getDelegates()) {
+            portGroups[delegate.getName()] = {
+                position: {
+                    name: "right",
+                },
+                markup: "<path class='sl-dlg sl-port' d=''></path>",
+                attrs: {
+                    ".sl-dlg.sl-port": BlackBoxComponent.portAttrs,
+                },
+            };
+        }
+        
+        return portGroups;
     }
     
     public getPort(id: string): PortComponent {

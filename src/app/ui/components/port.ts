@@ -25,11 +25,10 @@ export class PortComponent implements dia.Element.Port {
             case "MainOut":
                 attrs.transform = "translate(0,-3)";
                 break;
-
-            case "Delegate":
+            default:
+                // Delegate
                 attrs.transform = `rotate(${(direction) ? 90 : -90})`;
                 break;
-
         }
 
         return attrs;
