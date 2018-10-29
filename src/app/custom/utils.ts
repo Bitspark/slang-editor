@@ -76,20 +76,20 @@ export class JointJSElements {
     }
 
 
-    public static createOperatorElement(operator: BlackBox): dia.Element {
+    public static createBlackBoxElement(blackBox: BlackBox): dia.Element {
         let portItems: Array<dia.Element.Port> = [];
 
-        const inPort = operator.getPortIn();
+        const inPort = blackBox.getPortIn();
         if (inPort) {
             portItems = portItems.concat(this.createPortItems("MainIn", inPort))
         }
 
-        const outPort = operator.getPortOut();
+        const outPort = blackBox.getPortOut();
         if (outPort) {
             portItems = portItems.concat(this.createPortItems("MainOut", outPort))
         }
 
-        for (const delegate of operator.getDelegates()) {
+        for (const delegate of blackBox.getDelegates()) {
             if (delegate.getPortOut()) {
                 portItems = portItems.concat(this.createPortItems("Delegate", delegate.getPortOut()!));
             }
@@ -99,13 +99,13 @@ export class JointJSElements {
         }
 
         return new shapes.standard.Rectangle({
-            id: operator.getIdentity(),
+            id: blackBox.getIdentity(),
             size: {width: 100, height: 100},
             attrs: {
                 root: {},
                 body: this.blueprintAttrs,
                 label: {
-                    text: operator.getDisplayName(),
+                    text: blackBox.getDisplayName(),
                     fill: 'white',
                 },
             },
