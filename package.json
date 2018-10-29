@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "A light foundation for your next frontend project based on webpack.",
   "scripts": {
-    "build": "webpack --config webpack/webpack.config.prod.js  --colors",
-    "start": "webpack-dev-server --open --config webpack/webpack.config.dev.js",
-    "embedded": "webpack-dev-server --open --config webpack/webpack.config.embedded.js"
+    "build": "webpack --config webpack/studio/webpack.config.prod.js  --colors",
+    "build-embedded": "webpack --config webpack/embedded/webpack.config.prod.js  --colors",
+    "start": "webpack-dev-server --open --config webpack/studio/webpack.config.dev.js",
+    "start-embedded": "webpack-dev-server --open --config webpack/embedded/webpack.config.dev.js"
   },
   "repository": {
     "type": "git",

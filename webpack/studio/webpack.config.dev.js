@@ -26,11 +26,6 @@ module.exports = merge(common, {
     module: {
         rules: [
             {
-                test: /\.tsx?$/,
-                use: 'ts-loader',
-                exclude: /node_modules/
-            },
-            {
                 test: /\.(js)$/,
                 include: Path.resolve(__dirname, '../src'),
                 enforce: 'pre',
