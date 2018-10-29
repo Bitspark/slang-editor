@@ -4,11 +4,11 @@ import {OperatorModel} from './operator';
 import {BlackBox, PortOwner} from '../custom/nodes';
 import {Connections} from '../custom/connections';
 
-export abstract class DelegateModel extends PortOwner {
-    private portIn: PortModel | null = null;
-    private portOut: PortModel | null = null;
+abstract class GenericDelegateModel<B extends BlackBox, P extends PortModel> extends PortOwner {
+    private portIn: P | null = null;
+    private portOut: P | null = null;
 
-    protected constructor(private owner: BlackBox, private name: string) {
+    protected constructor(private owner: B, private name: string) {
         super();
     }
 
@@ -20,23 +20,23 @@ export abstract class DelegateModel extends PortOwner {
         return this.getOwner().getIdentity() + '.' + this.name;
     }
 
-    protected getOwner(): BlackBox {
+    public getOwner(): B {
         return this.owner;
     }
 
-    protected setPortIn(port: PortModel) {
+    public setPortIn(port: P) {
         this.portIn = port;
     }
 
-    protected setPortOut(port: PortModel) {
+    public setPortOut(port: P) {
         this.portOut = port;
     }
 
-    public getPortIn(): PortModel | null {
+    public getPortIn(): P | null {
         return this.portIn;
     }
 
-    public getPortOut(): PortModel | null {
+    public getPortOut(): P | null {
         return this.portOut;
     }
 
@@ -51,45 +51,12 @@ export abstract class DelegateModel extends PortOwner {
         return connections;
     }
 
-    // Slang tree
-
-    isClass(className: string): boolean {
-        return className === DelegateModel.name;
-    }
-}
-
-export class BlueprintDelegateModel extends DelegateModel {
-
-    constructor(parent: BlueprintModel, name: string) {
-        super(parent, name);
+    public getParentNode(): B {
+        return this.owner;
     }
 
-    public setPortIn(port: BlueprintPortModel) {
-        super.setPortIn(port);
-    }
-
-    public setPortOut(port: BlueprintPortModel) {
-        super.setPortOut(port);
-    }
-
-    public getPortIn(): BlueprintPortModel | null {
-        return super.getPortIn() as BlueprintPortModel | null;
-    }
-
-    public getPortOut(): BlueprintPortModel | null {
-        return super.getPortOut() as BlueprintPortModel | null;
-    }
-
-    public getParentNode(): BlueprintModel {
-        return super.getOwner() as BlueprintModel;
-    }
-
-    public isClass(className: string): boolean {
-        return super.isClass(className) || className === BlueprintDelegateModel.name;
-    }
-
-    public getChildNodes(): IterableIterator<BlueprintPortModel> {
-        const children: Array<BlueprintPortModel> = [];
+    public getChildNodes(): IterableIterator<P> {
+        const children: Array<P> = [];
         if (this.getPortIn()) {
             children.push(this.getPortIn()!);
         }
@@ -100,43 +67,16 @@ export class BlueprintDelegateModel extends DelegateModel {
     }
 }
 
-export class OperatorDelegateModel extends DelegateModel {
-    constructor(parent: OperatorModel, name: string) {
-        super(parent as BlackBox, name);
-    }
+export type DelegateModel = GenericDelegateModel<BlackBox, PortModel>;
 
-    public setPortIn(port: OperatorPortModel) {
-        super.setPortIn(port);
+export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel, BlueprintPortModel> {
+    constructor(owner: BlueprintModel, name: string) {
+        super(owner, name);
     }
+}
 
-    public setPortOut(port: OperatorPortModel) {
-        super.setPortOut(port);
-    }
-
-    public getPortIn(): OperatorPortModel | null {
-        return super.getPortIn() as OperatorPortModel | null;
-    }
-
-    public getPortOut(): OperatorPortModel | null {
-        return super.getPortOut() as OperatorPortModel | null;
-    }
-
-    public getParentNode(): OperatorModel {
-        return super.getOwner() as OperatorModel;
-    }
-
-    public isClass(className: string): boolean {
-        return super.isClass(className) || className === OperatorDelegateModel.name;
-    }
-
-    public getChildNodes(): IterableIterator<OperatorPortModel> {
-        const children: Array<OperatorPortModel> = [];
-        if (this.getPortIn()) {
-            children.push(this.getPortIn()!);
-        }
-        if (this.getPortOut()) {
-            children.push(this.getPortOut()!);
-        }
-        return children.values();
+export class OperatorDelegateModel extends GenericDelegateModel<OperatorModel, OperatorPortModel> {
+    constructor(owner: OperatorModel, name: string) {
+        super(owner, name);
     }
 }

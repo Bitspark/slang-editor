@@ -367,8 +367,4 @@ export class BlueprintModel extends BlackBox {
         return this.landscape;
     }
 
-    isClass(className: string): boolean {
-        return className === BlueprintModel.name;
-    }
-
 }

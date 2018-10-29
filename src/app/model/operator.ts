@@ -124,10 +124,6 @@ export class OperatorModel extends BlackBox {
     }
 
     // Slang tree
-    
-    isClass(className: string): boolean {
-        return className === OperatorModel.name;
-    }
 
     getChildNodes(): IterableIterator<OperatorPortModel | OperatorDelegateModel> {
         const children: Array<OperatorPortModel | OperatorDelegateModel> = [];
