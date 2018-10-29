@@ -102,7 +102,7 @@ export class BlueprintComponent {
     }
 
     private createOuter(): [dia.Element, dia.Element] {
-        const size = {width: this.outerPadding * 2, height: this.outerPadding * 2};
+        const size = {width: this.outerPadding * 2 + 10, height: this.outerPadding * 2 + 10};
 
         const outer = JointJSElements.createBlackBoxElement(this.blueprint);
         outer.attr('body/fill', 'blue');
