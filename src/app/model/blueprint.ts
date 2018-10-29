@@ -2,7 +2,7 @@ import {BehaviorSubject, Subject} from "rxjs";
 import {OperatorModel} from "./operator";
 import {PortModel} from './port';
 import {BlueprintDelegateModel, OperatorDelegateModel} from './delegate';
-import {SlangParsing} from "../custom/utils";
+import {PropertyEvaluator, SlangParsing} from "../custom/utils";
 import {BlueprintPortModel} from './port';
 import {OperatorPortModel} from './port';
 import {BlackBox} from '../custom/nodes';
@@ -16,6 +16,7 @@ export enum BlueprintType {
     Elementary,
     Library
 }
+
 
 export class BlueprintModel extends BlackBox {
 
@@ -60,7 +61,9 @@ export class BlueprintModel extends BlackBox {
             switch (portCopy.getType()) {
                 case SlangType.Map:
                     for (const entry of port.getMapSubs()) {
-                        portCopy.addMapSub(entry[0], copyPort(owner, portCopy, entry[1]));
+                        for (const portName of PropertyEvaluator.expand(entry[0], propDefs)) {
+                            portCopy.addMapSub(portName, copyPort(owner, portCopy, entry[1]));
+                        }
                     }
                     break;
                 case SlangType.Stream:
@@ -70,16 +73,17 @@ export class BlueprintModel extends BlackBox {
             return portCopy;
         }
 
-        function copyDelegate(owner: OperatorModel, delegate: BlueprintDelegateModel): OperatorDelegateModel {
-            const delegateCopy = new OperatorDelegateModel(owner, delegate.getName());
-            if (delegate.getPortIn()) {
-                delegateCopy.setPortIn(copyPort(delegateCopy, null, delegate.getPortIn()!));
+        function copyAndAddDelegates(owner: OperatorModel, delegate: BlueprintDelegateModel) {
+            for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), propDefs)) {
+                const delegateCopy = new OperatorDelegateModel(owner, expandedDlgName);
+                if (delegate.getPortIn()) {
+                    delegateCopy.setPortIn(copyPort(delegateCopy, null, delegate.getPortIn()!));
+                }
+                if (delegate.getPortOut()) {
+                    delegateCopy.setPortOut(copyPort(delegateCopy, null, delegate.getPortOut()!));
+                }
+                operator.addDelegate(delegateCopy);
             }
-            if (delegate.getPortOut()) {
-                delegateCopy.setPortOut(copyPort(delegateCopy, null, delegate.getPortOut()!));
-            }
-            return delegateCopy;
-
         }
 
         const operator = new OperatorModel(owner, name, this);
@@ -91,7 +95,7 @@ export class BlueprintModel extends BlackBox {
             operator.setPortOut(copyPort(operator, null, this.portOut));
         }
         for (const delegate of this.delegates) {
-            operator.addDelegate(copyDelegate(operator, delegate));
+            copyAndAddDelegates(operator, delegate);
         }
 
         return operator
@@ -133,12 +137,12 @@ export class BlueprintModel extends BlackBox {
         return this.delegates.values();
     }
 
-    public getProperties(): IterableIterator<PropertyModel> {
-        return this.properties.values();
-    }
-
     public findDelegate(name: string): BlueprintDelegateModel | undefined {
         return this.delegates.find(delegate => delegate.getName() === name);
+    }
+
+    public getProperties(): IterableIterator<PropertyModel> {
+        return this.properties.values();
     }
 
     public resolvePortReference(portReference: string): PortModel | null | undefined {
