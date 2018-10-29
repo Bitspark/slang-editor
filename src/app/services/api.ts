@@ -18,10 +18,15 @@ export interface PropertyApiResponse {
     [propertyName: string]: TypeDefApiResponse
 }
 
+export interface PropertyDefinitionApiResponse {
+    [propertyName: string]: any
+}
+
 export interface BlueprintDefApiResponse {
     operators: {
         [operatorName: string]: {
             operator: string
+            properties: PropertyDefinitionApiResponse
         }
     }
     properties: PropertyApiResponse

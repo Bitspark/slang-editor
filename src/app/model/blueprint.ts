@@ -9,8 +9,7 @@ import {BlackBox} from '../custom/nodes';
 import {LandscapeModel} from './landscape';
 import {Connections} from '../custom/connections';
 import {SlangType} from "./type";
-import {PropertyModel} from "./property";
-import {TypeDefApiResponse} from "../services/api";
+import {PropertyDefinitions, PropertyModel} from "./property";
 
 export enum BlueprintType {
     Local,
@@ -45,8 +44,8 @@ export class BlueprintModel extends BlackBox {
         this.hierarchy = fullName.split('.');
     }
 
-    public createOperator(name: string, blueprint: BlueprintModel): OperatorModel {
-        const operator = blueprint.instantiateOperator(this, name);
+    public createOperator(name: string, blueprint: BlueprintModel, propDefs: PropertyDefinitions): OperatorModel {
+        const operator = blueprint.instantiateOperator(this, name, propDefs);
         return this.addOperator(operator);
     }
 
@@ -55,7 +54,7 @@ export class BlueprintModel extends BlackBox {
         return this.addDelegate(delegate);
     }
 
-    private instantiateOperator(owner: BlueprintModel, name: string): OperatorModel {
+    private instantiateOperator(owner: BlueprintModel, name: string, propDefs: PropertyDefinitions): OperatorModel {
         function copyPort(owner: OperatorModel | OperatorDelegateModel, parent: OperatorPortModel | null, port: BlueprintPortModel): OperatorPortModel {
             const portCopy = new OperatorPortModel(parent, owner, port.getType(), port.isDirectionIn());
             switch (portCopy.getType()) {

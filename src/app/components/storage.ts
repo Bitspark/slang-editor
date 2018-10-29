@@ -1,10 +1,18 @@
 import {LandscapeModel} from "../model/landscape";
 import {BlueprintModel, BlueprintType} from "../model/blueprint";
-import {ApiService, BlueprintApiResponse, BlueprintDefApiResponse, TypeDefApiResponse, PortGroupApiResponse, PropertyApiResponse} from "../services/api";
+import {
+    ApiService,
+    BlueprintApiResponse,
+    BlueprintDefApiResponse,
+    TypeDefApiResponse,
+    PortGroupApiResponse,
+    PropertyApiResponse,
+    PropertyDefinitionApiResponse
+} from "../services/api";
 import {BlueprintPortModel} from '../model/port';
 import {BlueprintDelegateModel} from '../model/delegate';
 import {SlangType, TypeModel} from "../model/type";
-import {PropertyModel} from "../model/property";
+import {PropertyDefinitions, PropertyModel} from "../model/property";
 
 export class StorageComponent {
     constructor(private landscape: LandscapeModel, private api: ApiService) {
@@ -86,6 +94,16 @@ export class StorageComponent {
         });
     }
 
+    private createPropertyDefinions(blueprint: BlueprintModel, propDefData: PropertyDefinitionApiResponse): PropertyDefinitions {
+        const propDefs = new PropertyDefinitions(Array.from(blueprint.getProperties()));
+        if (propDefData) {
+            Object.keys(propDefData).forEach((propName: string) => {
+                propDefs.define(propName, propDefData[propName]);
+            });
+        }
+        return propDefs
+    }
+
     public async load(): Promise<void> {
         const bpDataList: Array<BlueprintApiResponse> = await this.api.getBlueprints();
         return new Promise<void>(resolve => {
@@ -126,7 +144,8 @@ export class StorageComponent {
                         if (!blueprint) {
                             throw `unknown blueprint '${opData.operator}'`;
                         }
-                        outerBlueprint.createOperator(opName, blueprint);
+                        const propDefs = this.createPropertyDefinions(blueprint, opData.properties);
+                        outerBlueprint.createOperator(opName, blueprint, propDefs);
                     });
                 }
             });

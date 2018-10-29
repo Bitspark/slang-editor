@@ -3,6 +3,7 @@ import {PortModel} from "../model/port";
 import SVGAttributes = attributes.SVGAttributes;
 import {BlackBox} from './nodes';
 import {SlangType} from "../model/type";
+import {PropertyDefinition, PropertyDefinitions} from "../model/property";
 
 export class JointJSElements {
 
@@ -152,6 +153,62 @@ export interface ParsedPortInformation {
     service: string | undefined
     directionIn: boolean
     port: string
+}
+
+
+export class PropertyEvaluator {
+    public static expand(str: string, propDefs?: PropertyDefinitions): Array<string> {
+        let exprs = [str];
+
+        if (propDefs) {
+            for (const expr of exprs) {
+                const parts = /{(.*?)}/.exec(expr);
+                if (!parts) {
+                    break;
+                }
+
+                // This could be extended with more complex logic in the future
+                const vals = this.expandExpr(parts[1], propDefs);
+
+                // Actual replacement
+                const newExprs = [];
+                for (const val of vals) {
+                    for (const e of exprs) {
+                        newExprs.push(e.replace(parts[0], val));
+                    }
+                }
+                exprs = newExprs;
+            }
+        }
+
+        return exprs;
+    }
+
+
+    private static expandExpr(exprPart: string, propDefs: PropertyDefinitions): Array<string> {
+        const vals: Array<string> = [];
+        const propDef = propDefs.getByName(exprPart);
+
+        if (!propDef) {
+            return [];
+        }
+
+        const propValue: any = propDef.getValue();
+
+        if (propDef.isStreamType()) {
+            if (typeof propValue === 'string' && (propValue as string).startsWith('$')) {
+                vals.push(`{${propValue.substr(1)}}`);
+            }
+            else {
+                for (const el of propValue) {
+                    vals.push((typeof el === 'string') ? el : JSON.stringify(el));
+                }
+            }
+        } else {
+            vals.push((typeof propValue === 'string') ? propValue : JSON.stringify(propValue));
+        }
+        return vals;
+    }
 }
 
 export class SlangParsing {
