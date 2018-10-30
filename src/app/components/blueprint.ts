@@ -7,8 +7,8 @@ import {slangConnector} from '../custom/connector';
 import {BlackBox} from '../custom/nodes';
 
 export class BlueprintComponent {
-    private outer: dia.Element;
-    private outerParent: dia.Element;
+    private outerVisible: dia.Element;
+    private embeddingOuterInvisible: dia.Element;
     private outerPadding = 80;
 
     constructor(private graph: dia.Graph, private blueprint: BlueprintModel) {
@@ -17,9 +17,9 @@ export class BlueprintComponent {
         this.attachEventHandlers();
         this.subscribe();
 
-        [this.outer, this.outerParent] = this.drawBlueprint();
-        this.drawOperators();
-        this.drawConnections();
+        [this.outerVisible, this.embeddingOuterInvisible] = this.createOuter();
+        this.createOperators();
+        this.createConnections();
 
         this.autoLayout();
         this.fitEmbedding();
@@ -28,20 +28,25 @@ export class BlueprintComponent {
 
     private attachEventHandlers() {
         const that = this;
+        this.graph.on('change:position change:size', function (cell: dia.Cell, newPosition: dia.Point, opt: any) {
+            if (opt.skipMirrorHandler) return;
 
-        this.graph.on('change:position', function (cell: dia.Cell, newPosition: dia.Point, opt: any) {
-            if (opt.skipParentHandler) return;
-
-            if (cell === that.outer) {
-                that.outerParent.set({
-                    position: that.outer.position()
-                });
+            const mirror = cell.get('mirror') as dia.Cell | undefined;
+            if (mirror) {
+                mirror.set({
+                    position: cell.get('position'),
+                    size: cell.get('size')
+                }, ({skipMirrorHandler: true} as any));
             }
+        });
+        this.graph.on('change:position change:size', function (cell: dia.Cell, newPosition: dia.Point, opt: any) {
+            if (opt.skipParentHandler) return;
 
             const parentId = cell.get('parent');
             if (!parentId) return;
 
             const parent = that.graph.getCell(parentId);
+            const outerPadding = that.outerPadding;
 
             let newX: number | undefined = undefined;
             let newY: number | undefined = undefined;
@@ -64,22 +69,28 @@ export class BlueprintComponent {
                 }
             });
 
+            const set = {
+                position: {
+                    x: -outerPadding,
+                    y: -outerPadding
+                },
+                size: {
+                    width: 2 * outerPadding,
+                    height: 2 * outerPadding
+                }
+            };
+            
             if (typeof newX !== 'undefined' &&
                 typeof newY !== 'undefined' &&
                 typeof newCornerX !== 'undefined' &&
                 typeof newCornerY !== 'undefined') {
-                const set = {
-                    position: {x: newX - that.outerPadding, y: newY - that.outerPadding},
-                    size: {
-                        width: newCornerX - newX + 2 * that.outerPadding,
-                        height: newCornerY - newY + 2 * that.outerPadding
-                    }
-                };
-                parent.set(set, ({skipParentHandler: true} as any));
-                if (parent === that.outerParent) {
-                    that.outer.set(set);
-                }
+                set.position.x = newX - outerPadding;
+                set.position.y = newY - outerPadding;
+                set.size.width = newCornerX - newX + 2 * outerPadding;
+                set.size.height = newCornerY - newY + 2 * outerPadding;
             }
+            
+            parent.set(set, ({skipParentHandler: true} as any));
         });
     }
 
@@ -90,47 +101,42 @@ export class BlueprintComponent {
         });
     }
 
-    private drawBlueprint(): [dia.Element, dia.Element] {
-        const outer = JointJSElements.createOperatorElement(this.blueprint);
+    private createOuter(): [dia.Element, dia.Element] {
+        const size = {width: this.outerPadding * 2 + 10, height: this.outerPadding * 2 + 10};
+
+        const outer = JointJSElements.createBlackBoxElement(this.blueprint);
         outer.attr('body/fill', 'blue');
         outer.attr('body/fill-opacity', '.05');
         outer.set('obstacle', false);
         outer.set('inward', true);
+        outer.set('size', size);
         outer.addTo(this.graph);
 
         const outerParent = new shapes.standard.Rectangle({});
-        outerParent.attr('body/stroke-opacity', '0');
-        outerParent.attr('body/fill-opacity', '0');
+        outerParent.attr('body/stroke-opacity', '0.2');
+        outerParent.attr('body/fill-opacity', '0.2');
         outerParent.set('obstacle', false);
         outerParent.set('inward', true);
+        outerParent.set('size', size);
         outerParent.addTo(this.graph);
 
-        outer.on('change:position', function (cell: dia.Cell) {
-            outer.set({
-                position: cell.get('position')
-            });
-        });
-        outerParent.on('change:position change:size', function (cell: dia.CellView) {
-            const set = {
-                size: outerParent.size()
-            };
-            outer.set(set, ({skipParentHandler: true} as any));
-        });
-        
+        outerParent.set('mirror', outer);
+        outer.set('mirror', outerParent);
+
         return [outer, outerParent];
     }
 
-    private drawOperators() {
+    private createOperators() {
         for (const op of this.blueprint.getOperators()) {
             this.addOperator(op);
         }
     }
 
-    private drawConnections() {
+    private createConnections() {
         for (const connection of this.blueprint.getConnections().getConnections()) {
             const sourceOwner = connection.source.getAncestorNode<BlackBox>(BlackBox);
             const destinationOwner = connection.destination.getAncestorNode<BlackBox>(BlackBox);
-            
+
             const link = new dia.Link({
                 source: {
                     id: sourceOwner!.getIdentity(),
@@ -163,20 +169,20 @@ export class BlueprintComponent {
     }
 
     private fitEmbedding() {
-        this.outerParent.fitEmbeds({padding: this.outerPadding});
+        this.embeddingOuterInvisible.fitEmbeds({padding: this.outerPadding});
     }
 
     private positionCenter() {
-        const position = this.outerParent.position();
-        const bbox = this.outerParent.getBBox();
-        this.outerParent.translate(-(position.x + bbox.width / 2), -(position.y + bbox.height / 2));
+        const position = this.embeddingOuterInvisible.position();
+        const bbox = this.embeddingOuterInvisible.getBBox();
+        this.embeddingOuterInvisible.translate(-(position.x + bbox.width / 2), -(position.y + bbox.height / 2));
     }
 
     private addOperator(operator: OperatorModel) {
-        const portOwnerElement = JointJSElements.createOperatorElement(operator as BlackBox);
+        const portOwnerElement = JointJSElements.createBlackBoxElement(operator as BlackBox);
         portOwnerElement.set('obstacle', true);
         portOwnerElement.set('inward', false);
-        this.outerParent.embed(portOwnerElement);
+        this.embeddingOuterInvisible.embed(portOwnerElement);
         this.graph.addCell(portOwnerElement);
 
         // JointJS -> Model
