@@ -36,7 +36,13 @@ export class Canvas {
             gridSize: 10,
             drawGrid: true,
             interactive: function (cellView: dia.CellView) {
-                return cellView.model.attr('draggable') !== false;
+                if (cellView.model.attr('draggable') === false) {
+                    return false;
+                }
+                if (cellView.model.isLink()) {
+                    return { vertexAdd: false };
+                }
+                return true;
             }
         });
     }
