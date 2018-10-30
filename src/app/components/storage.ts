@@ -1,14 +1,12 @@
 import {ApiService, BlueprintApiResponse} from '../services/api';
 import {AppModel} from '../model/app';
-import {PluginComponent} from './app';
-import {fillLandscape} from '../definition/slang';
+import {fillLandscape} from '../services/mapper';
 
-export class HTTPStorageComponent extends PluginComponent {
+export class HTTPStorageComponent {
 
     private api: ApiService;
 
-    constructor(app: AppModel, host: string) {
-        super(app);
+    constructor(private app: AppModel, host: string) {
         this.api = new ApiService(host);
         this.subscribe();
     }
@@ -27,10 +25,9 @@ export class HTTPStorageComponent extends PluginComponent {
     }
 }
 
-export class StaticStorageComponent extends PluginComponent {
+export class StaticStorageComponent {
 
-    constructor(app: AppModel, private definitions: Array<BlueprintApiResponse>) {
-        super(app);
+    constructor(private app: AppModel, private definitions: Array<BlueprintApiResponse>) {
         this.subscribe();
     }
 

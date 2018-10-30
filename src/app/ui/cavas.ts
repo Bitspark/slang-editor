@@ -9,6 +9,7 @@ export class Canvas {
         this.redirectPaperEvents();
         this.addZooming();
         this.addPanning();
+        this.catchPaperEvents();
     }
 
     public resize(width: number, height: number) {
@@ -44,7 +45,13 @@ export class Canvas {
             gridSize: 10,
             drawGrid: true,
             interactive: function (cellView: dia.CellView) {
-                return cellView.model.attr('draggable') !== false;
+                if (cellView.model.attr('draggable') === false) {
+                    return false;
+                }
+                if (cellView.model.isLink()) {
+                    return { vertexAdd: false };
+                }
+                return true;
             }
         });
     }
@@ -148,6 +155,16 @@ export class Canvas {
         });
         paper.svg.addEventListener('mousemove', function (event: any) {
             doPanning(event.offsetX, event.offsetY);
+        });
+    }
+    
+    private catchPaperEvents() {
+        const paper = this.paper;
+        paper.on('blank:mousewheel', function (evt: Event, x: number, y: number, delta: number) {
+            evt.preventDefault();
+        });
+        paper.on('cell:mousewheel', function (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) {
+            evt.preventDefault();
         });
     }
 

@@ -1,38 +1,66 @@
 import {BlueprintModel, BlueprintType} from '../model/blueprint';
-import {BlueprintApiResponse, BlueprintDefApiResponse, PortApiResponse, PortGroupApiResponse} from '../services/api';
+import {
+    BlueprintApiResponse,
+    BlueprintDefApiResponse,
+    PortGroupApiResponse,
+    PropertyApiResponse, PropertyDefinitionsApiResponse, TypeDefApiResponse
+} from './api';
 import {LandscapeModel} from '../model/landscape';
 import {BlueprintDelegateModel} from '../model/delegate';
-import {BlueprintPortModel, PortType} from '../model/port';
+import {BlueprintPortModel} from '../model/port';
+import {PropertyAssignments, PropertyModel} from "../model/property";
+import {SlangType, TypeModel} from "../model/type";
 
 const blueprintToOperator = new Map<BlueprintModel, BlueprintDefApiResponse>();
 
-function createPort(portDef: PortApiResponse, owner: BlueprintModel | BlueprintDelegateModel, directionIn: boolean): BlueprintPortModel {
-    const type: PortType = {
-        number: PortType.Number,
-        binary: PortType.Binary,
-        boolean: PortType.Boolean,
-        string: PortType.String,
-        trigger: PortType.Trigger,
-        primitive: PortType.Primitive,
-        generic: PortType.Generic,
-        stream: PortType.Stream,
-        map: PortType.Map,
-    }[portDef.type];
+function toSlangType(typeName: string): SlangType {
+    const type = ({
+        number: SlangType.Number,
+        binary: SlangType.Binary,
+        boolean: SlangType.Boolean,
+        string: SlangType.String,
+        trigger: SlangType.Trigger,
+        primitive: SlangType.Primitive,
+        generic: SlangType.Generic,
+        stream: SlangType.Stream,
+        map: SlangType.Map,
+    } as  { [_: string]: SlangType })[typeName];
 
     if (type === null) {
-        throw `unknown port type '${portDef.type}'`;
+        throw `unknown property type '${type}'`;
     }
 
-    const port = new BlueprintPortModel(null, owner, type, directionIn);
+    return type;
+}
 
+function createPort(typeDef: TypeDefApiResponse, owner: BlueprintModel | BlueprintDelegateModel, directionIn: boolean): BlueprintPortModel {
+    const type = toSlangType(typeDef.type);
+    const port = new BlueprintPortModel(null, owner, type, directionIn);
     switch (port.getType()) {
-        case PortType.Map:
-            Object.keys(portDef.map!).forEach((portName: string) => {
-                port.addMapSubPort(portName, createPort(portDef.map![portName], owner, directionIn));
+        case SlangType.Map:
+            Object.keys(typeDef.map!).forEach((portName: string) => {
+                port.addMapSub(portName, createPort(typeDef.map![portName], owner, directionIn));
             });
             break;
-        case PortType.Stream:
-            port.setStreamSubPort(createPort(portDef.stream!, owner, directionIn));
+        case SlangType.Stream:
+            port.setStreamSub(createPort(typeDef.stream!, owner, directionIn));
+            break;
+    }
+
+    return port;
+}
+
+function createTypeModel(typeDef: TypeDefApiResponse): TypeModel {
+    const type = toSlangType(typeDef.type);
+    const port = new TypeModel(null, type);
+    switch (port.getType()) {
+        case SlangType.Map:
+            Object.keys(typeDef.map!).forEach((subName: string) => {
+                port.addMapSub(subName, createTypeModel(typeDef.map![subName]));
+            });
+            break;
+        case SlangType.Stream:
+            port.setStreamSub(createTypeModel(typeDef.stream!));
             break;
     }
 
@@ -40,8 +68,8 @@ function createPort(portDef: PortApiResponse, owner: BlueprintModel | BlueprintD
 }
 
 function setBlueprintServices(blueprint: BlueprintModel, services: PortGroupApiResponse) {
-    const portInDef: PortApiResponse = services["main"].in;
-    const outPortDef: PortApiResponse = services["main"].out;
+    const portInDef: TypeDefApiResponse = services["main"].in;
+    const outPortDef: TypeDefApiResponse = services["main"].out;
     blueprint.setPortIn(createPort(portInDef, blueprint, true));
     blueprint.setPortOut(createPort(outPortDef, blueprint, false));
 }
@@ -52,6 +80,22 @@ function setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupAp
         delegate.setPortIn(createPort(delegates[delegateName].in, delegate, true));
         delegate.setPortOut(createPort(delegates[delegateName].out, delegate, false));
     });
+}
+
+function setBlueprintProperties(blueprint: BlueprintModel, properties: PropertyApiResponse) {
+    Object.keys(properties).forEach((propertyName: string) => {
+        blueprint.addProperty(new PropertyModel(propertyName, createTypeModel(properties[propertyName])));
+    });
+}
+
+function createPropertyAssignments(blueprint: BlueprintModel, propDefs: PropertyDefinitionsApiResponse): PropertyAssignments {
+    const propAssigns = new PropertyAssignments(Array.from(blueprint.getProperties()));
+    if (propDefs) {
+        Object.keys(propDefs).forEach((propName: string) => {
+            propAssigns.define(propName, propDefs[propName]);
+        });
+    }
+    return propAssigns
 }
 
 export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<BlueprintApiResponse>) {
@@ -74,6 +118,9 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
         if (bpData.def.delegates) {
             setBlueprintDelegates(blueprint, bpData.def.delegates);
         }
+        if (bpData.def.properties) {
+            setBlueprintProperties(blueprint, bpData.def.properties);
+        }
         const def = bpData.def;
 
         blueprintToOperator.set(blueprint, def);
@@ -89,11 +136,12 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
                 if (!blueprint) {
                     throw `unknown blueprint '${opData.operator}'`;
                 }
-                outerBlueprint.createOperator(opName, blueprint);
+                const propAssigns = createPropertyAssignments(blueprint, opData.properties);
+                outerBlueprint.createOperator(opName, blueprint, propAssigns);
             });
         }
     });
-    
+
     // 3) Connect operator and blueprint ports
     blueprintToOperator.forEach((bpDef: BlueprintDefApiResponse, outerBlueprint: BlueprintModel) => {
         const connections = bpDef.connections;
@@ -111,6 +159,7 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
                         if (!destinationPort) {
                             throw `destination port ${destinationPortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
                         }
+                        // console.log(sourcePort.getIdentity(), "==>", destinationPort.getIdentity());
                         sourcePort.connect(destinationPort);
                     } catch (e) {
                         console.error(e);

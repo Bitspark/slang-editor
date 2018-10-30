@@ -1,7 +1,9 @@
 import {attributes, dia, shapes} from "jointjs";
-import {PortModel, PortType} from "../model/port";
+import {PortModel} from "../model/port";
 import SVGAttributes = attributes.SVGAttributes;
 import {BlackBox} from './nodes';
+import {SlangType} from "../model/type";
+import {PropertyAssignments} from "../model/property";
 
 export class JointJSElements {
 
@@ -53,14 +55,14 @@ export class JointJSElements {
         let portItems: Array<dia.Element.Port> = [];
 
         switch (port.getType()) {
-            case PortType.Map:
-                for (const [_, each] of port.getMapSubPorts()) {
+            case SlangType.Map:
+                for (const [_, each] of port.getMapSubs()) {
                     portItems = portItems.concat(this.createPortItems(group, each));
                 }
                 break;
 
-            case PortType.Stream:
-                portItems = portItems.concat(this.createPortItems(group, port.getStreamSubPort()));
+            case SlangType.Stream:
+                portItems = portItems.concat(this.createPortItems(group, port.getStreamSub()));
                 break;
 
             default:
@@ -76,20 +78,20 @@ export class JointJSElements {
     }
 
 
-    public static createOperatorElement(operator: BlackBox): dia.Element {
+    public static createBlackBoxElement(blackBox: BlackBox): dia.Element {
         let portItems: Array<dia.Element.Port> = [];
 
-        const inPort = operator.getPortIn();
+        const inPort = blackBox.getPortIn();
         if (inPort) {
             portItems = portItems.concat(this.createPortItems("MainIn", inPort))
         }
 
-        const outPort = operator.getPortOut();
+        const outPort = blackBox.getPortOut();
         if (outPort) {
             portItems = portItems.concat(this.createPortItems("MainOut", outPort))
         }
 
-        for (const delegate of operator.getDelegates()) {
+        for (const delegate of blackBox.getDelegates()) {
             if (delegate.getPortOut()) {
                 portItems = portItems.concat(this.createPortItems("Delegate", delegate.getPortOut()!));
             }
@@ -99,13 +101,13 @@ export class JointJSElements {
         }
 
         return new shapes.standard.Rectangle({
-            id: operator.getIdentity(),
+            id: blackBox.getIdentity(),
             size: {width: 100, height: 100},
             attrs: {
                 root: {},
                 body: this.blueprintAttrs,
                 label: {
-                    text: operator.getDisplayName(),
+                    text: blackBox.getDisplayName(),
                     fill: 'white',
                 },
             },
@@ -151,6 +153,62 @@ export interface ParsedPortInformation {
     service: string | undefined
     directionIn: boolean
     port: string
+}
+
+
+export class PropertyEvaluator {
+    public static expand(str: string, propAssigns?: PropertyAssignments): Array<string> {
+        let exprs = [str];
+
+        if (propAssigns) {
+            for (const expr of exprs) {
+                const parts = /{(.*?)}/.exec(expr);
+                if (!parts) {
+                    break;
+                }
+
+                // This could be extended with more complex logic in the future
+                const vals = this.expandExpr(parts[1], propAssigns);
+
+                // Actual replacement
+                const newExprs = [];
+                for (const val of vals) {
+                    for (const e of exprs) {
+                        newExprs.push(e.replace(parts[0], val));
+                    }
+                }
+                exprs = newExprs;
+            }
+        }
+
+        return exprs;
+    }
+
+
+    private static expandExpr(exprPart: string, propAssigns: PropertyAssignments): Array<string> {
+        const vals: Array<string> = [];
+        const propAssign = propAssigns.getByName(exprPart);
+
+        if (!propAssign) {
+            return [];
+        }
+
+        const propValue: any = propAssign.getValue();
+
+        if (propAssign.isStreamType()) {
+            if (typeof propValue === 'string' && (propValue as string).startsWith('$')) {
+                vals.push(`{${propValue.substr(1)}}`);
+            }
+            else {
+                for (const el of propValue) {
+                    vals.push((typeof el === 'string') ? el : JSON.stringify(el));
+                }
+            }
+        } else {
+            vals.push((typeof propValue === 'string') ? propValue : JSON.stringify(propValue));
+        }
+        return vals;
+    }
 }
 
 export class SlangParsing {

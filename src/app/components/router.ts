@@ -1,10 +1,8 @@
 import {AppModel} from '../model/app';
-import {PluginComponent} from './app';
 
-export class RouterComponent extends PluginComponent {
+export class RouterComponent {
 
-    constructor(app: AppModel) {
-        super(app);
+    constructor(private app: AppModel) {
         this.subscribe();
         this.addEventListeners();
     }

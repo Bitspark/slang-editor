@@ -4,20 +4,11 @@ import {BlueprintType} from '../model/blueprint';
 import {Canvas} from '../ui/cavas';
 import {AppModel} from '../model/app';
 
-export abstract class PluginComponent {
-
-    protected constructor(protected readonly app: AppModel) {
-    }
-
-}
-
-export class MainComponent extends PluginComponent {
+export class MainComponent {
     private landscapeComponent: LandscapeComponent | null = null;
     private canvas: Canvas;
 
-    constructor(app: AppModel, private el: HTMLElement) {
-        super(app);
-
+    constructor(private app: AppModel, private el: HTMLElement) {
         const that = this;
         window.addEventListener('resize', function () {
             that.resize();
