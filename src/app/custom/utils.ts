@@ -3,7 +3,7 @@ import {PortModel} from "../model/port";
 import SVGAttributes = attributes.SVGAttributes;
 import {BlackBox} from './nodes';
 import {SlangType} from "../model/type";
-import {PropertyDefinition, PropertyDefinitions} from "../model/property";
+import {PropertyAssignment, PropertyAssignments} from "../model/property";
 
 export class JointJSElements {
 
@@ -157,10 +157,10 @@ export interface ParsedPortInformation {
 
 
 export class PropertyEvaluator {
-    public static expand(str: string, propDefs?: PropertyDefinitions): Array<string> {
+    public static expand(str: string, propAssigns?: PropertyAssignments): Array<string> {
         let exprs = [str];
 
-        if (propDefs) {
+        if (propAssigns) {
             for (const expr of exprs) {
                 const parts = /{(.*?)}/.exec(expr);
                 if (!parts) {
@@ -168,7 +168,7 @@ export class PropertyEvaluator {
                 }
 
                 // This could be extended with more complex logic in the future
-                const vals = this.expandExpr(parts[1], propDefs);
+                const vals = this.expandExpr(parts[1], propAssigns);
 
                 // Actual replacement
                 const newExprs = [];
@@ -185,17 +185,17 @@ export class PropertyEvaluator {
     }
 
 
-    private static expandExpr(exprPart: string, propDefs: PropertyDefinitions): Array<string> {
+    private static expandExpr(exprPart: string, propAssigns: PropertyAssignments): Array<string> {
         const vals: Array<string> = [];
-        const propDef = propDefs.getByName(exprPart);
+        const propAssign = propAssigns.getByName(exprPart);
 
-        if (!propDef) {
+        if (!propAssign) {
             return [];
         }
 
-        const propValue: any = propDef.getValue();
+        const propValue: any = propAssign.getValue();
 
-        if (propDef.isStreamType()) {
+        if (propAssign.isStreamType()) {
             if (typeof propValue === 'string' && (propValue as string).startsWith('$')) {
                 vals.push(`{${propValue.substr(1)}}`);
             }

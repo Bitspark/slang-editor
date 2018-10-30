@@ -7,12 +7,12 @@ import {
     TypeDefApiResponse,
     PortGroupApiResponse,
     PropertyApiResponse,
-    PropertyDefinitionApiResponse
+    PropertyDefinitionsApiResponse
 } from "../services/api";
 import {BlueprintPortModel} from '../model/port';
 import {BlueprintDelegateModel} from '../model/delegate';
 import {SlangType, TypeModel} from "../model/type";
-import {PropertyDefinitions, PropertyModel} from "../model/property";
+import {PropertyAssignments, PropertyModel} from "../model/property";
 
 export class StorageComponent {
     constructor(private landscape: LandscapeModel, private api: ApiService) {
@@ -94,14 +94,14 @@ export class StorageComponent {
         });
     }
 
-    private createPropertyDefinions(blueprint: BlueprintModel, propDefData: PropertyDefinitionApiResponse): PropertyDefinitions {
-        const propDefs = new PropertyDefinitions(Array.from(blueprint.getProperties()));
-        if (propDefData) {
-            Object.keys(propDefData).forEach((propName: string) => {
-                propDefs.define(propName, propDefData[propName]);
+    private createPropertyAssignments(blueprint: BlueprintModel, propDefs: PropertyDefinitionsApiResponse): PropertyAssignments {
+        const propAssigns = new PropertyAssignments(Array.from(blueprint.getProperties()));
+        if (propDefs) {
+            Object.keys(propDefs).forEach((propName: string) => {
+                propAssigns.define(propName, propDefs[propName]);
             });
         }
-        return propDefs
+        return propAssigns
     }
 
     public async load(): Promise<void> {
@@ -144,8 +144,8 @@ export class StorageComponent {
                         if (!blueprint) {
                             throw `unknown blueprint '${opData.operator}'`;
                         }
-                        const propDefs = this.createPropertyDefinions(blueprint, opData.properties);
-                        outerBlueprint.createOperator(opName, blueprint, propDefs);
+                        const propAssigns = this.createPropertyAssignments(blueprint, opData.properties);
+                        outerBlueprint.createOperator(opName, blueprint, propAssigns);
                     });
                 }
             });

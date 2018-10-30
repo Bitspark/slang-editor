@@ -9,7 +9,7 @@ import {BlackBox} from '../custom/nodes';
 import {LandscapeModel} from './landscape';
 import {Connections} from '../custom/connections';
 import {SlangType} from "./type";
-import {PropertyDefinitions, PropertyModel} from "./property";
+import {PropertyAssignments, PropertyModel} from "./property";
 
 export enum BlueprintType {
     Local,
@@ -45,8 +45,8 @@ export class BlueprintModel extends BlackBox {
         this.hierarchy = fullName.split('.');
     }
 
-    public createOperator(name: string, blueprint: BlueprintModel, propDefs: PropertyDefinitions): OperatorModel {
-        const operator = blueprint.instantiateOperator(this, name, propDefs);
+    public createOperator(name: string, blueprint: BlueprintModel, propAssigns: PropertyAssignments): OperatorModel {
+        const operator = blueprint.instantiateOperator(this, name, propAssigns);
         return this.addOperator(operator);
     }
 
@@ -55,13 +55,13 @@ export class BlueprintModel extends BlackBox {
         return this.addDelegate(delegate);
     }
 
-    private instantiateOperator(owner: BlueprintModel, name: string, propDefs: PropertyDefinitions): OperatorModel {
+    private instantiateOperator(owner: BlueprintModel, name: string, propAssigns: PropertyAssignments): OperatorModel {
         function copyPort(owner: OperatorModel | OperatorDelegateModel, parent: OperatorPortModel | null, port: BlueprintPortModel): OperatorPortModel {
             const portCopy = new OperatorPortModel(parent, owner, port.getType(), port.isDirectionIn());
             switch (portCopy.getType()) {
                 case SlangType.Map:
                     for (const entry of port.getMapSubs()) {
-                        for (const portName of PropertyEvaluator.expand(entry[0], propDefs)) {
+                        for (const portName of PropertyEvaluator.expand(entry[0], propAssigns)) {
                             portCopy.addMapSub(portName, copyPort(owner, portCopy, entry[1]));
                         }
                     }
@@ -74,7 +74,7 @@ export class BlueprintModel extends BlackBox {
         }
 
         function copyAndAddDelegates(owner: OperatorModel, delegate: BlueprintDelegateModel) {
-            for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), propDefs)) {
+            for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), propAssigns)) {
                 const delegateCopy = new OperatorDelegateModel(owner, expandedDlgName);
                 if (delegate.getPortIn()) {
                     delegateCopy.setPortIn(copyPort(delegateCopy, null, delegate.getPortIn()!));

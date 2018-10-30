@@ -12,12 +12,12 @@ export class PropertyModel {
         return this.type.getType();
     }
 
-    public define(value: any): PropertyDefinition {
-        return new PropertyDefinition(this, value);
+    public define(value: any): PropertyAssignment {
+        return new PropertyAssignment(this, value);
     }
 }
 
-export class PropertyDefinition {
+export class PropertyAssignment {
     public constructor(private property: PropertyModel, private value: any) {
     }
 
@@ -30,29 +30,29 @@ export class PropertyDefinition {
     }
 }
 
-export class PropertyDefinitions {
+export class PropertyAssignments {
     private name2Prop: Map<string, PropertyModel>;
-    private name2PropDef: Map<string, PropertyDefinition>;
+    private name2propAssign: Map<string, PropertyAssignment>;
 
     public constructor(properties: Array<PropertyModel>) {
         this.name2Prop = new Map<string, PropertyModel>(
             properties.map<[string, PropertyModel]>((property: PropertyModel) => [property.getName(), property])
         );
-        this.name2PropDef = new Map<string, PropertyDefinition>();
+        this.name2propAssign = new Map<string, PropertyAssignment>();
     }
 
-    public define(propertyName: string, propertyValue: any): PropertyDefinition {
+    public define(propertyName: string, propertyValue: any): PropertyAssignment {
         const property = this.name2Prop.get(propertyName);
         if (!property) {
             throw `Unknown property ${propertyName}`;
         }
 
         const def = property.define(propertyValue);
-        this.name2PropDef.set(property.getName(), def);
+        this.name2propAssign.set(property.getName(), def);
         return def;
     }
 
-    public getByName(propertyName: string): PropertyDefinition | undefined {
-        return this.name2PropDef.get(propertyName);
+    public getByName(propertyName: string): PropertyAssignment | undefined {
+        return this.name2propAssign.get(propertyName);
     }
 }
