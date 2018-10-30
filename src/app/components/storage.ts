@@ -1,41 +1,72 @@
 import {LandscapeModel} from "../model/landscape";
 import {BlueprintModel, BlueprintType} from "../model/blueprint";
-import {ApiService, BlueprintApiResponse, BlueprintDefApiResponse, PortApiResponse, PortGroupApiResponse} from "../services/api";
-import {BlueprintPortModel, PortType} from '../model/port';
+import {
+    ApiService,
+    BlueprintApiResponse,
+    BlueprintDefApiResponse,
+    TypeDefApiResponse,
+    PortGroupApiResponse,
+    PropertyApiResponse,
+    PropertyDefinitionsApiResponse
+} from "../services/api";
+import {BlueprintPortModel} from '../model/port';
 import {BlueprintDelegateModel} from '../model/delegate';
+import {SlangType, TypeModel} from "../model/type";
+import {PropertyAssignments, PropertyModel} from "../model/property";
 
 export class StorageComponent {
     constructor(private landscape: LandscapeModel, private api: ApiService) {
 
     }
 
-    private createPort(portDef: PortApiResponse, owner: BlueprintModel | BlueprintDelegateModel, directionIn: boolean): BlueprintPortModel {
-        const type: PortType = {
-            number: PortType.Number,
-            binary: PortType.Binary,
-            boolean: PortType.Boolean,
-            string: PortType.String,
-            trigger: PortType.Trigger,
-            primitive: PortType.Primitive,
-            generic: PortType.Generic,
-            stream: PortType.Stream,
-            map: PortType.Map,
-        }[portDef.type];
+    private toSlangType(typeName: string): SlangType {
+        const type = ({
+            number: SlangType.Number,
+            binary: SlangType.Binary,
+            boolean: SlangType.Boolean,
+            string: SlangType.String,
+            trigger: SlangType.Trigger,
+            primitive: SlangType.Primitive,
+            generic: SlangType.Generic,
+            stream: SlangType.Stream,
+            map: SlangType.Map,
+        } as  { [_: string]: SlangType })[typeName];
 
         if (type === null) {
-            throw `unknown port type '${portDef.type}'`;
+            throw `unknown property type '${type}'`;
         }
 
-        const port = new BlueprintPortModel(null, owner, type, directionIn);
+        return type;
+    }
 
+    private createPort(typeDef: TypeDefApiResponse, owner: BlueprintModel | BlueprintDelegateModel, directionIn: boolean): BlueprintPortModel {
+        const type = this.toSlangType(typeDef.type);
+        const port = new BlueprintPortModel(null, owner, type, directionIn);
         switch (port.getType()) {
-            case PortType.Map:
-                Object.keys(portDef.map!).forEach((portName: string) => {
-                    port.addMapSubPort(portName, this.createPort(portDef.map![portName], owner, directionIn));
+            case SlangType.Map:
+                Object.keys(typeDef.map!).forEach((portName: string) => {
+                    port.addMapSub(portName, this.createPort(typeDef.map![portName], owner, directionIn));
                 });
                 break;
-            case PortType.Stream:
-                port.setStreamSubPort(this.createPort(portDef.stream!, owner, directionIn));
+            case SlangType.Stream:
+                port.setStreamSub(this.createPort(typeDef.stream!, owner, directionIn));
+                break;
+        }
+
+        return port;
+    }
+
+    private createTypeModel(typeDef: TypeDefApiResponse): TypeModel {
+        const type = this.toSlangType(typeDef.type);
+        const port = new TypeModel(null, type);
+        switch (port.getType()) {
+            case SlangType.Map:
+                Object.keys(typeDef.map!).forEach((subName: string) => {
+                    port.addMapSub(subName, this.createTypeModel(typeDef.map![subName]));
+                });
+                break;
+            case SlangType.Stream:
+                port.setStreamSub(this.createTypeModel(typeDef.stream!));
                 break;
         }
 
@@ -43,8 +74,8 @@ export class StorageComponent {
     }
 
     private setBlueprintServices(blueprint: BlueprintModel, services: PortGroupApiResponse) {
-        const portInDef: PortApiResponse = services["main"].in;
-        const outPortDef: PortApiResponse = services["main"].out;
+        const portInDef: TypeDefApiResponse = services["main"].in;
+        const outPortDef: TypeDefApiResponse = services["main"].out;
         blueprint.setPortIn(this.createPort(portInDef, blueprint, true));
         blueprint.setPortOut(this.createPort(outPortDef, blueprint, false));
     }
@@ -55,6 +86,22 @@ export class StorageComponent {
             delegate.setPortIn(this.createPort(delegates[delegateName].in, delegate, true));
             delegate.setPortOut(this.createPort(delegates[delegateName].out, delegate, false));
         });
+    }
+
+    private setBlueprintProperties(blueprint: BlueprintModel, properties: PropertyApiResponse) {
+        Object.keys(properties).forEach((propertyName: string) => {
+            blueprint.addProperty(new PropertyModel(propertyName, this.createTypeModel(properties[propertyName])));
+        });
+    }
+
+    private createPropertyAssignments(blueprint: BlueprintModel, propDefs: PropertyDefinitionsApiResponse): PropertyAssignments {
+        const propAssigns = new PropertyAssignments(Array.from(blueprint.getProperties()));
+        if (propDefs) {
+            Object.keys(propDefs).forEach((propName: string) => {
+                propAssigns.define(propName, propDefs[propName]);
+            });
+        }
+        return propAssigns
     }
 
     public async load(): Promise<void> {
@@ -80,6 +127,9 @@ export class StorageComponent {
                 if (bpData.def.delegates) {
                     this.setBlueprintDelegates(blueprint, bpData.def.delegates);
                 }
+                if (bpData.def.properties) {
+                    this.setBlueprintProperties(blueprint, bpData.def.properties);
+                }
                 const def = bpData.def;
 
                 blueprintToOperator.set(blueprint, def);
@@ -94,7 +144,8 @@ export class StorageComponent {
                         if (!blueprint) {
                             throw `unknown blueprint '${opData.operator}'`;
                         }
-                        outerBlueprint.createOperator(opName, blueprint);
+                        const propAssigns = this.createPropertyAssignments(blueprint, opData.properties);
+                        outerBlueprint.createOperator(opName, blueprint, propAssigns);
                     });
                 }
             });
@@ -114,7 +165,7 @@ export class StorageComponent {
                                 }
                                 if (!destinationPort) {
                                     throw `destination port ${destinationPortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
-                                }                    
+                                }
                                 // console.log(sourcePort.getIdentity(), "==>", destinationPort.getIdentity());
                                 sourcePort.connect(destinationPort);
                             } catch (e) {

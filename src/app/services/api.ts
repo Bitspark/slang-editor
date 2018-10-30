@@ -1,25 +1,35 @@
-export interface PortApiResponse {
+export interface TypeDefApiResponse {
     type: "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic"
     map?: {
-        [portName: string]: PortApiResponse,
+        [portName: string]: TypeDefApiResponse,
     }
-    stream?: PortApiResponse
+    stream?: TypeDefApiResponse
     generic?: string
 }
 
 export interface PortGroupApiResponse {
     [portGroupName: string]: {
-        in: PortApiResponse,
-        out: PortApiResponse,
+        in: TypeDefApiResponse,
+        out: TypeDefApiResponse,
     }
+}
+
+export interface PropertyApiResponse {
+    [propertyName: string]: TypeDefApiResponse
+}
+
+export interface PropertyDefinitionsApiResponse {
+    [propertyName: string]: any
 }
 
 export interface BlueprintDefApiResponse {
     operators: {
         [operatorName: string]: {
             operator: string
+            properties: PropertyDefinitionsApiResponse
         }
     }
+    properties: PropertyApiResponse
     services: PortGroupApiResponse
     delegates: PortGroupApiResponse
     connections: {
