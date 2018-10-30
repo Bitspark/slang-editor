@@ -11,10 +11,12 @@ export enum PortDirection {
 export class PortComponent implements dia.Element.Port {
 
     public readonly id: string;
+    public readonly group: string;
     public readonly attrs: dia.Cell.Selectors;
 
-    constructor(private port: PortModel, public readonly group: string) {
+    constructor(port: PortModel, group: string) {
         this.id = `${port.getIdentity()}`;
+        this.group = group;
         this.attrs = {
             '.sl-port': PortComponent.getPortAttributes(group, port.isDirectionIn()),
         };
@@ -48,22 +50,20 @@ export class PortGroupComponent implements dia.Element.PortGroup {
     public position?: dia.Element.PositionType;
     public markup?: string;
     public attrs?: dia.Cell.Selectors;
-    public label?: {
-        markup?: string;
-        position?: dia.Element.PositionType;
-    };
 
-    constructor(private portOwner: PortOwner, private direction: PortDirection, private start: number, private width: number) {
+    constructor(portOwner: PortOwner, direction: PortDirection, start: number, width: number) {
         switch (direction) {
             case PortDirection.In:
                 if (portOwner instanceof BlackBox) {
                     this.position = PortGroupComponent.layoutFunction("top", start, width) as any;
+                    //this.position = {name: "top"};
                     this.markup = "<path class='sl-srv-main sl-port sl-port-in' d=''></path>";
                     this.attrs = {
                         ".sl-srv-main.sl-port": PortGroupComponent.portAttrs,
                     };
                 } else if (portOwner instanceof GenericDelegateModel) {
                     this.position = PortGroupComponent.layoutFunction("right", start, width) as any;
+                    //this.position = {name: "right"};
                     this.markup = "<path class='sl-dlg sl-port sl-port-in' d=''></path>";
                     this.attrs = {
                         ".sl-dlg.sl-port": PortGroupComponent.portAttrs,
@@ -73,12 +73,14 @@ export class PortGroupComponent implements dia.Element.PortGroup {
             case PortDirection.Out:
                 if (portOwner instanceof BlackBox) {
                     this.position = PortGroupComponent.layoutFunction("bottom", start, width) as any;
+                    //this.position = {name: "bottom"};
                     this.markup = "<path class='sl-srv-main sl-port sl-port-out' d=''></path>";
                     this.attrs = {
                         ".sl-srv-main.sl-port": PortGroupComponent.portAttrs,
                     };
                 } else if (portOwner instanceof GenericDelegateModel) {
                     this.position = PortGroupComponent.layoutFunction("right", start, width) as any;
+                    //this.position = {name: "right"};
                     this.markup = "<path class='sl-dlg sl-port sl-port-out' d=''></path>";
                     this.attrs = {
                         ".sl-dlg.sl-port": PortGroupComponent.portAttrs,
@@ -88,8 +90,6 @@ export class PortGroupComponent implements dia.Element.PortGroup {
         }
     }
 
-    // STATIC
-
     private static portAttrs: attributes.SVGAttributes = {
         paintOrder: "stroke fill",
         d: "M 0 0 L 10 0 L 5 8 z",
@@ -98,11 +98,12 @@ export class PortGroupComponent implements dia.Element.PortGroup {
         strokeWidth: 1,
     };
 
-    private static layoutFunction(position: "top" | "bottom" | "left" | "right", start: number, width: number): (ports: Array<any>, elBBox: g.Rect, opt: any) => Array<g.Point> {
+    private static layoutFunction(position: "top" | "bottom" | "left" | "right", offset: number, space: number): (ports: Array<any>, elBBox: g.Rect, opt: any) => Array<g.Point> {
         return function (ports: Array<any>, elBBox: g.Rect, opt: any): Array<g.Point> {
             return ports.map((port: any, index: number, ports: Array<any>) => {
-                let total = 0;
+                const count = ports.length;
 
+                let total = 0;
                 switch (position) {
                     case "top":
                     case "bottom":
@@ -113,23 +114,23 @@ export class PortGroupComponent implements dia.Element.PortGroup {
                         total = elBBox.height;
                         break;
                 }
+                
+                const portSpaceAbs = 7.5;
+                const lengthAbs = count * portSpaceAbs;
+                const spaceAbs = space * total;
+                const offsetAbs = offset * total;
 
-                const count = ports.length;
-                const length = (count - 1) * 25;
-                width = width * total;
-                start = start * total - length / 2 + width / 2;
-
-                const pos = start + index * (width / count);
-
+                const positionAbs = offsetAbs + index * portSpaceAbs + (spaceAbs - lengthAbs) / 2;
+                
                 switch (position) {
                     case "top":
-                        return new g.Point(pos, 0);
+                        return new g.Point(positionAbs, 0);
                     case "bottom":
-                        return new g.Point(pos, elBBox.height);
+                        return new g.Point(positionAbs, elBBox.height);
                     case "left":
-                        return new g.Point(0, pos);
+                        return new g.Point(0, positionAbs);
                     case "right":
-                        return new g.Point(elBBox.width, pos);
+                        return new g.Point(elBBox.width, positionAbs);
                 }
             });
         };

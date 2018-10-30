@@ -5,7 +5,7 @@ import {PortComponent, PortDirection, PortGroupComponent} from "./port";
 
 export class BlackBoxComponent extends shapes.standard.Rectangle {
     
-    constructor(private blackBox: BlackBox) {        
+    constructor(blackBox: BlackBox) {        
         super({
             id: blackBox.getIdentity(),
             size: {width: 100, height: 100},
@@ -18,30 +18,14 @@ export class BlackBoxComponent extends shapes.standard.Rectangle {
                 },
             },
             ports: {
-                groups: BlackBoxComponent.createGroups(blackBox)
+                groups: BlackBoxComponent.createGroups(blackBox),
+                items: BlackBoxComponent.createPorts(blackBox),
             }
         });
-        
-        this.addPorts(this.createPorts());
     }
     
-    public addPorts(ports: Array<PortComponent>): this {
-        super.addPorts(ports);
-        return this;
-    }
-    
-    public getPorts(): Array<PortComponent> {
-        return super.getPorts() as Array<PortComponent>;
-    }
-    
-    private addPortGroups(portGroups: { [key: string]: dia.Element.PortGroup}) {
-        const ports = this.get('ports');
-        ports.groups = portGroups;
-    }
-    
-    private createPorts(): Array<PortComponent> {        
-        const blackBox = this.blackBox;
-        const portItems: Array<PortComponent> = [];
+    private static createPorts(blackBox: BlackBox): Array<PortComponent> {       
+        let portItems: Array<PortComponent> = [];
 
         const inPort = blackBox.getPortIn();
         if (inPort) {
@@ -85,12 +69,6 @@ export class BlackBoxComponent extends shapes.standard.Rectangle {
         
         return portGroups;
     }
-    
-    public getPort(id: string): PortComponent {
-        return super.getPort(id) as PortComponent;
-    }
-
-    // STATIC
 
     private static blueprintAttrs: attributes.SVGAttributes = {
         fill: "blue",
@@ -106,12 +84,12 @@ export class BlackBoxComponent extends shapes.standard.Rectangle {
         switch (port.getType()) {
             case PortType.Map:
                 for (const [_, each] of port.getMapSubPorts()) {
-                    portItems.push.apply(this.createPortItems(group, each));
+                    portItems.push.apply(portItems, this.createPortItems(group, each));
                 }
                 break;
 
             case PortType.Stream:
-                portItems.push.apply(this.createPortItems(group, port.getStreamSubPort()));
+                portItems.push.apply(portItems, this.createPortItems(group, port.getStreamSubPort()));
                 break;
 
             default:
