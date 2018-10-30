@@ -159,7 +159,6 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
                         if (!destinationPort) {
                             throw `destination port ${destinationPortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
                         }
-                        // console.log(sourcePort.getIdentity(), "==>", destinationPort.getIdentity());
                         sourcePort.connect(destinationPort);
                     } catch (e) {
                         console.error(e);
