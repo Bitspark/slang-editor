@@ -1,7 +1,7 @@
 {
-  "name": "webpack-starter",
+  "name": "slang-studio",
   "version": "1.0.0",
-  "description": "A light foundation for your next frontend project based on webpack.",
+  "description": "Web application for Slang, a visual programming language.",
   "scripts": {
     "build": "webpack --config webpack/webpack.config.prod.js  --colors",
     "start": "webpack-dev-server --open --config webpack/webpack.config.dev.js"
@@ -11,17 +11,15 @@
     "url": "git+https://github.com/wbkd/webpack-starter.git"
   },
   "keywords": [
-    "webpack",
-    "startkit",
+    "slang",
+    "ide",
     "frontend",
-    "es6",
-    "javascript",
-    "webdev"
+    "visual programming"
   ],
-  "author": "webkid.io",
-  "license": "MIT",
+  "author": "Bitspark GmbH",
+  "license": "Apache License 2.0",
   "bugs": {
-    "url": "https://github.com/wbkd/webpack-starter/issues"
+    "url": "https://github.com/Bitspark/slang-studio/issues"
   },
   "dependencies": {
     "@babel/polyfill": "^7.0.0",
