@@ -19,6 +19,7 @@ export function SlangStudioEmbedded(el: HTMLElement, blueprintFullName: string):
             } else {
                 console.error(`blueprint ${blueprintFullName} could not be found`);
             }
+            resolve();
         });
     })
 }

@@ -23,7 +23,6 @@ export class APIStorageComponent {
             resolve();
         });
     }
-
 }
 
 export class StaticStorageComponent {
