@@ -21,7 +21,6 @@ abstract class GenericPortModel<O extends PortOwner> extends TypeModel {
         super(parent, type);
     }
 
-
     public isSelected(): boolean {
         return this.selected.getValue();
     }

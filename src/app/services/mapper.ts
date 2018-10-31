@@ -1,15 +1,16 @@
 import {BlueprintModel, BlueprintType} from '../model/blueprint';
 import {
     BlueprintApiResponse,
-    BlueprintDefApiResponse,
+    BlueprintDefApiResponse, GenericSpecificationsApiResponse,
     PortGroupApiResponse,
-    PropertyApiResponse, PropertyDefinitionsApiResponse, TypeDefApiResponse
+    PropertyApiResponse, PropertyAssignmentsApiResponse, TypeDefApiResponse
 } from './api';
 import {LandscapeModel} from '../model/landscape';
 import {BlueprintDelegateModel} from '../model/delegate';
 import {BlueprintPortModel} from '../model/port';
 import {PropertyAssignments, PropertyModel} from "../model/property";
 import {SlangType, TypeModel} from "../model/type";
+import {GenericSpecifications} from "../model/generic";
 
 function toSlangType(typeName: string): SlangType {
     const type = ({
@@ -23,7 +24,7 @@ function toSlangType(typeName: string): SlangType {
         stream: SlangType.Stream,
         map: SlangType.Map,
     } as  { [_: string]: SlangType })[typeName];
-    
+
     if (type === null) {
         throw `unknown property type '${type}'`;
     }
@@ -40,8 +41,7 @@ function setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupAp
 }
 
 function createPort(typeDef: TypeDefApiResponse, owner: BlueprintModel | BlueprintDelegateModel, directionIn: boolean): BlueprintPortModel {
-    const type = toSlangType(typeDef.type);
-    const port = new BlueprintPortModel(null, owner, type, directionIn);
+    const port = new BlueprintPortModel(null, owner, toSlangType(typeDef.type), directionIn);
     switch (port.getType()) {
         case SlangType.Map:
             Object.keys(typeDef.map!).forEach((portName: string) => {
@@ -51,25 +51,29 @@ function createPort(typeDef: TypeDefApiResponse, owner: BlueprintModel | Bluepri
         case SlangType.Stream:
             port.setStreamSub(createPort(typeDef.stream!, owner, directionIn));
             break;
+        case SlangType.Generic:
+            port.setGenericIdentifier(typeDef.generic!);
+            break;
     }
-
     return port;
 }
 
 function createTypeModel(typeDef: TypeDefApiResponse): TypeModel {
-    const type = toSlangType(typeDef.type);
-    const port = new TypeModel(null, type);
-    switch (port.getType()) {
+    const type = new TypeModel(null, toSlangType(typeDef.type));
+    switch (type.getType()) {
         case SlangType.Map:
             Object.keys(typeDef.map!).forEach((subName: string) => {
-                port.addMapSub(subName, createTypeModel(typeDef.map![subName]));
+                type.addMapSub(subName, createTypeModel(typeDef.map![subName]));
             });
             break;
         case SlangType.Stream:
-            port.setStreamSub(createTypeModel(typeDef.stream!));
+            type.setStreamSub(createTypeModel(typeDef.stream!));
+            break;
+        case SlangType.Generic:
+            type.setGenericIdentifier(typeDef.generic!);
             break;
     }
-    return port;
+    return type;
 }
 
 function setBlueprintServices(blueprint: BlueprintModel, services: PortGroupApiResponse) {
@@ -85,19 +89,28 @@ function setBlueprintProperties(blueprint: BlueprintModel, properties: PropertyA
     });
 }
 
-function createPropertyAssignments(blueprint: BlueprintModel, propDefs: PropertyDefinitionsApiResponse): PropertyAssignments {
+function createPropertyAssignments(blueprint: BlueprintModel, propDefs: PropertyAssignmentsApiResponse): PropertyAssignments {
     const propAssigns = new PropertyAssignments(Array.from(blueprint.getProperties()));
     if (propDefs) {
         Object.keys(propDefs).forEach((propName: string) => {
-            propAssigns.define(propName, propDefs[propName]);
+            propAssigns.define(propName, createTypeModel(propDefs[propName]));
         });
     }
     return propAssigns
 }
 
+function createGenericSpecifications(blueprint: BlueprintModel, genSpeciData: GenericSpecificationsApiResponse): GenericSpecifications {
+    const genSpeci = new GenericSpecifications(Array.from(blueprint.getGenericIdentifiers()));
+    if (genSpeciData) {
+        Object.keys(genSpeciData).forEach((genId: string) => {
+            genSpeci.specify(genId, genSpeciData[genId]);
+        });
+    }
+    return genSpeci
+}
+
 export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<BlueprintApiResponse>) {
     const blueprintToOperator = new Map<BlueprintModel, BlueprintDefApiResponse>();
-    
     // 1) Add Blueprints
     bpDataList.forEach(bpData => {
         const type: BlueprintType | null = ({
@@ -135,7 +148,8 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
                     throw `unknown blueprint '${opData.operator}'`;
                 }
                 const propAssigns = createPropertyAssignments(blueprint, opData.properties);
-                outerBlueprint.createOperator(opName, blueprint, propAssigns);
+                const genSpeci = createGenericSpecifications(blueprint, opData.genericts);
+                outerBlueprint.createOperator(opName, blueprint, propAssigns, genSpeci);
             });
         }
     });

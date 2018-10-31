@@ -14,6 +14,7 @@ export enum SlangType {
 
 export class TypeModel extends SlangNode {
     private readonly mapSubs: Map<string, TypeModel> | undefined;
+    private genericIdentifier?: string;
     private streamSub: TypeModel | undefined;
 
     public constructor(protected parent: TypeModel | null, protected type: SlangType) {
@@ -68,6 +69,23 @@ export class TypeModel extends SlangNode {
         return this.streamSub;
     }
 
+    public setGenericIdentifier(genericIdentifier: string) {
+        if (this.type !== SlangType.Generic) {
+            throw `set generic identifier of a port of type '${this.type}' not possible`;
+        }
+        this.genericIdentifier = genericIdentifier;
+    }
+
+    public getGenericIdentifier(): string {
+        if (this.type !== SlangType.Generic) {
+            throw `${this.getIdentity()}: access of generic identifier of a port of type '${this.type}' not possible`;
+        }
+        if (!this.genericIdentifier) {
+            throw `generic port requires a generic identifier`;
+        }
+        return this.genericIdentifier;
+    }
+
     public getType(): SlangType {
         return this.type;
     }
@@ -82,7 +100,6 @@ export class TypeModel extends SlangNode {
                 return entry[0];
             }
         }
-
         throw `entry not found`;
     }
 
