@@ -8,6 +8,9 @@ export enum PortDirection {
     Out,
 }
 
+/**
+ * Component representing a Slang port.
+ */
 export class PortComponent implements dia.Element.Port {
 
     public readonly id: string;
@@ -28,7 +31,7 @@ export class PortComponent implements dia.Element.Port {
 
     // STATIC ONLY:
 
-    private static getPortAttributes(group: string, direction: boolean): attributes.SVGAttributes {
+    private static getPortAttributes(group: string, directionIn: boolean): attributes.SVGAttributes {
         const attrs: attributes.SVGAttributes = {
             fill: "cyan",
         };
@@ -36,11 +39,11 @@ export class PortComponent implements dia.Element.Port {
         switch (group) {
             case "MainIn":
             case "MainOut":
-                attrs.transform = "translate(0,-3)";
+                attrs.transform = "";
                 break;
             default:
                 // Delegate
-                attrs.transform = `rotate(${(direction) ? 90 : -90})`;
+                attrs.transform = `rotate(${(directionIn) ? 90 : -90})`;
                 break;
         }
 
@@ -49,6 +52,11 @@ export class PortComponent implements dia.Element.Port {
 
 }
 
+/**
+ * A component for which there is no directly corresponding Slang model.
+ * It can be thought of a component that represents a port which has no parent port but is the topmost ports.
+ * Currently these are main in- and out-ports and delegate in- and out-ports.
+ */
 export class PortGroupComponent implements dia.Element.PortGroup {
 
     public position?: dia.Element.PositionType;
@@ -100,23 +108,26 @@ export class PortGroupComponent implements dia.Element.PortGroup {
      * Spacing between ports. Two ports must not be closer to each other than this value.
      */
     private static readonly portSpacing = 15;
-    
+
     /**
      * Width of the visible port shape.
      */
-    private static readonly portWidth = 10;
-    
+    private static readonly portWidth = 7;
+
     /**
      * Height of the visible port shape.
      */
-    private static readonly portHeight = 8;
+    private static readonly portHeight = 21;
 
     /**
      * SVG attributes for the port shape.
      */
     private static readonly portAttributes: attributes.SVGAttributes = {
         paintOrder: "stroke fill",
-        d: `M 0 0 L ${PortGroupComponent.portWidth} 0 L ${PortGroupComponent.portWidth / 2} ${PortGroupComponent.portHeight} z`,
+        d:
+            `M ${-PortGroupComponent.portWidth / 2} ${-PortGroupComponent.portHeight / 2} ` +
+            `L ${PortGroupComponent.portWidth / 2} ${-PortGroupComponent.portHeight / 2} ` +
+            `L 0 ${PortGroupComponent.portHeight / 2} z`,
         magnet: true,
         stroke: "gray",
         strokeWidth: 3
@@ -139,15 +150,12 @@ export class PortGroupComponent implements dia.Element.PortGroup {
                         break;
                 }
 
-                const portSpaceAbs = PortGroupComponent.portWidth;
-                const lengthAbs = 
-                    count * portSpaceAbs + 
-                    (count - 1) * PortGroupComponent.portSpacing;
+                const lengthAbs = (count - 1) * PortGroupComponent.portSpacing;
                 const spaceAbs = space * total;
                 const offsetAbs = offset * total;
                 const positionAbs = 
                     offsetAbs + 
-                    index * (portSpaceAbs + PortGroupComponent.portSpacing) +
+                    index * PortGroupComponent.portSpacing +
                     (spaceAbs - lengthAbs) / 2;
 
                 switch (position) {
