@@ -13,7 +13,6 @@ export class LandscapeModel extends SlangNode {
 
     public createBlueprint(fullName: string, type: BlueprintType): BlueprintModel {
         const blueprint = new BlueprintModel(this, fullName, type);
-        this.addBlueprint(blueprint);
         return blueprint;
     }
 
@@ -41,7 +40,7 @@ export class LandscapeModel extends SlangNode {
         }
     }
 
-    private addBlueprint(blueprint: BlueprintModel): boolean {
+    public addBlueprint(blueprint: BlueprintModel): boolean {
         this.blueprints.push(blueprint);
         this.blueprintAdded.next(blueprint);
 

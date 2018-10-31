@@ -31,7 +31,7 @@ export interface BlueprintDefApiResponse {
         [operatorName: string]: {
             operator: string
             properties: PropertyAssignmentsApiResponse
-            genericts: GenericSpecificationsApiResponse
+            generics: GenericSpecificationsApiResponse
         }
     }
     properties?: PropertyApiResponse

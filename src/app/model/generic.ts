@@ -16,7 +16,11 @@ export class GenericSpecifications {
         return type;
     }
 
-    public get(genId: string): TypeModel | undefined {
-        return this.genId2Type.get(genId);
+    public get(genId: string): TypeModel {
+        const genType = this.genId2Type.get(genId);
+        if (!genType) {
+            throw `generic is not specified: ${genId}`;
+        }
+        return genType;
     }
 }

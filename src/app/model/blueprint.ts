@@ -77,20 +77,19 @@ export class BlueprintModel extends BlackBox {
     }
 
     private instantiateOperator(owner: BlueprintModel, name: string, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
-        function copyPort(owner: OperatorModel | OperatorDelegateModel, parent: OperatorPortModel | null, type: TypeModel, isInput: boolean): OperatorPortModel {
-            const portType = (type.getType() === SlangType.Generic) ? genSpeci.get(type.getGenericIdentifier())! : type;
+        function copyPort(owner: OperatorModel | OperatorDelegateModel, parent: OperatorPortModel | null, portType: TypeModel, isInput: boolean): OperatorPortModel {
             const portCopy = new OperatorPortModel(parent, owner, portType.getType(), isInput);
 
-            switch (portCopy.getType()) {
+            switch (portType.getType()) {
                 case SlangType.Map:
-                    for (const entry of type.getMapSubs()) {
+                    for (const entry of portType.getMapSubs()) {
                         for (const portName of PropertyEvaluator.expand(entry[0], propAssigns)) {
                             portCopy.addMapSub(portName, copyPort(owner, portCopy, entry[1], isInput));
                         }
                     }
                     break;
                 case SlangType.Stream:
-                    portCopy.setStreamSub(copyPort(owner, portCopy, type.getStreamSub(), isInput));
+                    portCopy.setStreamSub(copyPort(owner, portCopy, portType.getStreamSub(), isInput));
                     break;
             }
             return portCopy;
@@ -99,11 +98,13 @@ export class BlueprintModel extends BlackBox {
         function copyAndAddDelegates(owner: OperatorModel, delegate: BlueprintDelegateModel) {
             for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), propAssigns)) {
                 const delegateCopy = new OperatorDelegateModel(owner, expandedDlgName);
-                if (delegate.getPortIn()) {
-                    delegateCopy.setPortIn(copyPort(delegateCopy, null, delegate.getPortIn()!, true));
+                const portIn = delegate.getPortIn();
+                if (portIn) {
+                    delegateCopy.setPortIn(copyPort(delegateCopy, null, portIn.specifyGenerics(genSpeci)!, true));
                 }
-                if (delegate.getPortOut()) {
-                    delegateCopy.setPortOut(copyPort(delegateCopy, null, delegate.getPortOut()!, false));
+                const portOut = delegate.getPortOut();
+                if (portOut) {
+                    delegateCopy.setPortOut(copyPort(delegateCopy, null, portOut.specifyGenerics(genSpeci)!, false));
                 }
                 operator.addDelegate(delegateCopy);
             }
@@ -112,10 +113,10 @@ export class BlueprintModel extends BlackBox {
         const operator = new OperatorModel(owner, name, this);
 
         if (this.portIn) {
-            operator.setPortIn(copyPort(operator, null, this.portIn, true));
+            operator.setPortIn(copyPort(operator, null, this.portIn.specifyGenerics(genSpeci), true));
         }
         if (this.portOut) {
-            operator.setPortOut(copyPort(operator, null, this.portOut, false));
+            operator.setPortOut(copyPort(operator, null, this.portOut.specifyGenerics(genSpeci), false));
         }
         for (const delegate of this.delegates) {
             copyAndAddDelegates(operator, delegate);

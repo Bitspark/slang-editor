@@ -1,15 +1,16 @@
 import {SlangNode} from "../custom/nodes";
+import {GenericSpecifications} from "./generic";
 
 export enum SlangType {
-    Number,
-    Binary,
-    Boolean,
-    String,
-    Trigger,
-    Primitive,
-    Generic,
-    Stream,
-    Map,
+    Number, // 0
+    Binary, // 1
+    Boolean, // 2
+    String, // 3
+    Trigger, // 4
+    Primitive, // 5
+    Generic, // 6
+    Stream, // 7
+    Map, // 8
 }
 
 export class TypeModel extends SlangNode {
@@ -22,6 +23,42 @@ export class TypeModel extends SlangNode {
         if (this.type === SlangType.Map) {
             this.mapSubs = new Map<string, TypeModel>();
         }
+    }
+
+    public copy(): TypeModel {
+        const typeCopy = new TypeModel(this.parent, this.type);
+        switch (this.type) {
+            case SlangType.Map:
+                for (const [subName, subType] of this.getMapSubs()) {
+                    typeCopy.addMapSub(subName, subType.copy());
+                }
+                break;
+            case SlangType.Stream:
+                typeCopy.setStreamSub(this.getStreamSub().copy());
+                break;
+            case SlangType.Generic:
+                typeCopy.setGenericIdentifier(this.getGenericIdentifier());
+                break;
+        }
+        return typeCopy;
+    }
+
+    public specifyGenerics(genSpec: GenericSpecifications): TypeModel {
+        if (this.type === SlangType.Generic) {
+            return genSpec.get(this.getGenericIdentifier()).copy();
+        }
+        const specifiedType = new TypeModel(this.parent, this.type);
+        switch (this.type) {
+            case SlangType.Map:
+                for (const [subName, subType] of this.getMapSubs()) {
+                    specifiedType.addMapSub(subName, subType.specifyGenerics(genSpec));
+                }
+                break;
+            case SlangType.Stream:
+                specifiedType.setStreamSub(this.getStreamSub().specifyGenerics(genSpec));
+                break;
+        }
+        return specifiedType;
     }
 
     public addMapSub(name: string, port: TypeModel): TypeModel {

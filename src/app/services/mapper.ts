@@ -93,7 +93,7 @@ function createPropertyAssignments(blueprint: BlueprintModel, propDefs: Property
     const propAssigns = new PropertyAssignments(Array.from(blueprint.getProperties()));
     if (propDefs) {
         Object.keys(propDefs).forEach((propName: string) => {
-            propAssigns.define(propName, createTypeModel(propDefs[propName]));
+            propAssigns.assign(propName, propDefs[propName]);
         });
     }
     return propAssigns
@@ -103,7 +103,7 @@ function createGenericSpecifications(blueprint: BlueprintModel, genSpeciData: Ge
     const genSpeci = new GenericSpecifications(Array.from(blueprint.getGenericIdentifiers()));
     if (genSpeciData) {
         Object.keys(genSpeciData).forEach((genId: string) => {
-            genSpeci.specify(genId, genSpeciData[genId]);
+            genSpeci.specify(genId, createTypeModel(genSpeciData[genId]));
         });
     }
     return genSpeci
@@ -135,6 +135,7 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
         }
         const def = bpData.def;
         blueprintToOperator.set(blueprint, def);
+        landscape.addBlueprint(blueprint);
     });
 
     // 2) Add Operators. Use previously defined Blueprints for assigning Operator.blueprint
@@ -148,7 +149,7 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
                     throw `unknown blueprint '${opData.operator}'`;
                 }
                 const propAssigns = createPropertyAssignments(blueprint, opData.properties);
-                const genSpeci = createGenericSpecifications(blueprint, opData.genericts);
+                const genSpeci = createGenericSpecifications(blueprint, opData.generics);
                 outerBlueprint.createOperator(opName, blueprint, propAssigns, genSpeci);
             });
         }

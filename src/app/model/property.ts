@@ -41,18 +41,21 @@ export class PropertyAssignments {
         this.name2propAssign = new Map<string, PropertyAssignment>();
     }
 
-    public define(propertyName: string, propertyValue: any): PropertyAssignment {
+    public assign(propertyName: string, propertyValue: any): PropertyAssignment {
         const property = this.name2Prop.get(propertyName);
         if (!property) {
-            throw `Unknown property ${propertyName}`;
+            throw `unknown property: ${propertyName}`;
         }
-
         const def = property.define(propertyValue);
         this.name2propAssign.set(property.getName(), def);
         return def;
     }
 
-    public getByName(propertyName: string): PropertyAssignment | undefined {
-        return this.name2propAssign.get(propertyName);
+    public getByName(propertyName: string): PropertyAssignment {
+        const propVal = this.name2propAssign.get(propertyName);
+        if (!propVal) {
+            throw `property not assigned: ${propertyName}`;
+        }
+        return propVal;
     }
 }
