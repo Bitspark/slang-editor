@@ -1,7 +1,8 @@
 import {attributes, dia, shapes} from "jointjs";
 import {BlackBox} from "../../custom/nodes";
-import {PortModel, PortType} from "../../model/port";
+import {PortModel} from "../../model/port";
 import {PortComponent, PortDirection, PortGroupComponent} from "./port";
+import {SlangType} from "../../model/type";
 
 export class BlackBoxComponent extends shapes.standard.Rectangle {
     
@@ -82,14 +83,14 @@ export class BlackBoxComponent extends shapes.standard.Rectangle {
         let portItems: Array<PortComponent> = [];
 
         switch (port.getType()) {
-            case PortType.Map:
-                for (const [_, each] of port.getMapSubPorts()) {
+            case SlangType.Map:
+                for (const [_, each] of port.getMapSubs()) {
                     portItems.push.apply(portItems, this.createPortItems(group, each));
                 }
                 break;
 
-            case PortType.Stream:
-                portItems.push.apply(portItems, this.createPortItems(group, port.getStreamSubPort()));
+            case SlangType.Stream:
+                portItems.push.apply(portItems, this.createPortItems(group, port.getStreamSub()));
                 break;
 
             default:

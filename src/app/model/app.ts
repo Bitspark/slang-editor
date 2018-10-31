@@ -1,4 +1,4 @@
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, Subject} from 'rxjs';
 import {BlueprintModel} from './blueprint';
 import {LandscapeModel} from './landscape';
 
@@ -6,8 +6,11 @@ export class AppModel {
     
     private openedBlueprint = new BehaviorSubject<BlueprintModel | null>(null);
     private openedLandscape = new BehaviorSubject<LandscapeModel | null>(null);
+    private loadRequested = new Subject<void>();
     
     private landscape: LandscapeModel = new LandscapeModel();
+    
+    private loading: Array<Promise<void>> = [];
     
     constructor() {
         this.subscribeLandscape(this.landscape);
@@ -57,6 +60,16 @@ export class AppModel {
     
     // Actions
     
+    public load(): Promise<void> {
+        return new Promise<void>(async resolve => {
+            this.loadRequested.next();
+            const loading = this.loading;
+            this.loading = [];
+            await Promise.all(loading);
+            resolve();
+        });
+    }
+    
     // Subscriptions
 
     public subscribeOpenedBlueprintChanged(cb: (bp: BlueprintModel | null) => void) {
@@ -65,6 +78,12 @@ export class AppModel {
 
     public subscribeOpenedLandscapeChanged(cb: (ls: LandscapeModel | null) => void) {
         this.openedLandscape.subscribe(cb);
+    }
+    
+    public subscribeLoadRequested(cb: () => Promise<void>) {
+        this.loadRequested.subscribe(() => {
+            this.loading.push(cb());
+        });
     }
     
 }
