@@ -16,7 +16,7 @@ export class GenericSpecifications {
         return type;
     }
 
-    public getByName(genId: string): TypeModel | undefined {
+    public get(genId: string): TypeModel | undefined {
         return this.genId2Type.get(genId);
     }
 }
