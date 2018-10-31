@@ -6,7 +6,12 @@ import {PortOwner, SlangNode} from '../custom/nodes';
 import {Connections} from '../custom/connections';
 import {SlangType, TypeModel} from "./type";
 
-export  abstract class GenericPortModel<O extends PortOwner> extends TypeModel {
+export enum PortDirection {
+    In, // 0
+    Out, // 1
+}
+
+abstract class GenericPortModel<O extends PortOwner> extends TypeModel {
 
     // Topics
     // self
@@ -17,7 +22,7 @@ export  abstract class GenericPortModel<O extends PortOwner> extends TypeModel {
     protected destinations: Array<PortModel> | null = null;
     protected owner: O;
 
-    protected constructor(parent: GenericPortModel<O> | null, type: SlangType, private inDirection: boolean) {
+    protected constructor(parent: GenericPortModel<O> | null, type: SlangType, private direction: PortDirection) {
         super(parent, type);
     }
 
@@ -70,15 +75,20 @@ export  abstract class GenericPortModel<O extends PortOwner> extends TypeModel {
 
     public getIdentity(): string {
         const ownerIdentity: string = this.owner.getIdentity();
-        if (this.inDirection) {
-            return super.getIdentity() + '(' + ownerIdentity;
-        } else {
-            return ownerIdentity + ')' + super.getIdentity();
+        switch (this.direction) {
+            case PortDirection.In:
+                return super.getIdentity() + '(' + ownerIdentity;
+            case PortDirection.Out:
+                return ownerIdentity + ')' + super.getIdentity();
         }
     }
 
     public isDirectionIn(): boolean {
-        return this.inDirection;
+        return this.direction == PortDirection.In;
+    }
+
+    public isDirectionOut(): boolean {
+        return this.direction == PortDirection.Out;
     }
 
     // Actions
@@ -145,8 +155,8 @@ export  abstract class GenericPortModel<O extends PortOwner> extends TypeModel {
 export type PortModel = GenericPortModel<PortOwner>;
 
 export class BlueprintPortModel extends GenericPortModel<BlueprintModel | BlueprintDelegateModel> {
-    public constructor(parent: GenericPortModel<BlueprintModel | BlueprintDelegateModel> | null, owner: BlueprintModel | BlueprintDelegateModel, type: SlangType, inDirection: boolean) {
-        super(parent, type, inDirection);
+    public constructor(parent: GenericPortModel<BlueprintModel | BlueprintDelegateModel> | null, owner: BlueprintModel | BlueprintDelegateModel, type: SlangType, direction: PortDirection) {
+        super(parent, type, direction);
 
         this.owner = owner;
         if (this.isDirectionIn()) {
@@ -157,8 +167,8 @@ export class BlueprintPortModel extends GenericPortModel<BlueprintModel | Bluepr
 }
 
 export class OperatorPortModel extends GenericPortModel<OperatorModel | OperatorDelegateModel> {
-    public constructor(parent: GenericPortModel<OperatorModel | OperatorDelegateModel> | null, owner: OperatorModel | OperatorDelegateModel, type: SlangType, inDirection: boolean) {
-        super(parent, type, inDirection);
+    public constructor(parent: GenericPortModel<OperatorModel | OperatorDelegateModel> | null, owner: OperatorModel | OperatorDelegateModel, type: SlangType, direction: PortDirection) {
+        super(parent, type, direction);
 
         this.owner = owner;
         if (!this.isDirectionIn()) {
