@@ -1,9 +1,8 @@
-import {ApiService, BlueprintApiResponse} from '../services/api';
-import {AppModel} from '../model/app';
-import {fillLandscape} from '../services/mapper';
+import {ApiService, BlueprintApiResponse} from "../custom/api";
+import {AppModel} from "../model/app";
+import {fillLandscape} from "../custom/mapper";
 
-export class APIStorageComponent {
-
+export class APIStoragePlugin {
     private api: ApiService;
 
     constructor(private app: AppModel, host: string) {
@@ -25,7 +24,7 @@ export class APIStorageComponent {
     }
 }
 
-export class StaticStorageComponent {
+export class StaticStoragePlugin {
 
     constructor(private app: AppModel, private url: string) {
         this.subscribe();

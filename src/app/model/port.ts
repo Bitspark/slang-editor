@@ -6,7 +6,7 @@ import {PortOwner, SlangNode} from '../custom/nodes';
 import {Connections} from '../custom/connections';
 import {SlangType, TypeModel} from "./type";
 
-abstract class GenericPortModel<O extends PortOwner> extends TypeModel {
+export  abstract class GenericPortModel<O extends PortOwner> extends TypeModel {
 
     // Topics
     // self

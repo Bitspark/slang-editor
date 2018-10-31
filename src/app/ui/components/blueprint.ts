@@ -1,10 +1,10 @@
 import {dia, layout, shapes} from 'jointjs';
-import {JointJSElements} from '../custom/utils';
-import {BlueprintModel} from '../model/blueprint';
-import {OperatorModel} from '../model/operator';
-import {slangRouter} from '../custom/router';
-import {slangConnector} from '../custom/connector';
-import {BlackBox} from '../custom/nodes';
+import {BlueprintModel} from '../../model/blueprint';
+import {OperatorModel} from '../../model/operator';
+import {slangRouter} from '../utils/router';
+import {slangConnector} from '../utils/connector';
+import {BlackBox} from '../../custom/nodes';
+import {BlackBoxComponent} from "./blackbox";
 
 export class BlueprintComponent {
     private outerVisible: dia.Element;
@@ -104,7 +104,7 @@ export class BlueprintComponent {
     private createOuter(): [dia.Element, dia.Element] {
         const size = {width: this.outerPadding * 2 + 10, height: this.outerPadding * 2 + 10};
 
-        const outer = JointJSElements.createBlackBoxElement(this.blueprint);
+        const outer = new BlackBoxComponent(this.blueprint);
         outer.attr('body/fill', 'blue');
         outer.attr('body/fill-opacity', '.05');
         outer.set('obstacle', false);
@@ -179,7 +179,7 @@ export class BlueprintComponent {
     }
 
     private addOperator(operator: OperatorModel) {
-        const portOwnerElement = JointJSElements.createBlackBoxElement(operator as BlackBox);
+        const portOwnerElement = new BlackBoxComponent(operator);
         portOwnerElement.set('obstacle', true);
         portOwnerElement.set('inward', false);
         this.embeddingOuterInvisible.embed(portOwnerElement);

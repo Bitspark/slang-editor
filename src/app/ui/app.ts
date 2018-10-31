@@ -1,12 +1,12 @@
-import {LandscapeComponent} from './landscape';
-import {BlueprintComponent} from './blueprint';
-import {BlueprintType} from '../model/blueprint';
-import {Canvas} from '../ui/cavas';
-import {AppModel} from '../model/app';
+import {CanvasComponent} from "./components/cavas";
+import {LandscapeComponent} from "./components/landscape";
+import {AppModel} from "../model/app";
+import {BlueprintComponent} from "./components/blueprint";
+import {BlueprintType} from "../model/blueprint";
 
 export class MainComponent {
     private landscapeComponent: LandscapeComponent | null = null;
-    private canvas: Canvas;
+    private canvas: CanvasComponent;
 
     constructor(private app: AppModel, private el: HTMLElement) {
         const that = this;
@@ -41,9 +41,15 @@ export class MainComponent {
             }
         });
     }
+
+    public async start(): Promise<void> {
+        return new Promise<void>(async resolve => {
+            resolve();
+        });
+    }
     
     public async load(): Promise<void> {
-        this.canvas = new Canvas(this.el);
+        this.canvas = new CanvasComponent(this.el);
         return this.app.load();
     }
 
