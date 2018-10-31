@@ -23,16 +23,16 @@ export interface PropertyDefinitionsApiResponse {
 }
 
 export interface BlueprintDefApiResponse {
-    operators: {
+    operators?: {
         [operatorName: string]: {
             operator: string
             properties: PropertyDefinitionsApiResponse
         }
     }
-    properties: PropertyApiResponse
-    services: PortGroupApiResponse
-    delegates: PortGroupApiResponse
-    connections: {
+    properties?: PropertyApiResponse
+    services?: PortGroupApiResponse
+    delegates?: PortGroupApiResponse
+    connections?: {
         [sourcePortReference: string]: [string]
     }
 }
@@ -51,7 +51,7 @@ export class ApiService {
     private fetch<T>(path: string, process: (_: any) => T, error: (error: any) => void): Promise<T> {
         return new Promise<T>((resolve) => {
             fetch(this.host + path)
-                .then((resp: Response) => resp.json())
+                .then((response: Response) => response.json())
                 .then((data: any) => resolve(process(data)))
                 .catch(error);
         });
@@ -60,11 +60,7 @@ export class ApiService {
     public async getBlueprints(): Promise<Array<BlueprintApiResponse>> {
         return this.fetch<Array<BlueprintApiResponse>>(
             '/operator',
-            (data: any) => {
-                return (data as { objects: any }).objects.map((each: BlueprintApiResponse) => {
-                    return each;
-                });
-            },
+            (data: any) => (data as { objects: any }).objects as Array<BlueprintApiResponse>,
             (err: any) => console.error(err)
         );
     }

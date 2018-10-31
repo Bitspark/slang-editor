@@ -3,7 +3,7 @@ import {PortModel} from "../model/port";
 import SVGAttributes = attributes.SVGAttributes;
 import {BlackBox} from './nodes';
 import {SlangType} from "../model/type";
-import {PropertyAssignment, PropertyAssignments} from "../model/property";
+import {PropertyAssignments} from "../model/property";
 
 export class JointJSElements {
 
