@@ -1,15 +1,14 @@
 import {BehaviorSubject, Subject} from "rxjs";
 import {OperatorModel} from "./operator";
-import {PortModel} from './port';
+import {BlueprintPortModel, OperatorPortModel, PortModel} from './port';
 import {BlueprintDelegateModel, OperatorDelegateModel} from './delegate';
 import {PropertyEvaluator, SlangParsing} from "../custom/utils";
-import {BlueprintPortModel} from './port';
-import {OperatorPortModel} from './port';
 import {BlackBox} from '../custom/nodes';
 import {LandscapeModel} from './landscape';
 import {Connections} from '../custom/connections';
-import {SlangType} from "./type";
+import {SlangType, TypeModel} from "./type";
 import {PropertyAssignments, PropertyModel} from "./property";
+import {GenericSpecifications} from "./generic";
 
 export enum BlueprintType {
     Local,
@@ -39,14 +38,36 @@ export class BlueprintModel extends BlackBox {
     private portIn: BlueprintPortModel | null = null;
     private portOut: BlueprintPortModel | null = null;
     private operators: Array<OperatorModel> = [];
+    private genericIdentifiers: Set<string>;
 
     constructor(private landscape: LandscapeModel, private fullName: string, private type: BlueprintType) {
         super();
         this.hierarchy = fullName.split('.');
+        this.genericIdentifiers = new Set<string>();
     }
 
-    public createOperator(name: string, blueprint: BlueprintModel, propAssigns: PropertyAssignments): OperatorModel {
-        const operator = blueprint.instantiateOperator(this, name, propAssigns);
+    private static revealGenericIdentifiers(port: BlueprintPortModel): Set<string> {
+        let genericIdentifiers = new Set<string>();
+        switch (port.getType()) {
+            case SlangType.Map:
+                for (const [_, subPort] of port.getMapSubs()) {
+                    genericIdentifiers = new Set<string>([...genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(subPort)]);
+                }
+                break;
+            case SlangType.Stream:
+                const subPort = port.getStreamSub();
+                if (subPort) {
+                    genericIdentifiers = new Set<string>([...genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(subPort)]);
+                }
+                break;
+            case SlangType.Generic:
+                genericIdentifiers.add(port.getGenericIdentifier());
+        }
+        return genericIdentifiers;
+    }
+
+    public createOperator(name: string, blueprint: BlueprintModel, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
+        const operator = blueprint.instantiateOperator(this, name, propAssigns, genSpeci);
         return this.addOperator(operator);
     }
 
@@ -55,19 +76,20 @@ export class BlueprintModel extends BlackBox {
         return this.addDelegate(delegate);
     }
 
-    private instantiateOperator(owner: BlueprintModel, name: string, propAssigns: PropertyAssignments): OperatorModel {
-        function copyPort(owner: OperatorModel | OperatorDelegateModel, parent: OperatorPortModel | null, port: BlueprintPortModel): OperatorPortModel {
-            const portCopy = new OperatorPortModel(parent, owner, port.getType(), port.isDirectionIn());
-            switch (portCopy.getType()) {
+    private instantiateOperator(owner: BlueprintModel, name: string, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
+        function copyPort(owner: OperatorModel | OperatorDelegateModel, parent: OperatorPortModel | null, portType: TypeModel, isInput: boolean): OperatorPortModel {
+            const portCopy = new OperatorPortModel(parent, owner, portType.getType(), isInput);
+
+            switch (portType.getType()) {
                 case SlangType.Map:
-                    for (const entry of port.getMapSubs()) {
+                    for (const entry of portType.getMapSubs()) {
                         for (const portName of PropertyEvaluator.expand(entry[0], propAssigns)) {
-                            portCopy.addMapSub(portName, copyPort(owner, portCopy, entry[1]));
+                            portCopy.addMapSub(portName, copyPort(owner, portCopy, entry[1], isInput));
                         }
                     }
                     break;
                 case SlangType.Stream:
-                    portCopy.setStreamSub(copyPort(owner, portCopy, port.getStreamSub()));
+                    portCopy.setStreamSub(copyPort(owner, portCopy, portType.getStreamSub(), isInput));
                     break;
             }
             return portCopy;
@@ -76,11 +98,13 @@ export class BlueprintModel extends BlackBox {
         function copyAndAddDelegates(owner: OperatorModel, delegate: BlueprintDelegateModel) {
             for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), propAssigns)) {
                 const delegateCopy = new OperatorDelegateModel(owner, expandedDlgName);
-                if (delegate.getPortIn()) {
-                    delegateCopy.setPortIn(copyPort(delegateCopy, null, delegate.getPortIn()!));
+                const portIn = delegate.getPortIn();
+                if (portIn) {
+                    delegateCopy.setPortIn(copyPort(delegateCopy, null, portIn.specifyGenerics(genSpeci)!, true));
                 }
-                if (delegate.getPortOut()) {
-                    delegateCopy.setPortOut(copyPort(delegateCopy, null, delegate.getPortOut()!));
+                const portOut = delegate.getPortOut();
+                if (portOut) {
+                    delegateCopy.setPortOut(copyPort(delegateCopy, null, portOut.specifyGenerics(genSpeci)!, false));
                 }
                 operator.addDelegate(delegateCopy);
             }
@@ -89,10 +113,10 @@ export class BlueprintModel extends BlackBox {
         const operator = new OperatorModel(owner, name, this);
 
         if (this.portIn) {
-            operator.setPortIn(copyPort(operator, null, this.portIn));
+            operator.setPortIn(copyPort(operator, null, this.portIn.specifyGenerics(genSpeci), true));
         }
         if (this.portOut) {
-            operator.setPortOut(copyPort(operator, null, this.portOut));
+            operator.setPortOut(copyPort(operator, null, this.portOut.specifyGenerics(genSpeci), false));
         }
         for (const delegate of this.delegates) {
             copyAndAddDelegates(operator, delegate);
@@ -143,6 +167,27 @@ export class BlueprintModel extends BlackBox {
 
     public getProperties(): IterableIterator<PropertyModel> {
         return this.properties.values();
+    }
+
+    public getGenericIdentifiers(): IterableIterator<string> {
+        this.genericIdentifiers = new Set<string>();
+        if (this.portIn) {
+            this.genericIdentifiers = new Set<string>([...this.genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(this.portIn)]);
+        }
+        if (this.portOut) {
+            this.genericIdentifiers = new Set<string>([...this.genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(this.portOut)]);
+        }
+        for (const delegate of this.delegates) {
+            const portIn = delegate.getPortIn();
+            if (portIn) {
+                this.genericIdentifiers = new Set<string>([...this.genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(portIn)]);
+            }
+            const portOut = delegate.getPortOut();
+            if (portOut) {
+                this.genericIdentifiers = new Set<string>([...this.genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(portOut)]);
+            }
+        }
+        return this.genericIdentifiers.values();
     }
 
     public resolvePortReference(portReference: string): PortModel | null | undefined {
@@ -234,7 +279,7 @@ export class BlueprintModel extends BlackBox {
         for (const operator of this.operators) {
             connections.addConnections(operator.getConnections());
         }
-        
+
         for (const delegate of this.delegates) {
             const delegatePortIn = delegate.getPortIn();
             if (delegatePortIn) {

@@ -18,15 +18,20 @@ export interface PropertyApiResponse {
     [propertyName: string]: TypeDefApiResponse
 }
 
-export interface PropertyDefinitionsApiResponse {
+export interface PropertyAssignmentsApiResponse {
     [propertyName: string]: any
+}
+
+export interface GenericSpecificationsApiResponse {
+    [genericIdentifier: string]: any
 }
 
 export interface BlueprintDefApiResponse {
     operators?: {
         [operatorName: string]: {
             operator: string
-            properties: PropertyDefinitionsApiResponse
+            properties: PropertyAssignmentsApiResponse
+            generics: GenericSpecificationsApiResponse
         }
     }
     properties?: PropertyApiResponse
