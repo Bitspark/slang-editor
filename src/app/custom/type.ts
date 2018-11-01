@@ -1,4 +1,4 @@
-import {GenericSpecifications} from "./generic";
+import {GenericSpecifications} from "../model/generic";
 
 export enum TypeIdentifier {
     Number, // 0
@@ -12,19 +12,19 @@ export enum TypeIdentifier {
     Map, // 8
 }
 
-export class TypeModel {
-    private readonly mapSubs: Map<string, TypeModel> | undefined;
+export class SlangType {
+    private readonly mapSubs: Map<string, SlangType> | undefined;
     private genericIdentifier?: string;
-    private streamSub: TypeModel | undefined;
+    private streamSub: SlangType | undefined;
 
-    public constructor(private parent: TypeModel | null, private type: TypeIdentifier) {
+    public constructor(private parent: SlangType | null, private type: TypeIdentifier) {
         if (this.type === TypeIdentifier.Map) {
-            this.mapSubs = new Map<string, TypeModel>();
+            this.mapSubs = new Map<string, SlangType>();
         }
     }
 
-    public copy(): TypeModel {
-        const typeCopy = new TypeModel(this.parent, this.type);
+    public copy(): SlangType {
+        const typeCopy = new SlangType(this.parent, this.type);
         switch (this.type) {
             case TypeIdentifier.Map:
                 for (const [subName, subType] of this.getMapSubs()) {
@@ -41,11 +41,11 @@ export class TypeModel {
         return typeCopy;
     }
 
-    public specifyGenerics(genSpec: GenericSpecifications): TypeModel {
+    public specifyGenerics(genSpec: GenericSpecifications): SlangType {
         if (this.type === TypeIdentifier.Generic) {
             return genSpec.get(this.getGenericIdentifier()).copy();
         }
-        const specifiedType = new TypeModel(this.parent, this.type);
+        const specifiedType = new SlangType(this.parent, this.type);
         switch (this.type) {
             case TypeIdentifier.Map:
                 for (const [subName, subType] of this.getMapSubs()) {
@@ -59,7 +59,7 @@ export class TypeModel {
         return specifiedType;
     }
 
-    public addMapSub(name: string, port: TypeModel): TypeModel {
+    public addMapSub(name: string, port: SlangType): SlangType {
         if (this.type !== TypeIdentifier.Map) {
             throw `add map sub port to a port of type '${TypeIdentifier[this.type]}' not possible`;
         }
@@ -68,14 +68,14 @@ export class TypeModel {
         return this;
     }
 
-    public getMapSubs(): IterableIterator<[string, TypeModel]> {
+    public getMapSubs(): IterableIterator<[string, SlangType]> {
         if (this.type !== TypeIdentifier.Map) {
             throw `access of map sub ports of a port of type '${TypeIdentifier[this.type]}' not possible`;
         }
         return this.mapSubs!.entries();
     }
 
-    public findMapSub(name: string): TypeModel {
+    public findMapSub(name: string): SlangType {
         if (this.type !== TypeIdentifier.Map) {
             throw `access of map sub port of a port of type '${TypeIdentifier[this.type]}' not possible`;
         }
@@ -86,7 +86,7 @@ export class TypeModel {
         return mapSub;
     }
 
-    public setStreamSub(port: TypeModel) {
+    public setStreamSub(port: SlangType) {
         if (this.type !== TypeIdentifier.Stream) {
             throw `set stream sub port of a port of type '${TypeIdentifier[this.type]}' not possible`;
         }
@@ -94,7 +94,7 @@ export class TypeModel {
         this.streamSub = port;
     }
 
-    public getStreamSub(): TypeModel {
+    public getStreamSub(): SlangType {
         if (this.type !== TypeIdentifier.Stream) {
             throw `${this.getIdentity()}: access of stream port of a port of type '${TypeIdentifier[this.type]}' not possible`;
         }

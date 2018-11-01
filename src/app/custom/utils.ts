@@ -2,7 +2,7 @@ import {attributes, dia, shapes} from "jointjs";
 import {PortModel} from "../model/port";
 import SVGAttributes = attributes.SVGAttributes;
 import {BlackBox} from './nodes';
-import {TypeIdentifier} from "../model/type";
+import {TypeIdentifier} from "./type";
 import {PropertyAssignments} from "../model/property";
 
 export interface ParsedPortInformation {

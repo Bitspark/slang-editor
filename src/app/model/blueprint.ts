@@ -7,7 +7,7 @@ import {PropertyEvaluator} from "../custom/utils";
 import {BlackBox} from '../custom/nodes';
 import {LandscapeModel} from './landscape';
 import {Connections} from '../custom/connections';
-import {TypeIdentifier, TypeModel} from "./type";
+import {TypeIdentifier, SlangType} from "../custom/type";
 import {PropertyAssignments, PropertyModel} from "./property";
 import {GenericSpecifications} from "./generic";
 
@@ -80,7 +80,7 @@ export class BlueprintModel extends BlackBox {
     }
 
     private instantiateOperator(owner: BlueprintModel, name: string, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
-        function copyPort(owner: OperatorModel | OperatorDelegateModel, parent: OperatorPortModel | null, portType: TypeModel, direction: PortDirection): OperatorPortModel {
+        function copyPort(owner: OperatorModel | OperatorDelegateModel, parent: OperatorPortModel | null, portType: SlangType, direction: PortDirection): OperatorPortModel {
             const portCopy = new OperatorPortModel(parent, owner, portType.getTypeIdentifier(), direction);
 
             switch (portType.getTypeIdentifier()) {

@@ -1,7 +1,7 @@
-import {TypeIdentifier, TypeModel} from "./type";
+import {TypeIdentifier, SlangType} from "../custom/type";
 
 export class PropertyModel {
-    public constructor(private name: string, private type: TypeModel) {
+    public constructor(private name: string, private type: SlangType) {
     }
 
     public getName(): string {

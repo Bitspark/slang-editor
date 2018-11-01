@@ -4,7 +4,7 @@ import {OperatorModel} from './operator';
 import {BlueprintDelegateModel, OperatorDelegateModel} from './delegate';
 import {PortOwner, SlangNode} from '../custom/nodes';
 import {Connections} from '../custom/connections';
-import {TypeIdentifier, TypeModel} from "./type";
+import {TypeIdentifier, SlangType} from "../custom/type";
 
 export enum PortDirection {
     In, // 0
@@ -98,9 +98,9 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         return this.genericIdentifier;
     }
 
-    public getType(): TypeModel {
+    public getType(): SlangType {
         //const parentType = (this.parent) ? this.parent.getType() : null;
-        const type = new TypeModel(null, this.typeIdentifier);
+        const type = new SlangType(null, this.typeIdentifier);
         switch (this.typeIdentifier) {
             case TypeIdentifier.Map:
                 for (const [subName, subPort] of this.getMapSubs()) {

@@ -12,7 +12,7 @@ import {LandscapeModel} from '../model/landscape';
 import {BlueprintDelegateModel} from '../model/delegate';
 import {BlueprintPortModel, PortDirection} from '../model/port';
 import {PropertyAssignments, PropertyModel} from "../model/property";
-import {TypeIdentifier, TypeModel} from "../model/type";
+import {TypeIdentifier, SlangType} from "./type";
 import {GenericSpecifications} from "../model/generic";
 
 function toSlangType(typeName: string): TypeIdentifier {
@@ -61,8 +61,8 @@ function createPort(typeDef: TypeDefApiResponse, owner: BlueprintModel | Bluepri
     return port;
 }
 
-function createTypeModel(typeDef: TypeDefApiResponse): TypeModel {
-    const type = new TypeModel(null, toSlangType(typeDef.type));
+function createTypeModel(typeDef: TypeDefApiResponse): SlangType {
+    const type = new SlangType(null, toSlangType(typeDef.type));
     switch (type.getTypeIdentifier()) {
         case TypeIdentifier.Map:
             Object.keys(typeDef.map!).forEach((subName: string) => {

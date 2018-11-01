@@ -2,7 +2,7 @@ import {attributes, dia, shapes} from "jointjs";
 import {BlackBox} from "../../custom/nodes";
 import {PortDirection, PortModel} from "../../model/port";
 import {PortComponent, PortGroupComponent} from "./port";
-import {TypeIdentifier} from "../../model/type";
+import {TypeIdentifier} from "../../custom/type";
 
 
 function createPortItems(group: string, position: PortGroupPosition, port: PortModel): Array<PortComponent> {
