@@ -1,9 +1,10 @@
 import {BehaviorSubject, Subject} from "rxjs";
 import {BlueprintModel, BlueprintType} from './blueprint';
-import {OperatorPortModel} from './port';
+import {OperatorPortModel, PortDirection} from './port';
 import {OperatorDelegateModel} from './delegate';
 import {BlackBox} from '../custom/nodes';
 import {Connections} from '../custom/connections';
+import {SlangType} from "../custom/type";
 
 export class OperatorModel extends BlackBox {
 
@@ -32,6 +33,10 @@ export class OperatorModel extends BlackBox {
 
     public getBlueprint(): BlueprintModel {
         return this.blueprint;
+    }
+
+    public createPort(type: SlangType, direction: PortDirection): OperatorPortModel {
+        return super.createPortFromType(OperatorPortModel, type, direction) as OperatorPortModel;
     }
 
     public getDelegates(): IterableIterator<OperatorDelegateModel> {

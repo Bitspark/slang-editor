@@ -79,6 +79,10 @@ export class BlueprintModel extends BlackBox {
         super.attachPort(port);
     }
 
+    public createPort(type: SlangType, direction: PortDirection): BlueprintPortModel {
+        return super.createPortFromType(BlueprintPortModel, type, direction) as BlueprintPortModel;
+    }
+
     private instantiateOperator(owner: BlueprintModel, name: string, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
         function copyPort(owner: OperatorModel | OperatorDelegateModel, parent: OperatorPortModel | null, portType: SlangType, direction: PortDirection): OperatorPortModel {
             const portCopy = new OperatorPortModel(parent, owner, portType.getTypeIdentifier(), direction);

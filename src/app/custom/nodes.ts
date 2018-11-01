@@ -1,5 +1,6 @@
-import {PortModel} from '../model/port';
+import {PortDirection, PortModel} from '../model/port';
 import {DelegateModel} from '../model/delegate';
+import {SlangType, TypeIdentifier} from "./type";
 
 type Type<T> = Function & { prototype: T }
 
@@ -57,6 +58,30 @@ export abstract class PortOwner extends SlangNode {
         } else {
             this.ports.out = port;
         }
+    }
+
+    protected createPortFromType(P: new(p: PortModel | null, o: PortOwner, tid: TypeIdentifier, d: PortDirection) => PortModel, type: SlangType, direction: PortDirection): PortModel {
+        const port = new P(null, this, type.getTypeIdentifier(), direction);
+
+        switch (type.getTypeIdentifier()) {
+            case TypeIdentifier.Map:
+                for (const [subName, subType] of type.getMapSubs()) {
+                    port.addMapSub(subName, this.createPortFromType(P, subType, direction));
+                }
+                break;
+            case TypeIdentifier.Stream:
+                port.setStreamSub(this.createPortFromType(P, type.getStreamSub(), direction));
+                break;
+            case TypeIdentifier.Generic:
+                port.setGenericIdentifier(type.getGenericIdentifier());
+                break;
+        }
+
+        if (port.getParentNode() === this) {
+            this.attachPort(port);
+        }
+
+        return port;
     }
 
     public getPortIn(): PortModel | null {
