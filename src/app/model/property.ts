@@ -1,4 +1,4 @@
-import {SlangType, TypeModel} from "./type";
+import {TypeIdentifier, TypeModel} from "./type";
 
 export class PropertyModel {
     public constructor(private name: string, private type: TypeModel) {
@@ -8,8 +8,8 @@ export class PropertyModel {
         return this.name;
     }
 
-    public getType(): SlangType {
-        return this.type.getType();
+    public getTypeIdentifier(): TypeIdentifier {
+        return this.type.getTypeIdentifier();
     }
 
     public define(value: any): PropertyAssignment {
@@ -26,7 +26,7 @@ export class PropertyAssignment {
     }
 
     public isStreamType(): boolean {
-        return this.property.getType() === SlangType.Stream;
+        return this.property.getTypeIdentifier() === TypeIdentifier.Stream;
     }
 }
 

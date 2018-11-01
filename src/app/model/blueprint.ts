@@ -7,7 +7,7 @@ import {PropertyEvaluator} from "../custom/utils";
 import {BlackBox} from '../custom/nodes';
 import {LandscapeModel} from './landscape';
 import {Connections} from '../custom/connections';
-import {SlangType, TypeModel} from "./type";
+import {TypeIdentifier, TypeModel} from "./type";
 import {PropertyAssignments, PropertyModel} from "./property";
 import {GenericSpecifications} from "./generic";
 
@@ -47,19 +47,19 @@ export class BlueprintModel extends BlackBox {
 
     private static revealGenericIdentifiers(port: PortModel): Set<string> {
         let genericIdentifiers = new Set<string>();
-        switch (port.getType()) {
-            case SlangType.Map:
+        switch (port.getTypeIdentifier()) {
+            case TypeIdentifier.Map:
                 for (const [_, subPort] of port.getMapSubs()) {
                     genericIdentifiers = new Set<string>([...genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(subPort)]);
                 }
                 break;
-            case SlangType.Stream:
+            case TypeIdentifier.Stream:
                 const subPort = port.getStreamSub();
                 if (subPort) {
                     genericIdentifiers = new Set<string>([...genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(subPort)]);
                 }
                 break;
-            case SlangType.Generic:
+            case TypeIdentifier.Generic:
                 genericIdentifiers.add(port.getGenericIdentifier());
         }
         return genericIdentifiers;
@@ -81,17 +81,17 @@ export class BlueprintModel extends BlackBox {
 
     private instantiateOperator(owner: BlueprintModel, name: string, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
         function copyPort(owner: OperatorModel | OperatorDelegateModel, parent: OperatorPortModel | null, portType: TypeModel, direction: PortDirection): OperatorPortModel {
-            const portCopy = new OperatorPortModel(parent, owner, portType.getType(), direction);
+            const portCopy = new OperatorPortModel(parent, owner, portType.getTypeIdentifier(), direction);
 
-            switch (portType.getType()) {
-                case SlangType.Map:
+            switch (portType.getTypeIdentifier()) {
+                case TypeIdentifier.Map:
                     for (const entry of portType.getMapSubs()) {
                         for (const portName of PropertyEvaluator.expand(entry[0], propAssigns)) {
                             portCopy.addMapSub(portName, copyPort(owner, portCopy, entry[1], direction));
                         }
                     }
                     break;
-                case SlangType.Stream:
+                case TypeIdentifier.Stream:
                     portCopy.setStreamSub(copyPort(owner, portCopy, portType.getStreamSub(), direction));
                     break;
             }
@@ -102,7 +102,7 @@ export class BlueprintModel extends BlackBox {
             for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), propAssigns)) {
                 const delegateCopy = new OperatorDelegateModel(owner, expandedDlgName);
                 for (const port of delegate.getPorts()) {
-                    delegateCopy.attachPort(copyPort(delegateCopy, null, port.specifyGenerics(genSpeci), port.getDirection()));
+                    delegateCopy.attachPort(copyPort(delegateCopy, null, port.getType().specifyGenerics(genSpeci), port.getDirection()));
                 }
                 operator.addDelegate(delegateCopy);
             }
@@ -111,7 +111,7 @@ export class BlueprintModel extends BlackBox {
         const operator = new OperatorModel(owner, name, this);
 
         for (const port of this.getPorts()) {
-            operator.attachPort(copyPort(operator, null, port.specifyGenerics(genSpeci), port.getDirection()));
+            operator.attachPort(copyPort(operator, null, port.getType().specifyGenerics(genSpeci), port.getDirection()));
         }
         for (const delegate of this.delegates) {
             copyAndAddDelegates(operator, delegate);
@@ -238,7 +238,7 @@ export class BlueprintModel extends BlackBox {
                 continue;
             }
 
-            if (port.getType() !== SlangType.Map) {
+            if (port.getTypeIdentifier() !== TypeIdentifier.Map) {
                 return null;
             }
 

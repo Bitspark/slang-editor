@@ -1,15 +1,11 @@
 import {attributes, dia, g} from "jointjs";
+import {PortDirection, PortModel} from "../../model/port";
 import {BlueprintPortModel, PortModel} from "../../model/port";
 import {BlackBox, PortOwner} from "../../custom/nodes";
 import {BlueprintDelegateModel, GenericDelegateModel} from "../../model/delegate";
 import {BlueprintModel} from "../../model/blueprint";
 
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";
-
-export enum PortDirection {
-    In,
-    Out,
-}
 
 export function invertPortDirection(direction: PortDirection) {
     if (direction == PortDirection.In) {
@@ -46,7 +42,7 @@ export class PortComponent implements dia.Element.Port {
         const attrs: attributes.SVGAttributes = {
             fill: "cyan",
         };
-        
+
         switch (position) {
             case "top":
                 attrs.transform = "";

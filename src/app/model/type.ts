@@ -1,7 +1,6 @@
-import {SlangNode} from "../custom/nodes";
 import {GenericSpecifications} from "./generic";
 
-export enum SlangType {
+export enum TypeIdentifier {
     Number, // 0
     Binary, // 1
     Boolean, // 2
@@ -13,14 +12,13 @@ export enum SlangType {
     Map, // 8
 }
 
-export class TypeModel extends SlangNode {
+export class TypeModel {
     private readonly mapSubs: Map<string, TypeModel> | undefined;
     private genericIdentifier?: string;
     private streamSub: TypeModel | undefined;
 
-    public constructor(protected parent: TypeModel | null, protected type: SlangType) {
-        super();
-        if (this.type === SlangType.Map) {
+    public constructor(private parent: TypeModel | null, private type: TypeIdentifier) {
+        if (this.type === TypeIdentifier.Map) {
             this.mapSubs = new Map<string, TypeModel>();
         }
     }
@@ -28,15 +26,15 @@ export class TypeModel extends SlangNode {
     public copy(): TypeModel {
         const typeCopy = new TypeModel(this.parent, this.type);
         switch (this.type) {
-            case SlangType.Map:
+            case TypeIdentifier.Map:
                 for (const [subName, subType] of this.getMapSubs()) {
                     typeCopy.addMapSub(subName, subType.copy());
                 }
                 break;
-            case SlangType.Stream:
+            case TypeIdentifier.Stream:
                 typeCopy.setStreamSub(this.getStreamSub().copy());
                 break;
-            case SlangType.Generic:
+            case TypeIdentifier.Generic:
                 typeCopy.setGenericIdentifier(this.getGenericIdentifier());
                 break;
         }
@@ -44,17 +42,17 @@ export class TypeModel extends SlangNode {
     }
 
     public specifyGenerics(genSpec: GenericSpecifications): TypeModel {
-        if (this.type === SlangType.Generic) {
+        if (this.type === TypeIdentifier.Generic) {
             return genSpec.get(this.getGenericIdentifier()).copy();
         }
         const specifiedType = new TypeModel(this.parent, this.type);
         switch (this.type) {
-            case SlangType.Map:
+            case TypeIdentifier.Map:
                 for (const [subName, subType] of this.getMapSubs()) {
                     specifiedType.addMapSub(subName, subType.specifyGenerics(genSpec));
                 }
                 break;
-            case SlangType.Stream:
+            case TypeIdentifier.Stream:
                 specifiedType.setStreamSub(this.getStreamSub().specifyGenerics(genSpec));
                 break;
         }
@@ -62,8 +60,8 @@ export class TypeModel extends SlangNode {
     }
 
     public addMapSub(name: string, port: TypeModel): TypeModel {
-        if (this.type !== SlangType.Map) {
-            throw `add map sub port to a port of type '${SlangType[this.type]}' not possible`;
+        if (this.type !== TypeIdentifier.Map) {
+            throw `add map sub port to a port of type '${TypeIdentifier[this.type]}' not possible`;
         }
         this.mapSubs!.set(name, port);
         port.parent = this;
@@ -71,15 +69,15 @@ export class TypeModel extends SlangNode {
     }
 
     public getMapSubs(): IterableIterator<[string, TypeModel]> {
-        if (this.type !== SlangType.Map) {
-            throw `access of map sub ports of a port of type '${SlangType[this.type]}' not possible`;
+        if (this.type !== TypeIdentifier.Map) {
+            throw `access of map sub ports of a port of type '${TypeIdentifier[this.type]}' not possible`;
         }
         return this.mapSubs!.entries();
     }
 
     public findMapSub(name: string): TypeModel {
-        if (this.type !== SlangType.Map) {
-            throw `access of map sub port of a port of type '${SlangType[this.type]}' not possible`;
+        if (this.type !== TypeIdentifier.Map) {
+            throw `access of map sub port of a port of type '${TypeIdentifier[this.type]}' not possible`;
         }
         const mapSub = this.mapSubs!.get(name);
         if (!mapSub) {
@@ -89,16 +87,16 @@ export class TypeModel extends SlangNode {
     }
 
     public setStreamSub(port: TypeModel) {
-        if (this.type !== SlangType.Stream) {
-            throw `set stream sub port of a port of type '${SlangType[this.type]}' not possible`;
+        if (this.type !== TypeIdentifier.Stream) {
+            throw `set stream sub port of a port of type '${TypeIdentifier[this.type]}' not possible`;
         }
         port.parent = this;
         this.streamSub = port;
     }
 
     public getStreamSub(): TypeModel {
-        if (this.type !== SlangType.Stream) {
-            throw `${this.getIdentity()}: access of stream port of a port of type '${SlangType[this.type]}' not possible`;
+        if (this.type !== TypeIdentifier.Stream) {
+            throw `${this.getIdentity()}: access of stream port of a port of type '${TypeIdentifier[this.type]}' not possible`;
         }
         if (!this.streamSub) {
             throw `${this.getIdentity()}: stream port not having sub stream port`;
@@ -107,15 +105,15 @@ export class TypeModel extends SlangNode {
     }
 
     public setGenericIdentifier(genericIdentifier: string) {
-        if (this.type !== SlangType.Generic) {
-            throw `set generic identifier of a port of type '${SlangType[this.type]}' not possible`;
+        if (this.type !== TypeIdentifier.Generic) {
+            throw `set generic identifier of a port of type '${TypeIdentifier[this.type]}' not possible`;
         }
         this.genericIdentifier = genericIdentifier;
     }
 
     public getGenericIdentifier(): string {
-        if (this.type !== SlangType.Generic) {
-            throw `${this.getIdentity()}: access of generic identifier of a port of type '${SlangType[this.type]}' not possible`;
+        if (this.type !== TypeIdentifier.Generic) {
+            throw `${this.getIdentity()}: access of generic identifier of a port of type '${TypeIdentifier[this.type]}' not possible`;
         }
         if (!this.genericIdentifier) {
             throw `generic port requires a generic identifier`;
@@ -123,12 +121,12 @@ export class TypeModel extends SlangNode {
         return this.genericIdentifier;
     }
 
-    public getType(): SlangType {
+    public getTypeIdentifier(): TypeIdentifier {
         return this.type;
     }
 
     public getName(): string {
-        if (!this.parent || this.parent.getType() !== SlangType.Map) {
+        if (!this.parent || this.parent.getTypeIdentifier() !== TypeIdentifier.Map) {
             throw `not a map entry`;
         }
 
@@ -140,47 +138,22 @@ export class TypeModel extends SlangNode {
         throw `entry not found`;
     }
 
-    private getReferenceString(): string {
+    public getIdentity(): string {
         if (!this.parent) {
             return '';
         }
-        const parentRefString = this.parent.getReferenceString();
-        if (this.parent.getType() === SlangType.Map) {
+        const parentRefString = this.parent.getIdentity();
+        if (this.parent.getTypeIdentifier() === TypeIdentifier.Map) {
             if (parentRefString === '') {
                 return this.getName();
             }
             return parentRefString + '.' + this.getName();
-        } else if (this.parent.getType() === SlangType.Stream) {
+        } else if (this.parent.getTypeIdentifier() === TypeIdentifier.Stream) {
             if (parentRefString === '') {
                 return '~';
             }
             return parentRefString + '.~';
         }
         return parentRefString;
-    }
-
-    public getIdentity(): string {
-        return this.getReferenceString();
-    }
-
-
-    // Slang tree
-    public getChildNodes(): IterableIterator<SlangNode> {
-        const children: Array<SlangNode> = [];
-        switch (this.type) {
-            case SlangType.Map:
-                for (const mapSub of this.getMapSubs()) {
-                    children.push(mapSub[1]);
-                }
-                break;
-            case SlangType.Stream:
-                children.push(this.getStreamSub());
-                break;
-        }
-        return children.values();
-    }
-
-    public getParentNode(): SlangNode | null {
-        return this.parent;
     }
 }
