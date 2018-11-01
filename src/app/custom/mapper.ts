@@ -29,7 +29,7 @@ function toSlangType(typeName: string): SlangType {
     } as  { [_: string]: SlangType })[typeName];
 
     if (type === null) {
-        throw `unknown property type '${type}'`;
+        throw `unknown property type '${SlangType[type]}'`;
     }
 
     return type;
@@ -38,8 +38,8 @@ function toSlangType(typeName: string): SlangType {
 function setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupApiResponse) {
     Object.keys(delegates).forEach((delegateName: string) => {
         const delegate = blueprint.createDelegate(delegateName);
-        delegate.setPortIn(createPort(delegates[delegateName].in, delegate, PortDirection.In));
-        delegate.setPortOut(createPort(delegates[delegateName].out, delegate, PortDirection.Out));
+        delegate.attachPort(createPort(delegates[delegateName].in, delegate, PortDirection.In));
+        delegate.attachPort(createPort(delegates[delegateName].out, delegate, PortDirection.Out));
     });
 }
 
@@ -81,9 +81,9 @@ function createTypeModel(typeDef: TypeDefApiResponse): TypeModel {
 
 function setBlueprintServices(blueprint: BlueprintModel, services: PortGroupApiResponse) {
     const portInDef: TypeDefApiResponse = services["main"].in;
-    const outPortDef: TypeDefApiResponse = services["main"].out;
-    blueprint.setPortIn(createPort(portInDef, blueprint, PortDirection.In));
-    blueprint.setPortOut(createPort(outPortDef, blueprint, PortDirection.Out));
+    const portOutDef: TypeDefApiResponse = services["main"].out;
+    blueprint.attachPort(createPort(portInDef, blueprint, PortDirection.In));
+    blueprint.attachPort(createPort(portOutDef, blueprint, PortDirection.Out));
 }
 
 function setBlueprintProperties(blueprint: BlueprintModel, properties: PropertyApiResponse) {

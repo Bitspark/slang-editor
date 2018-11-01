@@ -13,8 +13,6 @@ export class OperatorModel extends BlackBox {
     private selected = new BehaviorSubject<boolean>(false);
 
     private delegates: Array<OperatorDelegateModel> = [];
-    private portIn: OperatorPortModel | null = null;
-    private portOut: OperatorPortModel | null = null;
 
     constructor(private owner: BlueprintModel, private name: string, private blueprint: BlueprintModel) {
         super();
@@ -44,26 +42,8 @@ export class OperatorModel extends BlackBox {
         return this.delegates.find(delegate => delegate.getName() === name);
     }
 
-    public setPortIn(port: OperatorPortModel) {
-        if (port.getParentNode() !== this) {
-            throw `wrong parent ${port.getParentNode().getIdentity()}, should be ${this.getIdentity()}`;
-        }
-        this.portIn = port;
-    }
-
-    public setPortOut(port: OperatorPortModel) {
-        if (port.getParentNode() !== this) {
-            throw `wrong parent ${port.getParentNode().getIdentity()}, should be ${this.getIdentity()}`;
-        }
-        this.portOut = port;
-    }
-
-    public getPortIn(): OperatorPortModel | null {
-        return this.portIn;
-    }
-
-    public getPortOut(): OperatorPortModel | null {
-        return this.portOut;
+    public attachPort(port: OperatorPortModel) {
+        super.attachPort(port);
     }
 
     public getDisplayName(): string {
@@ -78,8 +58,9 @@ export class OperatorModel extends BlackBox {
         const connections = new Connections();
 
         // First, handle operator out-ports
-        if (this.portOut) {
-            connections.addConnections(this.portOut.getConnections());
+        const portOut = this.getPortOut();
+        if (portOut) {
+            connections.addConnections(portOut.getConnections());
         }
 
         // Then, handle delegate out-ports
@@ -126,13 +107,7 @@ export class OperatorModel extends BlackBox {
     // Slang tree
 
     getChildNodes(): IterableIterator<OperatorPortModel | OperatorDelegateModel> {
-        const children: Array<OperatorPortModel | OperatorDelegateModel> = [];
-        if (this.portIn) {
-            children.push(this.portIn);
-        }
-        if (this.portOut) {
-            children.push(this.portOut);
-        }
+        const children: Array<OperatorPortModel | OperatorDelegateModel> = Array.from(this.getPorts() as IterableIterator<OperatorPortModel>);
         for (const delegate of this.delegates) {
             children.push(delegate);
         }

@@ -63,7 +63,7 @@ export class TypeModel extends SlangNode {
 
     public addMapSub(name: string, port: TypeModel): TypeModel {
         if (this.type !== SlangType.Map) {
-            throw `add map sub port to a port of type '${this.type}' not possible`;
+            throw `add map sub port to a port of type '${SlangType[this.type]}' not possible`;
         }
         this.mapSubs!.set(name, port);
         port.parent = this;
@@ -72,14 +72,14 @@ export class TypeModel extends SlangNode {
 
     public getMapSubs(): IterableIterator<[string, TypeModel]> {
         if (this.type !== SlangType.Map) {
-            throw `access of map sub ports of a port of type '${this.type}' not possible`;
+            throw `access of map sub ports of a port of type '${SlangType[this.type]}' not possible`;
         }
         return this.mapSubs!.entries();
     }
 
     public findMapSub(name: string): TypeModel {
         if (this.type !== SlangType.Map) {
-            throw `access of map sub port of a port of type '${this.type}' not possible`;
+            throw `access of map sub port of a port of type '${SlangType[this.type]}' not possible`;
         }
         const mapSub = this.mapSubs!.get(name);
         if (!mapSub) {
@@ -90,7 +90,7 @@ export class TypeModel extends SlangNode {
 
     public setStreamSub(port: TypeModel) {
         if (this.type !== SlangType.Stream) {
-            throw `set stream sub port of a port of type '${this.type}' not possible`;
+            throw `set stream sub port of a port of type '${SlangType[this.type]}' not possible`;
         }
         port.parent = this;
         this.streamSub = port;
@@ -98,7 +98,7 @@ export class TypeModel extends SlangNode {
 
     public getStreamSub(): TypeModel {
         if (this.type !== SlangType.Stream) {
-            throw `${this.getIdentity()}: access of stream port of a port of type '${this.type}' not possible`;
+            throw `${this.getIdentity()}: access of stream port of a port of type '${SlangType[this.type]}' not possible`;
         }
         if (!this.streamSub) {
             throw `${this.getIdentity()}: stream port not having sub stream port`;
@@ -108,14 +108,14 @@ export class TypeModel extends SlangNode {
 
     public setGenericIdentifier(genericIdentifier: string) {
         if (this.type !== SlangType.Generic) {
-            throw `set generic identifier of a port of type '${this.type}' not possible`;
+            throw `set generic identifier of a port of type '${SlangType[this.type]}' not possible`;
         }
         this.genericIdentifier = genericIdentifier;
     }
 
     public getGenericIdentifier(): string {
         if (this.type !== SlangType.Generic) {
-            throw `${this.getIdentity()}: access of generic identifier of a port of type '${this.type}' not possible`;
+            throw `${this.getIdentity()}: access of generic identifier of a port of type '${SlangType[this.type]}' not possible`;
         }
         if (!this.genericIdentifier) {
             throw `generic port requires a generic identifier`;

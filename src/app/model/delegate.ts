@@ -5,9 +5,6 @@ import {BlackBox, PortOwner} from '../custom/nodes';
 import {Connections} from '../custom/connections';
 
 export abstract class GenericDelegateModel<B extends BlackBox, P extends PortModel> extends PortOwner {
-    private portIn: P | null = null;
-    private portOut: P | null = null;
-
     protected constructor(private owner: B, private name: string) {
         super();
     }
@@ -24,20 +21,8 @@ export abstract class GenericDelegateModel<B extends BlackBox, P extends PortMod
         return this.owner;
     }
 
-    public setPortIn(port: P) {
-        this.portIn = port;
-    }
-
-    public setPortOut(port: P) {
-        this.portOut = port;
-    }
-
-    public getPortIn(): P | null {
-        return this.portIn;
-    }
-
-    public getPortOut(): P | null {
-        return this.portOut;
+    public attachPort(port: P) {
+        super.attachPort(port);
     }
 
     public getConnections(): Connections {
@@ -56,14 +41,7 @@ export abstract class GenericDelegateModel<B extends BlackBox, P extends PortMod
     }
 
     public getChildNodes(): IterableIterator<P> {
-        const children: Array<P> = [];
-        if (this.getPortIn()) {
-            children.push(this.getPortIn()!);
-        }
-        if (this.getPortOut()) {
-            children.push(this.getPortOut()!);
-        }
-        return children.values();
+        return (this.getPorts() as IterableIterator<P>);
     }
 }
 

@@ -83,6 +83,10 @@ abstract class GenericPortModel<O extends PortOwner> extends TypeModel {
         }
     }
 
+    public getDirection(): PortDirection {
+        return this.direction;
+    }
+
     public isDirectionIn(): boolean {
         return this.direction == PortDirection.In;
     }
@@ -118,8 +122,8 @@ abstract class GenericPortModel<O extends PortOwner> extends TypeModel {
         }
         switch (this.type) {
             case SlangType.Map:
-                for (const Sub of this.getMapSubs()) {
-                    Sub[1].connect(destination.findMapSub(Sub[0]));
+                for (const [subName, subPort] of this.getMapSubs()) {
+                    subPort.connect(destination.findMapSub(subName));
                 }
                 break;
             case SlangType.Stream:

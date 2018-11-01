@@ -45,9 +45,38 @@ export abstract class SlangNode {
 }
 
 export abstract class PortOwner extends SlangNode {
-    abstract getPortIn(): PortModel | null
+    private ports: { in: PortModel | null, out: PortModel | null } = {in: null, out: null};
 
-    abstract getPortOut(): PortModel | null
+    protected attachPort(port: PortModel) {
+        if (port.getParentNode() !== this) {
+            throw `wrong parent ${port.getParentNode().getIdentity()}, should be ${this.getIdentity()}`;
+        }
+
+        if (port.isDirectionIn()) {
+            this.ports.in = port;
+        } else {
+            this.ports.out = port;
+        }
+    }
+
+    public getPortIn(): PortModel | null {
+        return this.ports.in;
+    }
+
+    public getPortOut(): PortModel | null {
+        return this.ports.out;
+    }
+
+    public getPorts(): IterableIterator<PortModel> {
+        const p: Array<PortModel> = [];
+        if (this.ports.in) {
+            p.push(this.ports.in);
+        }
+        if (this.ports.out) {
+            p.push(this.ports.out)
+        }
+        return p.values();
+    }
 }
 
 export abstract class BlackBox extends PortOwner {
