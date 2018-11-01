@@ -1,11 +1,22 @@
 import {attributes, dia, g} from "jointjs";
-import {PortModel} from "../../model/port";
+import {BlueprintPortModel, PortModel} from "../../model/port";
 import {BlackBox, PortOwner} from "../../custom/nodes";
-import {GenericDelegateModel} from "../../model/delegate";
+import {BlueprintDelegateModel, GenericDelegateModel} from "../../model/delegate";
+import {BlueprintModel} from "../../model/blueprint";
+
+export type PortGroupPosition = "top" | "right" | "bottom" | "left";
 
 export enum PortDirection {
     In,
     Out,
+}
+
+export function invertPortDirection(direction: PortDirection) {
+    if (direction == PortDirection.In) {
+        return PortDirection.Out;
+    } else {
+        return PortDirection.In;
+    }
 }
 
 /**
@@ -21,29 +32,33 @@ export class PortComponent implements dia.Element.Port {
     // Otherwise we get performance issues
     // TODO: Investigate
 
-    constructor(port: PortModel, group: string) {
+    constructor(port: PortModel, group: string, position: PortGroupPosition) {
         this.id = `${port.getIdentity()}`;
         this.group = group;
         this.attrs = {
-            '.sl-port': PortComponent.getPortAttributes(group, port.isDirectionIn()),
+            '.sl-port': PortComponent.getPortAttributes(position, port.isDirectionIn()),
         };
     }
 
     // STATIC ONLY:
 
-    private static getPortAttributes(group: string, directionIn: boolean): attributes.SVGAttributes {
+    private static getPortAttributes(position: PortGroupPosition, directionIn: boolean): attributes.SVGAttributes {
         const attrs: attributes.SVGAttributes = {
             fill: "cyan",
         };
-
-        switch (group) {
-            case "MainIn":
-            case "MainOut":
+        
+        switch (position) {
+            case "top":
                 attrs.transform = "";
                 break;
-            default:
-                // Delegate
-                attrs.transform = `rotate(${(directionIn) ? 90 : -90})`;
+            case "right":
+                attrs.transform = `rotate(${directionIn ? 90 : -90})`;
+                break;
+            case "bottom":
+                attrs.transform = "";
+                break;
+            case "left":
+                attrs.transform = `rotate(${directionIn ? 90 : -90})`;
                 break;
         }
 
@@ -67,37 +82,35 @@ export class PortGroupComponent implements dia.Element.PortGroup {
     // Otherwise we get performance issues
     // TODO: Investigate
 
-    constructor(portOwner: PortOwner, direction: PortDirection, start: number, width: number) {
-        switch (direction) {
-            case PortDirection.In:
-                if (portOwner instanceof BlackBox) {
-                    this.position = PortGroupComponent.layoutFunction("top", start, width) as any;
-                    this.markup = "<path class='sl-srv-main sl-port sl-port-in' d=''></path>";
-                    this.attrs = {
-                        ".sl-srv-main.sl-port": PortGroupComponent.portAttributes,
-                    };
-                } else if (portOwner instanceof GenericDelegateModel) {
-                    this.position = PortGroupComponent.layoutFunction("right", start, width) as any;
-                    this.markup = "<path class='sl-dlg sl-port sl-port-in' d=''></path>";
-                    this.attrs = {
-                        ".sl-dlg.sl-port": PortGroupComponent.portAttributes,
-                    };
-                }
+    constructor(port: PortModel, position: PortGroupPosition, start: number, width: number) {
+        switch (position) {
+            case "top":
+                this.position = PortGroupComponent.layoutFunction("top", start, width) as any;
+                this.markup = "<path class='sl-srv-main sl-port sl-port-in' d=''></path>";
+                this.attrs = {
+                    ".sl-srv-main.sl-port": PortGroupComponent.portAttributes,
+                };
                 break;
-            case PortDirection.Out:
-                if (portOwner instanceof BlackBox) {
-                    this.position = PortGroupComponent.layoutFunction("bottom", start, width) as any;
-                    this.markup = "<path class='sl-srv-main sl-port sl-port-out' d=''></path>";
-                    this.attrs = {
-                        ".sl-srv-main.sl-port": PortGroupComponent.portAttributes
-                    };
-                } else if (portOwner instanceof GenericDelegateModel) {
-                    this.position = PortGroupComponent.layoutFunction("right", start, width) as any;
-                    this.markup = "<path class='sl-dlg sl-port sl-port-out' d=''></path>";
-                    this.attrs = {
-                        ".sl-dlg.sl-port": PortGroupComponent.portAttributes,
-                    };
-                }
+            case "right":
+                this.position = PortGroupComponent.layoutFunction("right", start, width) as any;
+                this.markup = "<path class='sl-dlg sl-port sl-port-in' d=''></path>";
+                this.attrs = {
+                    ".sl-dlg.sl-port": PortGroupComponent.portAttributes,
+                };
+                break;
+            case "bottom":
+                this.position = PortGroupComponent.layoutFunction("bottom", start, width) as any;
+                this.markup = "<path class='sl-srv-main sl-port sl-port-out' d=''></path>";
+                this.attrs = {
+                    ".sl-srv-main.sl-port": PortGroupComponent.portAttributes
+                };
+                break;
+            case "left":
+                this.position = PortGroupComponent.layoutFunction("left", start, width) as any;
+                this.markup = "<path class='sl-dlg sl-port sl-port-out' d=''></path>";
+                this.attrs = {
+                    ".sl-dlg.sl-port": PortGroupComponent.portAttributes,
+                };
                 break;
         }
     }
@@ -122,7 +135,7 @@ export class PortGroupComponent implements dia.Element.PortGroup {
     /**
      * SVG attributes for the port shape.
      */
-    private static readonly portAttributes: attributes.SVGAttributes = {
+    public static readonly portAttributes: attributes.SVGAttributes = {
         paintOrder: "stroke fill",
         d:
             `M ${-PortGroupComponent.portWidth / 2} ${-PortGroupComponent.portHeight / 2} ` +
@@ -133,7 +146,7 @@ export class PortGroupComponent implements dia.Element.PortGroup {
         strokeWidth: 3
     };
 
-    private static layoutFunction(position: "top" | "bottom" | "left" | "right", offset: number, space: number): (ports: Array<any>, elBBox: g.Rect, opt: any) => Array<g.Point> {
+    public static layoutFunction(position: PortGroupPosition, offset: number, space: number): (ports: Array<any>, elBBox: g.Rect, opt: any) => Array<g.Point> {
         return function (ports: Array<any>, elBBox: g.Rect, opt: any): Array<g.Point> {
             return ports.map((port: any, index: number, ports: Array<any>) => {
                 const count = ports.length;
