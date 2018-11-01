@@ -75,17 +75,6 @@ export class SlangType {
         return this.mapSubs!.entries();
     }
 
-    public findMapSub(name: string): SlangType {
-        if (this.type !== TypeIdentifier.Map) {
-            throw `access of map sub port of a port of type '${TypeIdentifier[this.type]}' not possible`;
-        }
-        const mapSub = this.mapSubs!.get(name);
-        if (!mapSub) {
-            throw `map sub port ${name} not found`
-        }
-        return mapSub;
-    }
-
     public setStreamSub(port: SlangType) {
         if (this.type !== TypeIdentifier.Stream) {
             throw `set stream sub port of a port of type '${TypeIdentifier[this.type]}' not possible`;
@@ -96,10 +85,10 @@ export class SlangType {
 
     public getStreamSub(): SlangType {
         if (this.type !== TypeIdentifier.Stream) {
-            throw `${this.getIdentity()}: access of stream port of a port of type '${TypeIdentifier[this.type]}' not possible`;
+            throw `access of stream port of a port of type '${TypeIdentifier[this.type]}' not possible`;
         }
         if (!this.streamSub) {
-            throw `${this.getIdentity()}: stream port not having sub stream port`;
+            throw `stream port not having sub stream port`;
         }
         return this.streamSub;
     }
@@ -113,7 +102,7 @@ export class SlangType {
 
     public getGenericIdentifier(): string {
         if (this.type !== TypeIdentifier.Generic) {
-            throw `${this.getIdentity()}: access of generic identifier of a port of type '${TypeIdentifier[this.type]}' not possible`;
+            throw `access of generic identifier of a port of type '${TypeIdentifier[this.type]}' not possible`;
         }
         if (!this.genericIdentifier) {
             throw `generic port requires a generic identifier`;
@@ -123,37 +112,5 @@ export class SlangType {
 
     public getTypeIdentifier(): TypeIdentifier {
         return this.type;
-    }
-
-    public getName(): string {
-        if (!this.parent || this.parent.getTypeIdentifier() !== TypeIdentifier.Map) {
-            throw `not a map entry`;
-        }
-
-        for (const entry of this.parent.getMapSubs()) {
-            if (entry[1] === this) {
-                return entry[0];
-            }
-        }
-        throw `entry not found`;
-    }
-
-    public getIdentity(): string {
-        if (!this.parent) {
-            return '';
-        }
-        const parentRefString = this.parent.getIdentity();
-        if (this.parent.getTypeIdentifier() === TypeIdentifier.Map) {
-            if (parentRefString === '') {
-                return this.getName();
-            }
-            return parentRefString + '.' + this.getName();
-        } else if (this.parent.getTypeIdentifier() === TypeIdentifier.Stream) {
-            if (parentRefString === '') {
-                return '~';
-            }
-            return parentRefString + '.~';
-        }
-        return parentRefString;
     }
 }
