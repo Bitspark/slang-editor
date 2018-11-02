@@ -2,20 +2,20 @@ import {attributes, dia, shapes} from "jointjs";
 import {BlackBox} from "../../custom/nodes";
 import {PortModel} from "../../model/port";
 import {PortComponent, PortGroupComponent, PortGroupPosition} from "./port";
-import {SlangType} from "../../model/type";
+import {TypeIdentifier} from "../../custom/type";
 
 
 function createPortItems(group: string, position: PortGroupPosition, port: PortModel): Array<PortComponent> {
     let portItems: Array<PortComponent> = [];
 
-    switch (port.getType()) {
-        case SlangType.Map:
+    switch (port.getTypeIdentifier()) {
+        case TypeIdentifier.Map:
             for (const [_, each] of port.getMapSubs()) {
                 portItems.push.apply(portItems, createPortItems(group, position, each));
             }
             break;
 
-        case SlangType.Stream:
+        case TypeIdentifier.Stream:
             portItems.push.apply(portItems, createPortItems(group, position, port.getStreamSub()));
             break;
 
@@ -108,17 +108,17 @@ export class BlackBoxComponent extends shapes.standard.Rectangle.define('BlackBo
 
 export class IsolatedBlueprintPort extends shapes.standard.Rectangle.define('IsolatedPort', {}) {
 
-    constructor(name: string, identity: string, port: PortModel, position: PortGroupPosition) {        
+    constructor(name: string, identity: string, port: PortModel, position: PortGroupPosition) {
         const portGroups = {"PortGroup": new PortGroupComponent(port, position, 0, 1.0)};
         const portItems = createPortItems("PortGroup", position, port);
-        
+
         const translations = {
             "top": "",
             "right": "translate(-40 0)",
             "bottom": "",
             "left": "translate(40 0)",
         };
-        
+
         const transform = translations[position];
 
         super({

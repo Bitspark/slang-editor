@@ -1,5 +1,6 @@
-import {PortModel} from '../model/port';
+import {PortDirection, PortModel} from '../model/port';
 import {DelegateModel} from '../model/delegate';
+import {SlangType, TypeIdentifier} from "./type";
 
 type Type<T> = Function & { prototype: T }
 
@@ -45,9 +46,62 @@ export abstract class SlangNode {
 }
 
 export abstract class PortOwner extends SlangNode {
-    abstract getPortIn(): PortModel | null
+    private ports: { in: PortModel | null, out: PortModel | null } = {in: null, out: null};
 
-    abstract getPortOut(): PortModel | null
+    private attachPort(port: PortModel) {
+        if (port.getParentNode() !== this) {
+            throw `wrong parent ${port.getParentNode().getIdentity()}, should be ${this.getIdentity()}`;
+        }
+
+        if (port.isDirectionIn()) {
+            this.ports.in = port;
+        } else {
+            this.ports.out = port;
+        }
+    }
+
+    protected createPortFromType(P: new(p: PortModel | null, o: PortOwner, tid: TypeIdentifier, d: PortDirection) => PortModel, type: SlangType, direction: PortDirection): PortModel {
+        const port = new P(null, this, type.getTypeIdentifier(), direction);
+
+        switch (type.getTypeIdentifier()) {
+            case TypeIdentifier.Map:
+                for (const [subName, subType] of type.getMapSubs()) {
+                    port.addMapSub(subName, this.createPortFromType(P, subType, direction));
+                }
+                break;
+            case TypeIdentifier.Stream:
+                port.setStreamSub(this.createPortFromType(P, type.getStreamSub(), direction));
+                break;
+            case TypeIdentifier.Generic:
+                port.setGenericIdentifier(type.getGenericIdentifier());
+                break;
+        }
+
+        if (port.getParentNode() === this) {
+            this.attachPort(port);
+        }
+
+        return port;
+    }
+
+    public getPortIn(): PortModel | null {
+        return this.ports.in;
+    }
+
+    public getPortOut(): PortModel | null {
+        return this.ports.out;
+    }
+
+    public getPorts(): IterableIterator<PortModel> {
+        const p: Array<PortModel> = [];
+        if (this.ports.in) {
+            p.push(this.ports.in);
+        }
+        if (this.ports.out) {
+            p.push(this.ports.out)
+        }
+        return p.values();
+    }
 }
 
 export abstract class BlackBox extends PortOwner {

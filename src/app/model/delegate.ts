@@ -1,13 +1,11 @@
-import {BlueprintPortModel, OperatorPortModel, PortModel} from './port';
+import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel} from './port';
 import {BlueprintModel} from './blueprint';
 import {OperatorModel} from './operator';
 import {BlackBox, PortOwner} from '../custom/nodes';
 import {Connections} from '../custom/connections';
+import {SlangType} from "../custom/type";
 
 export abstract class GenericDelegateModel<B extends BlackBox, P extends PortModel> extends PortOwner {
-    private portIn: P | null = null;
-    private portOut: P | null = null;
-
     protected constructor(private owner: B, private name: string) {
         super();
     }
@@ -22,22 +20,6 @@ export abstract class GenericDelegateModel<B extends BlackBox, P extends PortMod
 
     public getOwner(): B {
         return this.owner;
-    }
-
-    public setPortIn(port: P) {
-        this.portIn = port;
-    }
-
-    public setPortOut(port: P) {
-        this.portOut = port;
-    }
-
-    public getPortIn(): P | null {
-        return this.portIn;
-    }
-
-    public getPortOut(): P | null {
-        return this.portOut;
     }
 
     public getConnections(): Connections {
@@ -56,14 +38,7 @@ export abstract class GenericDelegateModel<B extends BlackBox, P extends PortMod
     }
 
     public getChildNodes(): IterableIterator<P> {
-        const children: Array<P> = [];
-        if (this.getPortIn()) {
-            children.push(this.getPortIn()!);
-        }
-        if (this.getPortOut()) {
-            children.push(this.getPortOut()!);
-        }
-        return children.values();
+        return (this.getPorts() as IterableIterator<P>);
     }
 }
 
@@ -73,10 +48,19 @@ export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel,
     constructor(owner: BlueprintModel, name: string) {
         super(owner, name);
     }
+
+    public createPort(type: SlangType, direction: PortDirection): BlueprintPortModel {
+        return super.createPortFromType(BlueprintPortModel, type, direction) as BlueprintPortModel;
+    }
+
 }
 
 export class OperatorDelegateModel extends GenericDelegateModel<OperatorModel, OperatorPortModel> {
     constructor(owner: OperatorModel, name: string) {
         super(owner, name);
+    }
+
+    public createPort(type: SlangType, direction: PortDirection): OperatorPortModel {
+        return super.createPortFromType(OperatorPortModel, type, direction) as OperatorPortModel;
     }
 }
