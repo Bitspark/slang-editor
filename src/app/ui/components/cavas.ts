@@ -1,4 +1,4 @@
-import {dia} from "jointjs";
+import {dia, g} from 'jointjs';
 
 export class CanvasComponent {
     private graph = new dia.Graph();
@@ -49,9 +49,16 @@ export class CanvasComponent {
                     return false;
                 }
                 if (cellView.model.isLink()) {
-                    return { vertexAdd: false };
+                    return {vertexAdd: false};
                 }
                 return true;
+            },
+            restrictTranslate: function (elementView: dia.ElementView): g.PlainRect {
+                const fn = elementView.model.get('restrictTranslate');
+                if (typeof fn === "function") {
+                    return fn();
+                }
+                return {x: -(Number.MAX_VALUE / 2), y: -(Number.MAX_VALUE / 2), width: Number.MAX_VALUE, height: Number.MAX_VALUE};
             }
         });
     }
@@ -62,21 +69,21 @@ export class CanvasComponent {
         ['mousewheel'].forEach(event => {
             (function (event) {
                 paper.on('cell:' + event, function (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) {
-                    cellView.model.trigger(event, evt, x, y, delta);
+                    cellView.model.trigger(event, cellView, evt, x, y, delta);
                 });
             })(event);
         });
         ['pointerdblclick', 'pointerclick', 'contextmenu', 'pointerdown', 'pointermove', 'pointerup'].forEach(event => {
             (function (event) {
                 paper.on('cell:' + event, function (cellView: dia.CellView, evt: Event, x: number, y: number) {
-                    cellView.model.trigger(event, evt, x, y);
+                    cellView.model.trigger(event, cellView, evt, x, y);
                 });
             })(event);
         });
         ['mouseover', 'mouseout', 'mouseenter', 'mouseleave'].forEach(event => {
             (function (event) {
                 paper.on('cell:' + event, function (cellView: dia.CellView, evt: Event) {
-                    cellView.model.trigger(event, evt);
+                    cellView.model.trigger(event, cellView, evt);
                 });
             })(event);
         });
@@ -143,7 +150,7 @@ export class CanvasComponent {
             startPanning(x, y);
         });
         paper.on('cell:pointerdown', function (cellView: dia.CellView, evt: Event, x: number, y: number) {
-            if (cellView.model.attr("draggable") === false) {
+            if (cellView.model.attr('draggable') === false) {
                 startPanning(x, y);
             }
         });
@@ -157,7 +164,7 @@ export class CanvasComponent {
             doPanning(event.offsetX, event.offsetY);
         });
     }
-    
+
     private catchPaperEvents() {
         const paper = this.paper;
         paper.on('blank:mousewheel', function (evt: Event, x: number, y: number, delta: number) {

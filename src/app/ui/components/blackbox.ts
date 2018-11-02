@@ -108,9 +108,20 @@ export class BlackBoxComponent extends shapes.standard.Rectangle.define('BlackBo
 
 export class IsolatedBlueprintPort extends shapes.standard.Rectangle.define('IsolatedPort', {}) {
 
-    constructor(identity: string, port: PortModel, position: PortGroupPosition) {        
+    constructor(name: string, identity: string, port: PortModel, position: PortGroupPosition) {        
         const portGroups = {"PortGroup": new PortGroupComponent(port, position, 0, 1.0)};
         const portItems = createPortItems("PortGroup", position, port);
+        
+        const translations = {
+            "top": "",
+            "right": "translate(-40 0)",
+            "bottom": "",
+            "left": "translate(40 0)",
+        };
+        
+        const transform = translations[position];
+        
+        console.log(transform);
 
         super({
             id: identity,
@@ -118,12 +129,13 @@ export class IsolatedBlueprintPort extends shapes.standard.Rectangle.define('Iso
             attrs: {
                 root: {},
                 body: {
-                    fill: "yellow",
-                    stroke: "black",
-                    strokeWidth: 1,
-                    rx: 6,
-                    ry: 6,
+                    fill: "none",
+                    stroke: "none",
                 },
+                label: {
+                    text: name,
+                    transform: transform
+                }
             },
             ports: {
                 groups: portGroups,
