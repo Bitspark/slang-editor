@@ -48,7 +48,7 @@ export abstract class SlangNode {
 export abstract class PortOwner extends SlangNode {
     private ports: { in: PortModel | null, out: PortModel | null } = {in: null, out: null};
 
-    protected attachPort(port: PortModel) {
+    private attachPort(port: PortModel) {
         if (port.getParentNode() !== this) {
             throw `wrong parent ${port.getParentNode().getIdentity()}, should be ${this.getIdentity()}`;
         }

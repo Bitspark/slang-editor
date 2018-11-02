@@ -22,10 +22,6 @@ export abstract class GenericDelegateModel<B extends BlackBox, P extends PortMod
         return this.owner;
     }
 
-    public attachPort(port: P) {
-        super.attachPort(port);
-    }
-
     public getConnections(): Connections {
         const connections = new Connections();
 

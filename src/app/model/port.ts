@@ -25,7 +25,7 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     protected destinations: Array<PortModel> | null = null;
     protected owner: O;
 
-    public constructor(private parent: GenericPortModel<O> | null, private typeIdentifier: TypeIdentifier, private direction: PortDirection) {
+    protected constructor(private parent: GenericPortModel<O> | null, private typeIdentifier: TypeIdentifier, private direction: PortDirection) {
         super();
         if (this.typeIdentifier === TypeIdentifier.Map) {
             this.mapSubs = new Map<string, GenericPortModel<O>>();
@@ -54,11 +54,11 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
     public findMapSub(name: string): GenericPortModel<O> {
         if (this.typeIdentifier !== TypeIdentifier.Map) {
-            throw `access of map sub port of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+            throw `accessing map sub port of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
         }
         const mapSub = this.mapSubs!.get(name);
         if (!mapSub) {
-            throw `map sub port ${name} not found`
+            throw `map sub port '${name}' not found: '${this.getIdentity()}'`
         }
         return mapSub;
     }
@@ -73,10 +73,10 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
     public getStreamSub(): GenericPortModel<O> {
         if (this.typeIdentifier !== TypeIdentifier.Stream) {
-            throw `${this.getIdentity()}: access of stream port of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+            throw `accessing stream port of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
         }
         if (!this.streamSub) {
-            throw `${this.getIdentity()}: stream port not having sub stream port`;
+            throw `stream port not having sub stream port: '${this.getIdentity()}'`;
         }
         return this.streamSub;
     }
@@ -90,7 +90,7 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
     public getGenericIdentifier(): string {
         if (this.typeIdentifier !== TypeIdentifier.Generic) {
-            throw `${this.getIdentity()}: access of generic identifier of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+            throw `accessing of generic identifier of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
         }
         if (!this.genericIdentifier) {
             throw `generic port requires a generic identifier`;

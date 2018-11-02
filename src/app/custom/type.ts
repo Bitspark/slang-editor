@@ -1,4 +1,6 @@
 import {GenericSpecifications} from "../model/generic";
+import {PropertyAssignments} from "../model/property";
+import {PropertyEvaluator} from "./utils";
 
 export enum TypeIdentifier {
     Number, // 0
@@ -17,15 +19,15 @@ export class SlangType {
     private genericIdentifier?: string;
     private streamSub: SlangType | undefined;
 
-    public constructor(private parent: SlangType | null, private type: TypeIdentifier) {
-        if (this.type === TypeIdentifier.Map) {
+    public constructor(private parent: SlangType | null, private typeIdentifier: TypeIdentifier) {
+        if (this.typeIdentifier === TypeIdentifier.Map) {
             this.mapSubs = new Map<string, SlangType>();
         }
     }
 
     public copy(): SlangType {
-        const typeCopy = new SlangType(this.parent, this.type);
-        switch (this.type) {
+        const typeCopy = new SlangType(this.parent, this.typeIdentifier);
+        switch (this.typeIdentifier) {
             case TypeIdentifier.Map:
                 for (const [subName, subType] of this.getMapSubs()) {
                     typeCopy.addMapSub(subName, subType.copy());
@@ -41,12 +43,33 @@ export class SlangType {
         return typeCopy;
     }
 
+    public expand(propAssigns: PropertyAssignments): SlangType {
+        const type = new SlangType(this.parent, this.typeIdentifier);
+        switch (this.getTypeIdentifier()) {
+            case TypeIdentifier.Map:
+                for (const [subName, subType] of this.getMapSubs()) {
+                    for (const expSubName of PropertyEvaluator.expand(subName, propAssigns)) {
+                        type.addMapSub(expSubName, subType.expand(propAssigns));
+                    }
+                }
+                break;
+            case TypeIdentifier.Stream:
+                type.setStreamSub(this.getStreamSub().expand(propAssigns));
+                break;
+            case TypeIdentifier.Generic:
+                type.setGenericIdentifier(this.getGenericIdentifier());
+                break;
+        }
+
+        return type;
+    }
+
     public specifyGenerics(genSpec: GenericSpecifications): SlangType {
-        if (this.type === TypeIdentifier.Generic) {
+        if (this.typeIdentifier === TypeIdentifier.Generic) {
             return genSpec.get(this.getGenericIdentifier()).copy();
         }
-        const specifiedType = new SlangType(this.parent, this.type);
-        switch (this.type) {
+        const specifiedType = new SlangType(this.parent, this.typeIdentifier);
+        switch (this.typeIdentifier) {
             case TypeIdentifier.Map:
                 for (const [subName, subType] of this.getMapSubs()) {
                     specifiedType.addMapSub(subName, subType.specifyGenerics(genSpec));
@@ -60,8 +83,8 @@ export class SlangType {
     }
 
     public addMapSub(name: string, port: SlangType): SlangType {
-        if (this.type !== TypeIdentifier.Map) {
-            throw `add map sub port to a port of type '${TypeIdentifier[this.type]}' not possible`;
+        if (this.typeIdentifier !== TypeIdentifier.Map) {
+            throw `add map sub port to a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
         }
         this.mapSubs!.set(name, port);
         port.parent = this;
@@ -69,23 +92,23 @@ export class SlangType {
     }
 
     public getMapSubs(): IterableIterator<[string, SlangType]> {
-        if (this.type !== TypeIdentifier.Map) {
-            throw `access of map sub ports of a port of type '${TypeIdentifier[this.type]}' not possible`;
+        if (this.typeIdentifier !== TypeIdentifier.Map) {
+            throw `access of map sub ports of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
         }
         return this.mapSubs!.entries();
     }
 
     public setStreamSub(port: SlangType) {
-        if (this.type !== TypeIdentifier.Stream) {
-            throw `set stream sub port of a port of type '${TypeIdentifier[this.type]}' not possible`;
+        if (this.typeIdentifier !== TypeIdentifier.Stream) {
+            throw `set stream sub port of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
         }
         port.parent = this;
         this.streamSub = port;
     }
 
     public getStreamSub(): SlangType {
-        if (this.type !== TypeIdentifier.Stream) {
-            throw `access of stream port of a port of type '${TypeIdentifier[this.type]}' not possible`;
+        if (this.typeIdentifier !== TypeIdentifier.Stream) {
+            throw `access of stream port of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
         }
         if (!this.streamSub) {
             throw `stream port not having sub stream port`;
@@ -94,15 +117,15 @@ export class SlangType {
     }
 
     public setGenericIdentifier(genericIdentifier: string) {
-        if (this.type !== TypeIdentifier.Generic) {
-            throw `set generic identifier of a port of type '${TypeIdentifier[this.type]}' not possible`;
+        if (this.typeIdentifier !== TypeIdentifier.Generic) {
+            throw `set generic identifier of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
         }
         this.genericIdentifier = genericIdentifier;
     }
 
     public getGenericIdentifier(): string {
-        if (this.type !== TypeIdentifier.Generic) {
-            throw `access of generic identifier of a port of type '${TypeIdentifier[this.type]}' not possible`;
+        if (this.typeIdentifier !== TypeIdentifier.Generic) {
+            throw `access of generic identifier of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
         }
         if (!this.genericIdentifier) {
             throw `generic port requires a generic identifier`;
@@ -111,6 +134,6 @@ export class SlangType {
     }
 
     public getTypeIdentifier(): TypeIdentifier {
-        return this.type;
+        return this.typeIdentifier;
     }
 }

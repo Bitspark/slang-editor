@@ -15,7 +15,7 @@ import {PropertyAssignments, PropertyModel} from "../model/property";
 import {TypeIdentifier, SlangType} from "./type";
 import {GenericSpecifications} from "../model/generic";
 
-function toSlangType(typeName: string): TypeIdentifier {
+function toTypeIdentifier(typeName: string): TypeIdentifier {
     const type = ({
         number: TypeIdentifier.Number,
         binary: TypeIdentifier.Binary,
@@ -38,31 +38,17 @@ function toSlangType(typeName: string): TypeIdentifier {
 function setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupApiResponse) {
     Object.keys(delegates).forEach((delegateName: string) => {
         const delegate = blueprint.createDelegate(delegateName);
-        delegate.attachPort(createPort(delegates[delegateName].in, delegate, PortDirection.In));
-        delegate.attachPort(createPort(delegates[delegateName].out, delegate, PortDirection.Out));
+        createPort(delegates[delegateName].in, delegate, PortDirection.In);
+        createPort(delegates[delegateName].out, delegate, PortDirection.Out);
     });
 }
 
 function createPort(typeDef: TypeDefApiResponse, owner: BlueprintModel | BlueprintDelegateModel, direction: PortDirection): BlueprintPortModel {
-    const port = new BlueprintPortModel(null, owner, toSlangType(typeDef.type), direction);
-    switch (port.getTypeIdentifier()) {
-        case TypeIdentifier.Map:
-            Object.keys(typeDef.map!).forEach((portName: string) => {
-                port.addMapSub(portName, createPort(typeDef.map![portName], owner, direction));
-            });
-            break;
-        case TypeIdentifier.Stream:
-            port.setStreamSub(createPort(typeDef.stream!, owner, direction));
-            break;
-        case TypeIdentifier.Generic:
-            port.setGenericIdentifier(typeDef.generic!);
-            break;
-    }
-    return port;
+    return owner.createPort(createTypeModel(typeDef), direction);
 }
 
 function createTypeModel(typeDef: TypeDefApiResponse): SlangType {
-    const type = new SlangType(null, toSlangType(typeDef.type));
+    const type = new SlangType(null, toTypeIdentifier(typeDef.type));
     switch (type.getTypeIdentifier()) {
         case TypeIdentifier.Map:
             Object.keys(typeDef.map!).forEach((subName: string) => {
@@ -82,8 +68,8 @@ function createTypeModel(typeDef: TypeDefApiResponse): SlangType {
 function setBlueprintServices(blueprint: BlueprintModel, services: PortGroupApiResponse) {
     const portInDef: TypeDefApiResponse = services["main"].in;
     const portOutDef: TypeDefApiResponse = services["main"].out;
-    blueprint.attachPort(createPort(portInDef, blueprint, PortDirection.In));
-    blueprint.attachPort(createPort(portOutDef, blueprint, PortDirection.Out));
+    createPort(portInDef, blueprint, PortDirection.In);
+    createPort(portOutDef, blueprint, PortDirection.Out);
 }
 
 function setBlueprintProperties(blueprint: BlueprintModel, properties: PropertyApiResponse) {

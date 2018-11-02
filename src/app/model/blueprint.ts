@@ -65,6 +65,30 @@ export class BlueprintModel extends BlackBox {
         return genericIdentifiers;
     }
 
+    private instantiateOperator(owner: BlueprintModel, name: string, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
+
+        function copyAndAddDelegates(owner: OperatorModel, delegate: BlueprintDelegateModel) {
+            for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), propAssigns)) {
+                const delegateCopy = new OperatorDelegateModel(owner, expandedDlgName);
+                for (const port of delegate.getPorts()) {
+                    delegateCopy.createPort(port.getType().specifyGenerics(genSpeci).expand(propAssigns), port.getDirection());
+                }
+                operator.addDelegate(delegateCopy);
+            }
+        }
+
+        const operator = new OperatorModel(owner, name, this);
+
+        for (const port of this.getPorts()) {
+            operator.createPort(port.getType().specifyGenerics(genSpeci).expand(propAssigns), port.getDirection());
+        }
+        for (const delegate of this.delegates) {
+            copyAndAddDelegates(operator, delegate);
+        }
+
+        return operator
+    }
+
     public createOperator(name: string, blueprint: BlueprintModel, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
         const operator = blueprint.instantiateOperator(this, name, propAssigns, genSpeci);
         return this.addOperator(operator);
@@ -75,53 +99,8 @@ export class BlueprintModel extends BlackBox {
         return this.addDelegate(delegate);
     }
 
-    public attachPort(port: BlueprintPortModel) {
-        super.attachPort(port);
-    }
-
     public createPort(type: SlangType, direction: PortDirection): BlueprintPortModel {
         return super.createPortFromType(BlueprintPortModel, type, direction) as BlueprintPortModel;
-    }
-
-    private instantiateOperator(owner: BlueprintModel, name: string, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
-        function copyPort(owner: OperatorModel | OperatorDelegateModel, parent: OperatorPortModel | null, portType: SlangType, direction: PortDirection): OperatorPortModel {
-            const portCopy = new OperatorPortModel(parent, owner, portType.getTypeIdentifier(), direction);
-
-            switch (portType.getTypeIdentifier()) {
-                case TypeIdentifier.Map:
-                    for (const entry of portType.getMapSubs()) {
-                        for (const portName of PropertyEvaluator.expand(entry[0], propAssigns)) {
-                            portCopy.addMapSub(portName, copyPort(owner, portCopy, entry[1], direction));
-                        }
-                    }
-                    break;
-                case TypeIdentifier.Stream:
-                    portCopy.setStreamSub(copyPort(owner, portCopy, portType.getStreamSub(), direction));
-                    break;
-            }
-            return portCopy;
-        }
-
-        function copyAndAddDelegates(owner: OperatorModel, delegate: BlueprintDelegateModel) {
-            for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), propAssigns)) {
-                const delegateCopy = new OperatorDelegateModel(owner, expandedDlgName);
-                for (const port of delegate.getPorts()) {
-                    delegateCopy.attachPort(copyPort(delegateCopy, null, port.getType().specifyGenerics(genSpeci), port.getDirection()));
-                }
-                operator.addDelegate(delegateCopy);
-            }
-        }
-
-        const operator = new OperatorModel(owner, name, this);
-
-        for (const port of this.getPorts()) {
-            operator.attachPort(copyPort(operator, null, port.getType().specifyGenerics(genSpeci), port.getDirection()));
-        }
-        for (const delegate of this.delegates) {
-            copyAndAddDelegates(operator, delegate);
-        }
-
-        return operator
     }
 
     public getFullName(): string {
@@ -187,6 +166,7 @@ export class BlueprintModel extends BlackBox {
 
     public resolvePortReference(portReference: string): PortModel | null | undefined {
         const portInfo = SlangParsing.parseReferenceString(portReference);
+
         if (!portInfo || typeof portInfo.instance === 'undefined') {
             return undefined;
         }

@@ -47,10 +47,6 @@ export class OperatorModel extends BlackBox {
         return this.delegates.find(delegate => delegate.getName() === name);
     }
 
-    public attachPort(port: OperatorPortModel) {
-        super.attachPort(port);
-    }
-
     public getDisplayName(): string {
         return this.blueprint.getFullName();
     }
