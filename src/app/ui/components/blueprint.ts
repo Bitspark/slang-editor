@@ -3,6 +3,8 @@ import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 import {BlackBox, PortOwner} from "../../custom/nodes";
 import {BlackBoxComponent, IsolatedBlueprintPort} from "./blackbox";
+import {slangRouter} from "../utils/router";
+import {slangConnector} from "../utils/connector";
 
 export class BlueprintComponent {
     private outer: dia.Element;
@@ -11,20 +13,24 @@ export class BlueprintComponent {
     private rightPorts: Array<dia.Element> = [];
     private leftPorts: Array<dia.Element> = [];
     private operators: Array<BlackBoxComponent> = [];
-    private outerPadding = 80;
+    private outerPadding = 120;
 
     constructor(private graph: dia.Graph, private blueprint: BlueprintModel) {
         graph.clear();
 
-        this.attachEventHandlers();
         this.subscribe();
 
-        this.outer = this.createOuter();
         this.createIsolatedPorts();
         this.createOperators();
         this.createConnections();
-
         this.autoLayout();
+        
+        this.outer = this.createOuter();
+        this.fitOuter();
+        
+        this.attachEventHandlers();
+        
+        // this.addOriginPoint();
     }
 
     private attachEventHandlers() {
@@ -34,105 +40,7 @@ export class BlueprintComponent {
                 return;
             }
 
-            const padding = that.outerPadding;
-
-            const currentPosition = that.outer.get("position");
-            const currentSize = that.outer.get("size");
-
-            let newX: number = currentPosition.x + padding;
-            let newY: number = currentPosition.y + padding;
-            let newCornerX: number = currentPosition.x + currentSize.width - 2 * padding;
-            let newCornerY: number = currentPosition.y + currentSize.height - 2 * padding;
-
-            that.operators.forEach((operator: BlackBoxComponent) => {
-                const childBbox = operator.getBBox();
-                if (childBbox.x < newX) {
-                    newX = childBbox.x;
-                }
-                if (childBbox.y < newY) {
-                    newY = childBbox.y;
-                }
-                if (childBbox.corner().x > newCornerX) {
-                    newCornerX = childBbox.corner().x;
-                }
-                if (childBbox.corner().y > newCornerY) {
-                    newCornerY = childBbox.corner().y;
-                }
-            });
-
-            const set = {
-                position: {x: 0, y: 0},
-                size: {width: 0, height: 0}
-            };
-
-            set.position.x = newX - padding;
-            set.position.y = newY - padding;
-            set.size.width = newCornerX - newX + 2 * padding;
-            set.size.height = newCornerY - newY + 2 * padding;
-
-            let newPosition = {x: currentPosition.x, y: currentPosition.y};
-            let newSize = {width: currentPosition.width, height: currentPosition.height};
-
-            if (currentPosition.x <= set.position.x && currentPosition.y <= set.position.y) {
-                delete set.position;
-            } else {
-                if (currentPosition.x <= set.position.x) {
-                    set.position.x = currentPosition.x;
-                } else if (currentPosition.y <= set.position.y) {
-                    set.position.y = currentPosition.y;
-                }
-                const deltaX = currentPosition.x - set.position.x;
-                const deltaY = currentPosition.y - set.position.y;
-                set.size.width = Math.max(set.size.width, currentSize.width + deltaX);
-                set.size.height = Math.max(set.size.height, currentSize.height + deltaY);
-                newPosition = set.position;
-                newSize = set.size;
-            }
-
-            if (set.size.width <= currentSize.width && set.size.height <= currentSize.height) {
-                delete set.size;
-            } else {
-                if (set.size.width <= currentSize.width) {
-                    set.size.width = currentSize.width;
-                } else if (set.size.height <= currentSize.height) {
-                    set.size.height = currentSize.height;
-                }
-                newSize = set.size;
-            }
-
-            if (!!set.position || !!set.size) {
-                that.outer.set(set);
-
-                for (const port of that.topPorts) {
-                    const currentPortPosition = port.get('position');
-                    port.set({
-                        position: {
-                            x: currentPortPosition.x,
-                            y: newPosition.y - 100,
-                        }
-                    });
-                }
-                
-                for (const port of that.bottomPorts) {
-                    const currentPortPosition = port.get('position');
-                    port.set({
-                        position: {
-                            x: currentPortPosition.x,
-                            y: newPosition.y + newSize.height,
-                        }
-                    });
-                }
-
-                that.rightPorts.forEach(port => {
-                    const currentPortPosition = port.get('position');
-                    port.set({
-                        position: {
-                            x: newPosition.x + newSize.width,
-                            y: currentPortPosition.y,
-                        }
-                    });
-                });
-            }
+            that.fitOuter();
         });
     }
 
@@ -145,8 +53,11 @@ export class BlueprintComponent {
 
     private createOuter(): dia.Element {
         const size = {width: this.outerPadding * 2 + 10, height: this.outerPadding * 2 + 10};
+        const position = {x: -size.width / 2, y: -size.height / 2};
 
-        const outer = new (shapes.standard.Rectangle.define("BlueprintOuter", {}))({id: `${this.blueprint.getIdentity()}_outer}`});
+        const outer = new (shapes.standard.Rectangle.define("BlueprintOuter", {
+            position: position
+        }))({id: `${this.blueprint.getIdentity()}_outer}`});
         outer.attr("body/fill", "blue");
         outer.attr("body/fill-opacity", ".05");
         outer.attr("body/rx", "24");
@@ -154,11 +65,13 @@ export class BlueprintComponent {
         outer.set("obstacle", false);
         outer.set("size", size);
         outer.attr("draggable", false);
+        outer.position(position);
         outer.addTo(this.graph);
+        outer.toBack();
 
         return outer;
     }
-
+    
     private createIsolatedPorts(): void {
         const that = this;
         
@@ -249,8 +162,8 @@ export class BlueprintComponent {
                     id: destinationIdentity,
                     port: connection.destination.getIdentity()
                 },
-                router: { name: "manhattan", args: { maximumLoops: 1000, excludeTypes: ["BlueprintOuter"], step: 5 } },
-                connector: { name: "rounded" },
+                router: slangRouter,
+                connector: slangConnector,
                 attrs: {
                     ".connection": {
                         stroke: "#777777",
@@ -270,17 +183,24 @@ export class BlueprintComponent {
             rankDir: "TB",
             resizeClusters: false
         });
+
+        let boundingBox = this.graph.getCellsBBox(this.operators)!;
+        
+        this.operators.forEach(operator => {
+            operator.translate(-(boundingBox.x + boundingBox.width / 2), -(boundingBox.y + boundingBox.height / 2));
+        });
+
+        boundingBox = this.graph.getCellsBBox(this.operators)!;
         
         // Center ports
         
-        const parentPosition = this.outer.get("position");
-        const parentSize = this.outer.get("size");
+        const padding = this.outerPadding;
 
         for (const port of this.topPorts) {
             port.set({
                 position: {
-                    x: parentPosition.x / 2 - 50 + parentSize.width / 2,
-                    y: parentPosition.y - 100,
+                    x: boundingBox.x - 50 + boundingBox.width / 2,
+                    y: boundingBox.y - 100 - padding,
                 }
             });
         }
@@ -288,17 +208,17 @@ export class BlueprintComponent {
         for (const port of this.bottomPorts) {
             port.set({
                 position: {
-                    x: parentPosition.x / 2 - 50 + parentSize.width / 2,
-                    y: parentPosition.y + parentSize.height,
+                    x: boundingBox.x - 50 + boundingBox.width / 2,
+                    y: boundingBox.y + boundingBox.height + padding,
                 }
             });
         }
 
-        const offset = parentPosition.y + (parentSize.height - this.rightPorts.length * 100) / 2;
+        const offset = boundingBox.y + (boundingBox.height - this.rightPorts.length * 100) / 2;
         this.rightPorts.forEach((port, index) => {
             port.set({
                 position: {
-                    x: parentPosition.x + parentSize.width,
+                    x: boundingBox.x + boundingBox.width + padding,
                     y: offset + index * 100,
                 }
             });
@@ -308,7 +228,6 @@ export class BlueprintComponent {
     private addOperator(operator: OperatorModel) {
         const operatorElement = new BlackBoxComponent(operator);
         operatorElement.set("obstacle", true);
-        operatorElement.set('obstacle', true);
         this.graph.addCell(operatorElement);
         this.operators.push(operatorElement);
 
@@ -329,4 +248,126 @@ export class BlueprintComponent {
             }
         });
     }
+    
+    private fitOuter() {
+        const padding = this.outerPadding;
+        const currentPosition = this.outer.get("position");
+        const currentSize = this.outer.get("size");
+
+        let newX: number = currentPosition.x + padding;
+        let newY: number = currentPosition.y + padding;
+        let newCornerX: number = currentPosition.x + currentSize.width - 2 * padding;
+        let newCornerY: number = currentPosition.y + currentSize.height - 2 * padding;
+
+        this.operators.forEach((operator: BlackBoxComponent) => {
+            const childBbox = operator.getBBox();
+            if (childBbox.x < newX) {
+                newX = childBbox.x;
+            }
+            if (childBbox.y < newY) {
+                newY = childBbox.y;
+            }
+            if (childBbox.corner().x > newCornerX) {
+                newCornerX = childBbox.corner().x;
+            }
+            if (childBbox.corner().y > newCornerY) {
+                newCornerY = childBbox.corner().y;
+            }
+        });
+
+        const set = {
+            position: {x: 0, y: 0},
+            size: {width: 0, height: 0}
+        };
+
+        set.position.x = newX - padding;
+        set.position.y = newY - padding;
+        set.size.width = newCornerX - newX + 2 * padding;
+        set.size.height = newCornerY - newY + 2 * padding;
+
+        let newPosition = {x: currentPosition.x, y: currentPosition.y};
+        let newSize = {width: currentPosition.width, height: currentPosition.height};
+
+        if (currentPosition.x <= set.position.x && currentPosition.y <= set.position.y) {
+            delete set.position;
+        } else {
+            if (currentPosition.x <= set.position.x) {
+                set.position.x = currentPosition.x;
+            } else if (currentPosition.y <= set.position.y) {
+                set.position.y = currentPosition.y;
+            }
+            const deltaX = currentPosition.x - set.position.x;
+            const deltaY = currentPosition.y - set.position.y;
+            set.size.width = Math.max(set.size.width, currentSize.width + deltaX);
+            set.size.height = Math.max(set.size.height, currentSize.height + deltaY);
+            newPosition = set.position;
+            newSize = set.size;
+        }
+
+        if (set.size.width <= currentSize.width && set.size.height <= currentSize.height) {
+            delete set.size;
+        } else {
+            if (set.size.width <= currentSize.width) {
+                set.size.width = currentSize.width;
+            } else if (set.size.height <= currentSize.height) {
+                set.size.height = currentSize.height;
+            }
+            newSize = set.size;
+        }
+
+        if (!!set.position || !!set.size) {
+            this.outer.set(set);
+
+            for (const port of this.topPorts) {
+                const currentPortPosition = port.get('position');
+                port.set({
+                    position: {
+                        x: currentPortPosition.x,
+                        y: newPosition.y - 100,
+                    }
+                });
+            }
+
+            for (const port of this.bottomPorts) {
+                const currentPortPosition = port.get('position');
+                port.set({
+                    position: {
+                        x: currentPortPosition.x,
+                        y: newPosition.y + newSize.height,
+                    }
+                });
+            }
+
+            this.rightPorts.forEach(port => {
+                const currentPortPosition = port.get('position');
+                port.set({
+                    position: {
+                        x: newPosition.x + newSize.width,
+                        y: currentPortPosition.y,
+                    }
+                });
+            });
+        }
+    }
+    
+    private addOriginPoint() {
+        const origin = new shapes.standard.Circle({
+            size: {
+                width: 4,
+                height: 4,
+            },
+            position: {
+                x: -2,
+                y: -2,
+            }
+        }).addTo(this.graph);
+
+        origin.attr("body/fill", "blue");
+        origin.attr("body/fill-opacity", ".05");
+        origin.attr("body/rx", "24");
+        origin.attr("body/ry", "24");
+        origin.attr("draggable", false);
+        origin.set("obstacle", false);
+    }
+    
 }

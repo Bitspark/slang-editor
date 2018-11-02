@@ -120,8 +120,6 @@ export class IsolatedBlueprintPort extends shapes.standard.Rectangle.define('Iso
         };
         
         const transform = translations[position];
-        
-        console.log(transform);
 
         super({
             id: identity,

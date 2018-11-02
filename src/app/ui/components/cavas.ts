@@ -27,7 +27,7 @@ export class CanvasComponent {
     }
 
     public center() {
-        this.paper.translate(this.paper.getArea().width / 2, this.paper.getArea().height / 2);
+        this.paper.setOrigin(this.paper.options.width! / 2, this.paper.options.height! / 2);
     }
     
     public getPaper(): dia.Paper {
