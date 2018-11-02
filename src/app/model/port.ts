@@ -17,6 +17,7 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     // self
     private removed = new Subject<void>();
     private selected = new BehaviorSubject<boolean>(false);
+    private collapsed = new BehaviorSubject<boolean>(false);
 
     // Properties
     private readonly mapSubs: Map<string, GenericPortModel<O>> | undefined;
@@ -223,6 +224,22 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
     public delete() {
         this.removed.next();
+    }
+    
+    public collapse(): void {
+        if (!this.collapsed.getValue()) {
+            this.collapsed.next(false);
+        }
+    }
+
+    public expand(): void {
+        if (this.collapsed.getValue()) {
+            this.collapsed.next(true);
+        }
+    }
+    
+    public isCollapsed(): boolean {
+        return this.collapsed.getValue();
     }
 
     public connect(destination: GenericPortModel<O>) {

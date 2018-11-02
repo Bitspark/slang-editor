@@ -1,30 +1,66 @@
-import {attributes, dia, g} from "jointjs";
-import {PortModel} from "../../model/port";
+import {attributes, dia, g, shapes} from "jointjs";
+import {BlueprintPortModel, OperatorPortModel, PortModel} from "../../model/port";
+import {TypeIdentifier} from "../../custom/type";
 
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";
+
+function createPortItems(parent: PortGroupComponent, position: PortGroupPosition, port: PortModel): Array<PortComponent> {
+    let portItems: Array<PortComponent> = [];
+
+    switch (port.getTypeIdentifier()) {
+        case TypeIdentifier.Map:
+            for (const [_, each] of port.getMapSubs()) {
+                portItems.push.apply(portItems, createPortItems(parent, position, each));
+            }
+            break;
+
+        case TypeIdentifier.Stream:
+            portItems.push.apply(portItems, createPortItems(parent, position, port.getStreamSub()));
+            break;
+
+        default:
+            portItems.push(new PortComponent(port, parent));
+    }
+    return portItems;
+}
 
 /**
  * Component representing a Slang port.
  */
-export class PortComponent implements dia.Element.Port {
+export class PortComponent {
 
-    public readonly id: string;
-    public readonly group: string;
-    public readonly attrs: dia.Cell.Selectors;
-
-    // Careful: For some reason we must not add any properties other than the above to this class
-    // Otherwise we get performance issues
-    // TODO: Investigate
-
-    constructor(port: PortModel, group: string, position: PortGroupPosition) {
-        this.id = `${port.getIdentity()}`;
-        this.group = group;
-        this.attrs = {
-            '.sl-port': PortComponent.getPortAttributes(position, port.isDirectionIn()),
+    private position: g.PlainPoint | undefined;
+    private readonly portElement: dia.Element.Port = {};
+    
+    constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent) {
+        this.portElement.id = `${port.getIdentity()}`;
+        this.portElement.group = parent.getName();
+        this.portElement.attrs = {
+            ".sl-port": PortComponent.getPortAttributes(parent.getGroupPosition(), port.isDirectionIn()),
         };
     }
+    
+    public getPortElement(): dia.Element.Port {
+        return this.portElement;
+    }
 
-    // STATIC ONLY:
+    public getModel(): PortModel {
+        return this.port;
+    }
+
+    public setPosition(position: g.PlainPoint) {
+        this.position = position;
+    }
+
+    public getPosition(): g.PlainPoint | undefined {
+        return this.position;
+    }
+
+    public getGroup(): PortGroupComponent {
+        return this.parent;
+    }
+
+    // STATIC:
 
     private static getPortAttributes(position: PortGroupPosition, directionIn: boolean): attributes.SVGAttributes {
         const attrs: attributes.SVGAttributes = {
@@ -48,7 +84,6 @@ export class PortComponent implements dia.Element.Port {
 
         return attrs;
     }
-
 }
 
 /**
@@ -56,50 +91,195 @@ export class PortComponent implements dia.Element.Port {
  * It can be thought of a component that represents a port which has no parent port but is the topmost ports.
  * Currently these are main in- and out-ports and delegate in- and out-ports.
  */
-export class PortGroupComponent implements dia.Element.PortGroup {
+export class PortGroupComponent {
 
-    public position?: dia.Element.PositionType;
-    public markup?: string;
-    public attrs?: dia.Cell.Selectors;
+    private readonly ports: Array<PortComponent>;
+    private readonly mapMarkers = new Map<PortModel, [g.Point, g.Point, PortGroupPosition]>();
+    private readonly mapRectangles = new Map<[g.Point, g.Point, PortGroupPosition], shapes.standard.Rectangle>();
+    private parent: dia.Element | null;
+    private portGroupElement: dia.Element.PortGroup = {};
 
-    // Careful: For some reason we must not add any properties other than the above to this class
-    // Otherwise we get performance issues
-    // TODO: Investigate
+    constructor(private graph: dia.Graph, 
+                private readonly name: string, 
+                private readonly port: PortModel, 
+                private readonly groupPosition: PortGroupPosition, 
+                start: number, 
+                width: number) {
+        this.ports = createPortItems(this, groupPosition, port);
 
-    constructor(port: PortModel, position: PortGroupPosition, start: number, width: number) {
-        switch (position) {
+        switch (groupPosition) {
             case "top":
-                this.position = PortGroupComponent.layoutFunction("top", start, width) as any;
-                this.markup = "<path class='sl-srv-main sl-port sl-port-in' d=''></path>";
-                this.attrs = {
+                this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "top", start, width) as any;
+                this.portGroupElement.markup = "<path class='sl-srv-main sl-port sl-port-in' d=''></path>";
+                this.portGroupElement.attrs = {
                     ".sl-srv-main.sl-port": PortGroupComponent.portAttributes,
                 };
                 break;
             case "right":
-                this.position = PortGroupComponent.layoutFunction("right", start, width) as any;
-                this.markup = "<path class='sl-dlg sl-port sl-port-in' d=''></path>";
-                this.attrs = {
+                this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "right", start, width) as any;
+                this.portGroupElement.markup = "<path class='sl-dlg sl-port sl-port-in' d=''></path>";
+                this.portGroupElement.attrs = {
                     ".sl-dlg.sl-port": PortGroupComponent.portAttributes,
                 };
                 break;
             case "bottom":
-                this.position = PortGroupComponent.layoutFunction("bottom", start, width) as any;
-                this.markup = "<path class='sl-srv-main sl-port sl-port-out' d=''></path>";
-                this.attrs = {
+                this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "bottom", start, width) as any;
+                this.portGroupElement.markup = "<path class='sl-srv-main sl-port sl-port-out' d=''></path>";
+                this.portGroupElement.attrs = {
                     ".sl-srv-main.sl-port": PortGroupComponent.portAttributes
                 };
                 break;
             case "left":
-                this.position = PortGroupComponent.layoutFunction("left", start, width) as any;
-                this.markup = "<path class='sl-dlg sl-port sl-port-out' d=''></path>";
-                this.attrs = {
+                this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "left", start, width) as any;
+                this.portGroupElement.markup = "<path class='sl-dlg sl-port sl-port-out' d=''></path>";
+                this.portGroupElement.attrs = {
                     ".sl-dlg.sl-port": PortGroupComponent.portAttributes,
                 };
                 break;
         }
     }
+    
+    public getPortGroupElement(): dia.Element.PortGroup {
+        return this.portGroupElement;
+    }
 
-    // STATIC ONLY:
+    public getName(): string {
+        return this.name;
+    }
+
+    public getPorts(): IterableIterator<PortComponent> {
+        return this.ports.values();
+    }
+
+    public getGroupPosition(): PortGroupPosition {
+        return this.groupPosition;
+    }
+    
+    public setParent(parent: dia.Element) {
+        this.parent = parent;
+        
+        this.addMapMarkers();
+        this.createMarkerRects();
+        
+        const that = this;
+        parent.on("change:position", function () {
+            that.refreshMarkers();
+        });
+    }
+
+    private createMarkerRects(): void {
+        const parentPosition = this.parent!.position();
+        this.mapMarkers.forEach(marker => {
+            const rect = PortGroupComponent.getMarkerRect(marker[0], marker[1], marker[2]);
+            const mapRect = new shapes.standard.Rectangle({
+                position: {
+                    x: parentPosition.x + rect.x,
+                    y: parentPosition.y + rect.y,
+                },
+                size: {
+                    width: rect.width,
+                    height: rect.height,
+                },
+                attrs: {
+                    body: {
+                        fill: "transparent",
+                        stroke: "green",
+                        rx: 5,
+                        ry: 5,
+                    },
+                }
+            });
+            this.mapRectangles.set(marker, mapRect);
+            mapRect.addTo(this.graph);
+
+            mapRect.on("mouseover", function () {
+                mapRect.attr("body/stroke", "yellow");
+            });
+            mapRect.on("mouseout", function () {
+                mapRect.attr("body/stroke", "green");
+            });
+        });
+    }
+
+    private refreshMarkers(): void {
+        const parentPosition = this.parent!.position();
+        this.mapRectangles.forEach((rect, marker) => {
+            const newRect = PortGroupComponent.getMarkerRect(marker[0], marker[1], marker[2]);
+            rect.set({
+                position: {
+                    x: parentPosition.x + newRect.x,
+                    y: parentPosition.y + newRect.y,
+                }
+            });
+        });
+    }
+
+    private addMapMarkers(): void {
+        this.ports.map(port => this.addMapMarkersBottomUp(port.getModel() as OperatorPortModel, port));
+    }
+
+    private addMapMarkersBottomUp(port: PortModel, component: PortComponent): void {
+        const portPos = component.getPosition();
+        if (!portPos) {
+            throw new Error(`port ${port.getIdentity()} has no position`);
+        }
+
+        const rect = this.mapMarkers.get(port);
+        if (rect) {
+            if (portPos.x < rect[0].x) {
+                rect[0].x = portPos.x;
+            } else if (portPos.x > rect[1].x) {
+                rect[1].x = portPos.x;
+            }
+
+            if (portPos.y < rect[0].y) {
+                rect[0].y = portPos.y;
+            } else if (portPos.x > rect[1].x) {
+                rect[1].y = portPos.y;
+            }
+        } else {
+            if (port.getType().getTypeIdentifier() === TypeIdentifier.Map) {
+                this.mapMarkers.set(port, [new g.Point(portPos), new g.Point(portPos), component.getGroup().getGroupPosition()]);
+            }
+
+            const parentPort = port.getParentNode().getAncestorNode<PortModel>(BlueprintPortModel, OperatorPortModel);
+            if (parentPort) {
+                this.addMapMarkersBottomUp(parentPort, component);
+            }
+        }
+    }
+
+    // STATIC:
+
+    private static getMarkerRect(topLeft: g.PlainPoint, bottomRight: g.PlainPoint, groupPosition: PortGroupPosition): g.PlainRect {
+        const rect = {
+            x: topLeft.x,
+            y: topLeft.y,
+            width: bottomRight.x - topLeft.x,
+            height: bottomRight.y - topLeft.y,
+        };
+
+        switch (groupPosition) {
+            case "top":
+            case "bottom":
+                rect.y -= 15;
+                rect.height = 30;
+
+                rect.x -= 10;
+                rect.width += 20;
+                break;
+            case "left":
+            case "right":
+                rect.x -= 15;
+                rect.width = 30;
+
+                rect.y -= 10;
+                rect.height += 20;
+                break;
+        }
+
+        return rect;
+    }
 
     /**
      * Spacing between ports. Two ports must not be closer to each other than this value.
@@ -130,9 +310,9 @@ export class PortGroupComponent implements dia.Element.PortGroup {
         strokeWidth: 3
     };
 
-    public static layoutFunction(position: PortGroupPosition, offset: number, space: number): (ports: Array<any>, elBBox: g.Rect, opt: any) => Array<g.Point> {
-        return function (ports: Array<any>, elBBox: g.Rect, opt: any): Array<g.Point> {
-            return ports.map((port: any, index: number, ports: Array<any>) => {
+    public static layoutFunction(portComponents: Array<PortComponent>, position: PortGroupPosition, offset: number, space: number): (ports: Array<any>, elBBox: g.Rect, opt: any) => Array<g.Point> {
+        return function (ports: Array<PortComponent>, elBBox: g.Rect, opt: any): Array<g.Point> {
+            return ports.map((port: PortComponent, index: number, ports: Array<any>) => {
                 const count = ports.length;
 
                 let total = 0;
@@ -155,16 +335,25 @@ export class PortGroupComponent implements dia.Element.PortGroup {
                     index * PortGroupComponent.portSpacing +
                     (spaceAbs - lengthAbs) / 2;
 
+                let portPosition: g.PlainPoint = {x: 0, y: 0};
+
                 switch (position) {
                     case "top":
-                        return new g.Point(positionAbs, 0);
+                        portPosition = {x: positionAbs, y: 0};
+                        break;
                     case "bottom":
-                        return new g.Point(positionAbs, elBBox.height);
+                        portPosition = {x: positionAbs, y: elBBox.height};
+                        break;
                     case "left":
-                        return new g.Point(0, positionAbs);
+                        portPosition = {x: 0, y: positionAbs};
+                        break;
                     case "right":
-                        return new g.Point(elBBox.width, positionAbs);
+                        portPosition = {x: elBBox.width, y: positionAbs};
+                        break;
                 }
+
+                portComponents[index].setPosition(portPosition);
+                return new g.Point(portPosition);
             });
         };
     }

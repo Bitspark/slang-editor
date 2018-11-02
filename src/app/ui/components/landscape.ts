@@ -3,7 +3,7 @@ import {dia, shapes} from 'jointjs';
 import {LandscapeModel} from '../../model/landscape';
 import {BlueprintModel, BlueprintType} from '../../model/blueprint';
 import {Subject} from "rxjs";
-import {BlackBoxComponent} from "./blackbox";
+import {BlackBoxComponent, BlueprintBoxComponent} from "./blackbox";
 
 export class LandscapeComponent {
     private graph: dia.Graph | null;
@@ -275,30 +275,19 @@ export class LandscapeComponent {
             return;
         }
 
-        const blueprintRect = new BlackBoxComponent(blueprint);
-        blueprintRect.attr({
-            body: {
-                cursor: "pointer",
-            },
-            label: {
-                cursor: "pointer"
-            }
-        });
-        blueprintRect.attr("draggable", false);
-        blueprintRect.addTo(this.graph);
-
-        this.blueprintRects.set(blueprint.getFullName(), blueprintRect);
+        const blueprintBox = new BlueprintBoxComponent(this.graph, blueprint);
+        this.blueprintRects.set(blueprint.getFullName(), blueprintBox.getRectangle());
 
         // JointJS -> Model
-        blueprintRect.on("pointerclick", function (evt: Event, x: number, y: number) {
+        blueprintBox.on("pointerclick", function (evt: Event, x: number, y: number) {
             blueprint.open();
         });
-        blueprintRect.on("pointerdblclick", function (evt: Event, x: number, y: number) {
+        blueprintBox.on("pointerdblclick", function (evt: Event, x: number, y: number) {
         });
 
         // Model -> JointJS
         blueprint.subscribeDeleted(function () {
-            blueprintRect.remove();
+            blueprintBox.remove();
         });
     }
 }

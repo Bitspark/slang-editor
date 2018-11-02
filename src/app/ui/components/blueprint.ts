@@ -1,8 +1,8 @@
-import {dia, g, layout, shapes} from 'jointjs';
+import {dia, g, layout, shapes} from "jointjs";
 import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 import {BlackBox, PortOwner} from "../../custom/nodes";
-import {BlackBoxComponent, IsolatedBlueprintPort} from "./blackbox";
+import {BlackBoxComponent, IsolatedBlueprintPort, OperatorBoxComponent} from "./blackbox";
 import {slangRouter} from "../utils/router";
 import {slangConnector} from "../utils/connector";
 
@@ -24,19 +24,19 @@ export class BlueprintComponent {
         this.createOperators();
         this.createConnections();
         this.autoLayout();
-        
+
         this.outer = this.createOuter();
         this.fitOuter();
-        
+
         this.attachEventHandlers();
-        
+
         // this.addOriginPoint();
     }
 
     private attachEventHandlers() {
         const that = this;
         this.graph.on("change:position change:size", function (cell: dia.Cell) {
-            if (!(cell instanceof BlackBoxComponent)) {
+            if (!(cell instanceof BlackBoxComponent.Rectangle)) {
                 return;
             }
 
@@ -71,56 +71,76 @@ export class BlueprintComponent {
 
         return outer;
     }
-    
+
     private createIsolatedPorts(): void {
         const that = this;
-        
+
         // In
-        const portInElement = new IsolatedBlueprintPort(`${this.blueprint.getShortName()} In-Port`, `${this.blueprint.getIdentity()}_in`, this.blueprint.getPortIn()!, "bottom");
-        this.graph.addCell(portInElement);
+        const portInComponent = new IsolatedBlueprintPort(this.graph, `${this.blueprint.getShortName()} In-Port`, `${this.blueprint.getIdentity()}_in`, this.blueprint.getPortIn()!, "bottom");
+        const portInElement = portInComponent.getElement();
         this.topPorts.push(portInElement);
         portInElement.set({position: {x: -50, y: 0}});
         portInElement.set("restrictTranslate", function (): g.PlainRect {
             const outerPosition = that.outer.get("position") as g.PlainPoint;
             const outerSize = that.outer.get("size") as g.PlainRect;
             const elementSize = portInElement.get("size") as g.PlainRect;
-            return {x: outerPosition.x, y: outerPosition.y - elementSize.height, width: outerSize.width, height: elementSize.height};
+            return {
+                x: outerPosition.x,
+                y: outerPosition.y - elementSize.height,
+                width: outerSize.width,
+                height: elementSize.height
+            };
         });
 
         // Out
-        const portOutElement = new IsolatedBlueprintPort(`${this.blueprint.getShortName()} Out-Port`, `${this.blueprint.getIdentity()}_out`, this.blueprint.getPortOut()!, "top");
-        this.graph.addCell(portOutElement);
+        const portOutComponent = new IsolatedBlueprintPort(this.graph, `${this.blueprint.getShortName()} Out-Port`, `${this.blueprint.getIdentity()}_out`, this.blueprint.getPortOut()!, "top");
+        const portOutElement = portOutComponent.getElement();
         this.bottomPorts.push(portOutElement);
         portOutElement.set({position: {x: -50, y: 0}});
         portOutElement.set("restrictTranslate", function (): g.PlainRect {
             const outerPosition = that.outer.get("position") as g.PlainPoint;
             const outerSize = that.outer.get("size") as g.PlainRect;
             const elementSize = portOutElement.get("size") as g.PlainRect;
-            return {x: outerPosition.x, y: outerPosition.y + outerSize.height, width: outerSize.width, height: elementSize.height};
+            return {
+                x: outerPosition.x,
+                y: outerPosition.y + outerSize.height,
+                width: outerSize.width,
+                height: elementSize.height
+            };
         });
 
         // Delegates
         for (const delegate of this.blueprint.getDelegates()) {
-            const portOutElement = new IsolatedBlueprintPort(`Delegate ${delegate.getName()}`, `${delegate.getIdentity()}_out`, delegate.getPortOut()!, "left");
-            this.graph.addCell(portOutElement);
+            const portOutComponent = new IsolatedBlueprintPort(this.graph, `Delegate ${delegate.getName()}`, `${delegate.getIdentity()}_out`, delegate.getPortOut()!, "left");
+            const portOutElement = portOutComponent.getElement();
             this.rightPorts.push(portOutElement);
             portOutElement.set({position: {x: 0, y: -50}});
             portOutElement.set("restrictTranslate", function (): g.PlainRect {
                 const outerPosition = that.outer.get("position") as g.PlainPoint;
                 const outerSize = that.outer.get("size") as g.PlainRect;
                 const elementSize = portOutElement.get("size") as g.PlainRect;
-                return {x: outerPosition.x + outerSize.width, y: outerPosition.y, width: elementSize.width, height: outerSize.height};
+                return {
+                    x: outerPosition.x + outerSize.width,
+                    y: outerPosition.y,
+                    width: elementSize.width,
+                    height: outerSize.height
+                };
             });
-            
-            const portInElement = new IsolatedBlueprintPort(`Delegate ${delegate.getName()}`, `${delegate.getIdentity()}_in`, delegate.getPortIn()!, "left");
-            this.graph.addCell(portInElement);
+
+            const portInComponent = new IsolatedBlueprintPort(this.graph, `Delegate ${delegate.getName()}`, `${delegate.getIdentity()}_in`, delegate.getPortIn()!, "left");
+            const portInElement = portInComponent.getElement();
             this.rightPorts.push(portInElement);
             portInElement.set({position: {x: 0, y: -50}});
             portInElement.set("restrictTranslate", function (): g.PlainRect {
                 const outerPosition = that.outer.get("position") as g.PlainPoint;
                 const outerSize = that.outer.get("size") as g.PlainRect;
                 const elementSize = portInElement.get("size") as g.PlainRect;
-                return {x: outerPosition.x + outerSize.width, y: outerPosition.y, width: elementSize.width, height: outerSize.height};
+                return {
+                    x: outerPosition.x + outerSize.width,
+                    y: outerPosition.y,
+                    width: elementSize.width,
+                    height: outerSize.height
+                };
             });
         }
     }
@@ -184,16 +204,17 @@ export class BlueprintComponent {
             resizeClusters: false
         });
 
-        let boundingBox = this.graph.getCellsBBox(this.operators)!;
-        
+        let boundingBox = this.graph.getCellsBBox(this.operators.map(operator => operator.getRectangle()))!;
+
         this.operators.forEach(operator => {
             operator.translate(-(boundingBox.x + boundingBox.width / 2), -(boundingBox.y + boundingBox.height / 2));
         });
 
-        boundingBox = this.graph.getCellsBBox(this.operators)!;
-        
+        boundingBox.x -= boundingBox.x + boundingBox.width / 2;
+        boundingBox.y -= boundingBox.y + boundingBox.height / 2;
+
         // Center ports
-        
+
         const padding = this.outerPadding;
 
         for (const port of this.topPorts) {
@@ -226,9 +247,7 @@ export class BlueprintComponent {
     }
 
     private addOperator(operator: OperatorModel) {
-        const operatorElement = new BlackBoxComponent(operator);
-        operatorElement.set("obstacle", true);
-        this.graph.addCell(operatorElement);
+        const operatorElement = new OperatorBoxComponent(this.graph, operator);
         this.operators.push(operatorElement);
 
         // JointJS -> Model
@@ -242,13 +261,13 @@ export class BlueprintComponent {
         });
         operator.subscribeSelectChanged(function (selected: boolean) {
             if (selected) {
-                operatorElement.attr("body/fill", "orange");
+                operatorElement.getRectangle().attr("body/fill", "orange");
             } else {
-                operatorElement.attr("body/fill", "blue");
+                operatorElement.getRectangle().attr("body/fill", "blue");
             }
         });
     }
-    
+
     private fitOuter() {
         const padding = this.outerPadding;
         const currentPosition = this.outer.get("position");
@@ -319,7 +338,7 @@ export class BlueprintComponent {
             this.outer.set(set);
 
             for (const port of this.topPorts) {
-                const currentPortPosition = port.get('position');
+                const currentPortPosition = port.get("position");
                 port.set({
                     position: {
                         x: currentPortPosition.x,
@@ -329,7 +348,7 @@ export class BlueprintComponent {
             }
 
             for (const port of this.bottomPorts) {
-                const currentPortPosition = port.get('position');
+                const currentPortPosition = port.get("position");
                 port.set({
                     position: {
                         x: currentPortPosition.x,
@@ -339,7 +358,7 @@ export class BlueprintComponent {
             }
 
             this.rightPorts.forEach(port => {
-                const currentPortPosition = port.get('position');
+                const currentPortPosition = port.get("position");
                 port.set({
                     position: {
                         x: newPosition.x + newSize.width,
@@ -349,7 +368,7 @@ export class BlueprintComponent {
             });
         }
     }
-    
+
     private addOriginPoint() {
         const origin = new shapes.standard.Circle({
             size: {
@@ -369,5 +388,5 @@ export class BlueprintComponent {
         origin.attr("draggable", false);
         origin.set("obstacle", false);
     }
-    
+
 }
