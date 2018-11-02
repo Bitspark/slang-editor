@@ -1,7 +1,7 @@
 import {attributes, dia, shapes} from "jointjs";
 import {BlackBox} from "../../custom/nodes";
-import {PortDirection, PortModel} from "../../model/port";
-import {PortComponent, PortGroupComponent} from "./port";
+import {PortModel} from "../../model/port";
+import {PortComponent, PortGroupComponent, PortGroupPosition} from "./port";
 import {TypeIdentifier} from "../../custom/type";
 
 

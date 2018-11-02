@@ -1,19 +1,7 @@
 import {attributes, dia, g} from "jointjs";
-import {PortDirection, PortModel} from "../../model/port";
-import {BlueprintPortModel, PortModel} from "../../model/port";
-import {BlackBox, PortOwner} from "../../custom/nodes";
-import {BlueprintDelegateModel, GenericDelegateModel} from "../../model/delegate";
-import {BlueprintModel} from "../../model/blueprint";
+import {PortModel} from "../../model/port";
 
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";
-
-export function invertPortDirection(direction: PortDirection) {
-    if (direction == PortDirection.In) {
-        return PortDirection.Out;
-    } else {
-        return PortDirection.In;
-    }
-}
 
 /**
  * Component representing a Slang port.
@@ -162,8 +150,8 @@ export class PortGroupComponent implements dia.Element.PortGroup {
                 const lengthAbs = (count - 1) * PortGroupComponent.portSpacing;
                 const spaceAbs = space * total;
                 const offsetAbs = offset * total;
-                const positionAbs = 
-                    offsetAbs + 
+                const positionAbs =
+                    offsetAbs +
                     index * PortGroupComponent.portSpacing +
                     (spaceAbs - lengthAbs) / 2;
 
