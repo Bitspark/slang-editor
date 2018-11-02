@@ -265,7 +265,6 @@ export class LandscapeComponent {
             }
         });
         image.attr('draggable', false);
-        image.attr('clickthrough', true);
         this.graph.addCell(image);
 
         return image;

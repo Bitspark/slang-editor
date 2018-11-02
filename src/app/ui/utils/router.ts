@@ -8,7 +8,7 @@ const joint = {
 };
 
 const config = {
-    maxAllowedDirectionChange: 45,
+    maxAllowedDirectionChange: 90,
 
     diagonalCost: function () {
         return 1.4142 * this.step;
@@ -21,13 +21,13 @@ const config = {
 
         return [
             {offsetX: step, offsetY: 0, cost: cost},
-            {offsetX: step, offsetY: step, cost: diagonalCost},
+            //{offsetX: step, offsetY: step, cost: diagonalCost},
             {offsetX: 0, offsetY: step, cost: cost},
-            {offsetX: -step, offsetY: step, cost: diagonalCost},
+            //{offsetX: -step, offsetY: step, cost: diagonalCost},
             {offsetX: -step, offsetY: 0, cost: cost},
-            {offsetX: -step, offsetY: -step, cost: diagonalCost},
+            //{offsetX: -step, offsetY: -step, cost: diagonalCost},
             {offsetX: 0, offsetY: -step, cost: cost},
-            {offsetX: step, offsetY: -step, cost: diagonalCost}
+            //{offsetX: step, offsetY: -step, cost: diagonalCost}
         ];
     },
 
@@ -78,7 +78,7 @@ const config = {
 
     // the number of route finding loops that cause the router to abort
     // returns fallback route instead
-    maximumLoops: 2000,
+    maximumLoops: 500,
 
     // the number of decimal places to round floating point coordinates
     precision: 10,
@@ -135,17 +135,6 @@ const config = {
         );
     },
 
-    // padding applied on the element bounding boxes
-    inwardPaddingBox: function (): g.Rect {
-        let step = -this.step * 1;
-        return new g.Rect(
-            -step,
-            -step,
-            2 * step,
-            2 * step
-        );
-    },
-
     // a router to use when the manhattan router fails
     // (one of the partial routes returns null)
     fallbackRouter: function (vertices: Array<g.Point>, opt: any, linkView: dia.LinkView): Array<g.PlainPoint> {
@@ -168,7 +157,6 @@ const config = {
 class ObstacleMap {
 
     public map: any = {};
-    public inverseMap: any = {};
     // tells how to divide the paper when creating the elements map
     public mapGridSize = 200;
     public options: any;
@@ -221,9 +209,8 @@ class ObstacleMap {
             });
             const isExcludedAncestor = excludedAncestors.includes(element.id);
             const isExcludedExplicitly = element.get('obstacle') === false;
-            const isInward = element.get('inward') === true;
 
-            const isExcluded = isExcludedType || isExcludedEnd || isExcludedAncestor || isExcludedExplicitly || isInward;
+            const isExcluded = isExcludedType || isExcludedEnd || isExcludedAncestor || isExcludedExplicitly;
             if (!isExcluded) {
                 let bbox = element.getBBox().moveAndExpand(opt.paddingBox);
 
@@ -242,45 +229,14 @@ class ObstacleMap {
             return map;
         }, this.map);
 
-        graph.getElements().reduce(function (map: any, element: any) {
-            const isExcludedType = util.toArray(opt.excludeTypes).includes(element.get('type'));
-            const isExcludedEnd = excludedEnds.find(function (excluded: any) {
-                return excluded.id === element.id
-            });
-            const isExcludedAncestor = excludedAncestors.includes(element.id);
-            const isInward = element.get('inward') === true;
-
-            const isExcluded = isExcludedType || isExcludedEnd || isExcludedAncestor || !isInward;
-            if (!isExcluded) {
-                let bbox = element.getBBox().moveAndExpand(opt.inwardPaddingBox);
-
-                let origin = bbox.origin().snapToGrid(mapGridSize);
-                let corner = bbox.corner().snapToGrid(mapGridSize);
-
-                for (let x = origin.x; x <= corner.x; x += mapGridSize) {
-                    for (let y = origin.y; y <= corner.y; y += mapGridSize) {
-                        let gridKey = x + '@' + y;
-                        map[gridKey] = map[gridKey] || [];
-                        map[gridKey].push(bbox);
-                    }
-                }
-            }
-
-            return map;
-        }, this.inverseMap);
-
         return this;
     };
 
     isPointAccessible(point: any) {        
         const mapKey = point.clone().snapToGrid(this.mapGridSize).toString();
-        const noObstacle = util.toArray(this.map[mapKey]).every(function (obstacle: any) {
+        return util.toArray(this.map[mapKey]).every(function (obstacle: any) {
             return !obstacle.containsPoint(point);
         });
-        const onRestricted = util.toArray(this.inverseMap[mapKey]).every(function (obstacle: any) {
-            return obstacle.containsPoint(point);
-        });
-        return noObstacle && onRestricted;
     };
 }
 
@@ -791,7 +747,6 @@ function resolveOptions(opt: any) {
     opt.directions = util.result(opt, 'directions');
     opt.penalties = util.result(opt, 'penalties');
     opt.paddingBox = util.result(opt, 'paddingBox');
-    opt.inwardPaddingBox = util.result(opt, 'inwardPaddingBox');
 
     util.toArray(opt.directions).forEach(function (direction: any) {
 
