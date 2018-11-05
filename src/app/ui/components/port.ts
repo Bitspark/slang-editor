@@ -169,8 +169,11 @@ export class PortGroupComponent {
 
     private createMarkerRects(): void {
         const parentPosition = this.parent!.position();
-        this.mapMarkers.forEach(marker => {
+        this.mapMarkers.forEach((marker, port) => {
             const rect = PortGroupComponent.getMarkerRect(marker[0], marker[1], marker[2]);
+            if (!rect) {
+                return;
+            }
             const mapRect = new shapes.standard.Rectangle({
                 position: {
                     x: parentPosition.x + rect.x,
@@ -182,21 +185,48 @@ export class PortGroupComponent {
                 },
                 attrs: {
                     body: {
-                        fill: "transparent",
+                        fill: "none",
                         stroke: "green",
+                        "stroke-width": 5,
                         rx: 5,
                         ry: 5,
                     },
                 }
             });
+            mapRect.attr("draggable", false);
+            mapRect.attr("body/cursor", "default");
             this.mapRectangles.set(marker, mapRect);
             mapRect.addTo(this.graph);
 
             mapRect.on("mouseover", function () {
+                mapRect.toFront();
                 mapRect.attr("body/stroke", "yellow");
             });
+            
             mapRect.on("mouseout", function () {
-                mapRect.attr("body/stroke", "green");
+                if (port.isCollapsed()) {
+                    mapRect.attr("body/stroke", "purple");
+                } else {
+                    mapRect.attr("body/stroke", "green");
+                }
+            });
+            
+            (function (port: PortModel) {
+                mapRect.on("pointerdown", function () {
+                    if (port.isCollapsed()) {
+                        port.expand();
+                    } else {
+                        port.collapse();
+                    }
+                });
+            })(port);
+
+            port.subscribeCollapsed(collapsed => {
+                if (collapsed) {
+                    mapRect.attr("body/stroke", "purple");
+                } else {
+                    mapRect.attr("body/stroke", "green");
+                }
             });
         });
     }
@@ -205,6 +235,9 @@ export class PortGroupComponent {
         const parentPosition = this.parent!.position();
         this.mapRectangles.forEach((rect, marker) => {
             const newRect = PortGroupComponent.getMarkerRect(marker[0], marker[1], marker[2]);
+            if (!newRect) {
+                return;
+            }
             rect.set({
                 position: {
                     x: parentPosition.x + newRect.x,
@@ -251,7 +284,11 @@ export class PortGroupComponent {
 
     // STATIC:
 
-    private static getMarkerRect(topLeft: g.PlainPoint, bottomRight: g.PlainPoint, groupPosition: PortGroupPosition): g.PlainRect {
+    private static getMarkerRect(topLeft: g.PlainPoint, bottomRight: g.PlainPoint, groupPosition: PortGroupPosition): g.PlainRect | null {
+        if (topLeft.x == bottomRight.x && topLeft.y == bottomRight.y) {
+            return null;
+        }
+        
         const rect = {
             x: topLeft.x,
             y: topLeft.y,

@@ -62,6 +62,7 @@ export class BlueprintComponent {
         outer.attr("body/fill-opacity", ".05");
         outer.attr("body/rx", "24");
         outer.attr("body/ry", "24");
+        outer.attr("body/cursor", "default");
         outer.set("obstacle", false);
         outer.set("size", size);
         outer.attr("draggable", false);

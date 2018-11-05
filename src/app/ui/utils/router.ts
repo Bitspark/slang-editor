@@ -8,7 +8,7 @@ const joint = {
 };
 
 const config = {
-    maxAllowedDirectionChange: 90,
+    maxAllowedDirectionChange: 135,
 
     diagonalCost: function () {
         return 1.4142 * this.step;
@@ -21,13 +21,13 @@ const config = {
 
         return [
             {offsetX: step, offsetY: 0, cost: cost},
-            //{offsetX: step, offsetY: step, cost: diagonalCost},
+            {offsetX: step, offsetY: step, cost: diagonalCost},
             {offsetX: 0, offsetY: step, cost: cost},
-            //{offsetX: -step, offsetY: step, cost: diagonalCost},
+            {offsetX: -step, offsetY: step, cost: diagonalCost},
             {offsetX: -step, offsetY: 0, cost: cost},
-            //{offsetX: -step, offsetY: -step, cost: diagonalCost},
+            {offsetX: -step, offsetY: -step, cost: diagonalCost},
             {offsetX: 0, offsetY: -step, cost: cost},
-            //{offsetX: step, offsetY: -step, cost: diagonalCost}
+            {offsetX: step, offsetY: -step, cost: diagonalCost}
         ];
     },
 
@@ -78,7 +78,7 @@ const config = {
 
     // the number of route finding loops that cause the router to abort
     // returns fallback route instead
-    maximumLoops: 5000,
+    maximumLoops: 500,
 
     // the number of decimal places to round floating point coordinates
     precision: 10,
@@ -759,6 +759,7 @@ function resolveOptions(opt: any) {
 
 // initialization of the route finding
 function router(vertices: any, opt: any, linkView: any) {
+    
     resolveOptions(opt);
 
     // enable/disable linkView perpendicular option

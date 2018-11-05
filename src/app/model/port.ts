@@ -228,13 +228,13 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     
     public collapse(): void {
         if (!this.collapsed.getValue()) {
-            this.collapsed.next(false);
+            this.collapsed.next(true);
         }
     }
 
     public expand(): void {
         if (this.collapsed.getValue()) {
-            this.collapsed.next(true);
+            this.collapsed.next(false);
         }
     }
     
@@ -272,6 +272,10 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
     public subscribeDeleted(cb: () => void): void {
         this.removed.subscribe(cb);
+    }
+
+    public subscribeCollapsed(cb: (collapsed: boolean) => void): void {
+        this.collapsed.subscribe(cb);
     }
 
     // Slang tree
