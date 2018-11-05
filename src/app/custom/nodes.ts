@@ -1,14 +1,17 @@
-import {PortDirection, PortModel} from '../model/port';
-import {DelegateModel} from '../model/delegate';
+import {PortDirection, PortModel} from "../model/port";
+import {DelegateModel} from "../model/delegate";
 import {SlangType, TypeIdentifier} from "./type";
+import {Observable} from "rxjs";
 
-type Type<T> = Function & { prototype: T }
+type Type<T> = Function & { prototype: T };
 
 export abstract class SlangNode {
 
-    abstract getChildNodes(): IterableIterator<SlangNode>
+    abstract getIdentity(): string;
 
-    abstract getParentNode(): SlangNode | null
+    abstract getChildNodes(): IterableIterator<SlangNode>;
+
+    abstract getParentNode(): SlangNode | null;
 
     getAncestorNode<T extends SlangNode>(...types: Array<Type<T>>): T | undefined {
         if (types.length === 0) {
@@ -19,10 +22,32 @@ export abstract class SlangNode {
                 return this as any;
             }
         }
-        if (!this.getParentNode()) {
+        const parentNode = this.getParentNode();
+        if (!parentNode) {
             return undefined;
         }
-        return this.getParentNode()!.getAncestorNode<T>(...types);
+        return parentNode.getAncestorNode<T>(...types);
+    }
+    
+    getTopMostAncestorNode<T extends SlangNode>(...types: Array<Type<T>>): T | undefined {
+        if (types.length === 0) {
+            return undefined;
+        }
+        const parentNode = this.getParentNode();
+        if (!parentNode) {
+            return this as any;
+        }
+        let hasType = false;
+        for (const t of types) {
+            if (parentNode instanceof t) {
+                hasType = true;
+                break;
+            }
+        }
+        if (!hasType) {
+            return this as any;
+        }
+        return parentNode.getTopMostAncestorNode<T>(...types);
     }
 
     getDescendentNodes<T extends SlangNode>(...types: Array<Type<T>>): IterableIterator<T> {
@@ -34,18 +59,20 @@ export abstract class SlangNode {
             for (const t of types) {
                 if (childNode instanceof t) {
                     children.push(childNode as T);
+                    break;
                 }
             }
-            children.push.apply(children, childNode.getDescendentNodes<T>(...types));
+            for (const descendant of childNode.getDescendentNodes<T>(...types)) {
+                children.push(descendant);
+            }
         }
         return children.values();
     }
 
-    abstract getIdentity(): string
-
 }
 
 export abstract class PortOwner extends SlangNode {
+
     private ports: { in: PortModel | null, out: PortModel | null } = {in: null, out: null};
 
     private attachPort(port: PortModel) {
@@ -98,16 +125,19 @@ export abstract class PortOwner extends SlangNode {
             p.push(this.ports.in);
         }
         if (this.ports.out) {
-            p.push(this.ports.out)
+            p.push(this.ports.out);
         }
         return p.values();
     }
+
 }
 
 export abstract class BlackBox extends PortOwner {
-    abstract getDisplayName(): string
 
-    abstract findDelegate(name: string): DelegateModel | undefined
+    abstract getDisplayName(): string;
 
-    abstract getDelegates(): IterableIterator<DelegateModel>
+    abstract findDelegate(name: string): DelegateModel | undefined;
+
+    abstract getDelegates(): IterableIterator<DelegateModel>;
+
 }

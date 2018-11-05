@@ -17,7 +17,6 @@ export enum BlueprintType {
     Library
 }
 
-
 export class BlueprintModel extends BlackBox {
 
     // Topics
@@ -266,9 +265,9 @@ export class BlueprintModel extends BlackBox {
 
         return connections;
     }
-
-
+    
     // Actions
+    
     public addProperty(property: PropertyModel): PropertyModel {
         this.properties.push(property);
         return property
@@ -374,6 +373,9 @@ export class BlueprintModel extends BlackBox {
         }
         for (const operator of this.operators) {
             children.push(operator);
+        }
+        for (const port of this.getPorts()) {
+            children.push(port);
         }
         return children.values();
     }

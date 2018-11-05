@@ -193,5 +193,5 @@ export class IsolatedBlueprintPort {
     public getElement(): dia.Element {
         return this.rectangle;
     }
-
+    
 }

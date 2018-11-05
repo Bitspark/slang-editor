@@ -78,7 +78,7 @@ const config = {
 
     // the number of route finding loops that cause the router to abort
     // returns fallback route instead
-    maximumLoops: 500,
+    maximumLoops: 10,
 
     // the number of decimal places to round floating point coordinates
     precision: 10,

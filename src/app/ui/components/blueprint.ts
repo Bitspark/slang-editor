@@ -3,8 +3,10 @@ import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 import {BlackBox, PortOwner} from "../../custom/nodes";
 import {BlackBoxComponent, IsolatedBlueprintPort, OperatorBoxComponent} from "./blackbox";
-import {slangRouter} from "../utils/router";
 import {slangConnector} from "../utils/connector";
+import {OperatorPortModel, PortDirection, PortModel} from "../../model/port";
+import {Connection} from "../../custom/connections";
+import {TypeIdentifier} from "../../custom/type";
 
 export class BlueprintComponent {
     private outer: dia.Element;
@@ -154,48 +156,52 @@ export class BlueprintComponent {
 
     private createConnections() {
         for (const connection of this.blueprint.getConnections().getConnections()) {
-            const sourceOwner = connection.source.getAncestorNode<BlackBox>(BlackBox);
-            const destinationOwner = connection.destination.getAncestorNode<BlackBox>(BlackBox);
-
-            if (!sourceOwner) {
-                throw new Error(`no source owner found`);
-            }
-            if (!destinationOwner) {
-                throw new Error(`no destination owner found`);
-            }
-
-            let sourceIdentity = sourceOwner.getIdentity();
-            if (sourceOwner instanceof BlueprintModel) {
-                sourceIdentity = connection.source.getAncestorNode<PortOwner>(PortOwner)!.getIdentity() + "_in";
-            }
-
-            let destinationIdentity = destinationOwner.getIdentity();
-            if (destinationOwner instanceof BlueprintModel) {
-                destinationIdentity = connection.destination.getAncestorNode<PortOwner>(PortOwner)!.getIdentity() + "_out";
-            }
-
-            const link = new dia.Link({
-                source: {
-                    id: sourceIdentity,
-                    port: connection.source.getIdentity()
-                },
-                target: {
-                    id: destinationIdentity,
-                    port: connection.destination.getIdentity()
-                },
-                router: slangRouter,
-                connector: slangConnector,
-                attrs: {
-                    ".connection": {
-                        stroke: "#777777",
-                        "stroke-width": 2
-                    }
-                }
-            });
-            link.addTo(this.graph);
+            this.addConnection(connection);
         }
     }
+    
+    private addConnection(connection: Connection) {
+        const sourceOwner = connection.source.getAncestorNode<BlackBox>(BlackBox);
+        const destinationOwner = connection.destination.getAncestorNode<BlackBox>(BlackBox);
 
+        if (!sourceOwner) {
+            throw new Error(`no source owner found`);
+        }
+        if (!destinationOwner) {
+            throw new Error(`no destination owner found`);
+        }
+
+        let sourceIdentity = sourceOwner.getIdentity();
+        if (sourceOwner instanceof BlueprintModel) {
+            sourceIdentity = connection.source.getAncestorNode<PortOwner>(PortOwner)!.getIdentity() + "_in";
+        }
+
+        let destinationIdentity = destinationOwner.getIdentity();
+        if (destinationOwner instanceof BlueprintModel) {
+            destinationIdentity = connection.destination.getAncestorNode<PortOwner>(PortOwner)!.getIdentity() + "_out";
+        }
+
+        const link = new dia.Link({
+            source: {
+                id: sourceIdentity,
+                port: connection.source.getIdentity()
+            },
+            target: {
+                id: destinationIdentity,
+                port: connection.destination.getIdentity()
+            },
+            router: { name: "normal" },
+            connector: slangConnector,
+            attrs: {
+                ".connection": {
+                    stroke: "#777777",
+                    "stroke-width": 2
+                }
+            }
+        });
+        link.addTo(this.graph);
+    }
+    
     private autoLayout() {
         layout.DirectedGraph.layout(this.graph, {
             nodeSep: 120,
@@ -267,6 +273,26 @@ export class BlueprintComponent {
                 operatorElement.getRectangle().attr("body/fill", "blue");
             }
         });
+        
+        const that = this;
+        const ports = operator.getDescendentNodes<OperatorPortModel>(OperatorPortModel);
+        for (const port of ports) {
+            if (port.getTypeIdentifier() !== TypeIdentifier.Map) {
+                continue;
+            }
+            const topMostPort = port.getTopMostAncestorNode<PortModel>(OperatorPortModel);
+            if (!topMostPort) {
+                continue;
+            }
+            console.log(topMostPort);
+            (function (port: PortModel, topMostPort: PortModel) {
+                port.subscribeCollapsed(() => {
+                    for (const connection of topMostPort.getConnections().getConnections()) {
+                        that.addConnection(connection);
+                    }
+                });
+            })(port, topMostPort);
+        }
     }
 
     private fitOuter() {

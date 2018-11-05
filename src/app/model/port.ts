@@ -23,7 +23,7 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     private readonly mapSubs: Map<string, GenericPortModel<O>> | undefined;
     private genericIdentifier?: string;
     private streamSub: GenericPortModel<O> | undefined;
-    protected destinations: Array<PortModel> | null = null;
+    protected connectedWith: Array<PortModel> = [];
     protected owner: O;
 
     protected constructor(private parent: GenericPortModel<O> | null, private typeIdentifier: TypeIdentifier, private direction: PortDirection) {
@@ -136,12 +136,13 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     }
 
     public getConnections(): Connections {
-        if (!this.destinations) {
-            throw `does not have connections`;
-        }
         const connections = new Connections();
-        for (const destination of this.destinations) {
-            connections.addConnection({source: this, destination: destination});
+        for (const connectedWith of this.connectedWith) {
+            if (this.isSource()) {
+                connections.addConnection({source: this, destination: connectedWith});
+            } else {
+                connections.addConnection({source: connectedWith, destination: this});
+            }
         }
         switch (this.typeIdentifier) {
             case TypeIdentifier.Map:
@@ -245,12 +246,18 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         return this.collapsed.getValue();
     }
 
-    public connect(destination: GenericPortModel<O>) {
-        if (!this.destinations) {
-            throw `cannot connect: ${this.getIdentity()} --> ${destination.getIdentity()}`;
+    protected canConnect(destination: PortModel) {
+        return this.isSource();
+    }
+    
+    protected abstract isSource(): boolean;
+    
+    public connect(destination: PortModel) {
+        if (!this.canConnect(destination)) {
+            throw `cannot connect: ${this.getIdentity()} --> ${destination.getIdentity()} (wrong direction)`;
         }
-        if (this.destinations.indexOf(destination) !== -1) {
-            throw `already connected with that destination`;
+        if (this.connectedWith.indexOf(destination) !== -1) {
+            throw `already connected with that port`;
         }
         switch (this.typeIdentifier) {
             case TypeIdentifier.Map:
@@ -262,7 +269,8 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
                 this.getStreamSub().connect(destination.getStreamSub());
                 break;
             default:
-                this.destinations.push(destination);
+                this.connectedWith.push(destination);
+                destination.connectedWith.push(this);
                 break;
         }
     }
@@ -310,23 +318,29 @@ export type PortModel = GenericPortModel<PortOwner>;
 export class BlueprintPortModel extends GenericPortModel<BlueprintModel | BlueprintDelegateModel> {
     public constructor(parent: GenericPortModel<BlueprintModel | BlueprintDelegateModel> | null, owner: BlueprintModel | BlueprintDelegateModel, type: TypeIdentifier, direction: PortDirection) {
         super(parent, type, direction);
-
         this.owner = owner;
-        if (this.isDirectionIn()) {
-            // Blueprints can have their in-ports connected with operator in-ports or blueprint out-ports
-            this.destinations = [];
-        }
+    }
+    
+    protected canConnect(destination: PortModel): boolean {
+        return true;
+    }
+    
+    protected isSource(): boolean {
+        return this.isDirectionIn();
     }
 }
 
 export class OperatorPortModel extends GenericPortModel<OperatorModel | OperatorDelegateModel> {
     public constructor(parent: GenericPortModel<OperatorModel | OperatorDelegateModel> | null, owner: OperatorModel | OperatorDelegateModel, type: TypeIdentifier, direction: PortDirection) {
         super(parent, type, direction);
-
         this.owner = owner;
-        if (!this.isDirectionIn()) {
-            // Operators can have their out-ports connected with operator in-ports or blueprint out-ports
-            this.destinations = [];
-        }
+    }
+
+    protected canConnect(destination: PortModel): boolean {
+        return super.canConnect(destination);
+    }
+
+    protected isSource(): boolean {
+        return this.isDirectionOut();
     }
 }

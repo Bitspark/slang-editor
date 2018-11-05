@@ -291,7 +291,7 @@ export class PortGroupComponent {
 
             if (portPos.y < rect[0].y) {
                 rect[0].y = portPos.y;
-            } else if (portPos.x > rect[1].x) {
+            } else if (portPos.y > rect[1].y) {
                 rect[1].y = portPos.y;
             }
         } else {
@@ -309,9 +309,9 @@ export class PortGroupComponent {
     // STATIC:
 
     private static getMarkerRect(topLeft: g.PlainPoint, bottomRight: g.PlainPoint, groupPosition: PortGroupPosition): g.PlainRect | null {
-        if (topLeft.x == bottomRight.x && topLeft.y == bottomRight.y) {
+        /*if (topLeft.x == bottomRight.x && topLeft.y == bottomRight.y) {
             return null;
-        }
+        }*/
 
         const rect = {
             x: topLeft.x,
