@@ -227,6 +227,9 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     }
     
     public collapse(): void {
+        if (this.getType().getTypeIdentifier() !== TypeIdentifier.Map) {
+            return;
+        }
         if (!this.collapsed.getValue()) {
             this.collapsed.next(true);
         }

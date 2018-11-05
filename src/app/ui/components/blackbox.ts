@@ -9,16 +9,16 @@ export class BlackBoxComponent {
 
     protected readonly rectangle: BlackBoxComponent.Rectangle;
     protected readonly portGroups: Array<PortGroupComponent>;
-    protected readonly portItems: Array<PortComponent> = [];
+    // protected readonly portItems: Array<PortComponent> = [];
 
     constructor(protected graph: dia.Graph, private blackBox: BlackBox) {
         this.portGroups = this.createGroups(blackBox);
-        this.portGroups.forEach(group => {
+        /*this.portGroups.forEach(group => {
             this.portItems.push.apply(this.portItems, Array.from(group.getPorts()));
-        });
-        this.rectangle = new BlackBoxComponent.Rectangle(blackBox, this.portGroups, this.portItems);
+        });*/
+        this.rectangle = new BlackBoxComponent.Rectangle(blackBox, this.portGroups);
         this.rectangle.addTo(graph);
-        
+
         this.portGroups.forEach(group => {
             group.setParent(this.rectangle);
         });
@@ -46,7 +46,7 @@ export class BlackBoxComponent {
 
     private createGroups(blackBox: BlackBox): Array<PortGroupComponent> {
         const portGroups: Array<PortGroupComponent> = [
-            new PortGroupComponent(this.graph,"MainIn", blackBox.getPortIn()!, "top", 0.0, 1.0),
+            new PortGroupComponent(this.graph, "MainIn", blackBox.getPortIn()!, "top", 0.0, 1.0),
             new PortGroupComponent(this.graph, "MainOut", blackBox.getPortOut()!, "bottom", 0.0, 1.0),
         ];
 
@@ -61,6 +61,13 @@ export class BlackBoxComponent {
             portGroups.push(new PortGroupComponent(this.graph, `Delegate${delegate.getName()}In`, delegate.getPortIn()!, "right", pos, width));
             pos += step;
         }
+
+        /*portGroups.forEach(portGroup => {
+            for (const port of portGroup.getPorts()) {
+                port.getModel().subscribeCollapsed(() => {
+                });
+            }
+        });*/
 
         return portGroups;
     }
@@ -77,7 +84,7 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
                 cursor: "pointer",
             },
             label: {
-                cursor: "pointer"
+                cursor: "pointer",
             }
         });
         this.rectangle.attr("draggable", false);
@@ -97,15 +104,15 @@ export namespace BlackBoxComponent {
 
     export class Rectangle extends shapes.standard.Rectangle.define("BlackBoxRectangle", {}) {
 
-        constructor(blackBox: BlackBox, portGroups: Array<PortGroupComponent>, portItems: Array<PortComponent>) {
+        constructor(blackBox: BlackBox, portGroups: Array<PortGroupComponent>) {
             const identity = blackBox.getIdentity();
 
-            const groupElements: {[key: string]: dia.Element.PortGroup} = {};
+            const groupElements: { [key: string]: dia.Element.PortGroup } = {};
             portGroups.forEach(group => {
                 groupElements[group.getName()] = group.getPortGroupElement();
             });
-            const portElements = portItems.map(port => port.getPortElement());
-            
+            // const portElements = portItems.map(port => port.getPortElement());
+
             super({
                 id: identity,
                 size: {width: 100, height: 100},
@@ -119,7 +126,7 @@ export namespace BlackBoxComponent {
                 },
                 ports: {
                     groups: groupElements,
-                    items: portElements
+                    // items: portElements,
                 }
             } as any);
 
@@ -146,7 +153,7 @@ export class IsolatedBlueprintPort {
     constructor(private graph: dia.Graph, name: string, identity: string, port: PortModel, position: PortGroupPosition) {
         const portGroup = new PortGroupComponent(graph, "PortGroup", port, position, 0, 1.0);
         const portGroups = {"PortGroup": portGroup.getPortGroupElement()};
-        const portItems = Array.from(portGroup.getPorts()).map(port => port.getPortElement());
+        // const portItems = Array.from(portGroup.getPorts()).map(port => port.getPortElement());
 
         const translations = {
             "top": "",
@@ -173,16 +180,16 @@ export class IsolatedBlueprintPort {
             },
             ports: {
                 groups: portGroups,
-                items: portItems
+                // items: portItems
             }
         } as any);
 
         this.rectangle.addTo(this.graph);
-        
+
         this.portGroup = portGroup;
         portGroup.setParent(this.rectangle);
     }
-    
+
     public getElement(): dia.Element {
         return this.rectangle;
     }

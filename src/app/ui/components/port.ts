@@ -9,7 +9,11 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
 
     switch (port.getTypeIdentifier()) {
         case TypeIdentifier.Map:
-            for (const [_, each] of port.getMapSubs()) {
+            if (port.isCollapsed()) {
+                portItems.push(new PortComponent(port, parent));
+                break;
+            }
+            for (const [, each] of port.getMapSubs()) {
                 portItems.push.apply(portItems, createPortItems(parent, position, each));
             }
             break;
@@ -31,7 +35,7 @@ export class PortComponent {
 
     private position: g.PlainPoint | undefined;
     private readonly portElement: dia.Element.Port = {};
-    
+
     constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent) {
         this.portElement.id = `${port.getIdentity()}`;
         this.portElement.group = parent.getName();
@@ -39,7 +43,7 @@ export class PortComponent {
             ".sl-port": PortComponent.getPortAttributes(parent.getGroupPosition(), port.isDirectionIn()),
         };
     }
-    
+
     public getPortElement(): dia.Element.Port {
         return this.portElement;
     }
@@ -93,20 +97,18 @@ export class PortComponent {
  */
 export class PortGroupComponent {
 
-    private readonly ports: Array<PortComponent>;
-    private readonly mapMarkers = new Map<PortModel, [g.Point, g.Point, PortGroupPosition]>();
-    private readonly mapRectangles = new Map<[g.Point, g.Point, PortGroupPosition], shapes.standard.Rectangle>();
-    private parent: dia.Element | null;
+    private mapMarkers = new Map<PortModel, [g.Point, g.Point, PortGroupPosition]>();
+    private mapRectangles = new Map<[g.Point, g.Point, PortGroupPosition], shapes.standard.Rectangle>();
+    private readonly ports: Array<PortComponent> = [];
+    private parentElement: dia.Element | null;
     private portGroupElement: dia.Element.PortGroup = {};
 
-    constructor(private graph: dia.Graph, 
-                private readonly name: string, 
-                private readonly port: PortModel, 
-                private readonly groupPosition: PortGroupPosition, 
-                start: number, 
+    constructor(private graph: dia.Graph,
+                private readonly name: string,
+                private readonly port: PortModel,
+                private readonly groupPosition: PortGroupPosition,
+                start: number,
                 width: number) {
-        this.ports = createPortItems(this, groupPosition, port);
-
         switch (groupPosition) {
             case "top":
                 this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "top", start, width) as any;
@@ -147,28 +149,46 @@ export class PortGroupComponent {
         return this.name;
     }
 
-    public getPorts(): IterableIterator<PortComponent> {
+    /*public getPorts(): IterableIterator<PortComponent> {
         return this.ports.values();
-    }
+    }*/
 
     public getGroupPosition(): PortGroupPosition {
         return this.groupPosition;
     }
-    
-    public setParent(parent: dia.Element) {
-        this.parent = parent;
-        
-        this.addMapMarkers();
-        this.createMarkerRects();
-        
+
+    public setParent(parent: dia.Element) {        
+        this.parentElement = parent;
+        this.refreshPorts();
+
         const that = this;
         parent.on("change:position", function () {
             that.refreshMarkers();
         });
     }
 
-    private createMarkerRects(): void {
-        const parentPosition = this.parent!.position();
+    private refreshPorts() {
+        if (!this.parentElement) {
+            return;
+        }
+
+        this.ports.forEach(port => {
+            this.parentElement!.removePort(port.getPortElement());
+        });
+
+        this.ports.length = 0;
+        [].push.apply(this.ports, createPortItems(this, this.getGroupPosition(), this.port));
+        this.parentElement.addPorts(this.ports.map(port => port.getPortElement()));
+        
+        this.addMapMarkers();
+        this.createMarkerRectangles();
+    }
+    
+    private createMarkerRectangles(): void {
+        this.mapRectangles.forEach(rectangle => rectangle.remove());
+        this.mapRectangles.clear();
+        
+        const parentPosition = this.parentElement!.position();
         this.mapMarkers.forEach((marker, port) => {
             const rect = PortGroupComponent.getMarkerRect(marker[0], marker[1], marker[2]);
             if (!rect) {
@@ -202,7 +222,7 @@ export class PortGroupComponent {
                 mapRect.toFront();
                 mapRect.attr("body/stroke", "yellow");
             });
-            
+
             mapRect.on("mouseout", function () {
                 if (port.isCollapsed()) {
                     mapRect.attr("body/stroke", "purple");
@@ -210,7 +230,8 @@ export class PortGroupComponent {
                     mapRect.attr("body/stroke", "green");
                 }
             });
-            
+
+            const that = this;
             (function (port: PortModel) {
                 mapRect.on("pointerdown", function () {
                     if (port.isCollapsed()) {
@@ -218,6 +239,8 @@ export class PortGroupComponent {
                     } else {
                         port.collapse();
                     }
+                    
+                    that.refreshPorts();
                 });
             })(port);
 
@@ -232,7 +255,7 @@ export class PortGroupComponent {
     }
 
     private refreshMarkers(): void {
-        const parentPosition = this.parent!.position();
+        const parentPosition = this.parentElement!.position();
         this.mapRectangles.forEach((rect, marker) => {
             const newRect = PortGroupComponent.getMarkerRect(marker[0], marker[1], marker[2]);
             if (!newRect) {
@@ -248,6 +271,7 @@ export class PortGroupComponent {
     }
 
     private addMapMarkers(): void {
+        this.mapMarkers.clear();
         this.ports.map(port => this.addMapMarkersBottomUp(port.getModel() as OperatorPortModel, port));
     }
 
@@ -288,7 +312,7 @@ export class PortGroupComponent {
         if (topLeft.x == bottomRight.x && topLeft.y == bottomRight.y) {
             return null;
         }
-        
+
         const rect = {
             x: topLeft.x,
             y: topLeft.y,
