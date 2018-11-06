@@ -1,12 +1,15 @@
+import {View} from "./view";
 import {dia, g, layout, shapes} from "jointjs";
+import {BlackBoxComponent, IsolatedBlueprintPort, OperatorBoxComponent} from "../components/blackbox";
 import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
-import {BlackBox, PortOwner} from "../../custom/nodes";
-import {BlackBoxComponent, IsolatedBlueprintPort, OperatorBoxComponent} from "./blackbox";
-import {slangConnector} from "../utils/connector";
 import {Connection} from "../../custom/connections";
+import {BlackBox, PortOwner} from "../../custom/nodes";
+import {slangConnector} from "../utils/connector";
+import {HTMLCanvas} from "../cavas";
 
-export class BlueprintComponent {
+export class BlueprintView extends View {
+
     private outer: dia.Element;
     private topPorts: Array<dia.Element> = [];
     private bottomPorts: Array<dia.Element> = [];
@@ -15,8 +18,8 @@ export class BlueprintComponent {
     private operators: Array<BlackBoxComponent> = [];
     private outerPadding = 120;
 
-    constructor(private graph: dia.Graph, private blueprint: BlueprintModel) {
-        graph.clear();
+    constructor(canvas: HTMLCanvas, private blueprint: BlueprintModel) {
+        super(canvas);
 
         this.subscribe();
 
@@ -157,7 +160,7 @@ export class BlueprintComponent {
             this.addConnection(connection);
         }
     }
-    
+
     private addConnection(connection: Connection) {
         const sourceOwner = connection.source.getAncestorNode<BlackBox>(BlackBox);
         const destinationOwner = connection.destination.getAncestorNode<BlackBox>(BlackBox);
@@ -199,7 +202,7 @@ export class BlueprintComponent {
         });
         link.addTo(this.graph);
     }
-    
+
     private autoLayout() {
         layout.DirectedGraph.layout(this.graph, {
             nodeSep: 120,

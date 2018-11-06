@@ -1,12 +1,13 @@
-import {dia, shapes} from 'jointjs';
-
-import {LandscapeModel} from '../../model/landscape';
-import {BlueprintModel, BlueprintType} from '../../model/blueprint';
+import {View} from "./view";
+import {dia, shapes} from "jointjs";
+import {BlueprintModel, BlueprintType} from "../../model/blueprint";
 import {Subject} from "rxjs";
-import {BlackBoxComponent, BlueprintBoxComponent} from "./blackbox";
+import {LandscapeModel} from "../../model/landscape";
+import {BlueprintBoxComponent} from "../components/blackbox";
+import {HTMLCanvas} from "../cavas";
 
-export class LandscapeComponent {
-    private graph: dia.Graph | null;
+export class LandscapeView extends View {
+
     private readonly filter: ((blueprint: BlueprintModel) => boolean) | null;
     private blueprintRects = new Map<string, shapes.standard.Rectangle>();
     private addBlueprintButton: dia.Element;
@@ -14,24 +15,20 @@ export class LandscapeComponent {
     private destroyed = new Subject<void>();
     private dimensions: [number, number] = [0, 0];
 
-    constructor(graph: dia.Graph, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
-        this.graph = graph;
+    constructor(canvas: HTMLCanvas, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
+        super(canvas);
+        
         if (filter) {
             this.filter = filter;
         } else {
             this.filter = null;
         }
-        
+
         this.addBlueprintButton = this.createAddBlueprintButton();
         this.slangLogo = this.createSlangLogo();
 
         this.redraw();
         this.subscribe(landscape);
-    }
-
-    public destroy() {
-        this.graph = null;
-        this.destroyed.next();
     }
 
     private subscribe(landscape: LandscapeModel) {
@@ -55,11 +52,12 @@ export class LandscapeComponent {
     }
 
     public resize(width: number, height: number) {
+        super.resize(width, height);
         this.dimensions = [width, height];
         this.reorder();
     }
-    
-    private reorder() {        
+
+    private reorder() {
         const blueprintFullnames = Array.from(this.blueprintRects.keys());
         blueprintFullnames.sort();
         this.reorderEqually(blueprintFullnames, this.dimensions[0], this.dimensions[1]);
@@ -290,4 +288,5 @@ export class LandscapeComponent {
             blueprintBox.remove();
         });
     }
+    
 }

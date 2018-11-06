@@ -1,10 +1,12 @@
-import {dia, g} from 'jointjs';
+import {dia, g} from "jointjs";
+import {HTMLCanvas} from "../cavas";
 
-export class CanvasComponent {
-    private graph = new dia.Graph();
+export abstract class View {
+
+    protected graph = new dia.Graph();
     private readonly paper: dia.Paper;
 
-    constructor(private container: HTMLElement) {
+    protected constructor(private canvas: HTMLCanvas) {
         this.paper = this.createPaper();
         this.redirectPaperEvents();
         this.addZooming();
@@ -17,27 +19,24 @@ export class CanvasComponent {
         this.paper.translate(width / 2, height / 2);
     }
 
-    public getGraph(): dia.Graph {
+    protected getGraph(): dia.Graph {
         return this.graph;
     }
 
-    public reset() {
+    protected reset() {
         this.paper.scale(1.0);
         this.center();
     }
 
-    public center() {
+    protected center() {
         this.paper.setOrigin(this.paper.options.width! / 2, this.paper.options.height! / 2);
     }
-    
-    public getPaper(): dia.Paper {
-        return this.paper;
-    }
 
-    private createPaper(): dia.Paper {
-        this.container.innerHTML = '';
+    protected createPaper(): dia.Paper {
+        const container = this.canvas.getHTMLElement();
+        container.innerHTML = '';
         const inner = document.createElement('div');
-        this.container.appendChild(inner);
+        container.appendChild(inner);
 
         return new dia.Paper({
             el: inner,
@@ -59,11 +58,15 @@ export class CanvasComponent {
                     return fn();
                 }
                 return {x: -(Number.MAX_VALUE / 2), y: -(Number.MAX_VALUE / 2), width: Number.MAX_VALUE, height: Number.MAX_VALUE};
-            }
+            },
+            allowLink: function (linkView: dia.LinkView, paper: dia.Paper): boolean {
+                // TODO
+                return false;
+            },
         });
     }
 
-    private redirectPaperEvents() {
+    protected redirectPaperEvents() {
         const paper = this.paper;
 
         ['mousewheel'].forEach(event => {
@@ -89,7 +92,7 @@ export class CanvasComponent {
         });
     }
 
-    private addZooming(speed = 0.1, min = 0.5, max = 2.5) {
+    protected addZooming(speed = 0.1, min = 0.5, max = 2.5) {
         const paper = this.paper;
         const zoom = function (x: number, y: number, delta: number) {
             const scale = paper.scale();
@@ -120,7 +123,7 @@ export class CanvasComponent {
         });
     }
 
-    private addPanning() {
+    protected addPanning() {
         const paper = this.paper;
 
         let panning = false;
@@ -165,7 +168,7 @@ export class CanvasComponent {
         });
     }
 
-    private catchPaperEvents() {
+    protected catchPaperEvents() {
         const paper = this.paper;
         paper.on('blank:mousewheel', function (evt: Event, x: number, y: number, delta: number) {
             evt.preventDefault();
@@ -175,12 +178,12 @@ export class CanvasComponent {
         });
     }
 
-    public getWidth(): number {
+    protected getWidth(): number {
         return this.paper.getArea().width;
     }
 
-    public getHeight(): number {
+    protected getHeight(): number {
         return this.paper.getArea().height;
     }
-
+    
 }

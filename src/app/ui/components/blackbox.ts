@@ -1,7 +1,7 @@
 import {attributes, dia, g, shapes} from "jointjs";
 import {BlackBox} from "../../custom/nodes";
 import {PortModel} from "../../model/port";
-import {PortComponent, PortGroupComponent, PortGroupPosition} from "./port";
+import {PortGroupComponent, PortGroupPosition} from "./port";
 import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 
@@ -9,13 +9,9 @@ export class BlackBoxComponent {
 
     protected readonly rectangle: BlackBoxComponent.Rectangle;
     protected readonly portGroups: Array<PortGroupComponent>;
-    // protected readonly portItems: Array<PortComponent> = [];
 
     constructor(protected graph: dia.Graph, private blackBox: BlackBox) {
         this.portGroups = this.createGroups(blackBox);
-        /*this.portGroups.forEach(group => {
-            this.portItems.push.apply(this.portItems, Array.from(group.getPorts()));
-        });*/
         this.rectangle = new BlackBoxComponent.Rectangle(blackBox, this.portGroups);
         this.rectangle.addTo(graph);
 
@@ -62,13 +58,6 @@ export class BlackBoxComponent {
             pos += step;
         }
 
-        /*portGroups.forEach(portGroup => {
-            for (const port of portGroup.getPorts()) {
-                port.getModel().subscribeCollapsed(() => {
-                });
-            }
-        });*/
-
         return portGroups;
     }
 
@@ -111,11 +100,13 @@ export namespace BlackBoxComponent {
             portGroups.forEach(group => {
                 groupElements[group.getName()] = group.getPortGroupElement();
             });
-            // const portElements = portItems.map(port => port.getPortElement());
 
             super({
                 id: identity,
-                size: {width: 100, height: 100},
+                size: {
+                    width: 100, 
+                    height: 100,
+                },
                 attrs: {
                     root: {},
                     body: Rectangle.blueprintAttrs,
@@ -126,8 +117,7 @@ export namespace BlackBoxComponent {
                 },
                 ports: {
                     groups: groupElements,
-                    // items: portElements,
-                }
+                },
             } as any);
 
             this.set("obstacle", true);
@@ -175,12 +165,11 @@ export class IsolatedBlueprintPort {
                 },
                 label: {
                     text: name,
-                    transform: transform
-                }
+                    transform: transform,
+                },
             },
             ports: {
                 groups: portGroups,
-                // items: portItems
             }
         } as any);
 
