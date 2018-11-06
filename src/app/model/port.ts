@@ -141,7 +141,7 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
             if (this.isSource()) {
                 connections.addConnection({source: this, destination: connectedWith});
             } else {
-                connections.addConnection({source: connectedWith, destination: this});
+                // connections.addConnection({source: connectedWith, destination: this});
             }
         }
         switch (this.typeIdentifier) {

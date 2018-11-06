@@ -274,7 +274,7 @@ export class BlueprintComponent {
             }
         });
         
-        const that = this;
+        /*const that = this;
         const ports = operator.getDescendentNodes<OperatorPortModel>(OperatorPortModel);
         for (const port of ports) {
             if (port.getTypeIdentifier() !== TypeIdentifier.Map) {
@@ -284,7 +284,6 @@ export class BlueprintComponent {
             if (!topMostPort) {
                 continue;
             }
-            console.log(topMostPort);
             (function (port: PortModel, topMostPort: PortModel) {
                 port.subscribeCollapsed(() => {
                     for (const connection of topMostPort.getConnections().getConnections()) {
@@ -292,7 +291,7 @@ export class BlueprintComponent {
                     }
                 });
             })(port, topMostPort);
-        }
+        }*/
     }
 
     private fitOuter() {

@@ -97,8 +97,8 @@ export class PortComponent {
  */
 export class PortGroupComponent {
 
-    private mapMarkers = new Map<PortModel, [g.Point, g.Point, PortGroupPosition]>();
-    private mapRectangles = new Map<[g.Point, g.Point, PortGroupPosition], shapes.standard.Rectangle>();
+    // private mapMarkers = new Map<PortModel, [g.Point, g.Point, PortGroupPosition]>();
+    // private mapRectangles = new Map<[g.Point, g.Point, PortGroupPosition], shapes.standard.Rectangle>();
     private readonly ports: Array<PortComponent> = [];
     private parentElement: dia.Element | null;
     private portGroupElement: dia.Element.PortGroup = {};
@@ -161,10 +161,10 @@ export class PortGroupComponent {
         this.parentElement = parent;
         this.refreshPorts();
 
-        const that = this;
-        parent.on("change:position", function () {
-            that.refreshMarkers();
-        });
+        // const that = this;
+        // parent.on("change:position", function () {
+        //     that.refreshMarkers();
+        // });
     }
 
     private refreshPorts() {
@@ -180,11 +180,11 @@ export class PortGroupComponent {
         [].push.apply(this.ports, createPortItems(this, this.getGroupPosition(), this.port));
         this.parentElement.addPorts(this.ports.map(port => port.getPortElement()));
         
-        this.addMapMarkers();
-        this.createMarkerRectangles();
+        // this.addMapMarkers();
+        // this.createMarkerRectangles();
     }
     
-    private createMarkerRectangles(): void {
+    /*private createMarkerRectangles(): void {
         this.mapRectangles.forEach(rectangle => rectangle.remove());
         this.mapRectangles.clear();
         
@@ -304,14 +304,14 @@ export class PortGroupComponent {
                 this.addMapMarkersBottomUp(parentPort, component);
             }
         }
-    }
+    }*/
 
     // STATIC:
 
-    private static getMarkerRect(topLeft: g.PlainPoint, bottomRight: g.PlainPoint, groupPosition: PortGroupPosition): g.PlainRect | null {
-        /*if (topLeft.x == bottomRight.x && topLeft.y == bottomRight.y) {
-            return null;
-        }*/
+    /*private static getMarkerRect(topLeft: g.PlainPoint, bottomRight: g.PlainPoint, groupPosition: PortGroupPosition): g.PlainRect | null {
+        // if (topLeft.x == bottomRight.x && topLeft.y == bottomRight.y) {
+        //     return null;
+        // }
 
         const rect = {
             x: topLeft.x,
@@ -340,7 +340,7 @@ export class PortGroupComponent {
         }
 
         return rect;
-    }
+    }*/
 
     /**
      * Spacing between ports. Two ports must not be closer to each other than this value.
