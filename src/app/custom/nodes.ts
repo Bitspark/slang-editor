@@ -69,6 +69,22 @@ export abstract class SlangNode {
         return children.values();
     }
 
+    // TODO: Can be heavily optimized
+    public find(id: string): SlangNode | undefined {
+        if (this.getIdentity() === id) {
+            return this;
+        }
+        
+        for (const child of this.getChildNodes()) {
+            const found = child.find(id);
+            if (found) {
+                return found;
+            }
+        }
+        
+        return undefined;
+    }
+
 }
 
 export abstract class PortOwner extends SlangNode {

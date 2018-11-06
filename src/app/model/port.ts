@@ -3,7 +3,7 @@ import {BlueprintModel} from './blueprint';
 import {OperatorModel} from './operator';
 import {BlueprintDelegateModel, OperatorDelegateModel} from './delegate';
 import {PortOwner, SlangNode} from '../custom/nodes';
-import {Connections} from '../custom/connections';
+import {Connection, Connections} from "../custom/connections";
 import {TypeIdentifier, SlangType} from "../custom/type";
 
 export enum PortDirection {
@@ -11,11 +11,12 @@ export enum PortDirection {
     Out, // 1
 }
 
-abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
+export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
     // Topics
     // self
     private removed = new Subject<void>();
+    private connected = new Subject<Connection>();
     private selected = new BehaviorSubject<boolean>(false);
     private collapsed = new BehaviorSubject<boolean>(false);
 
@@ -202,11 +203,11 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     }
 
     public isDirectionIn(): boolean {
-        return this.direction == PortDirection.In;
+        return this.direction === PortDirection.In;
     }
 
     public isDirectionOut(): boolean {
-        return this.direction == PortDirection.Out;
+        return this.direction === PortDirection.Out;
     }
 
     // Actions
@@ -246,11 +247,11 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         return this.collapsed.getValue();
     }
 
-    protected canConnect(destination: PortModel) {
-        return this.isSource();
+    public canConnect(destination: PortModel) {
+        return this.isSource() !== destination.isSource();
     }
     
-    protected abstract isSource(): boolean;
+    public abstract isSource(): boolean;
     
     public connect(destination: PortModel) {
         if (!this.canConnect(destination)) {
@@ -270,7 +271,9 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
                 break;
             default:
                 this.connectedWith.push(destination);
+                this.connected.next({source: this, destination: destination});
                 destination.connectedWith.push(this);
+                destination.connected.next({source: destination, destination: this});
                 break;
         }
     }
@@ -287,6 +290,10 @@ abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
     public subscribeCollapsed(cb: (collapsed: boolean) => void): void {
         this.collapsed.subscribe(cb);
+    }
+    
+    public subscribeConnected(cb: (connection: Connection) => void): void {
+        this.connected.subscribe(cb);
     }
 
     // Slang tree
@@ -320,12 +327,8 @@ export class BlueprintPortModel extends GenericPortModel<BlueprintModel | Bluepr
         super(parent, type, direction);
         this.owner = owner;
     }
-    
-    protected canConnect(destination: PortModel): boolean {
-        return true;
-    }
-    
-    protected isSource(): boolean {
+
+    public isSource(): boolean {
         return this.isDirectionIn();
     }
 }
@@ -336,11 +339,7 @@ export class OperatorPortModel extends GenericPortModel<OperatorModel | Operator
         this.owner = owner;
     }
 
-    protected canConnect(destination: PortModel): boolean {
-        return super.canConnect(destination);
-    }
-
-    protected isSource(): boolean {
+    public isSource(): boolean {
         return this.isDirectionOut();
     }
 }

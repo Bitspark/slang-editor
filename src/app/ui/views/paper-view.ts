@@ -4,7 +4,7 @@ import {View} from "./view";
 
 export abstract class PaperView extends View {
 
-    protected graph = new dia.Graph();
+    protected readonly graph = new dia.Graph();
     private readonly paper: dia.Paper;
 
     protected constructor(canvas: HTMLCanvas) {
@@ -24,6 +24,10 @@ export abstract class PaperView extends View {
     protected getGraph(): dia.Graph {
         return this.graph;
     }
+    
+    protected getPaper(): dia.Paper {
+        return this.paper;
+    }
 
     protected reset() {
         this.paper.scale(1.0);
@@ -31,7 +35,7 @@ export abstract class PaperView extends View {
     }
 
     protected center() {
-        this.paper.setOrigin(this.paper.options.width! / 2, this.paper.options.height! / 2);
+        this.paper.setOrigin(this.paper.options.width as number / 2, this.paper.options.height as number / 2);
     }
 
     protected createPaper(opt: dia.Paper.Options = {}): dia.Paper {

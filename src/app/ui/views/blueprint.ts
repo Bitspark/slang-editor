@@ -1,12 +1,37 @@
-import {dia, g, layout, shapes} from "jointjs";
+import {dia, g, layout, shapes, linkTools} from "jointjs";
 import {BlackBoxComponent, IsolatedBlueprintPort, OperatorBoxComponent} from "../components/blackbox";
 import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 import {Connection} from "../../custom/connections";
 import {BlackBox, PortOwner} from "../../custom/nodes";
-import {slangConnector} from "../utils/connector";
 import {HTMLCanvas} from "../cavas";
 import {PaperView} from "./paper-view";
+import {BlueprintPortModel, GenericPortModel, PortModel} from "../../model/port";
+import {slangRouter} from "../utils/router";
+import {slangConnector} from "../utils/connector";
+
+const GhostConnectionLink = dia.Link.define("Connection", {
+    router: slangRouter,
+    connector: slangConnector,
+}, {
+    toolMarkup: [
+        "<g class='link-tool'>",
+        "</g>",].join(""),
+});
+
+const ConnectionLink = dia.Link.define("Connection", {
+    router: slangRouter,
+    connector: slangConnector,
+}, {
+    toolMarkup: [
+        "<g class='link-tool'>",
+        "<g class='tool-remove' event='connection:remove'>",
+        "<circle r='11' />",
+        "<path transform='scale(.8) translate(-16, -16)' d='M24.778,21.419 19.276,15.917 24.777,10.415 21.949,7.585 16.447,13.087 10.945,7.585 8.117,10.415 13.618,15.917 8.116,21.419 10.946,24.248 16.447,18.746 21.948,24.248z' />",
+        "<title>Remove link.</title>",
+        "</g>",
+        "</g>",].join(""),
+});
 
 export class BlueprintView extends PaperView {
 
@@ -17,6 +42,7 @@ export class BlueprintView extends PaperView {
     private leftPorts: Array<dia.Element> = [];
     private operators: Array<BlackBoxComponent> = [];
     private outerPadding = 120;
+    private linkTools: dia.ToolsView;
 
     constructor(canvas: HTMLCanvas, private blueprint: BlueprintModel) {
         super(canvas);
@@ -34,11 +60,85 @@ export class BlueprintView extends PaperView {
         this.attachEventHandlers();
 
         this.addOriginPoint();
+
+
+        const removeTool = new linkTools.Remove();
+        this.linkTools = new dia.ToolsView({
+            tools: []
+        });
     }
 
     protected createPaper(): dia.Paper {
-        const paper = super.createPaper();
-        return paper;
+        const that = this;
+        return super.createPaper({
+            allowLink: function (linkView: dia.LinkView): boolean {
+                const magnetS = linkView.getEndMagnet("source");
+                const magnetT = linkView.getEndMagnet("target");
+                if (!magnetS || !magnetT) {
+                    return false;
+                }
+
+                const sourcePortRef = magnetS.getAttribute("port");
+                const destinationPortRef = magnetT.getAttribute("port");
+                if (!sourcePortRef || !destinationPortRef) {
+                    return false;
+                }
+
+                const sourcePort = that.blueprint.find(sourcePortRef);
+                const destinationPort = that.blueprint.find(destinationPortRef);
+                if (!sourcePort || !destinationPort ||
+                    !(sourcePort instanceof GenericPortModel) || !(destinationPort instanceof GenericPortModel)) {
+                    return false;
+                }
+
+                if (sourcePort.canConnect(destinationPort)) {
+                    try {
+                        sourcePort.connect(destinationPort);
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+
+                return false;
+            },
+            defaultLink: function (cellView: dia.CellView): dia.Link {
+                return new GhostConnectionLink({
+                    attrs: {
+                        ".connection": {
+                            stroke: "#aaaaaa",
+                            "stroke-width": 3,
+                        }
+                    }
+                } as any);
+            },
+            validateConnection: function (cellViewS: dia.CellView,
+                                          magnetS: SVGElement,
+                                          cellViewT: dia.CellView,
+                                          magnetT: SVGElement,
+                                          end: "source" | "target",
+                                          linkView: dia.LinkView): boolean {
+                if (!magnetS || !magnetT) {
+                    return false;
+                }
+
+                const sourcePortRef = magnetS.getAttribute("port");
+                const destinationPortRef = magnetT.getAttribute("port");
+                if (!sourcePortRef || !destinationPortRef) {
+                    return false;
+                }
+
+                const sourcePort = that.blueprint.find(sourcePortRef);
+                const destinationPort = that.blueprint.find(destinationPortRef);
+                if (!sourcePort || !destinationPort ||
+                    !(sourcePort instanceof GenericPortModel) || !(destinationPort instanceof GenericPortModel)) {
+                    return false;
+                }
+
+                return sourcePort.canConnect(destinationPort);
+            },
+            snapLinks: {radius: 75,},
+            markAvailable: true,
+        });
     }
 
     private attachEventHandlers() {
@@ -50,12 +150,26 @@ export class BlueprintView extends PaperView {
 
             that.fitOuter();
         });
+        this.graph.on("connection:remove", function (cell: dia.Cell, oldCells: any, evt: Event) {
+            if (cell.isLink()) {
+                console.log(cell, evt);
+            }
+        });
     }
 
     private subscribe() {
         const that = this;
         this.blueprint.subscribeOperatorAdded(function (op: OperatorModel) {
             that.addOperator(op);
+        });
+
+        // Ports
+        const ports = Array.from(this.blueprint.getDescendentNodes<BlueprintPortModel>(BlueprintPortModel));
+        ports.filter(port => port.isSource()).forEach(source => {
+            source.subscribeConnected(connection => {
+                console.log(connection);
+                this.addConnection(connection);
+            });
         });
     }
 
@@ -187,7 +301,7 @@ export class BlueprintView extends PaperView {
             destinationIdentity = connection.destination.getAncestorNode<PortOwner>(PortOwner)!.getIdentity() + "_out";
         }
 
-        const link = new dia.Link({
+        const link = new ConnectionLink({
             source: {
                 id: sourceIdentity,
                 port: connection.source.getIdentity(),
@@ -196,16 +310,16 @@ export class BlueprintView extends PaperView {
                 id: destinationIdentity,
                 port: connection.destination.getIdentity(),
             },
-            router: {name: "manhattan"},
-            connector: slangConnector,
             attrs: {
                 ".connection": {
                     stroke: "#777777",
                     "stroke-width": 3,
                 }
-            }
-        });
+            },
+            toolMarkup: false,
+        } as any);
         link.addTo(this.graph);
+        link.findView(this.getPaper()).removeTools();
     }
 
     private autoLayout() {
@@ -214,7 +328,7 @@ export class BlueprintView extends PaperView {
             rankSep: 120,
             edgeSep: 360,
             rankDir: "TB",
-            resizeClusters: false
+            resizeClusters: false,
         });
 
         let boundingBox = this.graph.getCellsBBox(this.operators.map(operator => operator.getRectangle()))!;
@@ -278,6 +392,14 @@ export class BlueprintView extends PaperView {
             } else {
                 operatorElement.getRectangle().attr("body/fill", "blue");
             }
+        });
+
+        // Ports
+        const ports = Array.from(operator.getDescendentNodes<PortModel>(GenericPortModel));
+        ports.filter(port => port.isSource()).forEach(source => {
+            source.subscribeConnected(connection => {
+                this.addConnection(connection);
+            });
         });
     }
 
