@@ -1,4 +1,3 @@
-import {View} from "./view";
 import {dia, g, layout, shapes} from "jointjs";
 import {BlackBoxComponent, IsolatedBlueprintPort, OperatorBoxComponent} from "../components/blackbox";
 import {BlueprintModel} from "../../model/blueprint";
@@ -7,8 +6,9 @@ import {Connection} from "../../custom/connections";
 import {BlackBox, PortOwner} from "../../custom/nodes";
 import {slangConnector} from "../utils/connector";
 import {HTMLCanvas} from "../cavas";
+import {PaperView} from "./paper-view";
 
-export class BlueprintView extends View {
+export class BlueprintView extends PaperView {
 
     private outer: dia.Element;
     private topPorts: Array<dia.Element> = [];
@@ -34,6 +34,11 @@ export class BlueprintView extends View {
         this.attachEventHandlers();
 
         this.addOriginPoint();
+    }
+
+    protected createPaper(): dia.Paper {
+        const paper = super.createPaper();
+        return paper;
     }
 
     private attachEventHandlers() {
@@ -191,7 +196,7 @@ export class BlueprintView extends View {
                 id: destinationIdentity,
                 port: connection.destination.getIdentity(),
             },
-            router: { name: "manhattan" },
+            router: {name: "manhattan"},
             connector: slangConnector,
             attrs: {
                 ".connection": {

@@ -5,8 +5,9 @@ import {Subject} from "rxjs";
 import {LandscapeModel} from "../../model/landscape";
 import {BlueprintBoxComponent} from "../components/blackbox";
 import {HTMLCanvas} from "../cavas";
+import {PaperView} from "./paper-view";
 
-export class LandscapeView extends View {
+export class LandscapeView extends PaperView {
 
     private readonly filter: ((blueprint: BlueprintModel) => boolean) | null;
     private blueprintRects = new Map<string, shapes.standard.Rectangle>();
