@@ -137,13 +137,11 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         throw `entry not found`;
     }
 
-    public getConnections(): Connections {
+    public getConnectionsTo(): Connections {
         const connections = new Connections();
         for (const connectedWith of this.connectedWith) {
             if (this.isSource()) {
                 connections.addConnection({source: this, destination: connectedWith});
-            } else {
-                // connections.addConnection({source: connectedWith, destination: this});
             }
         }
         switch (this.typeIdentifier) {
@@ -151,7 +149,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
                 const mapSubs = this.getMapSubs();
                 let noMapSubs = true;
                 for (const mapSub of mapSubs) {
-                    connections.addConnections(mapSub[1].getConnections());
+                    connections.addConnections(mapSub[1].getConnectionsTo());
                     noMapSubs = false;
                 }
                 if (noMapSubs) {
@@ -163,7 +161,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
                 if (!streamSub) {
                     throw `stream port without stream sub port`;
                 }
-                connections.addConnections(streamSub.getConnections());
+                connections.addConnections(streamSub.getConnectionsTo());
                 break;
         }
         return connections;

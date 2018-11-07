@@ -294,7 +294,7 @@ export class BlueprintView extends PaperView {
     }
 
     private createConnections() {
-        for (const connection of this.blueprint.getConnections().getConnections()) {
+        for (const connection of this.blueprint.getConnectionsTo().getIterator()) {
             this.addConnection(connection);
         }
     }

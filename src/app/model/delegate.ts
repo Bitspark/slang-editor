@@ -22,12 +22,12 @@ export abstract class GenericDelegateModel<B extends BlackBox, P extends PortMod
         return this.owner;
     }
 
-    public getConnections(): Connections {
+    public getConnectionsTo(): Connections {
         const connections = new Connections();
 
         // First, handle operator out-ports
         if (this.getPortOut()) {
-            connections.addConnections(this.getPortOut()!.getConnections());
+            connections.addConnections(this.getPortOut()!.getConnectionsTo());
         }
 
         return connections;

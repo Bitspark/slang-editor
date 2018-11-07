@@ -11,7 +11,7 @@ export class Connections {
     constructor() {
     }
 
-    public getConnections(): IterableIterator<Connection> {
+    public getIterator(): IterableIterator<Connection> {
         return this.connections.values();
     }
 
@@ -20,7 +20,7 @@ export class Connections {
     }
 
     public addConnections(connections: Connections) {
-        for (const connection of connections.getConnections()) {
+        for (const connection of connections.getIterator()) {
             this.connections.push(connection);
         }
     }

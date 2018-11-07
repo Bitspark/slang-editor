@@ -251,23 +251,23 @@ export class BlueprintModel extends BlackBox {
         return this.getFullName().replace(/\./g, '-');
     }
 
-    public getConnections(): Connections {
+    public getConnectionsTo(): Connections {
         const connections = new Connections();
 
         const portIn = this.getPortIn();
 
         if (portIn) {
-            connections.addConnections(portIn.getConnections());
+            connections.addConnections(portIn.getConnectionsTo());
         }
 
         for (const operator of this.operators) {
-            connections.addConnections(operator.getConnections());
+            connections.addConnections(operator.getConnectionsTo());
         }
 
         for (const delegate of this.delegates) {
             const delegatePortIn = delegate.getPortIn();
             if (delegatePortIn) {
-                connections.addConnections(delegatePortIn.getConnections());
+                connections.addConnections(delegatePortIn.getConnectionsTo());
             }
         }
 
