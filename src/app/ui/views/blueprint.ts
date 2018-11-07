@@ -3,7 +3,7 @@ import {BlackBoxComponent, IsolatedBlueprintPort, OperatorBoxComponent} from "..
 import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 import {Connection} from "../../custom/connections";
-import {BlackBox, PortOwner, SlangNode} from '../../custom/nodes';
+import {BlackBox, PortOwner} from "../../custom/nodes";
 import {HTMLCanvas} from "../cavas";
 import {PaperView} from "./paper-view";
 import {BlueprintPortModel, GenericPortModel, PortModel} from "../../model/port";
@@ -13,6 +13,13 @@ import {slangConnector} from "../utils/connector";
 const GhostConnectionLink = dia.Link.define("Connection", {
     router: slangRouter,
     connector: slangConnector,
+    attrs: {
+        ".connection": {
+            stroke: "#777777",
+            "stroke-width": 3,
+            "stroke-opacity": 0.5,
+        }
+    }
 }, {
     toolMarkup: [
         "<g class='link-tool'>",
@@ -22,13 +29,19 @@ const GhostConnectionLink = dia.Link.define("Connection", {
 const ConnectionLink = dia.Link.define("Connection", {
     router: slangRouter,
     connector: slangConnector,
+    attrs: {
+        ".connection": {
+            stroke: "#777777",
+            "stroke-width": 3,
+        }
+    },
 }, {
     toolMarkup: [
         "<g class='link-tool'>",
         "<g class='tool-remove' event='tool:remove'>",
         "<circle r='11' fill='red' />",
         "<path transform='scale(.8) translate(-16, -16)' d='M24.778,21.419 19.276,15.917 24.777,10.415 21.949,7.585 16.447,13.087 10.945,7.585 8.117,10.415 13.618,15.917 8.116,21.419 10.946,24.248 16.447,18.746 21.948,24.248z' fill='white' />",
-        "<title>Unconnect</title>",
+        "<title>Disconnect</title>",
         "</g>",
         "</g>",].join(""),
 });
@@ -60,12 +73,6 @@ export class BlueprintView extends PaperView {
         this.attachEventHandlers();
 
         this.addOriginPoint();
-
-
-        const removeTool = new linkTools.Remove();
-        this.linkTools = new dia.ToolsView({
-            tools: []
-        });
     }
 
     protected createPaper(): dia.Paper {
@@ -73,27 +80,26 @@ export class BlueprintView extends PaperView {
         const paper = super.createPaper({
             allowLink: function (linkView: dia.LinkView): boolean {
                 const magnetS = linkView.getEndMagnet("source");
+                if (!magnetS) {
+                    return false;
+                }
                 const magnetT = linkView.getEndMagnet("target");
-                if (!magnetS || !magnetT) {
+                if (!magnetT) {
                     return false;
                 }
 
-                const sourcePortRef = magnetS.getAttribute("port");
-                const destinationPortRef = magnetT.getAttribute("port");
-                if (!sourcePortRef || !destinationPortRef) {
+                const portS = that.getPortFromMagnet(magnetS);
+                if (!portS) {
+                    return false;
+                }
+                const portT = that.getPortFromMagnet(magnetT);
+                if (!portT) {
                     return false;
                 }
 
-                const sourcePort = that.blueprint.find(sourcePortRef);
-                const destinationPort = that.blueprint.find(destinationPortRef);
-                if (!sourcePort || !destinationPort ||
-                    !(sourcePort instanceof GenericPortModel) || !(destinationPort instanceof GenericPortModel)) {
-                    return false;
-                }
-
-                if (sourcePort.canConnect(destinationPort)) {
+                if (portS.canConnect(portT)) {
                     try {
-                        sourcePort.connect(destinationPort);
+                        portS.connect(portT);
                     } catch (e) {
                         console.error(e);
                     }
@@ -101,15 +107,8 @@ export class BlueprintView extends PaperView {
 
                 return false;
             },
-            defaultLink: function (cellView: dia.CellView): dia.Link {
-                return new GhostConnectionLink({
-                    attrs: {
-                        ".connection": {
-                            stroke: "#aaaaaa",
-                            "stroke-width": 3,
-                        }
-                    }
-                } as any);
+            defaultLink: function (): dia.Link {
+                return new GhostConnectionLink({} as any);
             },
             validateConnection: function (cellViewS: dia.CellView,
                                           magnetS: SVGElement,
@@ -117,24 +116,16 @@ export class BlueprintView extends PaperView {
                                           magnetT: SVGElement,
                                           end: "source" | "target",
                                           linkView: dia.LinkView): boolean {
-                if (!magnetS || !magnetT) {
+                const portS = that.getPortFromMagnet(magnetS);
+                if (!portS) {
                     return false;
                 }
-
-                const sourcePortRef = magnetS.getAttribute("port");
-                const destinationPortRef = magnetT.getAttribute("port");
-                if (!sourcePortRef || !destinationPortRef) {
+                const portT = that.getPortFromMagnet(magnetT);
+                if (!portT) {
                     return false;
                 }
-
-                const sourcePort = that.blueprint.find(sourcePortRef);
-                const destinationPort = that.blueprint.find(destinationPortRef);
-                if (!sourcePort || !destinationPort ||
-                    !(sourcePort instanceof GenericPortModel) || !(destinationPort instanceof GenericPortModel)) {
-                    return false;
-                }
-
-                return sourcePort.canConnect(destinationPort);
+                
+                return portS.canConnect(portT);
             },
             snapLinks: {radius: 75,},
             markAvailable: true,
@@ -332,13 +323,6 @@ export class BlueprintView extends PaperView {
                 id: destinationIdentity,
                 port: connection.destination.getIdentity(),
             },
-            attrs: {
-                ".connection": {
-                    stroke: "#777777",
-                    "stroke-width": 3,
-                }
-            },
-            toolMarkup: false,
         } as any);
         link.addTo(this.graph);
     }
@@ -363,17 +347,17 @@ export class BlueprintView extends PaperView {
         if (destinationOwner instanceof BlueprintModel) {
             destinationIdentity = connection.destination.getAncestorNode<PortOwner>(PortOwner)!.getIdentity() + "_out";
         }
-        
+
         const linkId = `${sourceIdentity}>${destinationIdentity}`;
         const link = this.graph.getCell(linkId);
-        
+
         if (link) {
             link.remove();
         } else {
             throw `link could not be found`;
         }
     }
-    
+
     private autoLayout() {
         layout.DirectedGraph.layout(this.graph, {
             nodeSep: 120,
@@ -455,7 +439,7 @@ export class BlueprintView extends PaperView {
             });
             source.subscribeUnconnected(connection => {
                 this.removeConnection(connection);
-            })
+            });
         });
     }
 
@@ -578,6 +562,21 @@ export class BlueprintView extends PaperView {
         origin.attr("body/ry", "24");
         origin.attr("draggable", false);
         origin.set("obstacle", false);
+    }
+
+    private getPortFromMagnet(magnet: SVGElement): PortModel | undefined {
+        if (!magnet) {
+            return undefined;
+        }
+        const portRef = magnet.getAttribute("port");
+        if (!portRef) {
+            return undefined;
+        }
+        const port = this.blueprint.find(portRef);
+        if (!port || !(port instanceof GenericPortModel)) {
+            return undefined;
+        }
+        return port;
     }
 
 }

@@ -136,4 +136,24 @@ export class SlangType {
     public getTypeIdentifier(): TypeIdentifier {
         return this.typeIdentifier;
     }
+    
+    private isPrimitive(): boolean {
+        const primitiveTypes = [TypeIdentifier.String, TypeIdentifier.Number, TypeIdentifier.Boolean, TypeIdentifier.Primitive];
+        return primitiveTypes.indexOf(this.getTypeIdentifier()) !== -1;
+    }
+    
+    public compatibleTo(destinationType: SlangType): boolean {        
+        if (destinationType.getTypeIdentifier() === TypeIdentifier.Trigger) {
+            return true;
+        }
+        if (destinationType.getTypeIdentifier() === TypeIdentifier.Primitive && this.isPrimitive()) {
+            return true;
+        }
+        if (this.getTypeIdentifier() === TypeIdentifier.Primitive && destinationType.isPrimitive()) {
+            return true;
+        }
+        
+        return this.getTypeIdentifier() === destinationType.getTypeIdentifier();
+    }
+    
 }

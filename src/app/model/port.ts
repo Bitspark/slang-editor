@@ -248,29 +248,25 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         return this.collapsed.getValue();
     }
 
-    public canConnect(destination: PortModel): boolean {
-        if (destination.connectedWith.length !== 0) {
+    /**
+     * Checks if a connection from this port is possible to the destination port.
+     * This has to be a source port and destination a destination port (will be checked inside function).
+     * @param destination port
+     */
+    private canConnectTo(destination: PortModel): boolean {
+        if (!this.isSource() || destination.isSource()) {
             return false;
         }
-        if (this.isSource() === destination.isSource()) {
+        if (destination.connectedWith.length !== 0) {
             return false;
         }
         if (this.connectedWith.indexOf(destination) !== -1) {
             return false;
         }
-        if (destination.getTypeIdentifier() === TypeIdentifier.Trigger) {
-            return true;
+        if (destination.connectedWith.indexOf(this) !== -1) {
+            throw new Error(`${this.getIdentity()}: asymmetric connection found`);
         }
-        if (destination.getTypeIdentifier() === TypeIdentifier.Primitive && [TypeIdentifier.String, TypeIdentifier.Number, TypeIdentifier.Boolean, TypeIdentifier.Primitive].indexOf(this.getTypeIdentifier()) !== -1) {
-            return true;
-        }
-        if (this.getTypeIdentifier() === TypeIdentifier.Primitive && [TypeIdentifier.String, TypeIdentifier.Number, TypeIdentifier.Boolean, TypeIdentifier.Primitive].indexOf(destination.getTypeIdentifier()) !== -1) {
-            return true;
-        }
-        if (this.getTypeIdentifier() !== destination.getTypeIdentifier()) {
-            return false;
-        }
-        return true;
+        return this.getType().compatibleTo(destination.getType());
     }
     
     public abstract isSource(): boolean;
@@ -292,19 +288,24 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         destination.connectedWith.splice(idxT, 1);
         destination.unconnected.next(connection);
     }
-    
-    public connect(destination: PortModel) {
-        if (!this.canConnect(destination)) {
+
+    /**
+     * Connects this port to the destination port.
+     * This has to be a source port and destination a destination port.
+     * @param destination
+     */
+    private connectTo(destination: PortModel) {
+        if (!this.canConnectTo(destination)) {
             throw `cannot connect: ${this.getIdentity()} --> ${destination.getIdentity()}`;
         }
         switch (this.typeIdentifier) {
             case TypeIdentifier.Map:
                 for (const [subName, subPort] of this.getMapSubs()) {
-                    subPort.connect(destination.findMapSub(subName));
+                    subPort.connectTo(destination.findMapSub(subName));
                 }
                 break;
             case TypeIdentifier.Stream:
-                this.getStreamSub().connect(destination.getStreamSub());
+                this.getStreamSub().connectTo(destination.getStreamSub());
                 break;
             default:
                 const connection = {source: this, destination: destination};
@@ -313,6 +314,22 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
                 destination.connectedWith.push(this);
                 destination.connected.next(connection);
                 break;
+        }
+    }
+        
+    public canConnect(other: PortModel): boolean {
+        if (this.isSource()) {
+            return this.canConnectTo(other);
+        } else {
+            return other.canConnectTo(this);
+        }
+    }
+    
+    public connect(other: PortModel) {
+        if (this.isSource()) {
+            this.connectTo(other);
+        } else {
+            other.connectTo(this);
         }
     }
 
