@@ -89,7 +89,7 @@ export class AppModel extends SlangNode {
     }
 
     // Slang node
-    
+
     getChildNodes(): IterableIterator<SlangNode> {
         return [this.landscape].values();
     }
@@ -101,5 +101,5 @@ export class AppModel extends SlangNode {
     getParentNode(): SlangNode | null {
         return null;
     }
-    
+
 }
