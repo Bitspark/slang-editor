@@ -3,20 +3,22 @@ import "./common"
 import "../styles/standalone.scss"
 
 import {AppModel} from "../app/model/app";
-import {MainComponent} from "../app/ui/app";
+import {SlangApp} from "../app/ui/app";
 import {APIStoragePlugin} from "../app/plugins/storage";
 import {RouterPlugin} from "../app/plugins/router";
 
 function SlangStudioStandalone(el: HTMLElement): Promise<void> {
     return new Promise<void>(resolve => {
-        const app = new AppModel();
-        const mainComponent = new MainComponent(app, el);
+        const appModel = new AppModel("slang");
+        const app = new SlangApp(appModel);
+        app.createCanvas(el, true);
 
-        new APIStoragePlugin(app, 'http://localhost:5149/');
-        const router = new RouterPlugin(app);
+        new APIStoragePlugin(appModel, 'http://localhost:5149/');
+        const router = new RouterPlugin(appModel);
 
-        mainComponent.load().then(() => {
+        app.load().then(() => {
             router.checkRoute();
+            resolve();
         });
     });
 }

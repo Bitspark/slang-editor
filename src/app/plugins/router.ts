@@ -1,8 +1,10 @@
 import {AppModel} from '../model/app';
+import {SlangPlugin} from "./plugin";
 
-export class RouterPlugin {
+export class RouterPlugin extends SlangPlugin {
 
-    constructor(private app: AppModel) {
+    constructor(app: AppModel) {
+        super(app);
         this.subscribe();
         this.addEventListeners();
     }

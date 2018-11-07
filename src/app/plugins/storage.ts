@@ -1,11 +1,13 @@
 import {ApiService, BlueprintApiResponse} from "../custom/api";
 import {AppModel} from "../model/app";
 import {fillLandscape} from "../custom/mapper";
+import {SlangPlugin} from "./plugin";
 
-export class APIStoragePlugin {
+export class APIStoragePlugin extends SlangPlugin {
     private api: ApiService;
 
-    constructor(private app: AppModel, host: string) {
+    constructor(app: AppModel, host: string) {
+        super(app);
         this.api = new ApiService(host);
         this.subscribe();
     }
@@ -24,9 +26,10 @@ export class APIStoragePlugin {
     }
 }
 
-export class StaticStoragePlugin {
+export class StaticStoragePlugin extends SlangPlugin {
 
-    constructor(private app: AppModel, private url: string) {
+    constructor(app: AppModel, private url: string) {
+        super(app);
         this.subscribe();
     }
 

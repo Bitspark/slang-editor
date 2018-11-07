@@ -1,6 +1,7 @@
-import {BlueprintModel, BlueprintType} from './blueprint';
-import {BehaviorSubject, Subject} from 'rxjs';
-import {SlangNode} from '../custom/nodes';
+import {BlueprintModel, BlueprintType} from "./blueprint";
+import {BehaviorSubject, Subject} from "rxjs";
+import {SlangNode} from "../custom/nodes";
+import {AppModel} from "./app";
 
 export class LandscapeModel extends SlangNode {
 
@@ -11,6 +12,10 @@ export class LandscapeModel extends SlangNode {
     private blueprints: Array<BlueprintModel> = [];
     private selectedBlueprint = new BehaviorSubject<BlueprintModel | null>(null);
 
+    constructor(private root: AppModel) {
+        super();
+    }
+
     public createBlueprint(fullName: string, type: BlueprintType): BlueprintModel {
         const blueprint = new BlueprintModel(this, fullName, type);
         return blueprint;
@@ -19,7 +24,7 @@ export class LandscapeModel extends SlangNode {
     public findBlueprint(fullName: string): BlueprintModel | undefined {
         return this.blueprints.find((each: BlueprintModel) => {
             return each.getFullName() == fullName;
-        })
+        });
     }
 
     public getBlueprints(): IterableIterator<BlueprintModel> {
@@ -109,8 +114,8 @@ export class LandscapeModel extends SlangNode {
         return children.values();
     }
 
-    getParentNode(): null {
-        return null;
+    getParentNode(): SlangNode {
+        return this.root;
     }
 
     getIdentity(): string {

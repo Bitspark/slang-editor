@@ -1,10 +1,10 @@
 import {View} from "./views/view";
 
-export class HTMLCanvas {
+export abstract class HTMLCanvas {
 
     private view: View | null = null;
 
-    constructor(private readonly container: HTMLElement) {
+    protected constructor(private readonly container: HTMLElement) {
         const that = this;
         window.addEventListener('resize', function () {
             if (that.view) {

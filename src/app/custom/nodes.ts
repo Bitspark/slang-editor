@@ -84,6 +84,13 @@ export abstract class SlangNode {
         
         return undefined;
     }
+    
+    public getRoot(): SlangNode {
+        if (!this.getParentNode()) {
+            return this;
+        }
+        return this.getParentNode()!;
+    }
 
 }
 
