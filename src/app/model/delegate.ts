@@ -58,7 +58,7 @@ export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel,
     }
 
     public getPortOut(): BlueprintPortModel | null {
-        return super.getPortIn() as BlueprintPortModel;
+        return super.getPortOut() as BlueprintPortModel;
     }
 }
 

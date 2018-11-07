@@ -86,10 +86,6 @@ export class PortGroupComponent {
         return this.name;
     }
 
-    /*public getPorts(): IterableIterator<PortComponent> {
-        return this.ports.values();
-    }*/
-
     public getGroupPosition(): PortGroupPosition {
         return this.groupPosition;
     }
@@ -97,25 +93,21 @@ export class PortGroupComponent {
     public setParent(parent: dia.Element) {
         this.parentElement = parent;
         this.refreshPorts();
-
-        // const that = this;
-        // parent.on("change:position", function () {
-        //     that.refreshMarkers();
-        // });
     }
 
     private refreshPorts() {
-        if (!this.parentElement) {
+        const parentElement = this.parentElement;
+        if (!parentElement) {
             return;
         }
-
+        
         this.ports.forEach(port => {
-            this.parentElement!.removePort(port.getPortElement());
+            parentElement.removePort(port.getPortElement());
         });
-
+        
         this.ports.length = 0;
-        [].push.apply(this.ports, createPortItems(this, this.getGroupPosition(), this.port));
-        this.parentElement.addPorts(this.ports.map(port => port.getPortElement()));
+        this.ports.push.apply(this.ports, createPortItems(this, this.getGroupPosition(), this.port));
+        parentElement.addPorts(this.ports.map(port => port.getPortElement()));
     }
 
     // STATIC:

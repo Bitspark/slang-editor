@@ -10,7 +10,6 @@ export class IsolatedBlueprintPort {
     constructor(private graph: dia.Graph, name: string, identity: string, port: PortModel, position: PortGroupPosition) {
         const portGroup = new PortGroupComponent(graph, "PortGroup", port, position, 0, 1.0);
         const portGroups = {"PortGroup": portGroup.getPortGroupElement()};
-        // const portItems = Array.from(portGroup.getPorts()).map(port => port.getPortElement());
 
         const translations = {
             "top": "",

@@ -7,9 +7,9 @@ import {SlangPlugin} from "../plugins/plugin";
 
 export class SlangApp {
 
-    private plugins: Array<SlangPlugin> = [];
-    private frames: Array<ViewFrame> = [];
-    private outlet: ViewFrame | null;
+    private readonly plugins: Array<SlangPlugin> = [];
+    private readonly frames: Array<ViewFrame> = [];
+    private outlet: ViewFrame | null = null;
 
     constructor(private app: AppModel) {
     }

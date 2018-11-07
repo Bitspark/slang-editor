@@ -1,7 +1,6 @@
 import {PortDirection, PortModel} from "../model/port";
 import {DelegateModel} from "../model/delegate";
 import {SlangType, TypeIdentifier} from "./type";
-import {Observable} from "rxjs";
 
 type Type<T> = Function & { prototype: T };
 

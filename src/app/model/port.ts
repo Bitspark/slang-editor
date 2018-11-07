@@ -102,7 +102,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     }
 
     public getType(): SlangType {
-        //const parentType = (this.parent) ? this.parent.getType() : null;
         const type = new SlangType(null, this.typeIdentifier);
         switch (this.typeIdentifier) {
             case TypeIdentifier.Map:
