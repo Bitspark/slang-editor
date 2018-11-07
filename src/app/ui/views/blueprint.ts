@@ -4,7 +4,7 @@ import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 import {Connection} from "../../custom/connections";
 import {BlackBox, PortOwner} from "../../custom/nodes";
-import {HTMLCanvas} from "../cavas";
+import {ViewFrame} from "../cavas";
 import {PaperView} from "./paper-view";
 import {BlueprintPortModel, GenericPortModel, PortModel} from "../../model/port";
 import {slangRouter} from "../utils/router";
@@ -58,8 +58,8 @@ export class BlueprintView extends PaperView {
     private operators: Array<BlackBoxComponent> = [];
     private outerPadding = 120;
 
-    constructor(canvas: HTMLCanvas, private blueprint: BlueprintModel) {
-        super(canvas);
+    constructor(frame: ViewFrame, private blueprint: BlueprintModel) {
+        super(frame);
         this.addZooming();
         this.addPanning();
 
@@ -155,7 +155,7 @@ export class BlueprintView extends PaperView {
                 return false;
             }
 
-            sourcePort.unconnect(destinationPort);
+            sourcePort.disconnect(destinationPort);
         });
         return paper;
     }
@@ -183,7 +183,7 @@ export class BlueprintView extends PaperView {
             source.subscribeConnected(connection => {
                 this.addConnection(connection);
             });
-            source.subscribeUnconnected(connection => {
+            source.subscribeDisconnected(connection => {
                 this.removeConnection(connection);
             });
         });
@@ -445,7 +445,7 @@ export class BlueprintView extends PaperView {
             source.subscribeConnected(connection => {
                 this.addConnection(connection);
             });
-            source.subscribeUnconnected(connection => {
+            source.subscribeDisconnected(connection => {
                 this.removeConnection(connection);
             });
         });

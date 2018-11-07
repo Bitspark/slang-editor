@@ -3,7 +3,7 @@ import {BlueprintModel, BlueprintType} from "../../model/blueprint";
 import {Subject} from "rxjs";
 import {LandscapeModel} from "../../model/landscape";
 import {BlueprintBoxComponent} from "../components/blackbox";
-import {HTMLCanvas} from "../cavas";
+import {ViewFrame} from "../cavas";
 import {PaperView} from "./paper-view";
 
 export class LandscapeView extends PaperView {
@@ -15,8 +15,8 @@ export class LandscapeView extends PaperView {
     private destroyed = new Subject<void>();
     private dimensions: [number, number] = [0, 0];
 
-    constructor(canvas: HTMLCanvas, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
-        super(canvas);
+    constructor(frame: ViewFrame, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
+        super(frame);
         this.addZooming();
         this.addPanning();
         

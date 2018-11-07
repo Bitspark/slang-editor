@@ -1,6 +1,6 @@
 import {View} from "./views/view";
 
-export class HTMLCanvas {
+export class ViewFrame {
 
     private view: View | null = null;
 
@@ -18,9 +18,9 @@ export class HTMLCanvas {
         });
     }
 
-    public setView(ctor: new(canvas: HTMLCanvas, ...args: any) => View, ...args: any) {
-        this.view = new ctor(this, ...args);
-        this.view.resize(this.container.clientWidth, this.container.clientHeight);
+    public setView(view: View) {
+        this.view = view;
+        view.resize(this.container.clientWidth, this.container.clientHeight);
     }
 
     public getHTMLElement(): HTMLElement {

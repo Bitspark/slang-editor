@@ -1,14 +1,14 @@
-import {HTMLCanvas} from "../cavas";
+import {ViewFrame} from "../cavas";
 
 export abstract class View {
 
-    protected constructor(private readonly canvas: HTMLCanvas) {
+    protected constructor(private readonly frame: ViewFrame) {
     }
 
     public abstract resize(width: number, height: number): void;
 
-    protected getCanvas(): HTMLCanvas {
-        return this.canvas;
+    protected getFrame(): ViewFrame {
+        return this.frame;
     }
 
 }

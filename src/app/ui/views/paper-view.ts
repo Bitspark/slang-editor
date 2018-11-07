@@ -1,5 +1,5 @@
 import {dia, g} from "jointjs";
-import {HTMLCanvas} from "../cavas";
+import {ViewFrame} from "../cavas";
 import {View} from "./view";
 
 export abstract class PaperView extends View {
@@ -7,8 +7,8 @@ export abstract class PaperView extends View {
     protected readonly graph = new dia.Graph();
     private readonly paper: dia.Paper;
 
-    protected constructor(canvas: HTMLCanvas) {
-        super(canvas);
+    protected constructor(frame: ViewFrame) {
+        super(frame);
         this.paper = this.createPaper();
         this.redirectPaperEvents();
         this.catchPaperEvents();
@@ -41,7 +41,7 @@ export abstract class PaperView extends View {
     }
 
     protected createPaper(opt: dia.Paper.Options = {}): dia.Paper {
-        const container = this.getCanvas().getHTMLElement();
+        const container = this.getFrame().getHTMLElement();
         container.innerHTML = '';
         const inner = document.createElement('div');
         container.appendChild(inner);

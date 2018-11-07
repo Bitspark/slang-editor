@@ -17,7 +17,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     // self
     private removed = new Subject<void>();
     private connected = new Subject<Connection>();
-    private unconnected = new Subject<Connection>();
+    private disconnected = new Subject<Connection>();
     private selected = new BehaviorSubject<boolean>(false);
     private collapsed = new BehaviorSubject<boolean>(false);
 
@@ -269,7 +269,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     
     public abstract isSource(): boolean;
     
-    public unconnect(destination: PortModel) {
+    public disconnect(destination: PortModel) {
         const connection = {source: this, destination: destination};
         
         const idxS = this.connectedWith.indexOf(destination);
@@ -277,14 +277,14 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
             throw `not connected with that port`;
         }
         this.connectedWith.splice(idxS, 1);
-        this.unconnected.next(connection);
+        this.disconnected.next(connection);
         
         const idxT = destination.connectedWith.indexOf(this);
         if (idxT === -1) {
             throw `not connected with that port`;
         }
         destination.connectedWith.splice(idxT, 1);
-        destination.unconnected.next(connection);
+        destination.disconnected.next(connection);
     }
 
     /**
@@ -349,8 +349,8 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         this.connected.subscribe(cb);
     }
 
-    public subscribeUnconnected(cb: (connection: Connection) => void): void {
-        this.unconnected.subscribe(cb);
+    public subscribeDisconnected(cb: (connection: Connection) => void): void {
+        this.disconnected.subscribe(cb);
     }
 
     // Slang tree

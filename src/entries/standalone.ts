@@ -6,13 +6,13 @@ import {AppModel} from "../app/model/app";
 import {SlangApp} from "../app/ui/app";
 import {APIStoragePlugin} from "../app/plugins/storage";
 import {RouterPlugin} from "../app/plugins/router";
-import {HTMLCanvas} from "../app/ui/cavas";
+import {ViewFrame} from "../app/ui/cavas";
 
 function SlangStudioStandalone(el: HTMLElement): Promise<void> {
     return new Promise<void>(resolve => {
         const appModel = new AppModel("slang");
         const app = new SlangApp(appModel);
-        app.addCanvas(new HTMLCanvas(el), true);
+        app.addFrame(new ViewFrame(el), true);
 
         new APIStoragePlugin(appModel, "http://localhost:5149/");
         const router = new RouterPlugin(appModel);
