@@ -4,15 +4,6 @@ import {BlueprintModel, BlueprintType} from "../model/blueprint";
 import {BlueprintView} from "./views/blueprint";
 import {LandscapeView} from "./views/landscape";
 import {SlangPlugin} from "../plugins/plugin";
-import {View} from "./views/view";
-
-class AppHTMLCanvas extends HTMLCanvas {
-
-    constructor(el: HTMLElement) {
-        super(el);
-    }
-
-}
 
 export class SlangApp {
 
@@ -42,19 +33,15 @@ export class SlangApp {
         });
     }
 
-    public createPlugin(ctor: new(appModel: AppModel, ...args: any) => SlangPlugin, ...args: any): SlangPlugin {
-        const plugin = new ctor(this.app, ...args);
+    public addPlugin(plugin: SlangPlugin): void {
         this.plugins.push(plugin);
-        return plugin;
     }
     
-    public createCanvas(el: HTMLElement, outlet: boolean = false): HTMLCanvas {
-        const canvas = new AppHTMLCanvas(el);
+    public addCanvas(canvas: HTMLCanvas, outlet: boolean = false): void {
         this.canvases.push(canvas);
         if (outlet) {
             this.outlet = canvas;
         }
-        return canvas;
     }
 
     public setOutlet(canvas: HTMLCanvas): void {
