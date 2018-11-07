@@ -22,12 +22,12 @@ export abstract class GenericDelegateModel<B extends BlackBox, P extends PortMod
         return this.owner;
     }
 
-    public getConnections(): Connections {
+    public getConnectionsTo(): Connections {
         const connections = new Connections();
 
         // First, handle operator out-ports
         if (this.getPortOut()) {
-            connections.addConnections(this.getPortOut()!.getConnections());
+            connections.addConnections(this.getPortOut()!.getConnectionsTo());
         }
 
         return connections;
@@ -52,7 +52,14 @@ export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel,
     public createPort(type: SlangType, direction: PortDirection): BlueprintPortModel {
         return super.createPortFromType(BlueprintPortModel, type, direction) as BlueprintPortModel;
     }
+    
+    public getPortIn(): BlueprintPortModel | null {
+        return super.getPortIn() as BlueprintPortModel;
+    }
 
+    public getPortOut(): BlueprintPortModel | null {
+        return super.getPortOut() as BlueprintPortModel;
+    }
 }
 
 export class OperatorDelegateModel extends GenericDelegateModel<OperatorModel, OperatorPortModel> {

@@ -55,18 +55,18 @@ export class OperatorModel extends BlackBox {
         return this.owner.getIdentity() + '#' + this.getName();
     }
 
-    public getConnections(): Connections {
+    public getConnectionsTo(): Connections {
         const connections = new Connections();
 
         // First, handle operator out-ports
         const portOut = this.getPortOut();
         if (portOut) {
-            connections.addConnections(portOut.getConnections());
+            connections.addConnections(portOut.getConnectionsTo());
         }
 
         // Then, handle delegate out-ports
         for (const delegate of this.delegates) {
-            connections.addConnections(delegate.getConnections());
+            connections.addConnections(delegate.getConnectionsTo());
         }
 
         return connections;

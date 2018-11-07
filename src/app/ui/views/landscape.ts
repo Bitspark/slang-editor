@@ -1,12 +1,13 @@
-import {dia, shapes} from 'jointjs';
-
-import {LandscapeModel} from '../../model/landscape';
-import {BlueprintModel, BlueprintType} from '../../model/blueprint';
+import {dia, shapes} from "jointjs";
+import {BlueprintModel, BlueprintType} from "../../model/blueprint";
 import {Subject} from "rxjs";
-import {BlackBoxComponent} from "./blackbox";
+import {LandscapeModel} from "../../model/landscape";
+import {BlueprintBoxComponent} from "../components/blackbox";
+import {ViewFrame} from "../cavas";
+import {PaperView} from "./paper-view";
 
-export class LandscapeComponent {
-    private graph: dia.Graph | null;
+export class LandscapeView extends PaperView {
+
     private readonly filter: ((blueprint: BlueprintModel) => boolean) | null;
     private blueprintRects = new Map<string, shapes.standard.Rectangle>();
     private addBlueprintButton: dia.Element;
@@ -14,24 +15,22 @@ export class LandscapeComponent {
     private destroyed = new Subject<void>();
     private dimensions: [number, number] = [0, 0];
 
-    constructor(graph: dia.Graph, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
-        this.graph = graph;
+    constructor(frame: ViewFrame, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
+        super(frame);
+        this.addZooming();
+        this.addPanning();
+        
         if (filter) {
             this.filter = filter;
         } else {
             this.filter = null;
         }
-        
+
         this.addBlueprintButton = this.createAddBlueprintButton();
         this.slangLogo = this.createSlangLogo();
 
         this.redraw();
         this.subscribe(landscape);
-    }
-
-    public destroy() {
-        this.graph = null;
-        this.destroyed.next();
     }
 
     private subscribe(landscape: LandscapeModel) {
@@ -55,11 +54,12 @@ export class LandscapeComponent {
     }
 
     public resize(width: number, height: number) {
+        super.resize(width, height);
         this.dimensions = [width, height];
         this.reorder();
     }
-    
-    private reorder() {        
+
+    private reorder() {
         const blueprintFullnames = Array.from(this.blueprintRects.keys());
         blueprintFullnames.sort();
         this.reorderEqually(blueprintFullnames, this.dimensions[0], this.dimensions[1]);
@@ -275,30 +275,20 @@ export class LandscapeComponent {
             return;
         }
 
-        const blueprintRect = new BlackBoxComponent(blueprint);
-        blueprintRect.attr({
-            body: {
-                cursor: "pointer",
-            },
-            label: {
-                cursor: "pointer"
-            }
-        });
-        blueprintRect.attr("draggable", false);
-        blueprintRect.addTo(this.graph);
-
-        this.blueprintRects.set(blueprint.getFullName(), blueprintRect);
+        const blueprintBox = new BlueprintBoxComponent(this.graph, blueprint);
+        this.blueprintRects.set(blueprint.getFullName(), blueprintBox.getRectangle());
 
         // JointJS -> Model
-        blueprintRect.on("pointerclick", function (evt: Event, x: number, y: number) {
+        blueprintBox.on("pointerclick", function (evt: Event, x: number, y: number) {
             blueprint.open();
         });
-        blueprintRect.on("pointerdblclick", function (evt: Event, x: number, y: number) {
+        blueprintBox.on("pointerdblclick", function (evt: Event, x: number, y: number) {
         });
 
         // Model -> JointJS
         blueprint.subscribeDeleted(function () {
-            blueprintRect.remove();
+            blueprintBox.remove();
         });
     }
+    
 }

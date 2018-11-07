@@ -17,7 +17,6 @@ export enum BlueprintType {
     Library
 }
 
-
 export class BlueprintModel extends BlackBox {
 
     // Topics
@@ -151,6 +150,14 @@ export class BlueprintModel extends BlackBox {
         return super.getPorts() as IterableIterator<BlueprintPortModel>;
     }
 
+    public getPortIn(): BlueprintPortModel | null {
+        return super.getPortIn() as BlueprintPortModel;
+    }
+
+    public getPortOut(): BlueprintPortModel | null {
+        return super.getPortOut() as BlueprintPortModel;
+    }
+
     public getGenericIdentifiers(): IterableIterator<string> {
         this.genericIdentifiers = new Set<string>();
         for (const port of this.getPorts()) {
@@ -244,31 +251,31 @@ export class BlueprintModel extends BlackBox {
         return this.getFullName().replace(/\./g, '-');
     }
 
-    public getConnections(): Connections {
+    public getConnectionsTo(): Connections {
         const connections = new Connections();
 
         const portIn = this.getPortIn();
 
         if (portIn) {
-            connections.addConnections(portIn.getConnections());
+            connections.addConnections(portIn.getConnectionsTo());
         }
 
         for (const operator of this.operators) {
-            connections.addConnections(operator.getConnections());
+            connections.addConnections(operator.getConnectionsTo());
         }
 
         for (const delegate of this.delegates) {
             const delegatePortIn = delegate.getPortIn();
             if (delegatePortIn) {
-                connections.addConnections(delegatePortIn.getConnections());
+                connections.addConnections(delegatePortIn.getConnectionsTo());
             }
         }
 
         return connections;
     }
-
-
+    
     // Actions
+    
     public addProperty(property: PropertyModel): PropertyModel {
         this.properties.push(property);
         return property
@@ -368,7 +375,10 @@ export class BlueprintModel extends BlackBox {
     // Slang tree
 
     getChildNodes(): IterableIterator<BlueprintPortModel | BlueprintDelegateModel | OperatorModel> {
-        const children: Array<BlueprintPortModel | BlueprintDelegateModel | OperatorModel> = Array.from(this.getPorts());
+        const children: Array<BlueprintPortModel | BlueprintDelegateModel | OperatorModel> = [];
+        for (const port of this.getPorts()) {
+            children.push(port);
+        }
         for (const delegate of this.delegates) {
             children.push(delegate);
         }

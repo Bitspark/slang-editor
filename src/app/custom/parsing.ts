@@ -1,9 +1,10 @@
 export interface ParsedPortInformation {
-    instance: string
-    delegate: string | undefined
-    service: string | undefined
-    directionIn: boolean
-    port: string
+    blueprint: string | undefined;
+    instance: string;
+    delegate: string | undefined;
+    service: string | undefined;
+    directionIn: boolean;
+    port: string;
 }
 
 export class SlangParsing {
@@ -13,6 +14,7 @@ export class SlangParsing {
         }
 
         const parsedInfo: ParsedPortInformation = {
+            blueprint: undefined,
             instance: "",
             delegate: undefined,
             service: undefined,
@@ -68,6 +70,12 @@ export class SlangParsing {
                 parsedInfo.instance = instancePart;
                 parsedInfo.service = 'main';
             }
+        }
+
+        const splitInstance = parsedInfo.instance.split("#")
+        if (splitInstance.length === 2) {
+            parsedInfo.blueprint = splitInstance[0];
+            parsedInfo.instance = splitInstance[1];
         }
 
         return parsedInfo;

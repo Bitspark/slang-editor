@@ -1,18 +1,20 @@
 import {BehaviorSubject, Subject} from 'rxjs';
 import {BlueprintModel} from './blueprint';
 import {LandscapeModel} from './landscape';
+import {SlangNode} from "../custom/nodes";
 
-export class AppModel {
+export class AppModel extends SlangNode {
     
     private openedBlueprint = new BehaviorSubject<BlueprintModel | null>(null);
     private openedLandscape = new BehaviorSubject<LandscapeModel | null>(null);
     private loadRequested = new Subject<void>();
     
-    private landscape: LandscapeModel = new LandscapeModel();
+    private readonly landscape: LandscapeModel = new LandscapeModel(this);
     
     private loading: Array<Promise<void>> = [];
     
-    constructor() {
+    constructor(private name: string) {
+        super();
         this.subscribeLandscape(this.landscape);
     }
     
@@ -84,6 +86,20 @@ export class AppModel {
         this.loadRequested.subscribe(() => {
             this.loading.push(cb());
         });
+    }
+
+    // Slang node
+    
+    getChildNodes(): IterableIterator<SlangNode> {
+        return [this.landscape].values();
+    }
+
+    getIdentity(): string {
+        return this.name;
+    }
+
+    getParentNode(): SlangNode | null {
+        return null;
     }
     
 }

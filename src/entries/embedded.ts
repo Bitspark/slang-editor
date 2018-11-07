@@ -3,17 +3,19 @@ import "./common"
 import "../styles/embedded.scss"
 
 import {AppModel} from "../app/model/app";
-import {MainComponent} from "../app/ui/app";
+import {SlangApp} from "../app/ui/app";
 import {StaticStoragePlugin} from "../app/plugins/storage";
+import {ViewFrame} from "../app/ui/cavas";
 
 export function SlangStudioEmbedded(el: HTMLElement, blueprintFullName: string): Promise<void> {
     return new Promise<void>(resolve => {
-        const app = new AppModel();
-        const mainComponent = new MainComponent(app, el);
-        new StaticStoragePlugin(app, 'https://files.bitspark.de/slang-operators/slang-definitions.json');
+        const appModel = new AppModel(`embedded-${blueprintFullName}`);
+        const app = new SlangApp(appModel);
+        app.addFrame(new ViewFrame(el), true);
+        app.addPlugin(new StaticStoragePlugin(appModel, 'https://files.bitspark.de/slang-operators/slang-definitions.json'));
 
-        mainComponent.load().then(() => {
-            const blueprint = app.getLandscape().findBlueprint(blueprintFullName);
+        app.load().then(() => {
+            const blueprint = appModel.getLandscape().findBlueprint(blueprintFullName);
             if (blueprint) {
                 blueprint.open();
             } else {
