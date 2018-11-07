@@ -250,7 +250,7 @@ export class BlueprintView extends PaperView {
                 break;
             case "left":
                 portElement.set({position: {x: 0, y: -elementSize.height / 2}});
-                this.rightPorts.push(portElement);
+                this.leftPorts.push(portElement);
                 calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
                     x: outerPosition.x - elementSize.width,
                     y: outerPosition.y,
@@ -260,7 +260,7 @@ export class BlueprintView extends PaperView {
                 break;
             case "right":
                 portElement.set({position: {x: 0, y: -elementSize.height / 2}});
-                this.leftPorts.push(portElement);
+                this.rightPorts.push(portElement);
                 calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
                     x: outerPosition.x + outerSize.width,
                     y: outerPosition.y,
