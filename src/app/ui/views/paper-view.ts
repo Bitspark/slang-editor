@@ -11,8 +11,6 @@ export abstract class PaperView extends View {
         super(canvas);
         this.paper = this.createPaper();
         this.redirectPaperEvents();
-        this.addZooming();
-        this.addPanning();
         this.catchPaperEvents();
     }
 
@@ -36,6 +34,10 @@ export abstract class PaperView extends View {
 
     protected center() {
         this.paper.setOrigin(this.paper.options.width as number / 2, this.paper.options.height as number / 2);
+    }
+    
+    protected fit() {
+        this.paper.scaleContentToFit();
     }
 
     protected createPaper(opt: dia.Paper.Options = {}): dia.Paper {

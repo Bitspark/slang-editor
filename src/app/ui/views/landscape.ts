@@ -1,4 +1,3 @@
-import {View} from "./view";
 import {dia, shapes} from "jointjs";
 import {BlueprintModel, BlueprintType} from "../../model/blueprint";
 import {Subject} from "rxjs";
@@ -18,6 +17,8 @@ export class LandscapeView extends PaperView {
 
     constructor(canvas: HTMLCanvas, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
         super(canvas);
+        this.addZooming();
+        this.addPanning();
         
         if (filter) {
             this.filter = filter;

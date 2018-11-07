@@ -150,6 +150,14 @@ export class BlueprintModel extends BlackBox {
         return super.getPorts() as IterableIterator<BlueprintPortModel>;
     }
 
+    public getPortIn(): BlueprintPortModel | null {
+        return super.getPortIn() as BlueprintPortModel;
+    }
+
+    public getPortOut(): BlueprintPortModel | null {
+        return super.getPortOut() as BlueprintPortModel;
+    }
+
     public getGenericIdentifiers(): IterableIterator<string> {
         this.genericIdentifiers = new Set<string>();
         for (const port of this.getPorts()) {

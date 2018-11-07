@@ -52,7 +52,14 @@ export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel,
     public createPort(type: SlangType, direction: PortDirection): BlueprintPortModel {
         return super.createPortFromType(BlueprintPortModel, type, direction) as BlueprintPortModel;
     }
+    
+    public getPortIn(): BlueprintPortModel | null {
+        return super.getPortIn() as BlueprintPortModel;
+    }
 
+    public getPortOut(): BlueprintPortModel | null {
+        return super.getPortIn() as BlueprintPortModel;
+    }
 }
 
 export class OperatorDelegateModel extends GenericDelegateModel<OperatorModel, OperatorPortModel> {
