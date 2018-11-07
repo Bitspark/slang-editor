@@ -367,15 +367,15 @@ export class BlueprintModel extends BlackBox {
     // Slang tree
 
     getChildNodes(): IterableIterator<BlueprintPortModel | BlueprintDelegateModel | OperatorModel> {
-        const children: Array<BlueprintPortModel | BlueprintDelegateModel | OperatorModel> = Array.from(this.getPorts());
+        const children: Array<BlueprintPortModel | BlueprintDelegateModel | OperatorModel> = [];
+        for (const port of this.getPorts()) {
+            children.push(port);
+        }
         for (const delegate of this.delegates) {
             children.push(delegate);
         }
         for (const operator of this.operators) {
             children.push(operator);
-        }
-        for (const port of this.getPorts()) {
-            children.push(port);
         }
         return children.values();
     }

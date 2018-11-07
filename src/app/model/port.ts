@@ -3,8 +3,8 @@ import {BlueprintModel} from './blueprint';
 import {OperatorModel} from './operator';
 import {BlueprintDelegateModel, OperatorDelegateModel} from './delegate';
 import {PortOwner, SlangNode} from '../custom/nodes';
-import {Connection, Connections} from "../custom/connections";
-import {TypeIdentifier, SlangType} from "../custom/type";
+import {Connection, Connections} from '../custom/connections';
+import {SlangType, TypeIdentifier} from '../custom/type';
 
 export enum PortDirection {
     In, // 0
@@ -17,6 +17,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     // self
     private removed = new Subject<void>();
     private connected = new Subject<Connection>();
+    private unconnected = new Subject<Connection>();
     private selected = new BehaviorSubject<boolean>(false);
     private collapsed = new BehaviorSubject<boolean>(false);
 
@@ -247,18 +248,54 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         return this.collapsed.getValue();
     }
 
-    public canConnect(destination: PortModel) {
-        return this.isSource() !== destination.isSource();
+    public canConnect(destination: PortModel): boolean {
+        if (destination.connectedWith.length !== 0) {
+            return false;
+        }
+        if (this.isSource() === destination.isSource()) {
+            return false;
+        }
+        if (this.connectedWith.indexOf(destination) !== -1) {
+            return false;
+        }
+        if (destination.getTypeIdentifier() === TypeIdentifier.Trigger) {
+            return true;
+        }
+        if (destination.getTypeIdentifier() === TypeIdentifier.Primitive && [TypeIdentifier.String, TypeIdentifier.Number, TypeIdentifier.Boolean, TypeIdentifier.Primitive].indexOf(this.getTypeIdentifier()) !== -1) {
+            return true;
+        }
+        if (this.getTypeIdentifier() === TypeIdentifier.Primitive && [TypeIdentifier.String, TypeIdentifier.Number, TypeIdentifier.Boolean, TypeIdentifier.Primitive].indexOf(destination.getTypeIdentifier()) !== -1) {
+            return true;
+        }
+        if (this.getTypeIdentifier() !== destination.getTypeIdentifier()) {
+            return false;
+        }
+        return true;
     }
     
     public abstract isSource(): boolean;
     
+    public unconnect(destination: PortModel) {
+        const connection = {source: this, destination: destination};
+        
+        const idxS = this.connectedWith.indexOf(destination);
+        if (idxS === -1) {
+            throw `not connected with that port`;
+        }
+        this.connectedWith.splice(idxS, 1);
+        this.unconnected.next(connection);
+        
+        const idxT = destination.connectedWith.indexOf(this);
+        if (idxT === -1) {
+            throw `not connected with that port`;
+        }
+        destination.connectedWith.splice(idxT, 1);
+        destination.unconnected.next(connection);
+    }
+    
     public connect(destination: PortModel) {
         if (!this.canConnect(destination)) {
-            throw `cannot connect: ${this.getIdentity()} --> ${destination.getIdentity()} (wrong direction)`;
-        }
-        if (this.connectedWith.indexOf(destination) !== -1) {
-            throw `already connected with that port`;
+            throw `cannot connect: ${this.getIdentity()} --> ${destination.getIdentity()}`;
         }
         switch (this.typeIdentifier) {
             case TypeIdentifier.Map:
@@ -270,10 +307,11 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
                 this.getStreamSub().connect(destination.getStreamSub());
                 break;
             default:
+                const connection = {source: this, destination: destination};
                 this.connectedWith.push(destination);
-                this.connected.next({source: this, destination: destination});
+                this.connected.next(connection);
                 destination.connectedWith.push(this);
-                destination.connected.next({source: destination, destination: this});
+                destination.connected.next(connection);
                 break;
         }
     }
@@ -294,6 +332,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     
     public subscribeConnected(cb: (connection: Connection) => void): void {
         this.connected.subscribe(cb);
+    }
+
+    public subscribeUnconnected(cb: (connection: Connection) => void): void {
+        this.unconnected.subscribe(cb);
     }
 
     // Slang tree

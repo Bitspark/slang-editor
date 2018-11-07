@@ -3,7 +3,7 @@ import {BlackBoxComponent, IsolatedBlueprintPort, OperatorBoxComponent} from "..
 import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 import {Connection} from "../../custom/connections";
-import {BlackBox, PortOwner} from "../../custom/nodes";
+import {BlackBox, PortOwner, SlangNode} from '../../custom/nodes';
 import {HTMLCanvas} from "../cavas";
 import {PaperView} from "./paper-view";
 import {BlueprintPortModel, GenericPortModel, PortModel} from "../../model/port";
@@ -25,10 +25,10 @@ const ConnectionLink = dia.Link.define("Connection", {
 }, {
     toolMarkup: [
         "<g class='link-tool'>",
-        "<g class='tool-remove' event='connection:remove'>",
-        "<circle r='11' />",
-        "<path transform='scale(.8) translate(-16, -16)' d='M24.778,21.419 19.276,15.917 24.777,10.415 21.949,7.585 16.447,13.087 10.945,7.585 8.117,10.415 13.618,15.917 8.116,21.419 10.946,24.248 16.447,18.746 21.948,24.248z' />",
-        "<title>Remove link.</title>",
+        "<g class='tool-remove' event='tool:remove'>",
+        "<circle r='11' fill='red' />",
+        "<path transform='scale(.8) translate(-16, -16)' d='M24.778,21.419 19.276,15.917 24.777,10.415 21.949,7.585 16.447,13.087 10.945,7.585 8.117,10.415 13.618,15.917 8.116,21.419 10.946,24.248 16.447,18.746 21.948,24.248z' fill='white' />",
+        "<title>Unconnect</title>",
         "</g>",
         "</g>",].join(""),
 });
@@ -70,7 +70,7 @@ export class BlueprintView extends PaperView {
 
     protected createPaper(): dia.Paper {
         const that = this;
-        return super.createPaper({
+        const paper = super.createPaper({
             allowLink: function (linkView: dia.LinkView): boolean {
                 const magnetS = linkView.getEndMagnet("source");
                 const magnetT = linkView.getEndMagnet("target");
@@ -139,6 +139,29 @@ export class BlueprintView extends PaperView {
             snapLinks: {radius: 75,},
             markAvailable: true,
         });
+        paper.on("tool:remove", function (linkView: dia.LinkView) {
+            const magnetS = linkView.getEndMagnet("source");
+            const magnetT = linkView.getEndMagnet("target");
+            if (!magnetS || !magnetT) {
+                return false;
+            }
+
+            const sourcePortRef = magnetS.getAttribute("port");
+            const destinationPortRef = magnetT.getAttribute("port");
+            if (!sourcePortRef || !destinationPortRef) {
+                return false;
+            }
+
+            const sourcePort = that.blueprint.find(sourcePortRef);
+            const destinationPort = that.blueprint.find(destinationPortRef);
+            if (!sourcePort || !destinationPort ||
+                !(sourcePort instanceof GenericPortModel) || !(destinationPort instanceof GenericPortModel)) {
+                return false;
+            }
+
+            sourcePort.unconnect(destinationPort);
+        });
+        return paper;
     }
 
     private attachEventHandlers() {
@@ -149,11 +172,6 @@ export class BlueprintView extends PaperView {
             }
 
             that.fitOuter();
-        });
-        this.graph.on("connection:remove", function (cell: dia.Cell, oldCells: any, evt: Event) {
-            if (cell.isLink()) {
-                console.log(cell, evt);
-            }
         });
     }
 
@@ -167,8 +185,10 @@ export class BlueprintView extends PaperView {
         const ports = Array.from(this.blueprint.getDescendentNodes<BlueprintPortModel>(BlueprintPortModel));
         ports.filter(port => port.isSource()).forEach(source => {
             source.subscribeConnected(connection => {
-                console.log(connection);
                 this.addConnection(connection);
+            });
+            source.subscribeUnconnected(connection => {
+                this.removeConnection(connection);
             });
         });
     }
@@ -301,7 +321,9 @@ export class BlueprintView extends PaperView {
             destinationIdentity = connection.destination.getAncestorNode<PortOwner>(PortOwner)!.getIdentity() + "_out";
         }
 
+        const linkId = `${sourceIdentity}>${destinationIdentity}`;
         const link = new ConnectionLink({
+            id: linkId,
             source: {
                 id: sourceIdentity,
                 port: connection.source.getIdentity(),
@@ -319,9 +341,39 @@ export class BlueprintView extends PaperView {
             toolMarkup: false,
         } as any);
         link.addTo(this.graph);
-        link.findView(this.getPaper()).removeTools();
     }
 
+    private removeConnection(connection: Connection) {
+        const sourceOwner = connection.source.getAncestorNode<BlackBox>(BlackBox);
+        const destinationOwner = connection.destination.getAncestorNode<BlackBox>(BlackBox);
+
+        if (!sourceOwner) {
+            throw new Error(`no source owner found`);
+        }
+        if (!destinationOwner) {
+            throw new Error(`no destination owner found`);
+        }
+
+        let sourceIdentity = sourceOwner.getIdentity();
+        if (sourceOwner instanceof BlueprintModel) {
+            sourceIdentity = connection.source.getAncestorNode<PortOwner>(PortOwner)!.getIdentity() + "_in";
+        }
+
+        let destinationIdentity = destinationOwner.getIdentity();
+        if (destinationOwner instanceof BlueprintModel) {
+            destinationIdentity = connection.destination.getAncestorNode<PortOwner>(PortOwner)!.getIdentity() + "_out";
+        }
+        
+        const linkId = `${sourceIdentity}>${destinationIdentity}`;
+        const link = this.graph.getCell(linkId);
+        
+        if (link) {
+            link.remove();
+        } else {
+            throw `link could not be found`;
+        }
+    }
+    
     private autoLayout() {
         layout.DirectedGraph.layout(this.graph, {
             nodeSep: 120,
@@ -396,10 +448,14 @@ export class BlueprintView extends PaperView {
 
         // Ports
         const ports = Array.from(operator.getDescendentNodes<PortModel>(GenericPortModel));
-        ports.filter(port => port.isSource()).forEach(source => {
+        const sourcePorts = ports.filter(port => port.isSource());
+        sourcePorts.forEach(source => {
             source.subscribeConnected(connection => {
                 this.addConnection(connection);
             });
+            source.subscribeUnconnected(connection => {
+                this.removeConnection(connection);
+            })
         });
     }
 
