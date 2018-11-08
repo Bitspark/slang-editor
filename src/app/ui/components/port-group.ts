@@ -49,31 +49,19 @@ export class PortGroupComponent {
         switch (groupPosition) {
             case "top":
                 this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "top", start, width) as any;
-                this.portGroupElement.markup = "<path class='sl-srv-main sl-port sl-port-in' d=''></path>";
-                this.portGroupElement.attrs = {
-                    ".sl-srv-main.sl-port": PortGroupComponent.portAttributes,
-                };
+                this.portGroupElement.markup = "<path class='sl-port' d=''></path>";
                 break;
             case "right":
                 this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "right", start, width) as any;
-                this.portGroupElement.markup = "<path class='sl-dlg sl-port sl-port-in' d=''></path>";
-                this.portGroupElement.attrs = {
-                    ".sl-dlg.sl-port": PortGroupComponent.portAttributes,
-                };
+                this.portGroupElement.markup = "<path class='sl-port' d=''></path>";
                 break;
             case "bottom":
                 this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "bottom", start, width) as any;
-                this.portGroupElement.markup = "<path class='sl-srv-main sl-port sl-port-out' d=''></path>";
-                this.portGroupElement.attrs = {
-                    ".sl-srv-main.sl-port": PortGroupComponent.portAttributes
-                };
+                this.portGroupElement.markup = "<path class='sl-port' d=''></path>";
                 break;
             case "left":
                 this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "left", start, width) as any;
-                this.portGroupElement.markup = "<path class='sl-dlg sl-port sl-port-out' d=''></path>";
-                this.portGroupElement.attrs = {
-                    ".sl-dlg.sl-port": PortGroupComponent.portAttributes,
-                };
+                this.portGroupElement.markup = "<path class='sl-port' d=''></path>";
                 break;
         }
     }
@@ -116,30 +104,6 @@ export class PortGroupComponent {
      * Spacing between ports. Two ports must not be closer to each other than this value.
      */
     private static readonly portSpacing = 15;
-
-    /**
-     * Width of the visible port shape.
-     */
-    private static readonly portWidth = 7;
-
-    /**
-     * Height of the visible port shape.
-     */
-    private static readonly portHeight = 21;
-
-    /**
-     * SVG attributes for the port shape.
-     */
-    public static readonly portAttributes: attributes.SVGAttributes = {
-        paintOrder: "stroke fill",
-        d:
-            `M ${-PortGroupComponent.portWidth / 2} ${-PortGroupComponent.portHeight / 2} ` +
-            `L ${PortGroupComponent.portWidth / 2} ${-PortGroupComponent.portHeight / 2} ` +
-            `L 0 ${PortGroupComponent.portHeight / 2} z`,
-        magnet: true,
-        stroke: "gray",
-        strokeWidth: 3
-    };
 
     public static layoutFunction(portComponents: Array<PortComponent>, position: PortGroupPosition, offset: number, space: number): (ports: Array<any>, elBBox: g.Rect, opt: any) => Array<g.Point> {
         return function (ports: Array<PortComponent>, elBBox: g.Rect, opt: any): Array<g.Point> {

@@ -1,6 +1,7 @@
 import {attributes, dia, g} from "jointjs";
 import {PortModel} from "../../model/port";
 import {PortGroupComponent, PortGroupPosition} from "./port-group";
+import {TypeIdentifier} from "../../custom/type";
 
 /**
  * Component representing a Slang port.
@@ -14,7 +15,7 @@ export class PortComponent {
         this.portElement.id = `${port.getIdentity()}`;
         this.portElement.group = parent.getName();
         this.portElement.attrs = {
-            ".sl-port": PortComponent.getPortAttributes(parent.getGroupPosition(), port.isDirectionIn()),
+            ".sl-port": PortComponent.getPortAttributes(parent.getGroupPosition(), port),
         };
     }
 
@@ -40,9 +41,27 @@ export class PortComponent {
 
     // STATIC:
 
-    private static getPortAttributes(position: PortGroupPosition, directionIn: boolean): attributes.SVGAttributes {
+    /**
+     * Width of the visible port shape.
+     */
+    private static readonly portWidth = 7;
+
+    /**
+     * Height of the visible port shape.
+     */
+    private static readonly portHeight = 21;
+
+    private static getPortAttributes(position: PortGroupPosition, port: PortModel): attributes.SVGAttributes {
         const attrs: attributes.SVGAttributes = {
-            fill: "cyan",
+            paintOrder: "stroke fill",
+            d:
+                `M ${-PortComponent.portWidth / 2} ${-PortComponent.portHeight / 2} ` +
+                `L ${PortComponent.portWidth / 2} ${-PortComponent.portHeight / 2} ` +
+                `L 0 ${PortComponent.portHeight / 2} z`,
+            magnet: true,
+            stroke: "gray",
+            strokeWidth: 3,
+            class: `sl-port sl-type-${TypeIdentifier[port.getTypeIdentifier()].toLowerCase()}`,
         };
 
         switch (position) {
@@ -50,13 +69,13 @@ export class PortComponent {
                 attrs.transform = "";
                 break;
             case "right":
-                attrs.transform = `rotate(${directionIn ? 90 : -90})`;
+                attrs.transform = `rotate(${port.isDirectionIn() ? 90 : -90})`;
                 break;
             case "bottom":
                 attrs.transform = "";
                 break;
             case "left":
-                attrs.transform = `rotate(${directionIn ? 90 : -90})`;
+                attrs.transform = `rotate(${port.isDirectionIn() ? 90 : -90})`;
                 break;
         }
 

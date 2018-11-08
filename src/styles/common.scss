@@ -9,3 +9,31 @@ html, body {
 .available-magnet {
   stroke: lime;
 }
+
+.sl-type-number {
+  fill: blue;
+}
+
+.sl-type-string {
+  fill: brown;
+}
+
+.sl-type-boolean {
+  fill: orange;
+}
+
+.sl-type-binary {
+  fill: yellow;
+}
+
+.sl-type-primitive {
+  fill: darkcyan;
+}
+
+.sl-type-trigger {
+  fill: gray;
+}
+
+.sl-type-generic {
+  fill: violet;
+}
