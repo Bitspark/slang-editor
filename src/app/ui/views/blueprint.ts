@@ -142,6 +142,10 @@ export class BlueprintView extends PaperView {
 
             that.fitOuter();
         });
+
+        this.outer.on("pointerdblclick", function (elementView: ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
+            new BlueprintSelectComponent(that, [x, y], [evt.clientX, evt.clientY]);
+        });
     }
 
     private subscribe() {
