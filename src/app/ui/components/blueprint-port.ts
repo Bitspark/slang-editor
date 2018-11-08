@@ -1,6 +1,7 @@
 import {PortGroupComponent, PortGroupPosition} from "./port-group";
 import {dia, shapes} from "jointjs";
 import {PortModel} from "../../model/port";
+import {Styles} from "../../../styles/studio";
 
 export class IsolatedBlueprintPort {
 
@@ -11,14 +12,7 @@ export class IsolatedBlueprintPort {
         const portGroup = new PortGroupComponent(graph, "PortGroup", port, position, 0, 1.0);
         const portGroups = {"PortGroup": portGroup.getPortGroupElement()};
 
-        const translations = {
-            "top": "",
-            "right": "translate(-40 0)",
-            "bottom": "",
-            "left": "translate(40 0)",
-        };
-
-        const transform = translations[position];
+        const transform = Styles.PortGroup.transformations[position];
 
         this.rectangle = new shapes.standard.Rectangle({
             id: identity,

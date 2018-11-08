@@ -3,7 +3,7 @@ import "./common";
 import "../styles/standalone.scss";
 
 import {AppModel} from "../app/model/app";
-import {SlangApp} from "../app/ui/app";
+import {SlangApp} from "../app/app";
 import {APIStoragePlugin} from "../app/plugins/storage";
 import {RouterPlugin} from "../app/plugins/router";
 import {ViewFrame} from "../app/ui/cavas";

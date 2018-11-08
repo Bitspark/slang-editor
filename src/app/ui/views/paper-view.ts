@@ -49,8 +49,8 @@ export abstract class PaperView extends View {
         opt = Object.assign({
             el: inner,
             model: this.graph,
-            gridSize: 10,
-            drawGrid: true,
+            gridSize: 5,
+            drawGrid: false,
             interactive: function (cellView: dia.CellView) {
                 if (cellView.model.attr('draggable') === false) {
                     return false;

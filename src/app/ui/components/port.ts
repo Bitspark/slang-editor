@@ -2,6 +2,7 @@ import {attributes, dia, g} from "jointjs";
 import {PortModel} from "../../model/port";
 import {PortGroupComponent, PortGroupPosition} from "./port-group";
 import {TypeIdentifier} from "../../custom/type";
+import {Styles} from "../../../styles/studio";
 
 /**
  * Component representing a Slang port.
@@ -41,26 +42,11 @@ export class PortComponent {
 
     // STATIC:
 
-    /**
-     * Width of the visible port shape.
-     */
-    private static readonly portWidth = 7;
-
-    /**
-     * Height of the visible port shape.
-     */
-    private static readonly portHeight = 21;
-
     private static getPortAttributes(position: PortGroupPosition, port: PortModel): attributes.SVGAttributes {
         const attrs: attributes.SVGAttributes = {
             paintOrder: "stroke fill",
-            d:
-                `M ${-PortComponent.portWidth / 2} ${-PortComponent.portHeight / 2} ` +
-                `L ${PortComponent.portWidth / 2} ${-PortComponent.portHeight / 2} ` +
-                `L 0 ${PortComponent.portHeight / 2} z`,
+            d: Styles.Port.shape,
             magnet: true,
-            stroke: "gray",
-            strokeWidth: 3,
             class: `sl-port sl-type-${TypeIdentifier[port.getTypeIdentifier()].toLowerCase()}`,
         };
 

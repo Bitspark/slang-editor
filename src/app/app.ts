@@ -1,9 +1,11 @@
-import {ViewFrame} from "./cavas";
-import {AppModel} from "../model/app";
-import {BlueprintModel, BlueprintType} from "../model/blueprint";
-import {BlueprintView} from "./views/blueprint";
-import {LandscapeView} from "./views/landscape";
-import {SlangPlugin} from "../plugins/plugin";
+import "../styles/studio.scss";
+
+import {ViewFrame} from "./ui/cavas";
+import {AppModel} from "./model/app";
+import {BlueprintModel, BlueprintType} from "./model/blueprint";
+import {BlueprintView} from "./ui/views/blueprint";
+import {LandscapeView} from "./ui/views/landscape";
+import {SlangPlugin} from "./plugins/plugin";
 
 export class SlangApp {
 

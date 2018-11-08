@@ -3,7 +3,7 @@ import "./common"
 import "../styles/embedded.scss"
 
 import {AppModel} from "../app/model/app";
-import {SlangApp} from "../app/ui/app";
+import {SlangApp} from "../app/app";
 import {StaticStoragePlugin} from "../app/plugins/storage";
 import {ViewFrame} from "../app/ui/cavas";
 
