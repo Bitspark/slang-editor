@@ -6,8 +6,12 @@ import {LandscapeModel} from '../../model/landscape';
 import {BlueprintModel} from '../../model/blueprint';
 import {ClassComponent, CVnode} from "mithril";
 import {BlueprintView} from "../views/blueprint";
+import {BehaviorSubject, Subject} from "rxjs";
+import {PropertyAssignments} from "../../model/property";
+import {GenericSpecifications} from "../../model/generic";
 
 export interface Attrs {
+    onSelect: (bp: BlueprintModel) => void,
     pos: [number, number]
     blueprints: Array<BlueprintModel>
 }
@@ -28,7 +32,12 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
                 }
             },
             this.blueprints.map((blueprint: BlueprintModel) => {
-                return m(".sl-blupr-entry", m(".sl-bluepr-title", blueprint.getFullName()))
+                return m(".sl-blupr-entry", {
+                        onclick: () => {
+                            attrs.onSelect(blueprint);
+                        }
+                    },
+                    m(".sl-bluepr-title", blueprint.getFullName()))
             })
         );
     }
@@ -40,23 +49,30 @@ export class BlueprintSelectComponent {
     private readonly blueprint: BlueprintModel;
     private readonly landscape: LandscapeModel;
     private readonly placeholderRect: shapes.standard.Rectangle;
+    private readonly el: HTMLElement;
 
-    constructor(private readonly blueprintView: BlueprintView, [relX, relY]: [number, number], [absX, absY]: [number, number]) {
+    constructor(private readonly blueprintView: BlueprintView, private relPos: [number, number], private readonly absPos: [number, number]) {
         this.graph = blueprintView.getGraph();
         this.blueprint = blueprintView.getBlueprint()
         this.landscape = this.blueprint.getLandscape();
 
-        this.placeholderRect = BlueprintSelectComponent.createPlaceholder(relX, relY);
+        this.placeholderRect = BlueprintSelectComponent.createPlaceholder(relPos);
         this.placeholderRect.addTo(this.graph);
 
-        const el: HTMLElement = document.createElement('span');
-        this.blueprintView.getFrame().getHTMLElement().appendChild(el);
+        this.el = document.createElement('span');
+        this.blueprintView.getFrame().getHTMLElement().appendChild(this.el);
 
-        m.mount(el,
+        const that = this;
+
+        m.mount(this.el,
             {
                 view: () => m(new BlueprintMenuComponent(), {
-                    pos: [absX, absY],
-                    blueprints: this.getBlueprints()
+                    pos: absPos,
+                    blueprints: this.getBlueprints(),
+                    onSelect: (bp: BlueprintModel) => {
+                        console.log(">>>", that.blueprint.createBlankOperator(bp));
+                        that.destroy();
+                    }
                 })
             }
         );
@@ -64,9 +80,26 @@ export class BlueprintSelectComponent {
     }
 
     public destroy() {
+        this.placeholderRect.remove();
+        this.el.remove();
     }
 
     private subscribe() {
+        const that = this;
+        this.placeholderRect.on("change:position", function (elem: dia.Element) {
+            console.log(">>>", elem, elem.getBBox());
+            that.moveTo([elem.getBBox().x, elem.getBBox().y]);
+        });
+    }
+
+    private moveTo(relPos: [number, number]) {
+        this.relPos = relPos;
+        const distance = [
+            this.relPos[0] - relPos[0],
+            this.relPos[1] - relPos[1],
+        ];
+        this.absPos[0] = this.absPos[0] - distance[0];
+        this.absPos[1] = this.absPos[1] - distance[1];
     }
 
 
@@ -90,11 +123,10 @@ export class BlueprintSelectComponent {
                 }
             }
         }
-
         return blueprints;
     }
 
-    private static createPlaceholder(posX: number, posY: number): shapes.standard.Rectangle {
+    private static createPlaceholder([posX, posY]: [number, number]): shapes.standard.Rectangle {
         const phRect = new shapes.standard.Rectangle({
             size: {width: 100, height: 100},
             position: {x: posX - 50, y: posY - 50},
