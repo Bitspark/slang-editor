@@ -15,8 +15,8 @@ export namespace Styles {
     };
     
     export class Port {
-        public static width = 7;
-        public static height = 21;
+        public static width = 5;
+        public static height = 10;
         public static shape = 
             `M ${-Port.width / 2} ${-Port.height / 2} ` +
             `L ${Port.width / 2} ${-Port.height / 2} ` +
@@ -27,6 +27,7 @@ export namespace Styles {
         class Connection {
             public static strokeWidth = 3;
             public static stroke = (type: TypeIdentifier): string => TypeColors[type];
+            public static vectorEffect = "default";
         }
         
         export class Ordinary extends Connection {
@@ -45,6 +46,8 @@ export namespace Styles {
             "bottom": "",
             "left": "translate(40 0)",
         };
+
+        public static portSpacing = 10;
     }
 
     export class Blackbox {

@@ -6,13 +6,10 @@ import {Connection} from "../../custom/connections";
 import {ViewFrame} from "../cavas";
 import {PaperView} from "./paper-view";
 import {BlueprintPortModel, GenericPortModel, PortModel} from "../../model/port";
-import {slangRouter} from "../link/router";
-import {slangConnector} from "../link/connector";
 import {IsolatedBlueprintPort} from "../components/blueprint-port";
 import {PortGroupPosition} from "../components/port-group";
 import {ConnectionComponent} from "../components/connection";
 import {Styles} from "../../../styles/studio";
-import {TypeIdentifier} from "../../custom/type";
 
 export class BlueprintView extends PaperView {
 
@@ -43,7 +40,7 @@ export class BlueprintView extends PaperView {
         this.attachEventHandlers();
 
         // this.addOriginPoint();
-        
+
         this.fit();
     }
 
@@ -106,7 +103,7 @@ export class BlueprintView extends PaperView {
             },
             snapLinks: {radius: 75,},
             markAvailable: true,
-        });        
+        });
         paper.on("tool:remove", function (linkView: dia.LinkView) {
             const magnetS = linkView.getEndMagnet("source");
             const magnetT = linkView.getEndMagnet("target");
@@ -172,8 +169,8 @@ export class BlueprintView extends PaperView {
                     class: "joint-cell joint-element sl-outer",
                 },
                 body: {
-                    rx: Styles.Outer.rx, // TODO: move to common sass-ts-file
-                    ry: Styles.Outer.rx,
+                    rx: Styles.Outer.rx,
+                    ry: Styles.Outer.ry,
                     class: "sl-rectangle",
                     cursor: "default",
                 },
@@ -190,21 +187,21 @@ export class BlueprintView extends PaperView {
     }
 
     private createIsolatedPort(port: BlueprintPortModel, id: string, name: string, position: PortGroupPosition): void {
-        const invertedPosition: {[key in PortGroupPosition]: PortGroupPosition} = {
+        const invertedPosition: { [key in PortGroupPosition]: PortGroupPosition } = {
             top: "bottom",
             bottom: "top",
             left: "right",
             right: "left",
         };
-        
+
         const that = this;
         const portComponent = new IsolatedBlueprintPort(this.graph, name, id, port, invertedPosition[position]);
         const portElement = portComponent.getElement();
-        
+
         let calculateRestrictedRect: (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => g.PlainRect;
 
         const elementSize = portElement.get("size") as g.PlainRect;
-        
+
         switch (position) {
             case "top":
                 portElement.set({position: {x: -elementSize.width / 2, y: 0}});
@@ -247,18 +244,18 @@ export class BlueprintView extends PaperView {
                 });
                 break;
         }
-        
+
         portElement.set("restrictTranslate", function (): g.PlainRect {
             const outerPosition = that.outer.get("position") as g.PlainPoint;
             const outerSize = that.outer.get("size") as g.PlainRect;
             return calculateRestrictedRect(outerPosition, outerSize);
         });
     }
-    
+
     private createIsolatedPorts(): void {
         this.createIsolatedPort(this.blueprint.getPortIn()!, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
         this.createIsolatedPort(this.blueprint.getPortOut()!, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
-        
+
         for (const delegate of this.blueprint.getDelegates()) {
             this.createIsolatedPort(delegate.getPortOut()!, `${delegate.getIdentity()}_out`, `Delegate ${delegate.getName()} Out-Port`, "right");
             this.createIsolatedPort(delegate.getPortIn()!, `${delegate.getIdentity()}_in`, `Delegate ${delegate.getName()} In-Port`, "right");
@@ -276,14 +273,14 @@ export class BlueprintView extends PaperView {
             this.addConnection(connection);
         }
     }
-    
+
     private addConnection(connection: Connection) {
         const connectionComponent = new ConnectionComponent(this.graph, connection);
         this.connections.push(connectionComponent);
     }
 
     private removeConnection(connection: Connection) {
-        const linkId = ConnectionComponent.getLinkId(ConnectionComponent.getPortIds(connection));
+        const linkId = ConnectionComponent.getLinkId(connection);
         const link = ConnectionComponent.findLink(this.graph, connection);
         if (link) {
             link.remove();

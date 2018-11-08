@@ -4,9 +4,10 @@
  * Currently these are main in- and out-ports and delegate in- and out-ports.
  */
 import {PortComponent} from "./port";
-import {attributes, dia, g} from "jointjs";
+import {dia, g} from "jointjs";
 import {PortModel} from "../../model/port";
 import {TypeIdentifier} from "../../custom/type";
+import {Styles} from "../../../styles/studio";
 
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";
 
@@ -100,11 +101,6 @@ export class PortGroupComponent {
 
     // STATIC:
 
-    /**
-     * Spacing between ports. Two ports must not be closer to each other than this value.
-     */
-    private static readonly portSpacing = 15;
-
     public static layoutFunction(portComponents: Array<PortComponent>, position: PortGroupPosition, offset: number, space: number): (ports: Array<any>, elBBox: g.Rect, opt: any) => Array<g.Point> {
         return function (ports: Array<PortComponent>, elBBox: g.Rect, opt: any): Array<g.Point> {
             return ports.map((port: PortComponent, index: number, ports: Array<any>) => {
@@ -122,12 +118,12 @@ export class PortGroupComponent {
                         break;
                 }
 
-                const lengthAbs = (count - 1) * PortGroupComponent.portSpacing;
+                const lengthAbs = (count - 1) * Styles.PortGroup.portSpacing;
                 const spaceAbs = space * total;
                 const offsetAbs = offset * total;
                 const positionAbs =
                     offsetAbs +
-                    index * PortGroupComponent.portSpacing +
+                    index * Styles.PortGroup.portSpacing +
                     (spaceAbs - lengthAbs) / 2;
 
                 let portPosition: g.PlainPoint = {x: 0, y: 0};

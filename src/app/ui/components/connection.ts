@@ -44,16 +44,16 @@ export class ConnectionComponent {
     private readonly id: string;
 
     constructor(private graph: dia.Graph, connection: Connection) {
-        const portIds = ConnectionComponent.getPortIds(connection);
-        this.id = ConnectionComponent.getLinkId(portIds);
+        const ownerIds = ConnectionComponent.getBoxOwnerIds(connection);
+        this.id = ConnectionComponent.getLinkId(connection);
         this.link = new ConnectionLink({
             id: this.id,
             source: {
-                id: portIds[0],
+                id: ownerIds[0],
                 port: connection.source.getIdentity(),
             },
             target: {
-                id: portIds[1],
+                id: ownerIds[1],
                 port: connection.destination.getIdentity(),
             },
             attrs: {
@@ -61,6 +61,7 @@ export class ConnectionComponent {
                     stroke: Styles.Connection.Ordinary.stroke(connection.source.getTypeIdentifier()),
                     "stroke-width": Styles.Connection.Ordinary.strokeWidth,
                     "stroke-opacity": Styles.Connection.Ordinary.strokeOpacity,
+                    "vector-effect": Styles.Connection.Ordinary.vectorEffect,
                 }
             }
         } as any);
@@ -82,12 +83,13 @@ export class ConnectionComponent {
                     stroke: Styles.Connection.Ghost.stroke(type),
                     "stroke-width": Styles.Connection.Ghost.strokeWidth,
                     "stroke-opacity": Styles.Connection.Ghost.strokeOpacity,
+                    "vector-effect": Styles.Connection.Ghost.vectorEffect,
                 }
             }
         } as any);
     }
 
-    public static getPortIds(connection: Connection): [string, string] {
+    public static getBoxOwnerIds(connection: Connection): [string, string] {
         const sourceOwner = connection.source.getAncestorNode<BlackBox>(BlackBox);
         const destinationOwner = connection.destination.getAncestorNode<BlackBox>(BlackBox);
 
@@ -111,12 +113,12 @@ export class ConnectionComponent {
         return [sourceIdentity, destinationIdentity];
     }
 
-    public static getLinkId([sourceIdentity, destinationIdentity]: [string, string]): string {
-        return `${sourceIdentity}>${destinationIdentity}`;
+    public static getLinkId(connection: Connection): string {
+        return `${connection.source.getIdentity()}>${connection.destination.getIdentity()}`;
     }
 
     public static findLink(graph: dia.Graph, connection: Connection): dia.Link | undefined {
-        const linkId = ConnectionComponent.getLinkId(ConnectionComponent.getPortIds(connection));
+        const linkId = ConnectionComponent.getLinkId(connection);
         const link = graph.getCell(linkId);
 
         if (!link) {
