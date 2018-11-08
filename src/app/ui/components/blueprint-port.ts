@@ -12,7 +12,7 @@ export class IsolatedBlueprintPort {
         const portGroup = new PortGroupComponent(graph, 'PortGroup', port, position, 0, 1.0);
         const portGroups = {'PortGroup': portGroup.getPortGroupElement()};
 
-        const transform = Styles.PortGroup.transformations[position];
+        const transform = Styles.BlueprintPort.transformations[position];
 
         this.rectangle = new shapes.standard.Rectangle({
             id: identity,

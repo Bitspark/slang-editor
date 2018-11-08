@@ -25,7 +25,7 @@ export namespace Styles {
     
     export namespace Connection {
         class Connection {
-            public static strokeWidth = 3;
+            public static strokeWidth = 3.5;
             public static stroke = (type: TypeIdentifier): string => TypeColors[type];
             public static vectorEffect = "default";
         }
@@ -40,14 +40,16 @@ export namespace Styles {
     }
     
     export class PortGroup {
+        public static portSpacing = 10;
+    }
+    
+    export class BlueprintPort {
         public static transformations = {
-            "top": "",
+            "top": "translate(0 -20)",
             "right": "translate(-40 0)",
-            "bottom": "",
+            "bottom": "translate(0 20)",
             "left": "translate(40 0)",
         };
-
-        public static portSpacing = 10;
     }
 
     export class BlackBox {
