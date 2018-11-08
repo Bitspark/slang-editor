@@ -5,7 +5,6 @@ import {dia} from "jointjs";
 import {slangRouter} from "../link/router";
 import {slangConnector} from "../link/connector";
 import {TypeIdentifier} from "../../custom/type";
-import {addClassToLink} from "../utils";
 import {Styles} from "../../../styles/studio";
 
 const ConnectionLink = dia.Link.define("Connection", {
@@ -20,18 +19,14 @@ const ConnectionLink = dia.Link.define("Connection", {
         "<title>Disconnect</title>",
         "</g>",
         "</g>",].join(""),
+    arrowheadMarkup: [
+        "<g>",
+        "</g>"].join(""),
 });
 
 const GhostConnectionLink = dia.Link.define("Connection", {
     router: slangRouter,
     connector: slangConnector,
-    // attrs: {
-    //     ".connection": {
-    //         stroke: "#777777",
-    //         "stroke-width": 3,
-    //         "stroke-opacity": 0.5,
-    //     }
-    // }
 }, {
     toolMarkup: [
         "<g>",
@@ -75,7 +70,7 @@ export class ConnectionComponent {
     public getId(): string {
         return this.id;
     }
-    
+
     public static createGhostLink(type: TypeIdentifier): dia.Link {
         return new GhostConnectionLink({
             attrs: {

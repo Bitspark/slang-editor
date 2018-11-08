@@ -45,9 +45,37 @@ $blackbox-color-label: green;
 // PORT
 
 .sl-port {
-  stroke: $port-color-stroke;
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
+  stroke-width: 0;
+  transition: stroke-width 1s;
+
+  &.sl-type-number {
+    stroke: $type-color-number;
+    fill: $type-color-number;
+  }
+  &.sl-type-string {
+    stroke: $type-color-string;
+    fill: $type-color-string;
+  }
+  &.sl-type-boolean {
+    stroke: $type-color-boolean;
+    fill: $type-color-boolean;
+  }
+  &.sl-type-binary {
+    stroke: $type-color-binary;
+    fill: $type-color-binary;
+  }
+  &.sl-type-primitive {
+    stroke: $type-color-primitive;
+    fill: $type-color-primitive;
+  }
+  &.sl-type-trigger {
+    stroke: $type-color-trigger;
+    fill: $type-color-trigger;
+  }
+  &.sl-type-generic {
+    stroke: $type-color-generic;
+    fill: $type-color-generic;
+  }
 }
 
 // CONNECTION
@@ -56,38 +84,16 @@ $blackbox-color-label: green;
   stroke-width: 3;
 }
 
-// PORTS
-
-.sl-port {
-  &.sl-type-number {
-    fill: $type-color-number;
-  }
-  &.sl-type-string {
-    fill: $type-color-string;
-  }
-  &.sl-type-boolean {
-    fill: $type-color-boolean;
-  }
-  &.sl-type-binary {
-    fill: $type-color-binary;
-  }
-  &.sl-type-primitive {
-    fill: $type-color-primitive;
-  }
-  &.sl-type-trigger {
-    fill: $type-color-trigger;
-  }
-  &.sl-type-generic {
-    fill: $type-color-generic;
-  }
-}
-
 // MISCELLANEOUS
 
 .joint-paper {
   font-family: Roboto, sans-serif;
 }
 
+.joint-highlight-stroke {
+  stroke: none;
+}
+
 .available-magnet {
-  stroke: $port-color-valid;
+  stroke-width: 4px;
 }

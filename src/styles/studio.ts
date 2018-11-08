@@ -15,8 +15,8 @@ export namespace Styles {
     };
     
     export class Port {
-        public static width = 5;
-        public static height = 10;
+        public static width = 8;
+        public static height = 8;
         public static shape = 
             `M ${-Port.width / 2} ${-Port.height / 2} ` +
             `L ${Port.width / 2} ${-Port.height / 2} ` +
