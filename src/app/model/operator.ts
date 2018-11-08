@@ -6,6 +6,10 @@ import {BlackBox} from '../custom/nodes';
 import {Connections} from '../custom/connections';
 import {SlangType} from "../custom/type";
 
+export interface Geometry {
+    position: [number, number]
+}
+
 export class OperatorModel extends BlackBox {
 
     // Topics
@@ -15,7 +19,7 @@ export class OperatorModel extends BlackBox {
 
     private delegates: Array<OperatorDelegateModel> = [];
 
-    constructor(private owner: BlueprintModel, private name: string, private blueprint: BlueprintModel) {
+    constructor(private owner: BlueprintModel, private name: string, private blueprint: BlueprintModel, private geomentry?: Geometry) {
         super();
     }
 
@@ -72,6 +76,12 @@ export class OperatorModel extends BlackBox {
         return connections;
     }
 
+    public get position(): {x: number, y: number} | undefined {
+        if (this.geomentry) {
+            return {x: this.geomentry.position[0], y: this.geomentry.position[1]};
+        }
+    }
+
     // Actions
     public addDelegate(delegate: OperatorDelegateModel): OperatorDelegateModel {
         this.delegates.push(delegate);
@@ -92,6 +102,14 @@ export class OperatorModel extends BlackBox {
 
     public delete() {
         this.removed.next();
+    }
+
+    public moveTo(pos: [number, number]) {
+        if (this.geomentry) {
+            this.geomentry.position = pos;
+        } else {
+            this.geomentry = {position: pos};
+        }
     }
 
 

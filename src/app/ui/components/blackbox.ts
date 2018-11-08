@@ -85,6 +85,9 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 
     constructor(graph: dia.Graph, operator: OperatorModel) {
         super(graph, operator);
+        if (operator.position) {
+            this.getRectangle().position(operator.position.x, operator.position.y);
+        }
     }
 
 }

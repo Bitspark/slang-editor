@@ -1,5 +1,5 @@
 import {BehaviorSubject, Subject} from "rxjs";
-import {OperatorModel} from "./operator";
+import {Geometry, OperatorModel} from "./operator";
 import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel} from './port';
 import {BlueprintDelegateModel, OperatorDelegateModel} from './delegate';
 import {SlangParsing} from "../custom/parsing";
@@ -64,7 +64,7 @@ export class BlueprintModel extends BlackBox {
         return genericIdentifiers;
     }
 
-    private instantiateOperator(owner: BlueprintModel, name: string, params?: { props: PropertyAssignments, gen: GenericSpecifications }): OperatorModel {
+    private instantiateOperator(owner: BlueprintModel, name: string, geo?: Geometry, params?: { props: PropertyAssignments, gen: GenericSpecifications }): OperatorModel {
 
         function copyAndAddDelegates(owner: OperatorModel, delegate: BlueprintDelegateModel) {
 
@@ -85,7 +85,7 @@ export class BlueprintModel extends BlackBox {
             }
         }
 
-        const operator = new OperatorModel(owner, name, this);
+        const operator = new OperatorModel(owner, name, this, geo);
 
         for (const port of this.getPorts()) {
             if (params) {
@@ -102,7 +102,7 @@ export class BlueprintModel extends BlackBox {
     }
 
     public createOperator(name: string, blueprint: BlueprintModel, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
-        const operator = blueprint.instantiateOperator(this, name, {props: propAssigns, gen: genSpeci});
+        const operator = blueprint.instantiateOperator(this, name, undefined, {props: propAssigns, gen: genSpeci});
         return this.addOperator(operator);
     }
 
@@ -111,9 +111,9 @@ export class BlueprintModel extends BlackBox {
         return `${blueprint.getFullName()}-${cnt + 1}`;
     }
 
-    public createBlankOperator(blueprint: BlueprintModel): OperatorModel {
+    public createBlankOperator(blueprint: BlueprintModel, geo: Geometry): OperatorModel {
         const name = this.getRandomOperatorName(blueprint);
-        const operator = blueprint.instantiateOperator(this, name);
+        const operator = blueprint.instantiateOperator(this, name, geo);
         return this.addOperator(operator);
     }
 

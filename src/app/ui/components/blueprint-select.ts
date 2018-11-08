@@ -9,6 +9,7 @@ import {BlueprintView} from "../views/blueprint";
 import {BehaviorSubject, Subject} from "rxjs";
 import {PropertyAssignments} from "../../model/property";
 import {GenericSpecifications} from "../../model/generic";
+import {Geometry} from "../../model/operator";
 
 export interface Attrs {
     onSelect: (bp: BlueprintModel) => void,
@@ -70,7 +71,10 @@ export class BlueprintSelectComponent {
                     pos: absPos,
                     blueprints: this.getBlueprints(),
                     onSelect: (bp: BlueprintModel) => {
-                        console.log(">>>", that.blueprint.createBlankOperator(bp));
+                        const geo: Geometry = {
+                            position: [this.placeholderRect.getBBox().x, this.placeholderRect.getBBox().y]
+                        };
+                        that.blueprint.createBlankOperator(bp, geo);
                         that.destroy();
                     }
                 })
@@ -101,7 +105,6 @@ export class BlueprintSelectComponent {
         this.absPos[0] = this.absPos[0] - distance[0];
         this.absPos[1] = this.absPos[1] - distance[1];
     }
-
 
     private getBlueprints(): Array<BlueprintModel> {
         const blueprintsMap = new Map<BlueprintModel, number>();
