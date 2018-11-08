@@ -1,0 +1,29 @@
+.sl-blupr-menu {
+	position: absolute;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	max-height: 384px;
+	border: 1px solid $black;
+	background: $white;
+	border-radius: 6px;
+	padding: 0;
+
+	transition: 360ms opacity;
+	opacity: .25;
+	&:hover {
+		opacity: .95;
+	}
+}
+
+.sl-blupr-entry {
+	padding: 18px 32px 16px 32px;
+	border-bottom: 1px solid transparentize(black, .85);
+
+	cursor: pointer;
+	transition: 360ms background-color;
+
+	&:hover {
+		background-color: $black;
+		color: $white;
+	}
+}

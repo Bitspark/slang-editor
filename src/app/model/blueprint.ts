@@ -273,7 +273,11 @@ export class BlueprintModel extends BlackBox {
 
         return connections;
     }
-    
+
+    public getLandscape(): LandscapeModel {
+        return this.landscape;
+    }
+
     // Actions
     
     public addProperty(property: PropertyModel): PropertyModel {
@@ -389,7 +393,7 @@ export class BlueprintModel extends BlackBox {
     }
 
     getParentNode(): LandscapeModel {
-        return this.landscape;
+        return this.getLandscape();
     }
 
 }

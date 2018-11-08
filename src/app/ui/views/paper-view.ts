@@ -19,7 +19,7 @@ export abstract class PaperView extends View {
         this.paper.translate(width / 2, height / 2);
     }
 
-    protected getGraph(): dia.Graph {
+    public getGraph(): dia.Graph {
         return this.graph;
     }
     
@@ -191,7 +191,6 @@ export abstract class PaperView extends View {
     protected getHeight(): number {
         return this.paper.getArea().height;
     }
-    
 }
 
 (util.filter as any).innerShadow = function (args: any) {

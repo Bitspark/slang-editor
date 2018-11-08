@@ -8,6 +8,7 @@ import {PaperView} from "./paper-view";
 import {BlueprintPortModel, GenericPortModel, PortModel} from "../../model/port";
 import {IsolatedBlueprintPort} from "../components/blueprint-port";
 import {PortGroupPosition} from "../components/port-group";
+import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {Styles} from "../../../styles/studio";
 
@@ -102,7 +103,7 @@ export class BlueprintView extends PaperView {
                 if (!portT) {
                     return false;
                 }
-                
+
                 return portS.canConnect(portT);
             },
             snapLinks: {radius: 75,},
@@ -523,6 +524,10 @@ export class BlueprintView extends PaperView {
             return undefined;
         }
         return port;
+    }
+
+    public getBlueprint(): BlueprintModel {
+        return this.blueprint
     }
 
 }
