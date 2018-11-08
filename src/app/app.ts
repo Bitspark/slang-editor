@@ -1,6 +1,6 @@
 import "../styles/studio.scss";
 
-import {ViewFrame} from "./ui/cavas";
+import {ViewFrame} from "./ui/frame";
 import {AppModel} from "./model/app";
 import {BlueprintModel, BlueprintType} from "./model/blueprint";
 import {BlueprintView} from "./ui/views/blueprint";

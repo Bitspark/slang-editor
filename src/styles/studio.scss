@@ -5,7 +5,7 @@
 $type-color-number: blue;
 $type-color-string: brown;
 $type-color-boolean: orange;
-$type-color-binary: yellow;
+$type-color-binary: #83a91d;
 $type-color-primitive: darkcyan;
 $type-color-trigger: gray;
 $type-color-generic: violet;
@@ -13,18 +13,18 @@ $type-color-generic: violet;
 $port-color-stroke: black;
 $port-color-valid: lime;
 
-$blackbox-color-fill: white;
-$blackbox-color-stroke: black;
-$blackbox-color-label: green;
+$blueprint-color-fill: #f2f9ff;
+
+$blackbox-color-fill: #fdf7ff;
+$blackbox-color-stroke: #1f1f1f;
+$blackbox-color-label: #141414;
 
 // BLACKBOX
 
 .sl-blackbox {
   .sl-rectangle {
     fill: $blackbox-color-fill;
-    stroke: $blackbox-color-stroke;
-    stroke-width: 0.5;
-    vector-effect: non-scaling-stroke;
+    stroke: none;
   }
   .sl-label {
     fill: $blackbox-color-label;
@@ -35,11 +35,17 @@ $blackbox-color-label: green;
 
 .sl-outer {
   .sl-rectangle {
-    stroke-width: 0.5;
-    fill: blue;
-    fill-opacity: 0.05;
-    vector-effect: non-scaling-stroke;
+	  stroke: none;
+    fill: $blueprint-color-fill;
   }
+}
+
+// BLUEPRINT PORT
+
+.sl-blueprint-port {
+	.sl-label {
+		fill: $blackbox-color-label;
+	}
 }
 
 // PORT
@@ -81,13 +87,26 @@ $blackbox-color-label: green;
 // CONNECTION
 
 .sl-connection {
-  stroke-width: 3;
+  stroke-width: 4;
 }
 
-// MISCELLANEOUS
+// JOINT
+
+@keyframes port-pulse {
+	0% {
+		stroke-width: 0;
+	}
+	50% {
+		stroke-width: 2px;
+	}
+	100% {
+		stroke-width: 0;
+	}
+}
 
 .joint-paper {
   font-family: Roboto, sans-serif;
+	background-color: $blackbox-color-fill;
 }
 
 .joint-highlight-stroke {
@@ -95,5 +114,10 @@ $blackbox-color-label: green;
 }
 
 .available-magnet {
-  stroke-width: 4px;
+	stroke-width: 10px;
+	
+	animation-name: port-pulse;
+	animation-duration: 1.2s;
+	animation-iteration-count: infinite;
+	animation-timing-function: linear;
 }

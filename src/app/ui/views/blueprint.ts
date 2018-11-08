@@ -3,7 +3,7 @@ import {BlackBoxComponent, OperatorBoxComponent} from "../components/blackbox";
 import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 import {Connection} from "../../custom/connections";
-import {ViewFrame} from "../cavas";
+import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";
 import {BlueprintPortModel, GenericPortModel, PortModel} from "../../model/port";
 import {IsolatedBlueprintPort} from "../components/blueprint-port";
@@ -79,7 +79,11 @@ export class BlueprintView extends PaperView {
             defaultLink: function (cellView: dia.CellView, magnet: SVGElement): dia.Link {
                 const port = that.getPortFromMagnet(magnet);
                 if (port) {
-                    return ConnectionComponent.createGhostLink(port.getTypeIdentifier());
+                    const link = ConnectionComponent.createGhostLink(port.getTypeIdentifier());
+                    link.on("remove", function () {
+                        link.transition("attrs/.connection/stroke-opacity", 0.0);
+                    });
+                    return link;
                 } else {
                     throw new Error(`could not find source port`);
                 }
@@ -173,6 +177,7 @@ export class BlueprintView extends PaperView {
                     ry: Styles.Outer.ry,
                     class: "sl-rectangle",
                     cursor: "default",
+                    filter: Styles.Outer.filter,
                 },
             },
         }))({id: `${this.blueprint.getIdentity()}_outer}`});
@@ -299,7 +304,7 @@ export class BlueprintView extends PaperView {
         layout.DirectedGraph.layout(this.graph, {
             nodeSep: 120,
             rankSep: 120,
-            edgeSep: 360,
+            edgeSep: 0,
             rankDir: "TB",
             resizeClusters: false,
         });

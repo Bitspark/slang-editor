@@ -103,15 +103,16 @@ export namespace BlackBoxComponent {
 
             super({
                 id: identity,
-                size: Styles.Blackbox.size,
+                size: Styles.BlackBox.size,
                 attrs: {
                     root: {
                         class: "joint-cell joint-element sl-blackbox",
                     },
                     body: {
-                        rx: Styles.Blackbox.rx,
-                        ry: Styles.Blackbox.ry,
+                        rx: Styles.BlackBox.rx,
+                        ry: Styles.BlackBox.ry,
                         class: "sl-rectangle",
+                        filter: Styles.BlackBox.filter,
                     },
                     label: {
                         text: blackBox.getDisplayName(),

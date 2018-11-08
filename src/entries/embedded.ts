@@ -5,7 +5,7 @@ import "../styles/embedded.scss"
 import {AppModel} from "../app/model/app";
 import {SlangApp} from "../app/app";
 import {StaticStoragePlugin} from "../app/plugins/storage";
-import {ViewFrame} from "../app/ui/cavas";
+import {ViewFrame} from "../app/ui/frame";
 
 export function SlangStudioEmbedded(el: HTMLElement, blueprintFullName: string): Promise<void> {
     return new Promise<void>(resolve => {

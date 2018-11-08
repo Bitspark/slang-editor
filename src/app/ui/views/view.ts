@@ -1,4 +1,4 @@
-import {ViewFrame} from "../cavas";
+import {ViewFrame} from "../frame";
 
 export abstract class View {
 

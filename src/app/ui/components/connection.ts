@@ -55,11 +55,18 @@ export class ConnectionComponent {
                 ".connection": {
                     stroke: Styles.Connection.Ordinary.stroke(connection.source.getTypeIdentifier()),
                     "stroke-width": Styles.Connection.Ordinary.strokeWidth,
-                    "stroke-opacity": Styles.Connection.Ordinary.strokeOpacity,
+                    "stroke-opacity": Styles.Connection.Ghost.strokeOpacity,
                     "vector-effect": Styles.Connection.Ordinary.vectorEffect,
-                }
-            }
+                },
+            },
+            z: -1,
         } as any);
+        this.link.transition("attrs/.connection/stroke-opacity", Styles.Connection.Ordinary.strokeOpacity, {
+            duration: 360,
+            timingFunction: t => {
+                return Math.sqrt(t);
+            }
+        });
         this.link.addTo(graph);
     }
 

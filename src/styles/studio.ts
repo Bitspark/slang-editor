@@ -6,7 +6,7 @@ export namespace Styles {
         [TypeIdentifier.Number]: "blue",
         [TypeIdentifier.String]: "brown",
         [TypeIdentifier.Boolean]: "orange",
-        [TypeIdentifier.Binary]: "yellow",
+        [TypeIdentifier.Binary]: "#83a91d",
         [TypeIdentifier.Primitive]: "darkcyan",
         [TypeIdentifier.Trigger]: "gray",
         [TypeIdentifier.Generic]: "violet",
@@ -35,7 +35,7 @@ export namespace Styles {
             
         }
         export class Ghost extends Connection {
-            public static strokeOpacity = 0.5;
+            public static strokeOpacity = 0.3;
         }
     }
     
@@ -50,15 +50,31 @@ export namespace Styles {
         public static portSpacing = 10;
     }
 
-    export class Blackbox {
+    export class BlackBox {
         public static rx = 6;
         public static ry = 6;
-        public static size = { width: 100, height: 100 };
+        public static size = { width: 120, height: 74 };
+        public static filter = {
+            name: 'dropShadow',
+            args: {
+                dx: 0,
+                dy: 0,
+                blur: 5,
+            }
+        };
     }
 
     export class Outer {
         public static rx = 24;
         public static ry = 24;
+        public static filter = {
+            name: 'innerShadow',
+            args: {
+                dx: 0,
+                dy: 0,
+                blur: 10,
+            },
+        };
     }
 
 }
