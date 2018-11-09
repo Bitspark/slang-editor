@@ -13,9 +13,9 @@ $type-color-generic: violet;
 $port-color-stroke: black;
 $port-color-valid: lime;
 
-$blueprint-color-fill: #f2f9ff;
+$blueprint-color-fill: #fffffe;
 
-$blackbox-color-fill: #fdf7ff;
+$blackbox-color-fill: #fefefd;
 $blackbox-color-stroke: #1f1f1f;
 $blackbox-color-label: #141414;
 
@@ -91,7 +91,7 @@ $blackbox-color-label: #141414;
 		stroke-width: 0;
 	}
 	50% {
-		stroke-width: 2px;
+		stroke-width: 4px;
 	}
 	100% {
 		stroke-width: 0;
@@ -108,7 +108,7 @@ $blackbox-color-label: #141414;
 }
 
 .available-magnet {
-	stroke-width: 10px;
+	stroke-width: 4px;
 	
 	animation-name: port-pulse;
 	animation-duration: 1.2s;

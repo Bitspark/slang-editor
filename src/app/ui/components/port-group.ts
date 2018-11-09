@@ -128,18 +128,20 @@ export class PortGroupComponent {
 
                 let portPosition: g.PlainPoint = {x: 0, y: 0};
 
+                const translate = portComponents[index].getModel().isDirectionIn() ? Styles.PortGroup.TranslationIn : Styles.PortGroup.TranslationOut;
+                
                 switch (position) {
                     case "top":
-                        portPosition = {x: positionAbs, y: 0};
+                        portPosition = {x: positionAbs, y: -translate};
                         break;
                     case "bottom":
-                        portPosition = {x: positionAbs, y: elBBox.height};
+                        portPosition = {x: positionAbs, y: elBBox.height + translate};
                         break;
                     case "left":
-                        portPosition = {x: 0, y: positionAbs};
+                        portPosition = {x: translate, y: positionAbs};
                         break;
                     case "right":
-                        portPosition = {x: elBBox.width, y: positionAbs};
+                        portPosition = {x: elBBox.width - translate, y: positionAbs};
                         break;
                 }
 
