@@ -22,8 +22,8 @@ export abstract class PaperView extends View {
     public getGraph(): dia.Graph {
         return this.graph;
     }
-    
-    protected getPaper(): dia.Paper {
+
+    public getPaper(): dia.Paper {
         return this.paper;
     }
 
@@ -35,7 +35,7 @@ export abstract class PaperView extends View {
     protected center() {
         this.paper.setOrigin(this.paper.options.width as number / 2, this.paper.options.height as number / 2);
     }
-    
+
     protected fit() {
         this.paper.scaleContentToFit();
     }
@@ -68,7 +68,7 @@ export abstract class PaperView extends View {
                 return {x: -(Number.MAX_VALUE / 2), y: -(Number.MAX_VALUE / 2), width: Number.MAX_VALUE, height: Number.MAX_VALUE};
             },
         }, opt);
-        
+
         return new dia.Paper(opt);
     }
 
@@ -149,9 +149,7 @@ export abstract class PaperView extends View {
 
         const doPanning = function (x: number, y: number) {
             if (panning) {
-                const deltaX = x - startX;
-                const deltaY = y - startY;
-                paper.translate(deltaX, deltaY);
+                paper.translate(x - startX, y - startY);
             }
         };
 

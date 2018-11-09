@@ -1,19 +1,17 @@
 import {dia, shapes} from 'jointjs';
-import m from 'mithril';
+import m, {CVnodeDOM} from 'mithril';
 
 
 import {LandscapeModel} from '../../model/landscape';
 import {BlueprintModel} from '../../model/blueprint';
 import {ClassComponent, CVnode} from "mithril";
 import {BlueprintView} from "../views/blueprint";
-import {BehaviorSubject, Subject} from "rxjs";
-import {PropertyAssignments} from "../../model/property";
-import {GenericSpecifications} from "../../model/generic";
 import {Geometry} from "../../model/operator";
+import {BlackBoxComponent, BlueprintBoxComponent} from "./blackbox";
 
 export interface Attrs {
     onSelect: (bp: BlueprintModel) => void,
-    pos: [number, number]
+    onHover: (bp?: BlueprintModel) => void,
     blueprints: Array<BlueprintModel>
 }
 
@@ -25,18 +23,24 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
         this.blueprints = attrs.blueprints;
     }
 
+    onbeforeupdate(vnode: CVnode<Attrs>, old: CVnodeDOM<Attrs>): boolean | void {
+        return false;
+    }
+
     view({attrs}: CVnode<Attrs>) {
         return m(".sl-blupr-menu", {
-                style: {
-                    left: `${attrs.pos[0]}px`,
-                    top: `${attrs.pos[1]}px`,
+                onmouseleave: () => {
+                    attrs.onHover(undefined);
                 }
             },
             this.blueprints.map((blueprint: BlueprintModel) => {
                 return m(".sl-blupr-entry", {
                         onclick: () => {
                             attrs.onSelect(blueprint);
-                        }
+                        },
+                        onmouseenter: () => {
+                            attrs.onHover(blueprint);
+                        },
                     },
                     m(".sl-bluepr-title", blueprint.getFullName()))
             })
@@ -49,42 +53,47 @@ export class BlueprintSelectComponent {
     private readonly graph: dia.Graph;
     private readonly blueprint: BlueprintModel;
     private readonly landscape: LandscapeModel;
-    private readonly placeholderRect: shapes.standard.Rectangle;
+    private ghostRect: shapes.standard.Rectangle | BlackBoxComponent.Rectangle;
     private readonly el: HTMLElement;
+    private readonly blueprintMenu: BlueprintMenuComponent;
 
     constructor(private readonly blueprintView: BlueprintView, private relPos: [number, number], private readonly absPos: [number, number]) {
         this.graph = blueprintView.getGraph();
         this.blueprint = blueprintView.getBlueprint()
         this.landscape = this.blueprint.getLandscape();
 
-        this.placeholderRect = BlueprintSelectComponent.createPlaceholder(relPos);
-        this.placeholderRect.addTo(this.graph);
+        this.placeGhostRect([relPos[0] - 50, relPos[1] - 50]);
 
-        this.el = document.createElement('span');
+        this.el = document.createElement('div');
+        this.el.style.position = 'absolute';
+        this.el.style.left = `${absPos[0]}px`;
+        this.el.style.top = `${absPos[1]}px`;
         this.blueprintView.getFrame().getHTMLElement().appendChild(this.el);
 
-        const that = this;
+        this.blueprintMenu = new BlueprintMenuComponent();
 
-        m.mount(this.el,
-            {
-                view: () => m(new BlueprintMenuComponent(), {
-                    pos: absPos,
-                    blueprints: this.getBlueprints(),
-                    onSelect: (bp: BlueprintModel) => {
-                        const geo: Geometry = {
-                            position: [this.placeholderRect.getBBox().x, this.placeholderRect.getBBox().y]
-                        };
-                        that.blueprint.createBlankOperator(bp, geo);
-                        that.destroy();
-                    }
-                })
-            }
+        m.render(this.el,
+            m(this.blueprintMenu, {
+                blueprints: this.getBlueprints(),
+                onSelect: (bp: BlueprintModel) => {
+                    const pos = this.ghostRect.position();
+                    const geo: Geometry = {
+                        position: [pos.x, pos.y]
+                    };
+                    this.blueprint.createBlankOperator(bp, geo);
+                    this.destroy();
+                },
+                onHover: (bp?: BlueprintModel) => {
+                    const pos = this.ghostRect.position();
+                    this.placeGhostRect([pos.x, pos.y], bp)
+                }
+            })
         );
         this.subscribe();
     }
 
     public destroy() {
-        this.placeholderRect.remove();
+        this.ghostRect.remove();
         this.el.remove();
     }
 
@@ -129,26 +138,34 @@ export class BlueprintSelectComponent {
         return blueprints;
     }
 
-    private static createPlaceholder([posX, posY]: [number, number]): shapes.standard.Rectangle {
-        const phRect = new shapes.standard.Rectangle({
-            size: {width: 100, height: 100},
-            position: {x: posX - 50, y: posY - 50},
-            attrs: {
-                root: {},
-                body: {
-                    fill: "transparent",
-                    stroke: "black",
-                    strokeWidth: "1",
-                    rx: 8,
-                    ry: 8,
+    private placeGhostRect([posX, posY]: [number, number], blueprint?: BlueprintModel) {
+        if (this.ghostRect) {
+            this.ghostRect.remove();
+        }
+
+        if (!blueprint) {
+            this.ghostRect = new shapes.standard.Rectangle({
+                size: {width: 100, height: 100},
+                attrs: {
+                    root: {},
+                    body: {
+                        fill: "transparent",
+                        stroke: "black",
+                        strokeWidth: "1",
+                        rx: 8,
+                        ry: 8,
+                    },
+                    label: {
+                        text: "• • •",
+                        fill: "black",
+                    },
                 },
-                label: {
-                    text: "• • •",
-                    fill: "black",
-                },
-            },
-        });
-        phRect.attr("draggable", false);
-        return phRect;
+            });
+            this.ghostRect.attr("draggable", false);
+            this.ghostRect.addTo(this.graph);
+        } else {
+            this.ghostRect = new BlueprintBoxComponent(this.graph, blueprint).getRectangle();
+        }
+        this.ghostRect.position(posX, posY);
     }
 }

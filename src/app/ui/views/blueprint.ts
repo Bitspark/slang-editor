@@ -23,6 +23,8 @@ export class BlueprintView extends PaperView {
     private connections: Array<ConnectionComponent> = [];
     private outerPadding = 120;
 
+    private blueprintSelect: BlueprintSelectComponent | null;
+
     constructor(frame: ViewFrame, private blueprint: BlueprintModel) {
         super(frame);
         this.addZooming();
@@ -145,7 +147,14 @@ export class BlueprintView extends PaperView {
         });
 
         this.outer.on("pointerdblclick", function (elementView: ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
-            new BlueprintSelectComponent(that, [x, y], [evt.clientX, evt.clientY]);
+            that.blueprintSelect = new BlueprintSelectComponent(that, [x, y], [evt.clientX, evt.clientY]);
+
+        });
+        this.getPaper().on("blank:pointerclick cell:pointerclick", function (elementView: ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
+            if (that.blueprintSelect) {
+                that.blueprintSelect.destroy();
+                that.blueprintSelect = null;
+            }
         });
     }
 
