@@ -1,8 +1,9 @@
-import {attributes, dia, g, shapes} from "jointjs";
+import {dia, g, shapes} from "jointjs";
 import {BlackBox} from "../../custom/nodes";
 import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 import {PortGroupComponent} from "./port-group";
+import {Styles} from "../../../styles/studio";
 
 export class BlackBoxComponent {
 
@@ -102,16 +103,20 @@ export namespace BlackBoxComponent {
 
             super({
                 id: identity,
-                size: {
-                    width: 100, 
-                    height: 100,
-                },
+                size: Styles.BlackBox.size,
                 attrs: {
-                    root: {},
-                    body: Rectangle.blueprintAttrs,
+                    root: {
+                        class: "joint-cell joint-element sl-blackbox",
+                    },
+                    body: {
+                        rx: Styles.BlackBox.rx,
+                        ry: Styles.BlackBox.ry,
+                        class: "sl-rectangle",
+                        filter: Styles.BlackBox.filter,
+                    },
                     label: {
                         text: blackBox.getDisplayName(),
-                        fill: "white",
+                        class: "sl-label",
                     },
                 },
                 ports: {
@@ -121,14 +126,6 @@ export namespace BlackBoxComponent {
 
             this.set("obstacle", true);
         }
-
-        private static blueprintAttrs: attributes.SVGAttributes = {
-            fill: "blue",
-            stroke: "black",
-            strokeWidth: 1,
-            rx: 6,
-            ry: 6,
-        };
 
     }
 

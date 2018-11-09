@@ -1,6 +1,8 @@
 import {attributes, dia, g} from "jointjs";
 import {PortModel} from "../../model/port";
 import {PortGroupComponent, PortGroupPosition} from "./port-group";
+import {TypeIdentifier} from "../../custom/type";
+import {Styles} from "../../../styles/studio";
 
 /**
  * Component representing a Slang port.
@@ -14,7 +16,7 @@ export class PortComponent {
         this.portElement.id = `${port.getIdentity()}`;
         this.portElement.group = parent.getName();
         this.portElement.attrs = {
-            ".sl-port": PortComponent.getPortAttributes(parent.getGroupPosition(), port.isDirectionIn()),
+            ".sl-port": PortComponent.getPortAttributes(parent.getGroupPosition(), port),
         };
     }
 
@@ -40,9 +42,12 @@ export class PortComponent {
 
     // STATIC:
 
-    private static getPortAttributes(position: PortGroupPosition, directionIn: boolean): attributes.SVGAttributes {
+    private static getPortAttributes(position: PortGroupPosition, port: PortModel): attributes.SVGAttributes {
         const attrs: attributes.SVGAttributes = {
-            fill: "cyan",
+            paintOrder: "stroke fill",
+            d: Styles.Port.shape,
+            magnet: true,
+            class: `sl-port sl-type-${TypeIdentifier[port.getTypeIdentifier()].toLowerCase()}`,
         };
 
         switch (position) {
@@ -50,13 +55,13 @@ export class PortComponent {
                 attrs.transform = "";
                 break;
             case "right":
-                attrs.transform = `rotate(${directionIn ? 90 : -90})`;
+                attrs.transform = `rotate(${port.isDirectionIn() ? 90 : -90})`;
                 break;
             case "bottom":
                 attrs.transform = "";
                 break;
             case "left":
-                attrs.transform = `rotate(${directionIn ? 90 : -90})`;
+                attrs.transform = `rotate(${port.isDirectionIn() ? 90 : -90})`;
                 break;
         }
 

@@ -3,7 +3,7 @@ import {BlueprintModel, BlueprintType} from "../../model/blueprint";
 import {Subject} from "rxjs";
 import {LandscapeModel} from "../../model/landscape";
 import {BlueprintBoxComponent} from "../components/blackbox";
-import {ViewFrame} from "../cavas";
+import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";
 
 export class LandscapeView extends PaperView {

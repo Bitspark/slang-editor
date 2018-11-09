@@ -3,50 +3,13 @@ import {BlackBoxComponent, OperatorBoxComponent} from "../components/blackbox";
 import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 import {Connection} from "../../custom/connections";
-import {BlackBox, PortOwner} from "../../custom/nodes";
-import {ViewFrame} from "../cavas";
+import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";
 import {BlueprintPortModel, GenericPortModel, PortModel} from "../../model/port";
-import {slangRouter} from "../utils/router";
-import {slangConnector} from "../utils/connector";
 import {IsolatedBlueprintPort} from "../components/blueprint-port";
 import {PortGroupPosition} from "../components/port-group";
-
-const GhostConnectionLink = dia.Link.define("Connection", {
-    router: slangRouter,
-    connector: slangConnector,
-    attrs: {
-        ".connection": {
-            stroke: "#777777",
-            "stroke-width": 3,
-            "stroke-opacity": 0.5,
-        }
-    }
-}, {
-    toolMarkup: [
-        "<g class='link-tool'>",
-        "</g>",].join(""),
-});
-
-const ConnectionLink = dia.Link.define("Connection", {
-    router: slangRouter,
-    connector: slangConnector,
-    attrs: {
-        ".connection": {
-            stroke: "#777777",
-            "stroke-width": 3,
-        }
-    },
-}, {
-    toolMarkup: [
-        "<g class='link-tool'>",
-        "<g class='tool-remove' event='tool:remove'>",
-        "<circle r='11' fill='red' />",
-        "<path transform='scale(.8) translate(-16, -16)' d='M24.778,21.419 19.276,15.917 24.777,10.415 21.949,7.585 16.447,13.087 10.945,7.585 8.117,10.415 13.618,15.917 8.116,21.419 10.946,24.248 16.447,18.746 21.948,24.248z' fill='white' />",
-        "<title>Disconnect</title>",
-        "</g>",
-        "</g>",].join(""),
-});
+import {ConnectionComponent} from "../components/connection";
+import {Styles} from "../../../styles/studio";
 
 export class BlueprintView extends PaperView {
 
@@ -56,6 +19,7 @@ export class BlueprintView extends PaperView {
     private rightPorts: Array<dia.Element> = [];
     private leftPorts: Array<dia.Element> = [];
     private operators: Array<BlackBoxComponent> = [];
+    private connections: Array<ConnectionComponent> = [];
     private outerPadding = 120;
 
     constructor(frame: ViewFrame, private blueprint: BlueprintModel) {
@@ -76,7 +40,7 @@ export class BlueprintView extends PaperView {
         this.attachEventHandlers();
 
         // this.addOriginPoint();
-        
+
         this.fit();
     }
 
@@ -112,8 +76,17 @@ export class BlueprintView extends PaperView {
 
                 return false;
             },
-            defaultLink: function (): dia.Link {
-                return new GhostConnectionLink({} as any);
+            defaultLink: function (cellView: dia.CellView, magnet: SVGElement): dia.Link {
+                const port = that.getPortFromMagnet(magnet);
+                if (port) {
+                    const link = ConnectionComponent.createGhostLink(port.getTypeIdentifier());
+                    link.on("remove", function () {
+                        link.transition("attrs/.connection/stroke-opacity", 0.0);
+                    });
+                    return link;
+                } else {
+                    throw new Error(`could not find source port`);
+                }
             },
             validateConnection: function (cellViewS: dia.CellView,
                                           magnetS: SVGElement,
@@ -134,7 +107,7 @@ export class BlueprintView extends PaperView {
             },
             snapLinks: {radius: 75,},
             markAvailable: true,
-        });        
+        });
         paper.on("tool:remove", function (linkView: dia.LinkView) {
             const magnetS = linkView.getEndMagnet("source");
             const magnetT = linkView.getEndMagnet("target");
@@ -194,13 +167,20 @@ export class BlueprintView extends PaperView {
         const position = {x: -size.width / 2, y: -size.height / 2};
 
         const outer = new (shapes.standard.Rectangle.define("BlueprintOuter", {
-            position: position
+            position: position,
+            attrs: {
+                root: {
+                    class: "joint-cell joint-element sl-outer",
+                },
+                body: {
+                    rx: Styles.Outer.rx,
+                    ry: Styles.Outer.ry,
+                    class: "sl-rectangle",
+                    cursor: "default",
+                    filter: Styles.Outer.filter,
+                },
+            },
         }))({id: `${this.blueprint.getIdentity()}_outer}`});
-        outer.attr("body/fill", "blue");
-        outer.attr("body/fill-opacity", ".05");
-        outer.attr("body/rx", "24");
-        outer.attr("body/ry", "24");
-        outer.attr("body/cursor", "default");
         outer.set("obstacle", false);
         outer.set("size", size);
         outer.attr("draggable", false);
@@ -212,21 +192,21 @@ export class BlueprintView extends PaperView {
     }
 
     private createIsolatedPort(port: BlueprintPortModel, id: string, name: string, position: PortGroupPosition): void {
-        const invertedPosition: {[key in PortGroupPosition]: PortGroupPosition} = {
+        const invertedPosition: { [key in PortGroupPosition]: PortGroupPosition } = {
             top: "bottom",
             bottom: "top",
             left: "right",
             right: "left",
         };
-        
+
         const that = this;
         const portComponent = new IsolatedBlueprintPort(this.graph, name, id, port, invertedPosition[position]);
         const portElement = portComponent.getElement();
-        
+
         let calculateRestrictedRect: (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => g.PlainRect;
 
         const elementSize = portElement.get("size") as g.PlainRect;
-        
+
         switch (position) {
             case "top":
                 portElement.set({position: {x: -elementSize.width / 2, y: 0}});
@@ -269,18 +249,18 @@ export class BlueprintView extends PaperView {
                 });
                 break;
         }
-        
+
         portElement.set("restrictTranslate", function (): g.PlainRect {
             const outerPosition = that.outer.get("position") as g.PlainPoint;
             const outerSize = that.outer.get("size") as g.PlainRect;
             return calculateRestrictedRect(outerPosition, outerSize);
         });
     }
-    
+
     private createIsolatedPorts(): void {
         this.createIsolatedPort(this.blueprint.getPortIn()!, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
         this.createIsolatedPort(this.blueprint.getPortOut()!, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
-        
+
         for (const delegate of this.blueprint.getDelegates()) {
             this.createIsolatedPort(delegate.getPortOut()!, `${delegate.getIdentity()}_out`, `Delegate ${delegate.getName()} Out-Port`, "right");
             this.createIsolatedPort(delegate.getPortIn()!, `${delegate.getIdentity()}_in`, `Delegate ${delegate.getName()} In-Port`, "right");
@@ -300,69 +280,23 @@ export class BlueprintView extends PaperView {
     }
 
     private addConnection(connection: Connection) {
-        const sourceOwner = connection.source.getAncestorNode<BlackBox>(BlackBox);
-        const destinationOwner = connection.destination.getAncestorNode<BlackBox>(BlackBox);
-
-        if (!sourceOwner) {
-            throw new Error(`no source owner found`);
-        }
-        if (!destinationOwner) {
-            throw new Error(`no destination owner found`);
-        }
-
-        let sourceIdentity = sourceOwner.getIdentity();
-        if (sourceOwner instanceof BlueprintModel) {
-            sourceIdentity = connection.source.getAncestorNode<PortOwner>(PortOwner)!.getIdentity() + "_in";
-        }
-
-        let destinationIdentity = destinationOwner.getIdentity();
-        if (destinationOwner instanceof BlueprintModel) {
-            destinationIdentity = connection.destination.getAncestorNode<PortOwner>(PortOwner)!.getIdentity() + "_out";
-        }
-
-        const linkId = `${sourceIdentity}>${destinationIdentity}`;
-        const link = new ConnectionLink({
-            id: linkId,
-            source: {
-                id: sourceIdentity,
-                port: connection.source.getIdentity(),
-            },
-            target: {
-                id: destinationIdentity,
-                port: connection.destination.getIdentity(),
-            },
-        } as any);
-        link.addTo(this.graph);
+        const connectionComponent = new ConnectionComponent(this.graph, connection);
+        this.connections.push(connectionComponent);
     }
 
     private removeConnection(connection: Connection) {
-        const sourceOwner = connection.source.getAncestorNode<BlackBox>(BlackBox);
-        const destinationOwner = connection.destination.getAncestorNode<BlackBox>(BlackBox);
-
-        if (!sourceOwner) {
-            throw new Error(`no source owner found`);
-        }
-        if (!destinationOwner) {
-            throw new Error(`no destination owner found`);
-        }
-
-        let sourceIdentity = sourceOwner.getIdentity();
-        if (sourceOwner instanceof BlueprintModel) {
-            sourceIdentity = connection.source.getAncestorNode<PortOwner>(PortOwner)!.getIdentity() + "_in";
-        }
-
-        let destinationIdentity = destinationOwner.getIdentity();
-        if (destinationOwner instanceof BlueprintModel) {
-            destinationIdentity = connection.destination.getAncestorNode<PortOwner>(PortOwner)!.getIdentity() + "_out";
-        }
-
-        const linkId = `${sourceIdentity}>${destinationIdentity}`;
-        const link = this.graph.getCell(linkId);
-
+        const linkId = ConnectionComponent.getLinkId(connection);
+        const link = ConnectionComponent.findLink(this.graph, connection);
         if (link) {
             link.remove();
         } else {
-            throw `link could not be found`;
+            throw new Error(`link with id ${linkId} not found`);
+        }
+        const idx = this.connections.findIndex(conn => conn.getId() === linkId);
+        if (idx !== -1) {
+            this.connections.splice(idx, 1);
+        } else {
+            throw new Error(`connection with id ${linkId} not found`);
         }
     }
 
@@ -370,7 +304,7 @@ export class BlueprintView extends PaperView {
         layout.DirectedGraph.layout(this.graph, {
             nodeSep: 120,
             rankSep: 120,
-            edgeSep: 360,
+            edgeSep: 0,
             rankDir: "TB",
             resizeClusters: false,
         });

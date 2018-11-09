@@ -1,5 +1,5 @@
-import {dia, g} from "jointjs";
-import {ViewFrame} from "../cavas";
+import {dia, g, util} from 'jointjs';
+import {ViewFrame} from "../frame";
 import {View} from "./view";
 
 export abstract class PaperView extends View {
@@ -49,8 +49,8 @@ export abstract class PaperView extends View {
         opt = Object.assign({
             el: inner,
             model: this.graph,
-            gridSize: 10,
-            drawGrid: true,
+            gridSize: 5,
+            drawGrid: false,
             interactive: function (cellView: dia.CellView) {
                 if (cellView.model.attr('draggable') === false) {
                     return false;
@@ -193,3 +193,20 @@ export abstract class PaperView extends View {
     }
     
 }
+
+(util.filter as any).innerShadow = function (args: any) {
+    return `<filter>
+<feComponentTransfer in="SourceAlpha">
+    <feFuncA type="table" tableValues="1 0" />
+</feComponentTransfer>
+<feGaussianBlur stdDeviation="${Number.isFinite(args.blur) ? args.blur : 4}"/>
+<feOffset dx="${args.dx || 0}" dy="${args.dy || 0}" result="offsetblur"/>
+<feFlood flood-color="${args.color || "black"}" result="color"/>
+<feComposite in2="offsetblur" operator="in"/>
+<feComposite in2="SourceAlpha" operator="in" />
+<feMerge>
+    <feMergeNode in="SourceGraphic" />
+    <feMergeNode />
+</feMerge>
+</filter>`;
+};

@@ -4,9 +4,10 @@
  * Currently these are main in- and out-ports and delegate in- and out-ports.
  */
 import {PortComponent} from "./port";
-import {attributes, dia, g} from "jointjs";
+import {dia, g} from "jointjs";
 import {PortModel} from "../../model/port";
 import {TypeIdentifier} from "../../custom/type";
+import {Styles} from "../../../styles/studio";
 
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";
 
@@ -49,31 +50,19 @@ export class PortGroupComponent {
         switch (groupPosition) {
             case "top":
                 this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "top", start, width) as any;
-                this.portGroupElement.markup = "<path class='sl-srv-main sl-port sl-port-in' d=''></path>";
-                this.portGroupElement.attrs = {
-                    ".sl-srv-main.sl-port": PortGroupComponent.portAttributes,
-                };
+                this.portGroupElement.markup = "<path class='sl-port' d=''></path>";
                 break;
             case "right":
                 this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "right", start, width) as any;
-                this.portGroupElement.markup = "<path class='sl-dlg sl-port sl-port-in' d=''></path>";
-                this.portGroupElement.attrs = {
-                    ".sl-dlg.sl-port": PortGroupComponent.portAttributes,
-                };
+                this.portGroupElement.markup = "<path class='sl-port' d=''></path>";
                 break;
             case "bottom":
                 this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "bottom", start, width) as any;
-                this.portGroupElement.markup = "<path class='sl-srv-main sl-port sl-port-out' d=''></path>";
-                this.portGroupElement.attrs = {
-                    ".sl-srv-main.sl-port": PortGroupComponent.portAttributes
-                };
+                this.portGroupElement.markup = "<path class='sl-port' d=''></path>";
                 break;
             case "left":
                 this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "left", start, width) as any;
-                this.portGroupElement.markup = "<path class='sl-dlg sl-port sl-port-out' d=''></path>";
-                this.portGroupElement.attrs = {
-                    ".sl-dlg.sl-port": PortGroupComponent.portAttributes,
-                };
+                this.portGroupElement.markup = "<path class='sl-port' d=''></path>";
                 break;
         }
     }
@@ -112,35 +101,6 @@ export class PortGroupComponent {
 
     // STATIC:
 
-    /**
-     * Spacing between ports. Two ports must not be closer to each other than this value.
-     */
-    private static readonly portSpacing = 15;
-
-    /**
-     * Width of the visible port shape.
-     */
-    private static readonly portWidth = 7;
-
-    /**
-     * Height of the visible port shape.
-     */
-    private static readonly portHeight = 21;
-
-    /**
-     * SVG attributes for the port shape.
-     */
-    public static readonly portAttributes: attributes.SVGAttributes = {
-        paintOrder: "stroke fill",
-        d:
-            `M ${-PortGroupComponent.portWidth / 2} ${-PortGroupComponent.portHeight / 2} ` +
-            `L ${PortGroupComponent.portWidth / 2} ${-PortGroupComponent.portHeight / 2} ` +
-            `L 0 ${PortGroupComponent.portHeight / 2} z`,
-        magnet: true,
-        stroke: "gray",
-        strokeWidth: 3
-    };
-
     public static layoutFunction(portComponents: Array<PortComponent>, position: PortGroupPosition, offset: number, space: number): (ports: Array<any>, elBBox: g.Rect, opt: any) => Array<g.Point> {
         return function (ports: Array<PortComponent>, elBBox: g.Rect, opt: any): Array<g.Point> {
             return ports.map((port: PortComponent, index: number, ports: Array<any>) => {
@@ -158,28 +118,30 @@ export class PortGroupComponent {
                         break;
                 }
 
-                const lengthAbs = (count - 1) * PortGroupComponent.portSpacing;
+                const lengthAbs = (count - 1) * Styles.PortGroup.portSpacing;
                 const spaceAbs = space * total;
                 const offsetAbs = offset * total;
                 const positionAbs =
                     offsetAbs +
-                    index * PortGroupComponent.portSpacing +
+                    index * Styles.PortGroup.portSpacing +
                     (spaceAbs - lengthAbs) / 2;
 
                 let portPosition: g.PlainPoint = {x: 0, y: 0};
 
+                const translate = portComponents[index].getModel().isDirectionIn() ? Styles.PortGroup.TranslationIn : Styles.PortGroup.TranslationOut;
+                
                 switch (position) {
                     case "top":
-                        portPosition = {x: positionAbs, y: 0};
+                        portPosition = {x: positionAbs, y: -translate};
                         break;
                     case "bottom":
-                        portPosition = {x: positionAbs, y: elBBox.height};
+                        portPosition = {x: positionAbs, y: elBBox.height + translate};
                         break;
                     case "left":
-                        portPosition = {x: 0, y: positionAbs};
+                        portPosition = {x: translate, y: positionAbs};
                         break;
                     case "right":
-                        portPosition = {x: elBBox.width, y: positionAbs};
+                        portPosition = {x: elBBox.width - translate, y: positionAbs};
                         break;
                 }
 

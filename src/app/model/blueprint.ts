@@ -244,7 +244,7 @@ export class BlueprintModel extends BlackBox {
     }
 
     public getDisplayName(): string {
-        return this.getFullName();
+        return this.getShortName();
     }
 
     public getIdentity(): string {
