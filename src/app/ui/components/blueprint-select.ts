@@ -97,22 +97,57 @@ export class BlueprintSelectComponent {
         this.el.remove();
     }
 
-    private subscribe() {
+    public getAnchor(): HTMLElement {
+        return this.el;
+    }
+
+    protected lockAnchorPosition() {
+        const paper = this.blueprintView.getPaper();
+
+        let panning = false;
+        let diffToAnchorX: number = 0;
+        let diffToAnchorY: number = 0;
+
         const that = this;
-        this.placeholderRect.on("change:position", function (elem: dia.Element) {
-            console.log(">>>", elem, elem.getBBox());
-            that.moveTo([elem.getBBox().x, elem.getBBox().y]);
+        const anchor = that.getAnchor();
+        const startPanning = function (x: number, y: number) {
+            diffToAnchorX = x - anchor.offsetLeft;
+            diffToAnchorY = y - anchor.offsetTop;
+            panning = true;
+        };
+
+        const stopPanning = function () {
+            panning = false;
+        };
+
+        const doPanning = function (x: number, y: number) {
+            if (panning) {
+                const newX = x - diffToAnchorX;
+                const newY = y - diffToAnchorY;
+                anchor.style.left = `${Math.floor(newX)}px`;
+                anchor.style.top = `${Math.floor(newY)}px`;
+            }
+        };
+
+        paper.on('blank:pointerdown', function (evt: JQueryMouseEventObject, x: number, y: number) {
+            startPanning(evt.offsetX, evt.offsetY);
+        });
+        paper.on('cell:pointerdown', function (cellView: dia.CellView, evt: JQueryMouseEventObject, x: number, y: number) {
+            startPanning(evt.offsetX, evt.offsetY);
+        });
+        paper.on('blank:pointerup', function (evt: Event, x: number, y: number) {
+            stopPanning();
+        });
+        paper.on('cell:pointerup', function (cellView: dia.CellView, evt: Event, x: number, y: number) {
+            stopPanning();
+        });
+        paper.svg.addEventListener('mousemove', function (event: any) {
+            doPanning(event.offsetX, event.offsetY);
         });
     }
 
-    private moveTo(relPos: [number, number]) {
-        this.relPos = relPos;
-        const distance = [
-            this.relPos[0] - relPos[0],
-            this.relPos[1] - relPos[1],
-        ];
-        this.absPos[0] = this.absPos[0] - distance[0];
-        this.absPos[1] = this.absPos[1] - distance[1];
+    private subscribe() {
+        this.lockAnchorPosition()
     }
 
     private getBlueprints(): Array<BlueprintModel> {
