@@ -1,22 +1,27 @@
-import {BehaviorSubject, Subject} from "rxjs";
 import {BlueprintModel, BlueprintType} from './blueprint';
 import {OperatorPortModel, PortDirection} from './port';
-import {OperatorDelegateModel} from './delegate';
-import {BlackBox} from '../custom/nodes';
+import {OperatorDelegateModel, OperatorDelegateModelArgs} from './delegate';
+import {BlackBox, SlangToken} from '../custom/nodes';
 import {Connections} from '../custom/connections';
 import {SlangType} from "../custom/type";
+import {SlangBehaviorSubject, SlangSubject} from '../custom/events';
+
+export type OperatorModelArgs = {name: string, blueprint: BlueprintModel};
 
 export class OperatorModel extends BlackBox {
 
     // Topics
     // self
-    private removed = new Subject<void>();
-    private selected = new BehaviorSubject<boolean>(false);
+    private removed = new SlangSubject<void>("removed");
+    private selected = new SlangBehaviorSubject<boolean>("selected", false);
 
-    private delegates: Array<OperatorDelegateModel> = [];
+    private readonly name: string;
+    private readonly blueprint: BlueprintModel;
 
-    constructor(private owner: BlueprintModel, private name: string, private blueprint: BlueprintModel) {
-        super();
+    constructor(parent: BlueprintModel, token: SlangToken, args: OperatorModelArgs) {
+        super(parent, token);
+        this.name = args.name;
+        this.blueprint = args.blueprint;
     }
 
     public getName(): string {
@@ -40,19 +45,15 @@ export class OperatorModel extends BlackBox {
     }
 
     public getDelegates(): IterableIterator<OperatorDelegateModel> {
-        return this.delegates.values();
+        return this.getChildNodes<OperatorDelegateModel>(OperatorDelegateModel);
     }
 
     public findDelegate(name: string): OperatorDelegateModel | undefined {
-        return this.delegates.find(delegate => delegate.getName() === name);
+        return this.scanChildNode<OperatorDelegateModel>(delegate => delegate.getName() === name, OperatorDelegateModel);
     }
 
     public getDisplayName(): string {
         return this.blueprint.getShortName();
-    }
-
-    public getIdentity(): string {
-        return this.owner.getIdentity() + '#' + this.getName();
     }
 
     public getConnectionsTo(): Connections {
@@ -65,7 +66,7 @@ export class OperatorModel extends BlackBox {
         }
 
         // Then, handle delegate out-ports
-        for (const delegate of this.delegates) {
+        for (const delegate of this.getChildNodes<OperatorDelegateModel>(OperatorDelegateModel)) {
             connections.addConnections(delegate.getConnectionsTo());
         }
 
@@ -73,9 +74,8 @@ export class OperatorModel extends BlackBox {
     }
 
     // Actions
-    public addDelegate(delegate: OperatorDelegateModel): OperatorDelegateModel {
-        this.delegates.push(delegate);
-        return delegate;
+    public createDelegate(name: string): OperatorDelegateModel {
+        return this.createChildNode<OperatorDelegateModel, OperatorDelegateModelArgs>(OperatorDelegateModel, {name});
     }
 
     public select() {
@@ -103,19 +103,5 @@ export class OperatorModel extends BlackBox {
 
     public subscribeDeleted(cb: () => void): void {
         this.removed.subscribe(cb);
-    }
-
-    // Slang tree
-
-    getChildNodes(): IterableIterator<OperatorPortModel | OperatorDelegateModel> {
-        const children: Array<OperatorPortModel | OperatorDelegateModel> = Array.from(this.getPorts() as IterableIterator<OperatorPortModel>);
-        for (const delegate of this.delegates) {
-            children.push(delegate);
-        }
-        return children.values();
-    }
-
-    getParentNode(): BlueprintModel {
-        return this.owner;
     }
 }

@@ -1,29 +1,28 @@
-import {BehaviorSubject, Subject} from 'rxjs';
 import {BlueprintModel} from './blueprint';
-import {LandscapeModel} from './landscape';
-import {SlangNode} from "../custom/nodes";
+import {LandscapeModel, LandscapeModelArgs} from './landscape';
+import {SlangNode} from '../custom/nodes';
+import {SlangBehaviorSubject, SlangSubject} from '../custom/events';
 
 export class AppModel extends SlangNode {
-    
-    private openedBlueprint = new BehaviorSubject<BlueprintModel | null>(null);
-    private openedLandscape = new BehaviorSubject<LandscapeModel | null>(null);
-    private loadRequested = new Subject<void>();
-    
-    private readonly landscape: LandscapeModel = new LandscapeModel(this);
-    
+
+    private openedBlueprint = new SlangBehaviorSubject<BlueprintModel | null>('opened-blueprint', null);
+    private openedLandscape = new SlangBehaviorSubject<LandscapeModel | null>('opened-landscape', null);
+    private loadRequested = new SlangSubject<void>('load-requested');
+
     private loading: Array<Promise<void>> = [];
-    
+
     constructor(private name: string) {
-        super();
-        this.subscribeLandscape(this.landscape);
+        super(null);
+        const landscape = this.createChildNode<LandscapeModel, LandscapeModelArgs>(LandscapeModel, {});
+        this.subscribeLandscape(landscape);
     }
     
     public getLandscape(): LandscapeModel {
-        return this.landscape;
+        return this.getChildNode<LandscapeModel>(LandscapeModel)!;
     }
     
     private subscribeLandscape(landscape: LandscapeModel) {
-        for (const blueprint of landscape.getBlueprints()) {
+        for (const blueprint of landscape.getChildNodes<BlueprintModel>(BlueprintModel)) {
             this.subscribeBlueprint(blueprint);
         }
         landscape.subscribeBlueprintAdded(blueprint => {
@@ -43,7 +42,7 @@ export class AppModel extends SlangNode {
             }
         })
     }
-    
+
     private subscribeBlueprint(blueprint: BlueprintModel) {
         blueprint.subscribeOpenedChanged(opened => {
             if (opened) {
@@ -59,9 +58,9 @@ export class AppModel extends SlangNode {
             }
         });
     }
-    
+
     // Actions
-    
+
     public load(): Promise<void> {
         return new Promise<void>(async resolve => {
             this.loadRequested.next();
@@ -71,7 +70,7 @@ export class AppModel extends SlangNode {
             resolve();
         });
     }
-    
+
     // Subscriptions
 
     public subscribeOpenedBlueprintChanged(cb: (bp: BlueprintModel | null) => void) {
@@ -81,25 +80,11 @@ export class AppModel extends SlangNode {
     public subscribeOpenedLandscapeChanged(cb: (ls: LandscapeModel | null) => void) {
         this.openedLandscape.subscribe(cb);
     }
-    
+
     public subscribeLoadRequested(cb: () => Promise<void>) {
         this.loadRequested.subscribe(() => {
             this.loading.push(cb());
         });
     }
 
-    // Slang node
-    
-    getChildNodes(): IterableIterator<SlangNode> {
-        return [this.landscape].values();
-    }
-
-    getIdentity(): string {
-        return this.name;
-    }
-
-    getParentNode(): SlangNode | null {
-        return null;
-    }
-    
 }

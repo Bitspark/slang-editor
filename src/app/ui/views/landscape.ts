@@ -1,6 +1,5 @@
 import {dia, shapes} from "jointjs";
 import {BlueprintModel, BlueprintType} from "../../model/blueprint";
-import {Subject} from "rxjs";
 import {LandscapeModel} from "../../model/landscape";
 import {BlueprintBoxComponent} from "../components/blackbox";
 import {ViewFrame} from "../frame";
@@ -12,7 +11,6 @@ export class LandscapeView extends PaperView {
     private blueprintRects = new Map<string, shapes.standard.Rectangle>();
     private addBlueprintButton: dia.Element;
     private slangLogo: dia.Element;
-    private destroyed = new Subject<void>();
     private dimensions: [number, number] = [0, 0];
 
     constructor(frame: ViewFrame, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
@@ -239,7 +237,7 @@ export class LandscapeView extends PaperView {
 
         const that = this;
         rect.on('pointerclick', function (evt: Event, x: number, y: number) {
-            that.landscape.createBlueprint(`Unnamed${new Date().getTime()}`, BlueprintType.Local).open();
+            that.landscape.createBlueprint({fullName: `Unnamed${new Date().getTime()}`, type: BlueprintType.Local}).open();
         });
 
         return rect;

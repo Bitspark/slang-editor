@@ -121,8 +121,8 @@ export class BlueprintView extends PaperView {
                 return false;
             }
 
-            const sourcePort = that.blueprint.find(sourcePortRef);
-            const destinationPort = that.blueprint.find(destinationPortRef);
+            const sourcePort = that.blueprint.findNode(sourcePortRef);
+            const destinationPort = that.blueprint.findNode(destinationPortRef);
             if (!sourcePort || !destinationPort ||
                 !(sourcePort instanceof GenericPortModel) || !(destinationPort instanceof GenericPortModel)) {
                 return false;
@@ -151,7 +151,7 @@ export class BlueprintView extends PaperView {
         });
 
         // Ports
-        const ports = Array.from(this.blueprint.getDescendentNodes<BlueprintPortModel>(BlueprintPortModel));
+        const ports = Array.from(this.blueprint.getDescendantNodes<BlueprintPortModel>(BlueprintPortModel));
         ports.filter(port => port.isSource()).forEach(source => {
             source.subscribeConnected(connection => {
                 this.addConnection(connection);
@@ -373,7 +373,7 @@ export class BlueprintView extends PaperView {
         });
 
         // Ports
-        const ports = Array.from(operator.getDescendentNodes<PortModel>(GenericPortModel));
+        const ports = Array.from(operator.getDescendantNodes<PortModel>(GenericPortModel));
         const sourcePorts = ports.filter(port => port.isSource());
         sourcePorts.forEach(source => {
             source.subscribeConnected(connection => {
@@ -510,11 +510,11 @@ export class BlueprintView extends PaperView {
         if (!magnet) {
             return undefined;
         }
-        const portRef = magnet.getAttribute("port");
-        if (!portRef) {
+        const portId = magnet.getAttribute("port");
+        if (!portId) {
             return undefined;
         }
-        const port = this.blueprint.find(portRef);
+        const port = this.blueprint.findNode(portId);
         if (!port || !(port instanceof GenericPortModel)) {
             return undefined;
         }
