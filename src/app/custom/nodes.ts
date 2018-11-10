@@ -6,21 +6,34 @@ type Type<T> = Function & { prototype: T };
 
 export type SlangToken = {token: string, id: string};
 
+export type Types<T> = [Type<T>, ...Array<Type<T>>];
+
 export abstract class SlangNode {
+
+    private static creationToken = "";
+    
+    protected static createRoot<T extends SlangNode, A>(ctor: new(token: SlangToken, args: A) => T, args: A): T {
+        SlangNode.creationToken = SlangNode.createToken();
+        return new ctor({token: SlangNode.creationToken, id: "root"}, args);
+    }
     
     private readonly id: string;
     private children = new Map<string, SlangNode>();
     private lastId = "0";
     private lastToken: string = "";
     
-    protected constructor(protected readonly parent: SlangNode | null = null, token?: SlangToken) {
-        if (parent) {
-            if (!token) {
-                throw new Error(`missing token`);
-            }
-            parent.registerNode(this, token);
-            this.id = token.id;
+    protected constructor(protected readonly parent: SlangNode | null, token: SlangToken) {
+        if (!token) {
+            throw new Error(`missing token`);
         }
+        if (parent) {
+            parent.registerNode(this, token);
+        } else {
+            if (SlangNode.creationToken !== token.token) {
+                throw new Error(`illegal node creation: wrong token`);
+            }
+        }
+        this.id = token.id;
     }
 
     public getIdentity(): string {
@@ -30,21 +43,35 @@ export abstract class SlangNode {
             return "sl";
         }
     }
-
-    // TODO: Can be heavily optimized
-    public findNode(id: string): SlangNode | undefined {
-        if (this.getIdentity() === id) {
+    
+    public findNodeById(id: string): SlangNode | undefined {        
+        const thisId = this.getIdentity();
+        if (thisId === id) {
             return this;
         }
+        
+        if (!id.startsWith(thisId)) {
+            return undefined;
+        }
+        
+        id = id.substr(thisId.length);
+        const idSplit = id.split(".");
 
-        for (const child of this.getChildNodes<SlangNode>(SlangNode)) {
-            const found = child.findNode(id);
-            if (found) {
-                return found;
-            }
+        const child = this.getNodeById(idSplit[0]);
+        if (!child) {
+            return undefined;
+        }
+        
+        const found = child.findNodeById(id);
+        if (found) {
+            return found;
         }
 
         return undefined;
+    }
+
+    public getNodeById(id: string): SlangNode | undefined {
+        return this.children.get(id);
     }
 
     public getRootNode(): SlangNode {
@@ -54,7 +81,7 @@ export abstract class SlangNode {
         return this.getParentNode()!;
     }
 
-    public getChildNodes<T extends SlangNode>(...types: Array<Type<T>>): IterableIterator<T> {
+    public getChildNodes<T extends SlangNode>(types: Types<T>): IterableIterator<T> {
         const children: Array<T> = [];
         for (const childNode of this.children.values()) {
             for (const t of types) {
@@ -67,7 +94,7 @@ export abstract class SlangNode {
         return children.values();
     }
 
-    public getChildNode<T extends SlangNode>(...types: Array<Type<T>>): T | null {
+    public getChildNode<T extends SlangNode>(types: Types<T>): T | null {
         if (this.children.size === 0) {
             return null;
         }
@@ -81,29 +108,19 @@ export abstract class SlangNode {
         return null;
     }
     
-    public scanChildNode<T extends SlangNode>(cb: (child: T) => boolean, ...types: Array<Type<T>>): T | undefined {
-        for (const child of this.getChildNodes<T>(...types)) {
+    public scanChildNode<T extends SlangNode>(cb: (child: T) => boolean, types: Types<T>): T | undefined {
+        for (const child of this.getChildNodes<T>(types)) {
             if (cb(child)) {
                 return child as T;
             }
         }
     }
 
-    public scanChildNodes<T extends SlangNode>(cb: (child: T) => boolean, ...types: Array<Type<T>>): IterableIterator<T> {
-        const children: Array<T> = [];
-        for (const child of this.getChildNodes<T>(...types)) {
-            if (cb(child)) {
-                children.push(child as T);
-            }
-        }
-        return children.values();
-    }
-
     public getParentNode(): SlangNode | null {
         return this.parent;
     }
 
-    public getAncestorNode<T extends SlangNode>(...types: Array<Type<T>>): T | undefined {
+    public getAncestorNode<T extends SlangNode>(types: Types<T>): T | undefined {
         if (types.length === 0) {
             return undefined;
         }
@@ -116,22 +133,22 @@ export abstract class SlangNode {
         if (!parentNode) {
             return undefined;
         }
-        return parentNode.getAncestorNode<T>(...types);
+        return parentNode.getAncestorNode<T>(types);
     }
 
-    public getDescendantNodes<T extends SlangNode>(...types: Array<Type<T>>): IterableIterator<T> {
+    public getDescendantNodes<T extends SlangNode>(types: Types<T>): IterableIterator<T> {
         const children: Array<T> = [];
         if (types.length === 0) {
             return children.values();
         }
-        for (const childNode of this.getChildNodes<SlangNode>(SlangNode)) {
+        for (const childNode of this.getChildNodes<SlangNode>([SlangNode])) {
             for (const t of types) {
                 if (childNode instanceof t) {
                     children.push(childNode as T);
                     break;
                 }
             }
-            for (const descendant of childNode.getDescendantNodes<T>(...types)) {
+            for (const descendant of childNode.getDescendantNodes<T>(types)) {
                 children.push(descendant);
             }
         }
@@ -152,13 +169,17 @@ export abstract class SlangNode {
         this.children.set(token.id, node);
     }
 
+    private static createToken(): string {
+        return Number(Math.floor(Math.random() * 10000000)).toString(16);
+    }
+    
     private nextId(): string {
         this.lastId = Number(Number.parseInt(this.lastId, 16) + 1).toString(16);
         return this.lastId;
     }
 
     private nextToken(): string {
-        this.lastToken = Number(Math.floor(Math.random() * 100000)).toString(16);
+        this.lastToken = SlangNode.createToken();
         return this.lastToken;
     }
 
@@ -191,15 +212,15 @@ export abstract class PortOwner extends SlangNode {
     }
 
     public getPortIn(): PortModel | null {
-        return this.scanChildNode<PortModel>(p => p.isDirectionIn(), GenericPortModel) || null;
+        return this.scanChildNode<PortModel>(p => p.isDirectionIn(), [GenericPortModel]) || null;
     }
 
     public getPortOut(): PortModel | null {
-        return this.scanChildNode<PortModel>(p => p.isDirectionOut(), GenericPortModel) || null;
+        return this.scanChildNode<PortModel>(p => p.isDirectionOut(), [GenericPortModel]) || null;
     }
 
     public getPorts(): IterableIterator<PortModel> {
-        return this.getChildNodes<PortModel>(GenericPortModel);
+        return this.getChildNodes<PortModel>([GenericPortModel]);
     }
 
 }

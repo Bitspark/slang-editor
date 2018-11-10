@@ -1,7 +1,9 @@
 import {BlueprintModel} from './blueprint';
 import {LandscapeModel, LandscapeModelArgs} from './landscape';
-import {SlangNode} from '../custom/nodes';
+import {SlangNode, SlangToken} from '../custom/nodes';
 import {SlangBehaviorSubject, SlangSubject} from '../custom/events';
+
+export type AppModelArgs = {name: string};
 
 export class AppModel extends SlangNode {
 
@@ -9,20 +11,26 @@ export class AppModel extends SlangNode {
     private openedLandscape = new SlangBehaviorSubject<LandscapeModel | null>('opened-landscape', null);
     private loadRequested = new SlangSubject<void>('load-requested');
 
+    private readonly name: string;
     private loading: Array<Promise<void>> = [];
 
-    constructor(private name: string) {
-        super(null);
+    constructor(token: SlangToken, {name}: AppModelArgs) {
+        super(null, token);
+        this.name = name;
         const landscape = this.createChildNode<LandscapeModel, LandscapeModelArgs>(LandscapeModel, {});
         this.subscribeLandscape(landscape);
     }
     
+    public static create(name: string): AppModel {
+        return SlangNode.createRoot<AppModel, AppModelArgs>(AppModel, {name});
+    }
+    
     public getLandscape(): LandscapeModel {
-        return this.getChildNode<LandscapeModel>(LandscapeModel)!;
+        return this.getChildNode<LandscapeModel>([LandscapeModel])!;
     }
     
     private subscribeLandscape(landscape: LandscapeModel) {
-        for (const blueprint of landscape.getChildNodes<BlueprintModel>(BlueprintModel)) {
+        for (const blueprint of landscape.getChildNodes<BlueprintModel>([BlueprintModel])) {
             this.subscribeBlueprint(blueprint);
         }
         landscape.subscribeBlueprintAdded(blueprint => {

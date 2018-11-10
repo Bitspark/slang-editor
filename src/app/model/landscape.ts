@@ -16,7 +16,7 @@ export class LandscapeModel extends SlangNode {
     }
 
     public findBlueprint(fullName: string): BlueprintModel | undefined {
-        for (const blueprint of this.getChildNodes<BlueprintModel>(BlueprintModel)) {
+        for (const blueprint of this.getChildNodes<BlueprintModel>([BlueprintModel])) {
             if (blueprint.getFullName() === fullName) {
                 return blueprint;
             }
@@ -24,7 +24,7 @@ export class LandscapeModel extends SlangNode {
     }
 
     public getBlueprints(): IterableIterator<BlueprintModel> {
-        return this.getChildNodes<BlueprintModel>(BlueprintModel);
+        return this.getChildNodes<BlueprintModel>([BlueprintModel]);
     }
 
     // Actions

@@ -121,8 +121,8 @@ export class BlueprintView extends PaperView {
                 return false;
             }
 
-            const sourcePort = that.blueprint.findNode(sourcePortRef);
-            const destinationPort = that.blueprint.findNode(destinationPortRef);
+            const sourcePort = that.blueprint.findNodeById(sourcePortRef);
+            const destinationPort = that.blueprint.findNodeById(destinationPortRef);
             if (!sourcePort || !destinationPort ||
                 !(sourcePort instanceof GenericPortModel) || !(destinationPort instanceof GenericPortModel)) {
                 return false;
@@ -151,7 +151,7 @@ export class BlueprintView extends PaperView {
         });
 
         // Ports
-        const ports = Array.from(this.blueprint.getDescendantNodes<BlueprintPortModel>(BlueprintPortModel));
+        const ports = Array.from(this.blueprint.getDescendantNodes<BlueprintPortModel>([BlueprintPortModel]));
         ports.filter(port => port.isSource()).forEach(source => {
             source.subscribeConnected(connection => {
                 this.addConnection(connection);
@@ -373,7 +373,7 @@ export class BlueprintView extends PaperView {
         });
 
         // Ports
-        const ports = Array.from(operator.getDescendantNodes<PortModel>(GenericPortModel));
+        const ports = Array.from(operator.getDescendantNodes<PortModel>([GenericPortModel]));
         const sourcePorts = ports.filter(port => port.isSource());
         sourcePorts.forEach(source => {
             source.subscribeConnected(connection => {
@@ -514,7 +514,7 @@ export class BlueprintView extends PaperView {
         if (!portId) {
             return undefined;
         }
-        const port = this.blueprint.findNode(portId);
+        const port = this.blueprint.findNodeById(portId);
         if (!port || !(port instanceof GenericPortModel)) {
             return undefined;
         }

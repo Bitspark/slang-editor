@@ -9,7 +9,7 @@ import {ViewFrame} from "../app/ui/frame";
 
 export function SlangStudioEmbedded(el: HTMLElement, blueprintFullName: string): Promise<void> {
     return new Promise<void>(resolve => {
-        const appModel = new AppModel(`embedded-${blueprintFullName}`);
+        const appModel = AppModel.create(`embedded-${blueprintFullName}`);
         const app = new SlangApp(appModel);
         app.addFrame(new ViewFrame(el), true);
         app.addPlugin(new StaticStoragePlugin(appModel, 'https://files.bitspark.de/slang-operators/slang-definitions.json'));

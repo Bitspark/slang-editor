@@ -10,7 +10,7 @@ import {ViewFrame} from "../app/ui/frame";
 
 function SlangStudioStandalone(el: HTMLElement): Promise<void> {
     return new Promise<void>(resolve => {
-        const appModel = new AppModel("slang");
+        const appModel = AppModel.create("slang");
         const app = new SlangApp(appModel);
         const frame = new ViewFrame(el);
         app.addFrame(frame, true);

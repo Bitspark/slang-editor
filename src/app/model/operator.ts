@@ -45,11 +45,11 @@ export class OperatorModel extends BlackBox {
     }
 
     public getDelegates(): IterableIterator<OperatorDelegateModel> {
-        return this.getChildNodes<OperatorDelegateModel>(OperatorDelegateModel);
+        return this.getChildNodes<OperatorDelegateModel>([OperatorDelegateModel]);
     }
 
     public findDelegate(name: string): OperatorDelegateModel | undefined {
-        return this.scanChildNode<OperatorDelegateModel>(delegate => delegate.getName() === name, OperatorDelegateModel);
+        return this.scanChildNode<OperatorDelegateModel>(delegate => delegate.getName() === name, [OperatorDelegateModel]);
     }
 
     public getDisplayName(): string {
@@ -66,7 +66,7 @@ export class OperatorModel extends BlackBox {
         }
 
         // Then, handle delegate out-ports
-        for (const delegate of this.getChildNodes<OperatorDelegateModel>(OperatorDelegateModel)) {
+        for (const delegate of this.getChildNodes<OperatorDelegateModel>([OperatorDelegateModel])) {
             connections.addConnections(delegate.getConnectionsTo());
         }
 

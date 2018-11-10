@@ -147,19 +147,19 @@ export class BlueprintModel extends BlackBox {
     }
 
     public getOperators(): IterableIterator<OperatorModel> {
-        return this.getChildNodes<OperatorModel>(OperatorModel);
+        return this.getChildNodes<OperatorModel>([OperatorModel]);
     }
 
     public findOperator(name: string): OperatorModel | undefined {
-        return this.scanChildNode<OperatorModel>(operator => operator.getName() === name, OperatorModel);
+        return this.scanChildNode<OperatorModel>(operator => operator.getName() === name, [OperatorModel]);
     }
 
     public getDelegates(): IterableIterator<BlueprintDelegateModel> {
-        return this.getChildNodes<BlueprintDelegateModel>(BlueprintDelegateModel);
+        return this.getChildNodes<BlueprintDelegateModel>([BlueprintDelegateModel]);
     }
 
     public findDelegate(name: string): BlueprintDelegateModel | undefined {
-        return this.scanChildNode<BlueprintDelegateModel>(delegate => delegate.getName() === name, BlueprintDelegateModel);
+        return this.scanChildNode<BlueprintDelegateModel>(delegate => delegate.getName() === name, [BlueprintDelegateModel]);
     }
 
     public getProperties(): IterableIterator<PropertyModel> {
@@ -167,7 +167,7 @@ export class BlueprintModel extends BlackBox {
     }
 
     public getPorts(): IterableIterator<BlueprintPortModel> {
-        return this.getChildNodes<BlueprintPortModel>(BlueprintPortModel);
+        return this.getChildNodes<BlueprintPortModel>([BlueprintPortModel]);
     }
 
     public getPortIn(): BlueprintPortModel | null {
