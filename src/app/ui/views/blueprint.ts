@@ -329,6 +329,10 @@ export class BlueprintView extends PaperView {
             operator.translate(-(boundingBox.x + boundingBox.width / 2), -(boundingBox.y + boundingBox.height / 2));
         });
 
+        if (!boundingBox) {
+            boundingBox = new g.Rect({ x: 0, y: 0, width: 10, height: 10 });
+        }
+        
         boundingBox.x -= boundingBox.x + boundingBox.width / 2;
         boundingBox.y -= boundingBox.y + boundingBox.height / 2;
 
