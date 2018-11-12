@@ -6,7 +6,11 @@ import {Connections} from '../custom/connections';
 import {SlangType} from "../custom/type";
 import {SlangBehaviorSubject, SlangSubject} from '../custom/events';
 
-export type OperatorModelArgs = {name: string, blueprint: BlueprintModel};
+export type OperatorModelArgs = {name: string, blueprint: BlueprintModel, geomentry: Geometry | undefined};
+
+export interface Geometry {
+    position: [number, number]
+}
 
 export class OperatorModel extends BlackBox {
 
@@ -17,11 +21,13 @@ export class OperatorModel extends BlackBox {
 
     private readonly name: string;
     private readonly blueprint: BlueprintModel;
+    private geomentry: Geometry | undefined;
 
     constructor(parent: BlueprintModel, args: OperatorModelArgs) {
         super(parent);
         this.name = args.name;
         this.blueprint = args.blueprint;
+        this.geomentry = args.geomentry;
     }
 
     public getName(): string {
@@ -73,6 +79,12 @@ export class OperatorModel extends BlackBox {
         return connections;
     }
 
+    public get position(): {x: number, y: number} | undefined {
+        if (this.geomentry) {
+            return {x: this.geomentry.position[0], y: this.geomentry.position[1]};
+        }
+    }
+
     // Actions
     public createDelegate(name: string): OperatorDelegateModel {
         return this.createChildNode<OperatorDelegateModel, OperatorDelegateModelArgs>(OperatorDelegateModel, {name});
@@ -92,6 +104,14 @@ export class OperatorModel extends BlackBox {
 
     public delete() {
         this.removed.next();
+    }
+
+    public moveTo(pos: [number, number]) {
+        if (this.geomentry) {
+            this.geomentry.position = pos;
+        } else {
+            this.geomentry = {position: pos};
+        }
     }
 
 

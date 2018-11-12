@@ -1,6 +1,7 @@
-import {OperatorModel, OperatorModelArgs} from './operator';
+import {OperatorModel} from './operator';
 import {BlueprintPortModel, PortDirection, PortModel} from './port';
 import {BlueprintDelegateModel, BlueprintDelegateModelArgs, OperatorDelegateModel} from './delegate';
+import {Geometry} from "./operator";
 import {SlangParsing} from "../custom/parsing";
 import {PropertyEvaluator} from "../custom/utils";
 import {BlackBox} from '../custom/nodes';
@@ -30,7 +31,6 @@ export class BlueprintModel extends BlackBox {
     // children
     private operatorAdded = new SlangSubject<OperatorModel>("operator-added");
     private operatorRemoved = new SlangSubject<OperatorModel>("operator-removed");
-    private operatorSelected = new SlangBehaviorSubject<OperatorModel | null>("operator-selected", null);
 
     // Properties
     private readonly fullName: string;
@@ -69,18 +69,30 @@ export class BlueprintModel extends BlackBox {
         return genericIdentifiers;
     }
 
-    private instantiateOperator(operator: OperatorModel, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): void {
+    private instantiateOperator(operator: OperatorModel, params?: { props: PropertyAssignments, gen: GenericSpecifications }) {
+
         function copyAndAddDelegates(owner: OperatorModel, delegate: BlueprintDelegateModel) {
-            for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), propAssigns)) {
-                const delegateCopy = owner.createDelegate(expandedDlgName);
+            if (params) {
+                for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), params.props)) {
+                    const delegateCopy = owner.createDelegate(expandedDlgName);
+                    for (const port of delegate.getPorts()) {
+                        delegateCopy.createPort(port.getType().specifyGenerics(params.gen).expand(params.props), port.getDirection());
+                    }
+                }
+            } else {
+                const delegateCopy = owner.createDelegate(delegate.getName());
                 for (const port of delegate.getPorts()) {
-                    delegateCopy.createPort(port.getType().specifyGenerics(genSpeci).expand(propAssigns), port.getDirection());
+                    delegateCopy.createPort(port.getType(), port.getDirection());
                 }
             }
         }
-
+        
         for (const port of this.getPorts()) {
-            operator.createPort(port.getType().specifyGenerics(genSpeci).expand(propAssigns), port.getDirection());
+            if (params) {
+                operator.createPort(port.getType().specifyGenerics(params.gen).expand(params.props), port.getDirection());
+            } else {
+                operator.createPort(port.getType(), port.getDirection());
+            }
         }
         for (const delegate of this.getDelegates()) {
             copyAndAddDelegates(operator, delegate);
@@ -88,29 +100,20 @@ export class BlueprintModel extends BlackBox {
     }
 
     public createOperator(name: string, blueprint: BlueprintModel, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
-        const operator = this.createChildNode<OperatorModel, OperatorModelArgs>(OperatorModel, {name, blueprint});
-        blueprint.instantiateOperator(operator, propAssigns, genSpeci);
+        const operator = this.createChildNode(OperatorModel, {name, blueprint});
+        blueprint.instantiateOperator(operator, {props: propAssigns, gen: genSpeci});
+        return operator;
+    }
 
-        this.operatorAdded.next(operator);
-        const that = this;
+    private getRandomOperatorName(blueprint: BlueprintModel): string {
+        const cnt = Array.from(this.getChildNodes([OperatorModel])).filter((op: OperatorModel) => op.getBlueprint() === blueprint).length;
+        return `${blueprint.getFullName()}-${cnt + 1}`;
+    }
 
-        // Subscribe on Select
-        operator.subscribeSelectChanged(function (selected: boolean) {
-            if (selected) {
-                const selectedOperatorOrNull = that.operatorSelected.getValue();
-                if (selectedOperatorOrNull !== null) {
-                    selectedOperatorOrNull.deselect();
-                }
-                that.operatorSelected.next(operator);
-            } else {
-                if (that.operatorSelected.getValue() === operator) {
-                    that.operatorSelected.next(null);
-                } else {
-                    // This can happen if that.operatorSelected has already been set to the new value
-                }
-            }
-        });
-        
+    public createBlankOperator(blueprint: BlueprintModel, geo: Geometry): OperatorModel {
+        const name = this.getRandomOperatorName(blueprint);
+        const operator = this.createChildNode(OperatorModel, {name, blueprint});
+        blueprint.instantiateOperator(operator);
         return operator;
     }
 
@@ -289,9 +292,13 @@ export class BlueprintModel extends BlackBox {
 
         return connections;
     }
-    
+
+    public getLandscape(): LandscapeModel {
+        return this.getChildNode([LandscapeModel])!;
+    }
+
     // Actions
-    
+
     public addProperty(property: PropertyModel): PropertyModel {
         this.properties.push(property);
         return property
@@ -342,4 +349,5 @@ export class BlueprintModel extends BlackBox {
     public subscribeDeleted(cb: () => void): void {
         this.removed.subscribe(cb);
     }
+    
 }

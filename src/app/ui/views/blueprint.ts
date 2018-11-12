@@ -8,8 +8,10 @@ import {PaperView} from "./paper-view";
 import {BlueprintPortModel, GenericPortModel, PortModel} from "../../model/port";
 import {IsolatedBlueprintPort} from "../components/blueprint-port";
 import {PortGroupPosition} from "../components/port-group";
+import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {Styles} from "../../../styles/studio";
+import ElementView = dia.ElementView;
 
 export class BlueprintView extends PaperView {
 
@@ -21,6 +23,8 @@ export class BlueprintView extends PaperView {
     private operators: Array<BlackBoxComponent> = [];
     private connections: Array<ConnectionComponent> = [];
     private outerPadding = 120;
+
+    private blueprintSelect: BlueprintSelectComponent | null;
 
     constructor(frame: ViewFrame, private blueprint: BlueprintModel) {
         super(frame);
@@ -102,7 +106,7 @@ export class BlueprintView extends PaperView {
                 if (!portT) {
                     return false;
                 }
-                
+
                 return portS.canConnect(portT);
             },
             snapLinks: {radius: 75,},
@@ -136,11 +140,22 @@ export class BlueprintView extends PaperView {
     private attachEventHandlers() {
         const that = this;
         this.graph.on("change:position change:size", function (cell: dia.Cell) {
+            // Moving around inner operators
             if (!(cell instanceof BlackBoxComponent.Rectangle)) {
                 return;
             }
-
             that.fitOuter();
+        });
+
+        this.outer.on("pointerdblclick", function (elementView: ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
+            that.blueprintSelect = new BlueprintSelectComponent(that, [x, y], [evt.clientX, evt.clientY]);
+
+        });
+        this.getPaper().on("blank:pointerclick cell:pointerclick", function (elementView: ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
+            if (that.blueprintSelect) {
+                that.blueprintSelect.destroy();
+                that.blueprintSelect = null;
+            }
         });
     }
 
@@ -519,6 +534,10 @@ export class BlueprintView extends PaperView {
             return undefined;
         }
         return port;
+    }
+
+    public getBlueprint(): BlueprintModel {
+        return this.blueprint
     }
 
 }
