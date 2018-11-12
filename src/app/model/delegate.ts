@@ -1,7 +1,7 @@
 import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel} from './port';
 import {BlueprintModel} from './blueprint';
 import {OperatorModel} from './operator';
-import {BlackBox, PortOwner} from '../custom/nodes';
+import {BlackBox, PortOwner} from "../custom/nodes";
 import {Connections} from '../custom/connections';
 import {SlangType} from "../custom/type";
 

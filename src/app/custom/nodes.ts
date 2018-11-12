@@ -1,6 +1,7 @@
 import {PortDirection, PortModel} from "../model/port";
 import {DelegateModel} from "../model/delegate";
 import {SlangType, TypeIdentifier} from "./type";
+import {Subject, Subscription} from "rxjs";
 
 type Type<T> = Function & { prototype: T };
 
@@ -27,7 +28,7 @@ export abstract class SlangNode {
         }
         return parentNode.getAncestorNode<T>(...types);
     }
-    
+
     getTopMostAncestorNode<T extends SlangNode>(...types: Array<Type<T>>): T | undefined {
         if (types.length === 0) {
             return undefined;
@@ -73,17 +74,17 @@ export abstract class SlangNode {
         if (this.getIdentity() === id) {
             return this;
         }
-        
+
         for (const child of this.getChildNodes()) {
             const found = child.find(id);
             if (found) {
                 return found;
             }
         }
-        
+
         return undefined;
     }
-    
+
     public getRoot(): SlangNode {
         if (!this.getParentNode()) {
             return this;
@@ -93,9 +94,87 @@ export abstract class SlangNode {
 
 }
 
+export class Stream {
+    private static id = "0";
+    private readonly id: string;
+    private replaced = new Subject<Stream>();
+    private subscriptions: Array<Subscription> = [];
+
+    constructor(private baseStream: Stream | null, private sourcePort: PortModel | undefined) {
+        Stream.id = (Number.parseInt(Stream.id, 16) + 1).toString(16);
+        this.id = Stream.id;
+
+        if (baseStream) {
+            if (baseStream.hasAncestor(this)) {
+                throw new Error(`stream circle detected`);
+            }
+            baseStream.subscribeReplaced(newStream => {
+                this.baseStream = newStream;
+            });
+        }
+    }
+
+    public getId(): string {
+        return this.id;
+    }
+
+    public getBaseStream(): Stream | null {
+        return this.baseStream;
+    }
+
+    public getPort(): PortModel | undefined {
+        return this.sourcePort;
+    }
+
+    public setSourcePort(port: PortModel): void {
+        this.sourcePort = port;
+    }
+
+    public getStreamDepth(): number {
+        if (this.baseStream) {
+            return this.baseStream.getStreamDepth() + 1;
+        }
+        return 1;
+    }
+    
+    private hasAncestor(stream: Stream): boolean {
+        if (stream === this) {
+            return true;
+        }
+        if (this.baseStream) {
+            return this.baseStream.hasAncestor(stream);
+        }
+        return false;
+    }
+
+    public replace(stream: Stream): void {
+        if (stream === this) {
+            return;
+        }
+        if (stream.hasAncestor(this)) {
+            console.error(this, stream);
+            throw new Error(`stream circle detected: ${stream.id}`);
+        }
+        this.replaced.next(stream);
+        this.subscriptions.forEach(subscription => subscription.unsubscribe());
+    }
+
+    public subscribeReplaced(cb: (newStream: Stream) => void) {
+        this.subscriptions.push(this.replaced.subscribe(cb));
+    }
+
+}
+
 export abstract class PortOwner extends SlangNode {
 
     private ports: { in: PortModel | null, out: PortModel | null } = {in: null, out: null};
+    protected baseStream: Stream;
+
+    protected constructor() {
+        super();
+        this.baseStream = new Stream(null, undefined);
+        this.baseStream.subscribeReplaced(newStream => this.baseStream = newStream);
+    }
 
     private attachPort(port: PortModel) {
         if (port.getParentNode() !== this) {
@@ -107,6 +186,8 @@ export abstract class PortOwner extends SlangNode {
         } else {
             this.ports.out = port;
         }
+
+        port.setStream(this.baseStream);
     }
 
     protected createPortFromType(P: new(p: PortModel | null, o: PortOwner, tid: TypeIdentifier, d: PortDirection) => PortModel, type: SlangType, direction: PortDirection): PortModel {
@@ -115,7 +196,8 @@ export abstract class PortOwner extends SlangNode {
         switch (type.getTypeIdentifier()) {
             case TypeIdentifier.Map:
                 for (const [subName, subType] of type.getMapSubs()) {
-                    port.addMapSub(subName, this.createPortFromType(P, subType, direction));
+                    const subPort = this.createPortFromType(P, subType, direction);
+                    port.addMapSub(subName, subPort);
                 }
                 break;
             case TypeIdentifier.Stream:
@@ -150,6 +232,15 @@ export abstract class PortOwner extends SlangNode {
             p.push(this.ports.out);
         }
         return p.values();
+    }
+
+    public getBaseStream(): Stream {
+        return this.baseStream;
+    }
+
+    public setBaseStream(stream: Stream) {
+        this.baseStream = stream;
+        stream.subscribeReplaced(newStream => this.baseStream = newStream);
     }
 
 }

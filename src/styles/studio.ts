@@ -21,7 +21,7 @@ export namespace Styles {
     
     export namespace Connection {
         class Connection {
-            public static strokeWidth = 3;
+            public static strokeWidth = 1;
             public static stroke = (type: TypeIdentifier): string => TypeColors[type];
             public static vectorEffect = "default";
         }

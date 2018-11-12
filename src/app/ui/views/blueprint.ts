@@ -79,7 +79,7 @@ export class BlueprintView extends PaperView {
             defaultLink: function (cellView: dia.CellView, magnet: SVGElement): dia.Link {
                 const port = that.getPortFromMagnet(magnet);
                 if (port) {
-                    const link = ConnectionComponent.createGhostLink(port.getTypeIdentifier());
+                    const link = ConnectionComponent.createGhostLink(port);
                     link.on("remove", function () {
                         link.transition("attrs/.connection/stroke-opacity", 0.0);
                     });

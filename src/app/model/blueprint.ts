@@ -1,10 +1,10 @@
 import {BehaviorSubject, Subject} from "rxjs";
 import {OperatorModel} from "./operator";
-import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel} from './port';
+import {BlueprintPortModel, PortDirection, PortModel} from './port';
 import {BlueprintDelegateModel, OperatorDelegateModel} from './delegate';
 import {SlangParsing} from "../custom/parsing";
 import {PropertyEvaluator} from "../custom/utils";
-import {BlackBox} from '../custom/nodes';
+import {BlackBox, Stream} from "../custom/nodes";
 import {LandscapeModel} from './landscape';
 import {Connections} from '../custom/connections';
 import {TypeIdentifier, SlangType} from "../custom/type";
@@ -99,7 +99,9 @@ export class BlueprintModel extends BlackBox {
     }
 
     public createPort(type: SlangType, direction: PortDirection): BlueprintPortModel {
-        return super.createPortFromType(BlueprintPortModel, type, direction) as BlueprintPortModel;
+        const port = super.createPortFromType(BlueprintPortModel, type, direction) as BlueprintPortModel;
+        
+        return port;
     }
 
     public getFullName(): string {

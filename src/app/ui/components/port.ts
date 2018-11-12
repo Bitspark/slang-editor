@@ -70,7 +70,6 @@ export class PortComponent {
             }
             markup += `<path class="${classes.join(" ")}" d="${PortComponent.getPortShape(width, height)}"></path>`;
         }
-        console.log(markup);
         return markup;
     }
 

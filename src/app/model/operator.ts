@@ -2,7 +2,7 @@ import {BehaviorSubject, Subject} from "rxjs";
 import {BlueprintModel, BlueprintType} from './blueprint';
 import {OperatorPortModel, PortDirection} from './port';
 import {OperatorDelegateModel} from './delegate';
-import {BlackBox} from '../custom/nodes';
+import {BlackBox, Stream} from "../custom/nodes";
 import {Connections} from '../custom/connections';
 import {SlangType} from "../custom/type";
 
@@ -94,7 +94,6 @@ export class OperatorModel extends BlackBox {
         this.removed.next();
     }
 
-
     // Subscriptions
 
     public subscribeSelectChanged(cb: (selected: boolean) => void): void {
@@ -108,7 +107,10 @@ export class OperatorModel extends BlackBox {
     // Slang tree
 
     getChildNodes(): IterableIterator<OperatorPortModel | OperatorDelegateModel> {
-        const children: Array<OperatorPortModel | OperatorDelegateModel> = Array.from(this.getPorts() as IterableIterator<OperatorPortModel>);
+        const children: Array<OperatorPortModel | OperatorDelegateModel> = [];
+        for (const port of this.getPorts()) {
+            children.push(port as OperatorPortModel);
+        }
         for (const delegate of this.delegates) {
             children.push(delegate);
         }

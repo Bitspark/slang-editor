@@ -1,24 +1,20 @@
 import {g} from "jointjs";
+import {PortModel} from "../../model/port";
 
 function movePoint(p: g.PlainPoint, i: number, total: number): g.PlainPoint {
-    const x = p.x + i * 3;
+    const x = p.x + i * 2.5;
     const y = p.y + i * 0;
     return {x, y};
 }
 
-export function slangConnector(sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: Array<g.PlainPoint>, opt: any) {
-    opt || (opt = {});
+function slangConnectorFunction(sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: Array<g.PlainPoint>, lines: number) {
+    let svg = "";
+    for (let i = 0; i < lines; i++) {
+        const sourcePointI = movePoint(sourcePoint, i, lines);
+        const targetPointI = movePoint(targetPoint, i, lines);
+        const routeI = route.map(p => movePoint(p, i, lines));
 
-    const streamStack = 1;
-    
-    let svg = '';
-    for (let i = 0; i < streamStack; i++) {
-        const sourcePointI = movePoint(sourcePoint, i, streamStack);
-        const targetPointI = movePoint(targetPoint, i, streamStack);
-        const routeI = route.map(p => movePoint(p, i, streamStack));
-        
-        const offset = opt.radius || 10;
-        // const raw = opt.raw;
+        const offset = 10;
         const path = new g.Path();
         let segment = g.Path.createSegment("M", sourcePointI);
         path.appendSegment(segment);
@@ -60,4 +56,10 @@ export function slangConnector(sourcePoint: g.PlainPoint, targetPoint: g.PlainPo
     }
 
     return svg;
+}
+
+export function slangConnector(sourcePort: PortModel, destinationPort: PortModel | null = null): (sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: Array<g.PlainPoint>, opt: any) => string {
+    console.log(sourcePort, sourcePort.getStream(), sourcePort.getStream().getStreamDepth());
+    const streamDepth = sourcePort.getStream().getStreamDepth();
+    return (sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: Array<g.PlainPoint>) => slangConnectorFunction(sourcePoint, targetPoint, route, streamDepth);
 }

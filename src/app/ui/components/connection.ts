@@ -6,10 +6,10 @@ import {slangRouter} from "../link/router";
 import {slangConnector} from "../link/connector";
 import {TypeIdentifier} from "../../custom/type";
 import {Styles} from "../../../styles/studio";
+import {PortModel} from "../../model/port";
 
 const ConnectionLink = dia.Link.define("Connection", {
     router: slangRouter,
-    connector: slangConnector,
 }, {
     toolMarkup: [
         "<g class='link-tool'>",
@@ -26,7 +26,6 @@ const ConnectionLink = dia.Link.define("Connection", {
 
 const GhostConnectionLink = dia.Link.define("Connection", {
     router: slangRouter,
-    connector: slangConnector,
 }, {
     toolMarkup: [
         "<g>",
@@ -59,6 +58,7 @@ export class ConnectionComponent {
                     "vector-effect": Styles.Connection.Ordinary.vectorEffect,
                 },
             },
+            connector: slangConnector(connection.source, connection.destination),
             z: -1,
         } as any);
         this.link.transition("attrs/.connection/stroke-opacity", Styles.Connection.Ordinary.strokeOpacity, {
@@ -78,16 +78,17 @@ export class ConnectionComponent {
         return this.id;
     }
 
-    public static createGhostLink(type: TypeIdentifier): dia.Link {
+    public static createGhostLink(sourcePort: PortModel): dia.Link {
         return new GhostConnectionLink({
             attrs: {
                 ".connection": {
-                    stroke: Styles.Connection.Ghost.stroke(type),
+                    stroke: Styles.Connection.Ghost.stroke(sourcePort.getTypeIdentifier()),
                     "stroke-width": Styles.Connection.Ghost.strokeWidth,
                     "stroke-opacity": Styles.Connection.Ghost.strokeOpacity,
                     "vector-effect": Styles.Connection.Ghost.vectorEffect,
                 }
-            }
+            },
+            connector: slangConnector(sourcePort)
         } as any);
     }
 

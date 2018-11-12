@@ -2,7 +2,7 @@ import {BehaviorSubject, Subject} from 'rxjs';
 import {BlueprintModel} from './blueprint';
 import {OperatorModel} from './operator';
 import {BlueprintDelegateModel, OperatorDelegateModel} from './delegate';
-import {PortOwner, SlangNode} from '../custom/nodes';
+import {PortOwner, SlangNode, Stream} from "../custom/nodes";
 import {Connection, Connections} from '../custom/connections';
 import {SlangType, TypeIdentifier} from '../custom/type';
 
@@ -28,12 +28,14 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     private streamDepth: number = 0;
     protected connectedWith: Array<PortModel> = [];
     protected owner: O;
+    protected stream: Stream;
 
     protected constructor(private parent: GenericPortModel<O> | null, private typeIdentifier: TypeIdentifier, private direction: PortDirection) {
         super();
         if (this.typeIdentifier === TypeIdentifier.Map) {
             this.mapSubs = new Map<string, GenericPortModel<O>>();
         }
+        this.setStream(new Stream(null, this));
     }
 
     public isSelected(): boolean {
@@ -77,6 +79,27 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         port.parent = this;
         port.setStreamDepth(this.streamDepth + 1);
         this.streamSub = port;
+    }
+    
+    public setStream(stream: Stream): void {
+        if (!this.stream) {
+            this.stream = stream;
+            if (this.streamSub) {
+                this.streamSub.setStream(new Stream(stream, this.streamSub));
+            }
+            if (this.mapSubs) {
+                this.mapSubs.forEach(sub => sub.setStream(stream));
+            }
+            stream.subscribeReplaced(newStream => {
+                this.stream = newStream;
+            });
+        } else {
+            this.stream.replace(stream);
+        }
+    }
+
+    public getStream(): Stream {
+        return this.stream;
     }
     
     private setStreamDepth(depth: number): void {
@@ -305,6 +328,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         destination.disconnected.next(connection);
     }
 
+    private connectStreamsTo(destination: PortModel): void {
+        // destination.setStream(this.stream);
+    }
+    
     /**
      * Connects this port to the destination port.
      * This has to be a source port and destination a destination port.
@@ -325,6 +352,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
                 break;
             default:
                 const connection = {source: this, destination: destination};
+                this.connectStreamsTo(destination);
                 this.connectedWith.push(destination);
                 this.connected.next(connection);
                 destination.connectedWith.push(this);
