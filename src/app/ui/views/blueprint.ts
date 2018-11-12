@@ -5,14 +5,13 @@ import {OperatorModel} from "../../model/operator";
 import {Connection} from "../../custom/connections";
 import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";
-import {BlueprintPortModel, GenericPortModel, PortModel} from "../../model/port";
+import {BlueprintPortModel, GenericPortModel, OperatorPortModel, PortModel} from '../../model/port';
 import {IsolatedBlueprintPort} from "../components/blueprint-port";
 import {PortGroupPosition} from "../components/port-group";
 import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {Styles} from "../../../styles/studio";
-import ElementView = dia.ElementView;
-import {SlangNode} from '../../custom/nodes';
+import {OperatorDelegateModel} from '../../model/delegate';
 
 export class BlueprintView extends PaperView {
 
@@ -148,11 +147,11 @@ export class BlueprintView extends PaperView {
             that.fitOuter();
         });
 
-        this.outer.on("pointerdblclick", function (elementView: ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
+        this.outer.on("pointerdblclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
             that.blueprintSelect = new BlueprintSelectComponent(that, [x, y], [evt.clientX, evt.clientY]);
 
         });
-        this.getPaper().on("blank:pointerclick cell:pointerclick", function (elementView: ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
+        this.getPaper().on("blank:pointerclick cell:pointerclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
             if (that.blueprintSelect) {
                 that.blueprintSelect.destroy();
                 that.blueprintSelect = null;
@@ -371,8 +370,15 @@ export class BlueprintView extends PaperView {
         const operatorElement = new OperatorBoxComponent(this.graph, operator);
         this.operators.push(operatorElement);
 
-        operator.subscribeChildCreated(SlangNode, () => {
+        operator.subscribeChildCreated(OperatorPortModel, () => {
             operatorElement.refresh();
+        });
+
+        operator.subscribeChildCreated(OperatorDelegateModel, delegate => {
+            operatorElement.refresh();
+            delegate.subscribeChildCreated(OperatorPortModel, () => {
+                operatorElement.refresh();
+            });
         });
 
         // JointJS -> Model
