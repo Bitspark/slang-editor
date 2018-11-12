@@ -5,13 +5,12 @@ import {OperatorModel} from "../../model/operator";
 import {Connection} from "../../custom/connections";
 import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";
-import {BlueprintPortModel, GenericPortModel, OperatorPortModel, PortModel} from '../../model/port';
+import {BlueprintPortModel, GenericPortModel, PortModel} from '../../model/port';
 import {IsolatedBlueprintPort} from "../components/blueprint-port";
 import {PortGroupPosition} from "../components/port-group";
 import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {Styles} from "../../../styles/studio";
-import {OperatorDelegateModel} from '../../model/delegate';
 
 export class BlueprintView extends PaperView {
 

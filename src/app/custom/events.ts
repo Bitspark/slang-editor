@@ -1,5 +1,4 @@
 import {BehaviorSubject, Subject} from 'rxjs';
-import {AppModel} from '../model/app';
 
 abstract class BaseSlangSubject<T> {
 
