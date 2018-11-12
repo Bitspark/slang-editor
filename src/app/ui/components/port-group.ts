@@ -1,8 +1,3 @@
-/**
- * A component for which there is no directly corresponding Slang model.
- * It can be thought of a component that represents a port which has no parent port but is the topmost ports.
- * Currently these are main in- and out-ports and delegate in- and out-ports.
- */
 import {PortComponent} from "./port";
 import {dia, g} from "jointjs";
 import {PortModel} from "../../model/port";
@@ -35,6 +30,11 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
     return portItems;
 }
 
+/**
+ * A component for which there is no directly corresponding Slang model.
+ * It can be thought of a component that represents a port which has no parent port but is the topmost ports.
+ * Currently these are main in- and out-ports and delegate in- and out-ports.
+ */
 export class PortGroupComponent {
 
     private readonly ports: Array<PortComponent> = [];
