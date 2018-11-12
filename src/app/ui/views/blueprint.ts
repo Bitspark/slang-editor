@@ -11,6 +11,7 @@ import {PortGroupPosition} from "../components/port-group";
 import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {Styles} from "../../../styles/studio";
+import ElementView = dia.ElementView;
 
 export class BlueprintView extends PaperView {
 

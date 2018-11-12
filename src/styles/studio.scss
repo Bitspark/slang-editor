@@ -1,43 +1,42 @@
-@import url('https://fonts.googleapis.com/css?family=Roboto+Slab:300%7CRoboto');
-
 // COLORS
+@import "variables";
 
-$type-color-number: blue;
-$type-color-string: brown;
-$type-color-boolean: orange;
-$type-color-binary: #83a91d;
-$type-color-primitive: darkcyan;
-$type-color-trigger: gray;
-$type-color-generic: violet;
+$type-color-number: $blue;
+$type-color-string: $brown;
+$type-color-boolean: $orange;
+$type-color-binary: $green;
+$type-color-primitive: $cyan;
+$type-color-trigger: $gray;
+$type-color-generic: $purple;
 
-$port-color-stroke: black;
-$port-color-valid: lime;
+$port-color-stroke: $black;
+$port-color-valid: $green;
 
-$blueprint-color-fill: #fffffe;
+$blueprint-color-fill: $white;
 
-$blackbox-color-fill: #fefefd;
-$blackbox-color-stroke: #1f1f1f;
-$blackbox-color-label: #141414;
+$blackbox-color-fill: $white;
+$blackbox-color-stroke: $black;
+$blackbox-color-label: $black;
 
 // BLACKBOX
 
 .sl-blackbox {
-  .sl-rectangle {
-    fill: $blackbox-color-fill;
-    stroke: none;
-  }
-  .sl-label {
-    fill: $blackbox-color-label;
-  }
+	.sl-rectangle {
+		fill: $blackbox-color-fill;
+		stroke: none;
+	}
+	.sl-label {
+		fill: $blackbox-color-label;
+	}
 }
 
 // OUTER
 
 .sl-outer {
-  .sl-rectangle {
-	  stroke: none;
-    fill: $blueprint-color-fill;
-  }
+	.sl-rectangle {
+		stroke: none;
+		fill: $blueprint-color-fill;
+	}
 }
 
 // BLUEPRINT PORT
@@ -51,37 +50,37 @@ $blackbox-color-label: #141414;
 // PORT
 
 .sl-port {
-  stroke-width: 0;
-  transition: stroke-width 1s;
+	stroke-width: 0;
+	transition: stroke-width 1s;
 
-  &.sl-type-number {
-    stroke: $type-color-number;
-    fill: $type-color-number;
-  }
-  &.sl-type-string {
-    stroke: $type-color-string;
-    fill: $type-color-string;
-  }
-  &.sl-type-boolean {
-    stroke: $type-color-boolean;
-    fill: $type-color-boolean;
-  }
-  &.sl-type-binary {
-    stroke: $type-color-binary;
-    fill: $type-color-binary;
-  }
-  &.sl-type-primitive {
-    stroke: $type-color-primitive;
-    fill: $type-color-primitive;
-  }
-  &.sl-type-trigger {
-    stroke: $type-color-trigger;
-    fill: $type-color-trigger;
-  }
-  &.sl-type-generic {
-    stroke: $type-color-generic;
-    fill: $type-color-generic;
-  }
+	&.sl-type-number {
+		stroke: $type-color-number;
+		fill: $type-color-number;
+	}
+	&.sl-type-string {
+		stroke: $type-color-string;
+		fill: $type-color-string;
+	}
+	&.sl-type-boolean {
+		stroke: $type-color-boolean;
+		fill: $type-color-boolean;
+	}
+	&.sl-type-binary {
+		stroke: $type-color-binary;
+		fill: $type-color-binary;
+	}
+	&.sl-type-primitive {
+		stroke: $type-color-primitive;
+		fill: $type-color-primitive;
+	}
+	&.sl-type-trigger {
+		stroke: $type-color-trigger;
+		fill: $type-color-trigger;
+	}
+	&.sl-type-generic {
+		stroke: $type-color-generic;
+		fill: $type-color-generic;
+	}
 }
 
 // JOINT
@@ -99,19 +98,22 @@ $blackbox-color-label: #141414;
 }
 
 .joint-paper {
-  font-family: Roboto, sans-serif;
+	font-family: $font-family-default;
+	font-size: $font-size;
 	background-color: $blackbox-color-fill;
 }
 
 .joint-highlight-stroke {
-  stroke: none;
+	stroke: none;
 }
 
 .available-magnet {
 	stroke-width: 4px;
-	
+
 	animation-name: port-pulse;
 	animation-duration: 1.2s;
 	animation-iteration-count: infinite;
 	animation-timing-function: linear;
 }
+
+@import "component/blueprint-select";
