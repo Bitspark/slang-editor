@@ -1,11 +1,10 @@
 import {BlueprintModel} from './blueprint';
 import {OperatorModel} from './operator';
 import {BlueprintDelegateModel, OperatorDelegateModel} from './delegate';
-import {PortOwner, SlangNode, SlangToken} from '../custom/nodes';
+import {PortOwner, SlangNode} from '../custom/nodes';
 import {Connection, Connections} from '../custom/connections';
 import {SlangType, TypeIdentifier} from '../custom/type';
 import {SlangBehaviorSubject, SlangSubject} from '../custom/events';
-import {Styles} from '../../styles/studio';
 
 export enum PortDirection {
     In, // 0
@@ -28,8 +27,8 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     private streamSub: GenericPortModel<O> | undefined;
     protected connectedWith: Array<PortModel> = [];
 
-    protected constructor(parent: GenericPortModel<O> | O, token: SlangToken, private typeIdentifier: TypeIdentifier, private direction: PortDirection) {
-        super(parent, token);
+    protected constructor(parent: GenericPortModel<O> | O, private typeIdentifier: TypeIdentifier, private direction: PortDirection) {
+        super(parent);
         if (this.typeIdentifier === TypeIdentifier.Map) {
             this.mapSubs = new Map<string, GenericPortModel<O>>();
         }
@@ -345,8 +344,8 @@ export type PortModel = GenericPortModel<PortOwner>;
 export type PortModelArgs = {type: TypeIdentifier, direction: PortDirection};
 
 export class BlueprintPortModel extends GenericPortModel<BlueprintModel | BlueprintDelegateModel> {
-    public constructor(parent: BlueprintModel | BlueprintDelegateModel | BlueprintPortModel, token: SlangToken, {type, direction}: PortModelArgs) {
-        super(parent, token, type, direction);
+    public constructor(parent: BlueprintModel | BlueprintDelegateModel | BlueprintPortModel, {type, direction}: PortModelArgs) {
+        super(parent, type, direction);
     }
 
     public isSource(): boolean {
@@ -355,8 +354,8 @@ export class BlueprintPortModel extends GenericPortModel<BlueprintModel | Bluepr
 }
 
 export class OperatorPortModel extends GenericPortModel<OperatorModel | OperatorDelegateModel> {
-    public constructor(parent:  OperatorModel | OperatorDelegateModel | OperatorPortModel, token: SlangToken, {type, direction}: PortModelArgs) {
-        super(parent, token, type, direction);
+    public constructor(parent:  OperatorModel | OperatorDelegateModel | OperatorPortModel, {type, direction}: PortModelArgs) {
+        super(parent, type, direction);
     }
 
     public isSource(): boolean {

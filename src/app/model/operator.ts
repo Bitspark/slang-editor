@@ -1,7 +1,7 @@
 import {BlueprintModel, BlueprintType} from './blueprint';
 import {OperatorPortModel, PortDirection} from './port';
 import {OperatorDelegateModel, OperatorDelegateModelArgs} from './delegate';
-import {BlackBox, SlangToken} from '../custom/nodes';
+import {BlackBox} from '../custom/nodes';
 import {Connections} from '../custom/connections';
 import {SlangType} from "../custom/type";
 import {SlangBehaviorSubject, SlangSubject} from '../custom/events';
@@ -18,8 +18,8 @@ export class OperatorModel extends BlackBox {
     private readonly name: string;
     private readonly blueprint: BlueprintModel;
 
-    constructor(parent: BlueprintModel, token: SlangToken, args: OperatorModelArgs) {
-        super(parent, token);
+    constructor(parent: BlueprintModel, args: OperatorModelArgs) {
+        super(parent);
         this.name = args.name;
         this.blueprint = args.blueprint;
     }

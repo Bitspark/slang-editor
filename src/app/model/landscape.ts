@@ -1,5 +1,5 @@
 import {BlueprintModel, BlueprintModelArgs} from './blueprint';
-import {SlangNode, SlangToken} from '../custom/nodes';
+import {SlangNode} from '../custom/nodes';
 import {SlangBehaviorSubject, SlangSubject} from '../custom/events';
 import {AppModel} from './app';
 
@@ -11,8 +11,8 @@ export class LandscapeModel extends SlangNode {
     private opened = new SlangBehaviorSubject<boolean>('opened', false);
     private selectedBlueprint = new SlangBehaviorSubject<BlueprintModel | null>('selected-blueprint', null);
 
-    constructor(parent: AppModel, token: SlangToken, args: LandscapeModelArgs) {
-        super(parent, token);
+    constructor(parent: AppModel, args: LandscapeModelArgs) {
+        super(parent);
     }
 
     public findBlueprint(fullName: string): BlueprintModel | undefined {

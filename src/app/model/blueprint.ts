@@ -3,7 +3,7 @@ import {BlueprintPortModel, PortDirection, PortModel} from './port';
 import {BlueprintDelegateModel, BlueprintDelegateModelArgs, OperatorDelegateModel} from './delegate';
 import {SlangParsing} from "../custom/parsing";
 import {PropertyEvaluator} from "../custom/utils";
-import {BlackBox, SlangToken} from '../custom/nodes';
+import {BlackBox} from '../custom/nodes';
 import {Connections} from '../custom/connections';
 import {TypeIdentifier, SlangType} from "../custom/type";
 import {PropertyAssignments, PropertyModel} from "./property";
@@ -41,8 +41,8 @@ export class BlueprintModel extends BlackBox {
     private properties: Array<PropertyModel> = [];
     private genericIdentifiers: Set<string>;
 
-    constructor(parent: LandscapeModel, token: SlangToken, {fullName, type}: BlueprintModelArgs) {
-        super(parent, token);
+    constructor(parent: LandscapeModel, {fullName, type}: BlueprintModelArgs) {
+        super(parent);
         this.fullName = fullName;
         this.type = type;
         this.hierarchy = fullName.split('.');

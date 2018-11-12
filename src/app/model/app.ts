@@ -1,6 +1,6 @@
 import {BlueprintModel} from './blueprint';
 import {LandscapeModel, LandscapeModelArgs} from './landscape';
-import {SlangNode, SlangToken} from '../custom/nodes';
+import {SlangNode} from '../custom/nodes';
 import {SlangBehaviorSubject, SlangSubject} from '../custom/events';
 
 export type AppModelArgs = {name: string};
@@ -14,8 +14,8 @@ export class AppModel extends SlangNode {
     private readonly name: string;
     private loading: Array<Promise<void>> = [];
 
-    constructor(token: SlangToken, {name}: AppModelArgs) {
-        super(null, token);
+    constructor({name}: AppModelArgs) {
+        super(null);
         this.name = name;
         const landscape = this.createChildNode<LandscapeModel, LandscapeModelArgs>(LandscapeModel, {});
         this.subscribeLandscape(landscape);

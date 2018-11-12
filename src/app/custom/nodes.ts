@@ -4,37 +4,25 @@ import {SlangType, TypeIdentifier} from "./type";
 
 type Type<T> = Function & { prototype: T };
 
-export type SlangToken = {token: string, id: string};
-
 export type Types<T> = [Type<T>, ...Array<Type<T>>];
 
 export abstract class SlangNode {
 
     private static creationToken = "";
     
-    protected static createRoot<T extends SlangNode, A>(ctor: new(token: SlangToken, args: A) => T, args: A): T {
+    protected static createRoot<T extends SlangNode, A>(ctor: new(args: A) => T, args: A): T {
         SlangNode.creationToken = SlangNode.createToken();
-        return new ctor({token: SlangNode.creationToken, id: "root"}, args);
+        const root = new ctor(args);
+        root.id = "root";
+        return root;
     }
     
-    private readonly id: string;
+    private id = "";
     private children = new Map<string, SlangNode>();
     private lastId = "0";
     private lastToken: string = "";
     
-    protected constructor(protected readonly parent: SlangNode | null, token: SlangToken) {
-        if (!token) {
-            throw new Error(`missing token`);
-        }
-        if (parent) {
-            parent.registerNode(this, token);
-        } else {
-            if (SlangNode.creationToken !== token.token) {
-                throw new Error(`illegal node creation: wrong token`);
-            }
-        }
-        this.id = token.id;
-    }
+    protected constructor(protected readonly parent: SlangNode | null) {}
 
     public getIdentity(): string {
         if (this.parent) {
@@ -155,18 +143,11 @@ export abstract class SlangNode {
         return children.values();
     }
 
-    protected createChildNode<T extends SlangNode, A>(ctor: new(parent: SlangNode, token: SlangToken, args: A) => T, args: A): T {
-        return new ctor(this, this.createToken(), args);
-    }
-    
-    private registerNode(node: SlangNode, token: SlangToken): void {
-        if (token.token !== this.lastToken) {
-            throw new Error(`illegal node creation: wrong token`);
-        }
-        if (token.id !== this.lastId) {
-            throw new Error(`illegal node creation: wrong id`);
-        }
-        this.children.set(token.id, node);
+    protected createChildNode<T extends SlangNode, A>(ctor: new(parent: SlangNode, args: A) => T, args: A): T {
+        const childNode = new ctor(this, args);
+        childNode.id = this.nextId();
+        this.children.set(childNode.id, childNode);
+        return childNode;
     }
 
     private static createToken(): string {
@@ -178,20 +159,11 @@ export abstract class SlangNode {
         return this.lastId;
     }
 
-    private nextToken(): string {
-        this.lastToken = SlangNode.createToken();
-        return this.lastToken;
-    }
-
-    private createToken(): SlangToken {
-        return {token: this.nextToken(), id: this.nextId()};
-    }
-
 }
 
 export abstract class PortOwner extends SlangNode {
 
-    protected createPortFromType(P: new(p: PortModel | PortOwner, token: SlangToken, args: PortModelArgs) => PortModel, type: SlangType, direction: PortDirection): PortModel {
+    protected createPortFromType(P: new(p: PortModel | PortOwner, args: PortModelArgs) => PortModel, type: SlangType, direction: PortDirection): PortModel {
         const port = this.createChildNode<PortModel, PortModelArgs>(P, {type: type.getTypeIdentifier(), direction});
 
         switch (type.getTypeIdentifier()) {
