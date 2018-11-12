@@ -15,8 +15,12 @@ export class PortComponent {
     constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent) {
         this.portElement.id = `${port.getIdentity()}`;
         this.portElement.group = parent.getName();
+        this.portElement.markup = PortComponent.getPortMarkup(port);
         this.portElement.attrs = {
-            ".sl-port": PortComponent.getPortAttributes(parent.getGroupPosition(), port),
+            "path": PortComponent.getPortAttributes(parent.getGroupPosition(), port),
+            "g": {
+                magnet: true,
+            },
         };
     }
 
@@ -42,12 +46,37 @@ export class PortComponent {
 
     // STATIC:
 
+    private static getPortShape(width: number, height: number): string {
+        return `M ${-width / 2} ${-height / 2} ` +
+            `L ${width / 2} ${-height / 2} ` +
+            `L 0 ${height / 2} z`;
+    }
+
+    private static getPortMarkup(port: PortModel): string {
+        const streamDepth = port.getStreamDepth();
+        if (streamDepth < 0) {
+            throw new Error(`stream depth cannot be negative`);
+        }
+        let markup = ``;
+        for (let i = 0; i < streamDepth + 1; i++) {
+            const factor = 1 - (i / (streamDepth + 1));
+            const width = Styles.Port.width * factor;
+            const height = Styles.Port.height * factor;
+            const classes = ["sl-port"];
+            if (i % 2 == 1) {
+                classes.push(`sl-stripe`);
+            } else {
+                classes.push(`sl-type-${TypeIdentifier[port.getTypeIdentifier()].toLowerCase()}`);
+            }
+            markup += `<path class="${classes.join(" ")}" d="${PortComponent.getPortShape(width, height)}"></path>`;
+        }
+        console.log(markup);
+        return markup;
+    }
+
     private static getPortAttributes(position: PortGroupPosition, port: PortModel): attributes.SVGAttributes {
         const attrs: attributes.SVGAttributes = {
             paintOrder: "stroke fill",
-            d: Styles.Port.shape,
-            magnet: true,
-            class: `sl-port sl-type-${TypeIdentifier[port.getTypeIdentifier()].toLowerCase()}`,
         };
 
         switch (position) {

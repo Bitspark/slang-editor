@@ -50,19 +50,15 @@ export class PortGroupComponent {
         switch (groupPosition) {
             case "top":
                 this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "top", start, width) as any;
-                this.portGroupElement.markup = "<path class='sl-port' d=''></path>";
                 break;
             case "right":
                 this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "right", start, width) as any;
-                this.portGroupElement.markup = "<path class='sl-port' d=''></path>";
                 break;
             case "bottom":
                 this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "bottom", start, width) as any;
-                this.portGroupElement.markup = "<path class='sl-port' d=''></path>";
                 break;
             case "left":
                 this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "left", start, width) as any;
-                this.portGroupElement.markup = "<path class='sl-port' d=''></path>";
                 break;
         }
     }

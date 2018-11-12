@@ -54,6 +54,11 @@ $blackbox-color-label: #141414;
   stroke-width: 0;
   transition: stroke-width 1s;
 
+  &.sl-stripe {
+    stroke: white;
+    fill: white;
+  }
+  
   &.sl-type-number {
     stroke: $type-color-number;
     fill: $type-color-number;
@@ -108,10 +113,12 @@ $blackbox-color-label: #141414;
 }
 
 .available-magnet {
-	stroke-width: 4px;
-	
-	animation-name: port-pulse;
-	animation-duration: 1.2s;
-	animation-iteration-count: infinite;
-	animation-timing-function: linear;
+  path {
+    stroke-width: 4px;
+
+    animation-name: port-pulse;
+    animation-duration: 1.2s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+  }
 }
