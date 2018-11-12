@@ -43,12 +43,11 @@ export abstract class SlangNode {
             return this;
         }
         
-        if (!id.startsWith(thisId)) {
+        if (!id.startsWith(thisId + ".")) {
             return undefined;
         }
         
-        id = id.substr(thisId.length);
-        const idSplit = id.split(".");
+        const idSplit = id.substr(thisId.length + 1).split(".");
 
         const child = this.getNodeById(idSplit[0]);
         if (!child) {
@@ -59,7 +58,7 @@ export abstract class SlangNode {
         if (found) {
             return found;
         }
-
+        
         return undefined;
     }
 
