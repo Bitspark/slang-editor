@@ -1,6 +1,21 @@
-@import "common";
+@import "variables";
+
+html, body {
+	font-family: $font-family-default;
+	font-size: $font-size;
+	color: $black;
+	background: $white;
+	margin: 0;
+	padding: 0;
+}
+
+input {
+	&:focus {
+		outline: none;
+	}
+}
 
 #slang-studio {
-  width: 100vw;
-  height: 100vh;
+	width: 100vw;
+	height: 100vh;
 }

@@ -7,7 +7,7 @@ export abstract class View {
 
     public abstract resize(width: number, height: number): void;
 
-    protected getFrame(): ViewFrame {
+    public getFrame(): ViewFrame {
         return this.frame;
     }
 

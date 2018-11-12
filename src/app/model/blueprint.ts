@@ -1,5 +1,5 @@
 import {BehaviorSubject, Subject} from "rxjs";
-import {OperatorModel} from "./operator";
+import {Geometry, OperatorModel} from "./operator";
 import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel} from './port';
 import {BlueprintDelegateModel, OperatorDelegateModel} from './delegate';
 import {SlangParsing} from "../custom/parsing";
@@ -64,22 +64,35 @@ export class BlueprintModel extends BlackBox {
         return genericIdentifiers;
     }
 
-    private instantiateOperator(owner: BlueprintModel, name: string, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
+    private instantiateOperator(owner: BlueprintModel, name: string, geo?: Geometry, params?: { props: PropertyAssignments, gen: GenericSpecifications }): OperatorModel {
 
         function copyAndAddDelegates(owner: OperatorModel, delegate: BlueprintDelegateModel) {
-            for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), propAssigns)) {
-                const delegateCopy = new OperatorDelegateModel(owner, expandedDlgName);
+
+            if (params) {
+                for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), params.props)) {
+                    const delegateCopy = new OperatorDelegateModel(owner, expandedDlgName);
+                    for (const port of delegate.getPorts()) {
+                        delegateCopy.createPort(port.getType().specifyGenerics(params.gen).expand(params.props), port.getDirection());
+                    }
+                    operator.addDelegate(delegateCopy);
+                }
+            } else {
+                const delegateCopy = new OperatorDelegateModel(owner, delegate.getName());
                 for (const port of delegate.getPorts()) {
-                    delegateCopy.createPort(port.getType().specifyGenerics(genSpeci).expand(propAssigns), port.getDirection());
+                    delegateCopy.createPort(port.getType(), port.getDirection());
                 }
                 operator.addDelegate(delegateCopy);
             }
         }
 
-        const operator = new OperatorModel(owner, name, this);
+        const operator = new OperatorModel(owner, name, this, geo);
 
         for (const port of this.getPorts()) {
-            operator.createPort(port.getType().specifyGenerics(genSpeci).expand(propAssigns), port.getDirection());
+            if (params) {
+                operator.createPort(port.getType().specifyGenerics(params.gen).expand(params.props), port.getDirection());
+            } else {
+                operator.createPort(port.getType(), port.getDirection());
+            }
         }
         for (const delegate of this.delegates) {
             copyAndAddDelegates(operator, delegate);
@@ -89,7 +102,18 @@ export class BlueprintModel extends BlackBox {
     }
 
     public createOperator(name: string, blueprint: BlueprintModel, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
-        const operator = blueprint.instantiateOperator(this, name, propAssigns, genSpeci);
+        const operator = blueprint.instantiateOperator(this, name, undefined, {props: propAssigns, gen: genSpeci});
+        return this.addOperator(operator);
+    }
+
+    private getRandomOperatorName(blueprint: BlueprintModel): string {
+        const cnt = this.operators.filter((op: OperatorModel) => op.getBlueprint() === blueprint).length;
+        return `${blueprint.getFullName()}-${cnt + 1}`;
+    }
+
+    public createBlankOperator(blueprint: BlueprintModel, geo: Geometry): OperatorModel {
+        const name = this.getRandomOperatorName(blueprint);
+        const operator = blueprint.instantiateOperator(this, name, geo);
         return this.addOperator(operator);
     }
 
@@ -273,9 +297,13 @@ export class BlueprintModel extends BlackBox {
 
         return connections;
     }
-    
+
+    public getLandscape(): LandscapeModel {
+        return this.landscape;
+    }
+
     // Actions
-    
+
     public addProperty(property: PropertyModel): PropertyModel {
         this.properties.push(property);
         return property
@@ -389,7 +417,7 @@ export class BlueprintModel extends BlackBox {
     }
 
     getParentNode(): LandscapeModel {
-        return this.landscape;
+        return this.getLandscape();
     }
 
 }
