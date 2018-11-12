@@ -1,39 +1,41 @@
+%bordered {
+	box-shadow: 0px 0px 1px 0px $black inset;
+	border-radius: 20px;
+}
+
 .sl-blupr-menu {
+	@extend %bordered;
+
 	position: absolute;
 	overflow-y: scroll;
-	overflow-x: hidden;
 	max-height: 384px;
 	width: 342px;
-	border: 1px solid $black;
 	background: $white;
-	border-radius: 20px;
 	padding: 0;
 
 	transition: 360ms opacity;
 
-	opacity: .35;
+	opacity: .45;
 	&:hover {
 		opacity: .97;
 	}
 }
 
 .sl-blupr-fltr {
+	@extend %bordered;
+
 	position: fixed;
-	border: 1px solid transparentize($black, .65);
-	background-color: $black;
-	color: $white;
-	border-radius: 20px;
-	margin: 5px;
-	padding: 2px 8px;
+	margin: 3px;
+	padding: 0;
 	overflow: hidden;
+	width: 336px;
+	background: $white;
 	.sl-blupr-input {
 		background: transparent;
-		color: $white;
 		border: none;
-		margin: 0;
-		padding: 0;
-		max-width: 312px;
-		width: 312px;
+		margin: 0 12px;
+		padding: 11px 0;
+		width: 100%;
 	}
 }
 
@@ -51,12 +53,12 @@
 		}
 
 		&:first-child {
-			border-top: 1px solid transparentize($black, .85);
-			margin-top: 35px;
+			margin-top: 41px;
 		}
 	}
 
 	.sl-blupr-entry-none {
 		padding: 0;
+		border-bottom: 0;
 	}
 }

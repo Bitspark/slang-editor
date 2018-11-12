@@ -20,13 +20,19 @@ $blackbox-color-label: $black;
 
 // BLACKBOX
 
-.sl-blackbox {
+.sl-blackbox, .sl-blackbox-ghost {
 	.sl-rectangle {
 		fill: $blackbox-color-fill;
 		stroke: none;
 	}
 	.sl-label {
 		fill: $blackbox-color-label;
+	}
+}
+
+.sl-blackbox-ghost {
+	.sl-rectangle {
+		fill-opacity: .1;
 	}
 }
 

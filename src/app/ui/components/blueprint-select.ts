@@ -217,24 +217,7 @@ export class BlueprintSelectComponent {
         }
 
         if (!blueprint) {
-            this.ghostRect = new shapes.standard.Rectangle({
-                size: {width: 100, height: 100},
-                attrs: {
-                    root: {},
-                    body: {
-                        fill: "transparent",
-                        stroke: "black",
-                        strokeWidth: "1",
-                        rx: 8,
-                        ry: 8,
-                    },
-                    label: {
-                        text: "• • •",
-                        fill: "black",
-                    },
-                },
-            });
-            this.ghostRect.attr("draggable", false);
+            this.ghostRect = new BlackBoxComponent.GhostRectangle();
             this.ghostRect.addTo(this.graph);
         } else {
             this.ghostRect = new BlueprintBoxComponent(this.graph, blueprint).getRectangle();

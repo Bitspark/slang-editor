@@ -93,6 +93,33 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 }
 
 export namespace BlackBoxComponent {
+    export class GhostRectangle extends shapes.standard.Rectangle.define("BlackBoxGhostRectangle", {}) {
+
+        constructor() {
+            super({
+                size: Styles.BlackBox.size,
+                attrs: {
+                    root: {
+                        class: "joint-cell joint-element sl-blackbox-ghost",
+                    },
+                    body: {
+                        rx: Styles.BlackBox.rx,
+                        ry: Styles.BlackBox.ry,
+                        class: "sl-rectangle",
+                        filter: Styles.BlackBox.filter,
+                    },
+                    label: {
+                        text: "• • •",
+                        class: "sl-label",
+                    },
+                },
+            } as any);
+
+            this.attr("draggable", false);
+            this.set("obstacle", false);
+        }
+
+    }
 
     export class Rectangle extends shapes.standard.Rectangle.define("BlackBoxRectangle", {}) {
 
