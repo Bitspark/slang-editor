@@ -1,12 +1,12 @@
 import {BlueprintModel, BlueprintType} from './blueprint';
 import {OperatorPortModel, PortDirection} from './port';
-import {OperatorDelegateModel, OperatorDelegateModelArgs} from './delegate';
+import {OperatorDelegateModel} from './delegate';
 import {BlackBox} from '../custom/nodes';
 import {Connections} from '../custom/connections';
 import {SlangType} from "../custom/type";
 import {SlangBehaviorSubject, SlangSubject} from '../custom/events';
 
-export type OperatorModelArgs = {name: string, blueprint: BlueprintModel, geomentry: Geometry | undefined};
+export type OperatorModelArgs = {name: string, blueprint: BlueprintModel, geometry: Geometry | undefined};
 
 export interface Geometry {
     position: [number, number]
@@ -21,13 +21,13 @@ export class OperatorModel extends BlackBox {
 
     private readonly name: string;
     private readonly blueprint: BlueprintModel;
-    private geomentry: Geometry | undefined;
+    private geometry: Geometry | undefined;
 
     constructor(parent: BlueprintModel, args: OperatorModelArgs) {
         super(parent);
         this.name = args.name;
         this.blueprint = args.blueprint;
-        this.geomentry = args.geomentry;
+        this.geometry = args.geometry;
     }
 
     public getName(): string {
@@ -51,11 +51,11 @@ export class OperatorModel extends BlackBox {
     }
 
     public getDelegates(): IterableIterator<OperatorDelegateModel> {
-        return this.getChildNodes<OperatorDelegateModel>([OperatorDelegateModel]);
+        return this.getChildNodes(OperatorDelegateModel);
     }
 
     public findDelegate(name: string): OperatorDelegateModel | undefined {
-        return this.scanChildNode<OperatorDelegateModel>(delegate => delegate.getName() === name, [OperatorDelegateModel]);
+        return this.scanChildNode(OperatorDelegateModel, delegate => delegate.getName() === name);
     }
 
     public getDisplayName(): string {
@@ -72,7 +72,7 @@ export class OperatorModel extends BlackBox {
         }
 
         // Then, handle delegate out-ports
-        for (const delegate of this.getChildNodes<OperatorDelegateModel>([OperatorDelegateModel])) {
+        for (const delegate of this.getChildNodes(OperatorDelegateModel)) {
             connections.addConnections(delegate.getConnectionsTo());
         }
 
@@ -80,14 +80,14 @@ export class OperatorModel extends BlackBox {
     }
 
     public get position(): {x: number, y: number} | undefined {
-        if (this.geomentry) {
-            return {x: this.geomentry.position[0], y: this.geomentry.position[1]};
+        if (this.geometry) {
+            return {x: this.geometry.position[0], y: this.geometry.position[1]};
         }
     }
 
     // Actions
     public createDelegate(name: string): OperatorDelegateModel {
-        return this.createChildNode<OperatorDelegateModel, OperatorDelegateModelArgs>(OperatorDelegateModel, {name});
+        return this.createChildNode(OperatorDelegateModel, {name});
     }
 
     public select() {
@@ -107,10 +107,10 @@ export class OperatorModel extends BlackBox {
     }
 
     public moveTo(pos: [number, number]) {
-        if (this.geomentry) {
-            this.geomentry.position = pos;
+        if (this.geometry) {
+            this.geometry.position = pos;
         } else {
-            this.geomentry = {position: pos};
+            this.geometry = {position: pos};
         }
     }
 

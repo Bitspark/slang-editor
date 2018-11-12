@@ -6,6 +6,7 @@ import {AppModel} from "../app/model/app";
 import {SlangApp} from "../app/app";
 import {StaticStoragePlugin} from "../app/plugins/storage";
 import {ViewFrame} from "../app/ui/frame";
+import {LandscapeModel} from '../app/model/landscape';
 
 export function SlangStudioEmbedded(el: HTMLElement, blueprintFullName: string): Promise<void> {
     return new Promise<void>(resolve => {
@@ -15,7 +16,7 @@ export function SlangStudioEmbedded(el: HTMLElement, blueprintFullName: string):
         app.addPlugin(new StaticStoragePlugin(appModel, 'https://files.bitspark.de/slang-operators/slang-definitions.json'));
 
         app.load().then(() => {
-            const blueprint = appModel.getLandscape().findBlueprint(blueprintFullName);
+            const blueprint = appModel.getChildNode([LandscapeModel])!.findBlueprint(blueprintFullName);
             if (blueprint) {
                 blueprint.open();
             } else {

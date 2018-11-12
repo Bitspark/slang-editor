@@ -2,6 +2,7 @@ import {ApiService, BlueprintApiResponse} from "../custom/api";
 import {AppModel} from "../model/app";
 import {fillLandscape} from "../custom/mapper";
 import {SlangPlugin} from "./plugin";
+import {LandscapeModel} from '../model/landscape';
 
 export class APIStoragePlugin extends SlangPlugin {
     private api: ApiService;
@@ -20,7 +21,7 @@ export class APIStoragePlugin extends SlangPlugin {
 
     private async load(): Promise<void> {
         return new Promise<void>(async resolve => {
-            fillLandscape(this.app.getLandscape(), await this.api.getBlueprints());
+            fillLandscape(this.app.getChildNode(LandscapeModel)!, await this.api.getBlueprints());
             resolve();
         });
     }
@@ -45,7 +46,7 @@ export class StaticStoragePlugin extends SlangPlugin {
                 .then((response: Response) => response.json())
                 .then(async (data: any) => {
                     const objects = data.objects as Array<BlueprintApiResponse>;
-                    fillLandscape(this.app.getLandscape(), objects);
+                    fillLandscape(this.app.getChildNode(LandscapeModel)!, objects);
                     resolve();
                 });
         });

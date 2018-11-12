@@ -33,7 +33,7 @@ export class LandscapeView extends PaperView {
 
     private subscribe(landscape: LandscapeModel) {
         const that = this;
-        landscape.subscribeBlueprintAdded(function (bp: BlueprintModel) {
+        landscape.subscribeChildCreated(BlueprintModel, function (bp: BlueprintModel) {
             if (!that.filter || that.filter(bp)) {
                 that.addBlueprint(bp);
                 that.reorder();
@@ -42,7 +42,7 @@ export class LandscapeView extends PaperView {
     }
 
     private addBlueprints(landscape: LandscapeModel) {
-        let blueprints = Array.from(landscape.getBlueprints());
+        let blueprints = Array.from(landscape.getChildNodes(BlueprintModel));
         if (this.filter) {
             blueprints = blueprints.filter(this.filter);
         }
@@ -236,7 +236,7 @@ export class LandscapeView extends PaperView {
         rect.addTo(this.graph);
 
         const that = this;
-        rect.on('pointerclick', function (evt: Event, x: number, y: number) {
+        rect.on('pointerclick pointerup', function (evt: Event, x: number, y: number) {
             that.landscape.createBlueprint({fullName: `Unnamed${new Date().getTime()}`, type: BlueprintType.Local}).open();
         });
 
@@ -277,15 +277,8 @@ export class LandscapeView extends PaperView {
         this.blueprintRects.set(blueprint.getFullName(), blueprintBox.getRectangle());
 
         // JointJS -> Model
-        blueprintBox.on("pointerclick", function (evt: Event, x: number, y: number) {
+        blueprintBox.on("pointerclick pointerup", function (evt: Event, x: number, y: number) {
             blueprint.open();
-        });
-        blueprintBox.on("pointerdblclick", function (evt: Event, x: number, y: number) {
-        });
-
-        // Model -> JointJS
-        blueprint.subscribeDeleted(function () {
-            blueprintBox.remove();
         });
     }
     

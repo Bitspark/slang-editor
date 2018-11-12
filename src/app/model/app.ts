@@ -1,5 +1,5 @@
 import {BlueprintModel} from './blueprint';
-import {LandscapeModel, LandscapeModelArgs} from './landscape';
+import {LandscapeModel} from './landscape';
 import {SlangNode} from '../custom/nodes';
 import {SlangBehaviorSubject, SlangSubject} from '../custom/events';
 
@@ -17,7 +17,7 @@ export class AppModel extends SlangNode {
     constructor({name}: AppModelArgs) {
         super(null);
         this.name = name;
-        const landscape = this.createChildNode<LandscapeModel, LandscapeModelArgs>(LandscapeModel, {});
+        const landscape = this.createChildNode(LandscapeModel, {});
         this.subscribeLandscape(landscape);
     }
     
@@ -25,15 +25,11 @@ export class AppModel extends SlangNode {
         return SlangNode.createRoot<AppModel, AppModelArgs>(AppModel, {name});
     }
     
-    public getLandscape(): LandscapeModel {
-        return this.getChildNode<LandscapeModel>([LandscapeModel])!;
-    }
-    
     private subscribeLandscape(landscape: LandscapeModel) {
-        for (const blueprint of landscape.getChildNodes<BlueprintModel>([BlueprintModel])) {
+        for (const blueprint of landscape.getChildNodes(BlueprintModel)) {
             this.subscribeBlueprint(blueprint);
         }
-        landscape.subscribeBlueprintAdded(blueprint => {
+        landscape.subscribeChildCreated(BlueprintModel, blueprint => {
             this.subscribeBlueprint(blueprint);
         });
         landscape.subscribeOpenedChanged(opened => {
@@ -48,7 +44,7 @@ export class AppModel extends SlangNode {
                     this.openedLandscape.next(null);
                 }
             }
-        })
+        });
     }
 
     private subscribeBlueprint(blueprint: BlueprintModel) {

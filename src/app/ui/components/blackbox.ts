@@ -19,6 +19,17 @@ export class BlackBoxComponent {
             group.setParent(this.rectangle);
         });
     }
+    
+    public refresh() {
+        // this.portGroups = this.createGroups(blackBox);
+        // this.rectangle = new BlackBoxComponent.Rectangle(blackBox, this.portGroups);
+        // this.rectangle.
+        // this.rectangle.addTo(graph);
+
+        this.portGroups.forEach(group => {
+            group.setParent(this.rectangle);
+        });
+    }
 
     public getBBox(): g.Rect {
         return this.rectangle.getBBox();
@@ -41,10 +52,17 @@ export class BlackBoxComponent {
     }
 
     private createGroups(blackBox: BlackBox): Array<PortGroupComponent> {
-        const portGroups: Array<PortGroupComponent> = [
-            new PortGroupComponent(this.graph, "MainIn", blackBox.getPortIn()!, "top", 0.0, 1.0),
-            new PortGroupComponent(this.graph, "MainOut", blackBox.getPortOut()!, "bottom", 0.0, 1.0),
-        ];
+        const portGroups: Array<PortGroupComponent> = [];
+        
+        const portIn = blackBox.getPortIn();
+        if (portIn) {
+            portGroups.push(new PortGroupComponent(this.graph, "MainIn", portIn, "top", 0.0, 1.0));
+        }
+        
+        const portOut = blackBox.getPortOut();
+        if (portOut) {
+            portGroups.push(new PortGroupComponent(this.graph, "MainOut", portOut, "bottom", 0.0, 1.0));
+        }
 
         const delegates = Array.from(blackBox.getDelegates());
 

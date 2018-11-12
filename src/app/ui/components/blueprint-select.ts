@@ -1,7 +1,6 @@
 import {dia, shapes} from 'jointjs';
 import m, {CVnodeDOM} from 'mithril';
 
-
 import {LandscapeModel} from '../../model/landscape';
 import {BlueprintModel} from '../../model/blueprint';
 import {ClassComponent, CVnode} from "mithril";
@@ -58,7 +57,6 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
                                 onclick: (e: MithrilMouseEvent) => {
                                     e.redraw = false;
                                     attrs.onSelect(blueprint);
-
                                 },
                                 onmouseenter: (e: MithrilMouseEvent) => {
                                     e.redraw = false;
@@ -73,7 +71,6 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
     }
 }
 
-
 export class BlueprintSelectComponent {
     private readonly graph: dia.Graph;
     private readonly blueprint: BlueprintModel;
@@ -85,8 +82,8 @@ export class BlueprintSelectComponent {
 
     constructor(private readonly blueprintView: BlueprintView, private relPos: [number, number], private readonly absPos: [number, number]) {
         this.graph = blueprintView.getGraph();
-        this.blueprint = blueprintView.getBlueprint()
-        this.landscape = this.blueprint.getLandscape();
+        this.blueprint = blueprintView.getBlueprint();
+        this.landscape = this.blueprint.getAncestorNode(LandscapeModel)!;
 
         this.placeGhostRect([relPos[0] - 50, relPos[1] - 50]);
 
@@ -197,7 +194,7 @@ export class BlueprintSelectComponent {
             .sort((a: [BlueprintModel, number], b: [BlueprintModel, number]) => a[1] - b[1])
             .map(([bp, _]: [BlueprintModel, number]) => bp);
 
-        for (const bp of this.landscape.getBlueprints()) {
+        for (const bp of this.landscape.getChildNodes(BlueprintModel)) {
             if (blueprints.length < 10) {
                 if (this.isFilterExprIncluded(bp)) {
                     if (blueprints.indexOf(bp) < 0) {

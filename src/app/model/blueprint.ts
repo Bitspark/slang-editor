@@ -1,6 +1,6 @@
 import {OperatorModel} from './operator';
 import {BlueprintPortModel, PortDirection, PortModel} from './port';
-import {BlueprintDelegateModel, BlueprintDelegateModelArgs, OperatorDelegateModel} from './delegate';
+import {BlueprintDelegateModel} from './delegate';
 import {Geometry} from "./operator";
 import {SlangParsing} from "../custom/parsing";
 import {PropertyEvaluator} from "../custom/utils";
@@ -29,7 +29,6 @@ export class BlueprintModel extends BlackBox {
     private opened = new SlangBehaviorSubject<boolean>("opened", false);
 
     // children
-    private operatorAdded = new SlangSubject<OperatorModel>("operator-added");
     private operatorRemoved = new SlangSubject<OperatorModel>("operator-removed");
 
     // Properties
@@ -106,19 +105,19 @@ export class BlueprintModel extends BlackBox {
     }
 
     private getRandomOperatorName(blueprint: BlueprintModel): string {
-        const cnt = Array.from(this.getChildNodes([OperatorModel])).filter((op: OperatorModel) => op.getBlueprint() === blueprint).length;
+        const cnt = Array.from(this.getChildNodes(OperatorModel)).filter((op: OperatorModel) => op.getBlueprint() === blueprint).length;
         return `${blueprint.getFullName()}-${cnt + 1}`;
     }
 
-    public createBlankOperator(blueprint: BlueprintModel, geo: Geometry): OperatorModel {
+    public createBlankOperator(blueprint: BlueprintModel, geometry: Geometry): OperatorModel {
         const name = this.getRandomOperatorName(blueprint);
-        const operator = this.createChildNode(OperatorModel, {name, blueprint});
+        const operator = this.createChildNode(OperatorModel, {name, blueprint, geometry});
         blueprint.instantiateOperator(operator);
         return operator;
     }
 
     public createDelegate(name: string): BlueprintDelegateModel {
-        return this.createChildNode<BlueprintDelegateModel, BlueprintDelegateModelArgs>(BlueprintDelegateModel, {name});
+        return this.createChildNode(BlueprintDelegateModel, {name});
     }
 
     public createPort(type: SlangType, direction: PortDirection): BlueprintPortModel {
@@ -150,19 +149,19 @@ export class BlueprintModel extends BlackBox {
     }
 
     public getOperators(): IterableIterator<OperatorModel> {
-        return this.getChildNodes<OperatorModel>([OperatorModel]);
+        return this.getChildNodes(OperatorModel);
     }
 
     public findOperator(name: string): OperatorModel | undefined {
-        return this.scanChildNode<OperatorModel>(operator => operator.getName() === name, [OperatorModel]);
+        return this.scanChildNode(OperatorModel, operator => operator.getName() === name);
     }
 
     public getDelegates(): IterableIterator<BlueprintDelegateModel> {
-        return this.getChildNodes<BlueprintDelegateModel>([BlueprintDelegateModel]);
+        return this.getChildNodes(BlueprintDelegateModel);
     }
 
     public findDelegate(name: string): BlueprintDelegateModel | undefined {
-        return this.scanChildNode<BlueprintDelegateModel>(delegate => delegate.getName() === name, [BlueprintDelegateModel]);
+        return this.scanChildNode(BlueprintDelegateModel, delegate => delegate.getName() === name);
     }
 
     public getProperties(): IterableIterator<PropertyModel> {
@@ -170,7 +169,7 @@ export class BlueprintModel extends BlackBox {
     }
 
     public getPorts(): IterableIterator<BlueprintPortModel> {
-        return this.getChildNodes<BlueprintPortModel>([BlueprintPortModel]);
+        return this.getChildNodes(BlueprintPortModel);
     }
 
     public getPortIn(): BlueprintPortModel | null {
@@ -293,10 +292,6 @@ export class BlueprintModel extends BlackBox {
         return connections;
     }
 
-    public getLandscape(): LandscapeModel {
-        return this.getChildNode([LandscapeModel])!;
-    }
-
     // Actions
 
     public addProperty(property: PropertyModel): PropertyModel {
@@ -330,14 +325,6 @@ export class BlueprintModel extends BlackBox {
 
     // Subscriptions
 
-    public subscribeOperatorAdded(cb: (op: OperatorModel) => void): void {
-        this.operatorAdded.subscribe(cb);
-    }
-
-    public subscribeOperatorRemoved(cb: (op: OperatorModel) => void): void {
-        this.operatorRemoved.subscribe(cb);
-    }
-
     public subscribeSelectChanged(cb: (selected: boolean) => void): void {
         this.selected.subscribe(cb);
     }
@@ -346,8 +333,4 @@ export class BlueprintModel extends BlackBox {
         this.opened.subscribe(cb);
     }
 
-    public subscribeDeleted(cb: () => void): void {
-        this.removed.subscribe(cb);
-    }
-    
 }

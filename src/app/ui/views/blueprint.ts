@@ -12,6 +12,7 @@ import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {Styles} from "../../../styles/studio";
 import ElementView = dia.ElementView;
+import {SlangNode} from '../../custom/nodes';
 
 export class BlueprintView extends PaperView {
 
@@ -161,12 +162,12 @@ export class BlueprintView extends PaperView {
 
     private subscribe() {
         const that = this;
-        this.blueprint.subscribeOperatorAdded(function (op: OperatorModel) {
+        this.blueprint.subscribeChildCreated(OperatorModel, function (op: OperatorModel) {
             that.addOperator(op);
         });
 
         // Ports
-        const ports = Array.from(this.blueprint.getDescendantNodes<BlueprintPortModel>([BlueprintPortModel]));
+        const ports = Array.from(this.blueprint.getDescendantNodes(BlueprintPortModel));
         ports.filter(port => port.isSource()).forEach(source => {
             source.subscribeConnected(connection => {
                 this.addConnection(connection);
@@ -370,6 +371,10 @@ export class BlueprintView extends PaperView {
         const operatorElement = new OperatorBoxComponent(this.graph, operator);
         this.operators.push(operatorElement);
 
+        operator.subscribeChildCreated(SlangNode, () => {
+            operatorElement.refresh();
+        });
+
         // JointJS -> Model
         operatorElement.on("pointerclick", function (evt: Event, x: number, y: number) {
             operator.select();
@@ -388,7 +393,7 @@ export class BlueprintView extends PaperView {
         });
 
         // Ports
-        const ports = Array.from(operator.getDescendantNodes<PortModel>([GenericPortModel]));
+        const ports = Array.from(operator.getDescendantNodes(GenericPortModel));
         const sourcePorts = ports.filter(port => port.isSource());
         sourcePorts.forEach(source => {
             source.subscribeConnected(connection => {
@@ -537,7 +542,7 @@ export class BlueprintView extends PaperView {
     }
 
     public getBlueprint(): BlueprintModel {
-        return this.blueprint
+        return this.blueprint;
     }
 
 }

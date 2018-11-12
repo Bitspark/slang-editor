@@ -8,13 +8,6 @@ abstract class BaseSlangSubject<T> {
 
 }
 
-export class EventManager {
-    
-    constructor(private readonly appModel: AppModel) {
-    }
-    
-}
-
 export class SlangSubject<T> extends BaseSlangSubject<T> {
     private readonly subject = new Subject<T>();
 
@@ -56,10 +49,12 @@ export class SlangArrayBehaviorSubject<T> extends BaseSlangSubject<T> {
     private readonly subject = new Subject<T>();
 
     public nextAdd(value: T) {
-
+        // TODO: Implement
     }
 
     public nextRemove(value: T) {
-
+        // TODO: Implement
     }
+    
+    // TODO: Implement missing methods
 }
