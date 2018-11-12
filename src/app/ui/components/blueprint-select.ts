@@ -12,38 +12,63 @@ import {BlackBoxComponent, BlueprintBoxComponent} from "./blackbox";
 export interface Attrs {
     onSelect: (bp: BlueprintModel) => void,
     onHover: (bp?: BlueprintModel) => void,
-    blueprints: Array<BlueprintModel>
+    onFilter: (filter: string) => void,
+    onLoad: () => Array<BlueprintModel>
+}
+
+export interface MithrilMouseEvent extends MouseEvent {
+    redraw: boolean
 }
 
 class BlueprintMenuComponent implements ClassComponent<Attrs> {
-    private blueprints: Array<BlueprintModel>;
+    private filterExpr: string = "";
 
     // Note that class methods cannot infer parameter types
     oninit({attrs}: CVnode<Attrs>) {
-        this.blueprints = attrs.blueprints;
     }
 
     onbeforeupdate(vnode: CVnode<Attrs>, old: CVnodeDOM<Attrs>): boolean | void {
-        return false;
+        return true;
     }
 
     view({attrs}: CVnode<Attrs>) {
+        const blueprints = attrs.onLoad();
         return m(".sl-blupr-menu", {
-                onmouseleave: () => {
+                onmouseleave: (e: MithrilMouseEvent) => {
+                    e.redraw = false;
                     attrs.onHover(undefined);
                 }
             },
-            this.blueprints.map((blueprint: BlueprintModel) => {
-                return m(".sl-blupr-entry", {
-                        onclick: () => {
-                            attrs.onSelect(blueprint);
+            [
+                m(".sl-blupr-fltr",
+                    m("input.sl-blupr-input[type=text]", {
+                        oncreate: (v: CVnodeDOM<any>) => {
+                            if (v.attrs.autofocus) {
+                                (v.dom as HTMLElement).focus();
+                            }
                         },
-                        onmouseenter: () => {
-                            attrs.onHover(blueprint);
-                        },
-                    },
-                    m(".sl-bluepr-title", blueprint.getFullName()))
-            })
+                        oninput: m.withAttr("value", function (f: string) {
+                            attrs.onFilter(f.trim());
+                        }),
+                        autofocus: true,
+                    })),
+                m(".sl-blupr-entries",
+                    blueprints.length ? blueprints.map((blueprint: BlueprintModel) => {
+                        return m(".sl-blupr-entry", {
+                                onclick: (e: MithrilMouseEvent) => {
+                                    e.redraw = false;
+                                    attrs.onSelect(blueprint);
+
+                                },
+                                onmouseenter: (e: MithrilMouseEvent) => {
+                                    e.redraw = false;
+                                    attrs.onHover(blueprint);
+                                },
+                            },
+                            m(".sl-blupr-title", blueprint.getFullName()))
+                    }) : m(".sl-blupr-entry-none")
+                )
+            ]
         );
     }
 }
@@ -56,6 +81,7 @@ export class BlueprintSelectComponent {
     private ghostRect: shapes.standard.Rectangle | BlackBoxComponent.Rectangle;
     private readonly el: HTMLElement;
     private readonly blueprintMenu: BlueprintMenuComponent;
+    private filterExpr: string = "";
 
     constructor(private readonly blueprintView: BlueprintView, private relPos: [number, number], private readonly absPos: [number, number]) {
         this.graph = blueprintView.getGraph();
@@ -72,9 +98,12 @@ export class BlueprintSelectComponent {
 
         this.blueprintMenu = new BlueprintMenuComponent();
 
-        m.render(this.el,
-            m(this.blueprintMenu, {
-                blueprints: this.getBlueprints(),
+        m.mount(this.el, {
+            view: () => m(this.blueprintMenu, {
+                onLoad: () => this.getBlueprints(),
+                onFilter: (fltrExpr: string) => {
+                    this.filterExpr = fltrExpr;
+                },
                 onSelect: (bp: BlueprintModel) => {
                     const pos = this.ghostRect.position();
                     const geo: Geometry = {
@@ -88,7 +117,7 @@ export class BlueprintSelectComponent {
                     this.placeGhostRect([pos.x, pos.y], bp)
                 }
             })
-        );
+        });
         this.subscribe();
     }
 
@@ -150,6 +179,10 @@ export class BlueprintSelectComponent {
         this.lockAnchorPosition()
     }
 
+    private isFilterExprIncluded(blueprint: BlueprintModel): boolean {
+        return this.filterExpr === "" || blueprint.getFullName().toLowerCase().includes(this.filterExpr.toLowerCase());
+    }
+
     private getBlueprints(): Array<BlueprintModel> {
         const blueprintsMap = new Map<BlueprintModel, number>();
         for (const op of this.blueprint.getOperators()) {
@@ -160,14 +193,19 @@ export class BlueprintSelectComponent {
         }
 
         const blueprints: Array<BlueprintModel> = Array.from(blueprintsMap.entries())
+            .filter(([bp, _]: [BlueprintModel, number]) => this.isFilterExprIncluded(bp))
             .sort((a: [BlueprintModel, number], b: [BlueprintModel, number]) => a[1] - b[1])
-            .map(([bp, cnt]: [BlueprintModel, number]) => bp);
+            .map(([bp, _]: [BlueprintModel, number]) => bp);
 
         for (const bp of this.landscape.getBlueprints()) {
             if (blueprints.length < 10) {
-                if (blueprints.indexOf(bp) < 0) {
-                    blueprints.push(bp);
+                if (this.isFilterExprIncluded(bp)) {
+                    if (blueprints.indexOf(bp) < 0) {
+                        blueprints.push(bp);
+                    }
                 }
+            } else {
+                break;
             }
         }
         return blueprints;

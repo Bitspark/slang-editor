@@ -3,27 +3,60 @@
 	overflow-y: scroll;
 	overflow-x: hidden;
 	max-height: 384px;
+	width: 342px;
 	border: 1px solid $black;
 	background: $white;
-	border-radius: 6px;
+	border-radius: 20px;
 	padding: 0;
 
 	transition: 360ms opacity;
+
 	opacity: .35;
 	&:hover {
 		opacity: .97;
 	}
 }
 
-.sl-blupr-entry {
-	padding: 18px 32px 16px 32px;
-	border-bottom: 1px solid transparentize(black, .85);
-
-	cursor: pointer;
-	transition: 360ms background-color;
-
-	&:hover {
-		background-color: $black;
+.sl-blupr-fltr {
+	position: fixed;
+	border: 1px solid transparentize($black, .65);
+	background-color: $black;
+	color: $white;
+	border-radius: 20px;
+	margin: 5px;
+	padding: 2px 8px;
+	overflow: hidden;
+	.sl-blupr-input {
+		background: transparent;
 		color: $white;
+		border: none;
+		margin: 0;
+		padding: 0;
+		max-width: 312px;
+		width: 312px;
+	}
+}
+
+.sl-blupr-entries {
+	> * {
+		padding: 18px 32px 16px 32px;
+		border-bottom: 1px solid transparentize($black, .85);
+
+		cursor: pointer;
+		transition: 360ms background-color;
+
+		&:hover {
+			background-color: $black;
+			color: $white;
+		}
+
+		&:first-child {
+			border-top: 1px solid transparentize($black, .85);
+			margin-top: 35px;
+		}
+	}
+
+	.sl-blupr-entry-none {
+		padding: 0;
 	}
 }
