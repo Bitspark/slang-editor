@@ -370,17 +370,6 @@ export class BlueprintView extends PaperView {
         const operatorElement = new OperatorBoxComponent(this.graph, operator);
         this.operators.push(operatorElement);
 
-        operator.subscribeChildCreated(OperatorPortModel, () => {
-            operatorElement.refresh();
-        });
-
-        operator.subscribeChildCreated(OperatorDelegateModel, delegate => {
-            operatorElement.refresh();
-            delegate.subscribeChildCreated(OperatorPortModel, () => {
-                operatorElement.refresh();
-            });
-        });
-
         // JointJS -> Model
         operatorElement.on("pointerclick", function (evt: Event, x: number, y: number) {
             operator.select();

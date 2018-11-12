@@ -99,9 +99,9 @@ export class BlueprintModel extends BlackBox {
     }
 
     public createOperator(name: string, blueprint: BlueprintModel, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
-        const operator = this.createChildNode(OperatorModel, {name, blueprint});
-        blueprint.instantiateOperator(operator, {props: propAssigns, gen: genSpeci});
-        return operator;
+        return this.createChildNode(OperatorModel, {name, blueprint}, operator => {
+            blueprint.instantiateOperator(operator, {props: propAssigns, gen: genSpeci});
+        });
     }
 
     private getRandomOperatorName(blueprint: BlueprintModel): string {
@@ -111,13 +111,13 @@ export class BlueprintModel extends BlackBox {
 
     public createBlankOperator(blueprint: BlueprintModel, geometry: Geometry): OperatorModel {
         const name = this.getRandomOperatorName(blueprint);
-        const operator = this.createChildNode(OperatorModel, {name, blueprint, geometry});
-        blueprint.instantiateOperator(operator);
-        return operator;
+        return this.createChildNode(OperatorModel, {name, blueprint, geometry}, operator => {
+            blueprint.instantiateOperator(operator);
+        });
     }
 
-    public createDelegate(name: string): BlueprintDelegateModel {
-        return this.createChildNode(BlueprintDelegateModel, {name});
+    public createDelegate(name: string, cb?: (delegate: BlueprintDelegateModel) => void): BlueprintDelegateModel {
+        return this.createChildNode(BlueprintDelegateModel, {name}, cb);
     }
 
     public createPort(type: SlangType, direction: PortDirection): BlueprintPortModel {

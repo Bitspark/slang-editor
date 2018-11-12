@@ -37,9 +37,10 @@ function toTypeIdentifier(typeName: string): TypeIdentifier {
 
 function setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupApiResponse) {
     Object.keys(delegates).forEach((delegateName: string) => {
-        const delegate = blueprint.createDelegate(delegateName);
-        createPort(delegates[delegateName].in, delegate, PortDirection.In);
-        createPort(delegates[delegateName].out, delegate, PortDirection.Out);
+        blueprint.createDelegate(delegateName, delegate => {
+            createPort(delegates[delegateName].in, delegate, PortDirection.In);
+            createPort(delegates[delegateName].out, delegate, PortDirection.Out);
+        });
     });
 }
 
