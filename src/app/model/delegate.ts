@@ -6,20 +6,12 @@ import {Connections} from '../custom/connections';
 import {SlangType} from "../custom/type";
 
 export abstract class GenericDelegateModel<B extends BlackBox, P extends PortModel> extends PortOwner {
-    protected constructor(private owner: B, private name: string) {
-        super();
+    protected constructor(parent: B, private name: string) {
+        super(parent);
     }
 
     public getName(): string {
         return this.name;
-    }
-
-    public getIdentity(): string {
-        return this.getOwner().getIdentity() + '.' + this.name;
-    }
-
-    public getOwner(): B {
-        return this.owner;
     }
 
     public getConnectionsTo(): Connections {
@@ -32,20 +24,14 @@ export abstract class GenericDelegateModel<B extends BlackBox, P extends PortMod
 
         return connections;
     }
-
-    public getParentNode(): B {
-        return this.owner;
-    }
-
-    public getChildNodes(): IterableIterator<P> {
-        return (this.getPorts() as IterableIterator<P>);
-    }
 }
 
 export type DelegateModel = GenericDelegateModel<BlackBox, PortModel>;
 
+export type BlueprintDelegateModelArgs = {name: string};
+
 export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel, BlueprintPortModel> {
-    constructor(owner: BlueprintModel, name: string) {
+    constructor(owner: BlueprintModel, {name}: BlueprintDelegateModelArgs) {
         super(owner, name);
     }
 
@@ -62,8 +48,10 @@ export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel,
     }
 }
 
+export type OperatorDelegateModelArgs = {name: string};
+
 export class OperatorDelegateModel extends GenericDelegateModel<OperatorModel, OperatorPortModel> {
-    constructor(owner: OperatorModel, name: string) {
+    constructor(owner: OperatorModel, {name}: OperatorDelegateModelArgs) {
         super(owner, name);
     }
 

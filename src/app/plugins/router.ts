@@ -1,5 +1,6 @@
 import {AppModel} from '../model/app';
 import {SlangPlugin} from "./plugin";
+import {LandscapeModel} from '../model/landscape';
 
 export class RouterPlugin extends SlangPlugin {
 
@@ -24,14 +25,14 @@ export class RouterPlugin extends SlangPlugin {
     }
 
     private openBlueprint(fullName: string) {
-        const blueprint = this.app.getLandscape().findBlueprint(fullName);
+        const blueprint = this.app.getChildNode(LandscapeModel)!.findBlueprint(fullName);
         if (blueprint) {
             blueprint.open();
         }
     }
 
     private openLandscape() {
-        this.app.getLandscape().open();
+        this.app.getChildNode(LandscapeModel)!.open();
     }
 
     private subscribe(): void {

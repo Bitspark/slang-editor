@@ -87,7 +87,7 @@ export class PortGroupComponent {
     private refreshPorts() {
         const parentElement = this.parentElement;
         if (!parentElement) {
-            return;
+            throw new Error(`need parent`);
         }
         
         this.ports.forEach(port => {

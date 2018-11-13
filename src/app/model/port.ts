@@ -1,10 +1,10 @@
-import {BehaviorSubject, Subject} from 'rxjs';
 import {BlueprintModel} from './blueprint';
 import {OperatorModel} from './operator';
 import {BlueprintDelegateModel, OperatorDelegateModel} from './delegate';
 import {PortOwner, SlangNode} from '../custom/nodes';
 import {Connection, Connections} from '../custom/connections';
 import {SlangType, TypeIdentifier} from '../custom/type';
+import {SlangBehaviorSubject, SlangSubject} from '../custom/events';
 
 export enum PortDirection {
     In, // 0
@@ -15,21 +15,20 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
     // Topics
     // self
-    private removed = new Subject<void>();
-    private connected = new Subject<Connection>();
-    private disconnected = new Subject<Connection>();
-    private selected = new BehaviorSubject<boolean>(false);
-    private collapsed = new BehaviorSubject<boolean>(false);
+    private removed = new SlangSubject<void>("removed");
+    private connected = new SlangSubject<Connection>("connected");
+    private disconnected = new SlangSubject<Connection>("disconnected");
+    private selected = new SlangBehaviorSubject<boolean>("selected", false);
+    private collapsed = new SlangBehaviorSubject<boolean>("collapsed", false);
 
     // Properties
     private readonly mapSubs: Map<string, GenericPortModel<O>> | undefined;
     private genericIdentifier?: string;
     private streamSub: GenericPortModel<O> | undefined;
     protected connectedWith: Array<PortModel> = [];
-    protected owner: O;
 
-    protected constructor(private parent: GenericPortModel<O> | null, private typeIdentifier: TypeIdentifier, private direction: PortDirection) {
-        super();
+    protected constructor(parent: GenericPortModel<O> | O, private typeIdentifier: TypeIdentifier, private direction: PortDirection) {
+        super(parent);
         if (this.typeIdentifier === TypeIdentifier.Map) {
             this.mapSubs = new Map<string, GenericPortModel<O>>();
         }
@@ -44,7 +43,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
             throw `add map sub port to a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
         }
         this.mapSubs!.set(name, port);
-        port.parent = this;
         return this;
     }
 
@@ -70,7 +68,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         if (this.typeIdentifier !== TypeIdentifier.Stream) {
             throw `set stream sub port of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
         }
-        port.parent = this;
         this.streamSub = port;
     }
 
@@ -124,7 +121,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     }
 
     public getName(): string {
-        if (!this.parent || this.parent.getTypeIdentifier() !== TypeIdentifier.Map) {
+        if (!(this.parent instanceof GenericPortModel) || this.parent.getTypeIdentifier() !== TypeIdentifier.Map) {
             throw `not a map entry`;
         }
 
@@ -167,7 +164,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     }
 
     private getPortReference(): string {
-        if (!this.parent) {
+        if (!(this.parent instanceof GenericPortModel)) {
             return '';
         }
         const parentRefString = this.parent.getPortReference();
@@ -183,17 +180,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
             return parentRefString + '.~';
         }
         return parentRefString;
-    }
-
-    public getIdentity(): string {
-        const portReference = this.getPortReference();
-        const ownerIdentity: string = this.owner.getIdentity();
-        switch (this.direction) {
-            case PortDirection.In:
-                return portReference + '(' + ownerIdentity;
-            case PortDirection.Out:
-                return ownerIdentity + ')' + portReference;
-        }
     }
 
     public getDirection(): PortDirection {
@@ -351,37 +337,15 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     public subscribeDisconnected(cb: (connection: Connection) => void): void {
         this.disconnected.subscribe(cb);
     }
-
-    // Slang tree
-    public getChildNodes(): IterableIterator<SlangNode> {
-        const children: Array<SlangNode> = [];
-        switch (this.typeIdentifier) {
-            case TypeIdentifier.Map:
-                for (const mapSub of this.getMapSubs()) {
-                    children.push(mapSub[1]);
-                }
-                break;
-            case TypeIdentifier.Stream:
-                children.push(this.getStreamSub());
-                break;
-        }
-        return children.values();
-    }
-
-    public getParentNode(): SlangNode {
-        if (this.parent) {
-            return this.parent;
-        }
-        return this.owner;
-    }
 }
 
 export type PortModel = GenericPortModel<PortOwner>;
 
+export type PortModelArgs = {type: TypeIdentifier, direction: PortDirection};
+
 export class BlueprintPortModel extends GenericPortModel<BlueprintModel | BlueprintDelegateModel> {
-    public constructor(parent: GenericPortModel<BlueprintModel | BlueprintDelegateModel> | null, owner: BlueprintModel | BlueprintDelegateModel, type: TypeIdentifier, direction: PortDirection) {
+    public constructor(parent: BlueprintModel | BlueprintDelegateModel | BlueprintPortModel, {type, direction}: PortModelArgs) {
         super(parent, type, direction);
-        this.owner = owner;
     }
 
     public isSource(): boolean {
@@ -390,9 +354,8 @@ export class BlueprintPortModel extends GenericPortModel<BlueprintModel | Bluepr
 }
 
 export class OperatorPortModel extends GenericPortModel<OperatorModel | OperatorDelegateModel> {
-    public constructor(parent: GenericPortModel<OperatorModel | OperatorDelegateModel> | null, owner: OperatorModel | OperatorDelegateModel, type: TypeIdentifier, direction: PortDirection) {
+    public constructor(parent:  OperatorModel | OperatorDelegateModel | OperatorPortModel, {type, direction}: PortModelArgs) {
         super(parent, type, direction);
-        this.owner = owner;
     }
 
     public isSource(): boolean {

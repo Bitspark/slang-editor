@@ -7,13 +7,24 @@ import {Styles} from "../../../styles/studio";
 
 export class BlackBoxComponent {
 
-    protected readonly rectangle: BlackBoxComponent.Rectangle;
-    protected readonly portGroups: Array<PortGroupComponent>;
+    protected rectangle: BlackBoxComponent.Rectangle;
+    protected portGroups: Array<PortGroupComponent>;
 
-    constructor(protected graph: dia.Graph, private blackBox: BlackBox) {
-        this.portGroups = this.createGroups(blackBox);
+    constructor(protected graph: dia.Graph, protected readonly blackBox: BlackBox) {
+        this.portGroups = this.createGroups(this.blackBox);
         this.rectangle = new BlackBoxComponent.Rectangle(blackBox, this.portGroups);
         this.rectangle.addTo(graph);
+
+        this.portGroups.forEach(group => {
+            group.setParent(this.rectangle);
+        });
+    }
+    
+    public refresh() {
+        this.portGroups = this.createGroups(this.blackBox);
+        this.rectangle.remove();
+        this.rectangle = new BlackBoxComponent.Rectangle(this.blackBox, this.portGroups);
+        this.rectangle.addTo(this.graph);
 
         this.portGroups.forEach(group => {
             group.setParent(this.rectangle);
@@ -41,10 +52,17 @@ export class BlackBoxComponent {
     }
 
     private createGroups(blackBox: BlackBox): Array<PortGroupComponent> {
-        const portGroups: Array<PortGroupComponent> = [
-            new PortGroupComponent(this.graph, "MainIn", blackBox.getPortIn()!, "top", 0.0, 1.0),
-            new PortGroupComponent(this.graph, "MainOut", blackBox.getPortOut()!, "bottom", 0.0, 1.0),
-        ];
+        const portGroups: Array<PortGroupComponent> = [];
+        
+        const portIn = blackBox.getPortIn();
+        if (portIn) {
+            portGroups.push(new PortGroupComponent(this.graph, "MainIn", portIn, "top", 0.0, 1.0));
+        }
+        
+        const portOut = blackBox.getPortOut();
+        if (portOut) {
+            portGroups.push(new PortGroupComponent(this.graph, "MainOut", portOut, "bottom", 0.0, 1.0));
+        }
 
         const delegates = Array.from(blackBox.getDelegates());
 
@@ -52,9 +70,16 @@ export class BlackBoxComponent {
         const step = 0.5 / delegates.length;
         let pos = 0;
         for (const delegate of delegates) {
-            portGroups.push(new PortGroupComponent(this.graph, `Delegate${delegate.getName()}Out`, delegate.getPortOut()!, "right", pos, width));
+            const portOut = delegate.getPortOut();
+            if (portOut) {
+                portGroups.push(new PortGroupComponent(this.graph, `Delegate${delegate.getName()}Out`, portOut, "right", pos, width));
+            }
             pos += step;
-            portGroups.push(new PortGroupComponent(this.graph, `Delegate${delegate.getName()}In`, delegate.getPortIn()!, "right", pos, width));
+            
+            const portIn = delegate.getPortIn();
+            if (portIn) {
+                portGroups.push(new PortGroupComponent(this.graph, `Delegate${delegate.getName()}In`, portIn, "right", pos, width));
+            }
             pos += step;
         }
 
@@ -87,6 +112,13 @@ export class OperatorBoxComponent extends BlackBoxComponent {
         super(graph, operator);
         if (operator.position) {
             this.getRectangle().position(operator.position.x, operator.position.y);
+        }
+    }
+
+    public refresh() {
+        super.refresh();
+        if (this.blackBox && this.blackBox instanceof OperatorModel && this.blackBox.position) {
+            this.getRectangle().position(this.blackBox.position.x, this.blackBox.position.y);
         }
     }
 

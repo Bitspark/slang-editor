@@ -1,10 +1,12 @@
-import {BehaviorSubject, Subject} from "rxjs";
 import {BlueprintModel, BlueprintType} from './blueprint';
 import {OperatorPortModel, PortDirection} from './port';
 import {OperatorDelegateModel} from './delegate';
 import {BlackBox} from '../custom/nodes';
 import {Connections} from '../custom/connections';
 import {SlangType} from "../custom/type";
+import {SlangBehaviorSubject, SlangSubject} from '../custom/events';
+
+export type OperatorModelArgs = {name: string, blueprint: BlueprintModel, geometry: Geometry | undefined};
 
 export interface Geometry {
     position: [number, number]
@@ -14,13 +16,18 @@ export class OperatorModel extends BlackBox {
 
     // Topics
     // self
-    private removed = new Subject<void>();
-    private selected = new BehaviorSubject<boolean>(false);
+    private removed = new SlangSubject<void>("removed");
+    private selected = new SlangBehaviorSubject<boolean>("selected", false);
 
-    private delegates: Array<OperatorDelegateModel> = [];
+    private readonly name: string;
+    private readonly blueprint: BlueprintModel;
+    private geometry: Geometry | undefined;
 
-    constructor(private owner: BlueprintModel, private name: string, private blueprint: BlueprintModel, private geomentry?: Geometry) {
-        super();
+    constructor(parent: BlueprintModel, args: OperatorModelArgs) {
+        super(parent);
+        this.name = args.name;
+        this.blueprint = args.blueprint;
+        this.geometry = args.geometry;
     }
 
     public getName(): string {
@@ -44,19 +51,15 @@ export class OperatorModel extends BlackBox {
     }
 
     public getDelegates(): IterableIterator<OperatorDelegateModel> {
-        return this.delegates.values();
+        return this.getChildNodes(OperatorDelegateModel);
     }
 
     public findDelegate(name: string): OperatorDelegateModel | undefined {
-        return this.delegates.find(delegate => delegate.getName() === name);
+        return this.scanChildNode(OperatorDelegateModel, delegate => delegate.getName() === name);
     }
 
     public getDisplayName(): string {
         return this.blueprint.getShortName();
-    }
-
-    public getIdentity(): string {
-        return this.owner.getIdentity() + '#' + this.getName();
     }
 
     public getConnectionsTo(): Connections {
@@ -69,7 +72,7 @@ export class OperatorModel extends BlackBox {
         }
 
         // Then, handle delegate out-ports
-        for (const delegate of this.delegates) {
+        for (const delegate of this.getChildNodes(OperatorDelegateModel)) {
             connections.addConnections(delegate.getConnectionsTo());
         }
 
@@ -77,15 +80,14 @@ export class OperatorModel extends BlackBox {
     }
 
     public get position(): {x: number, y: number} | undefined {
-        if (this.geomentry) {
-            return {x: this.geomentry.position[0], y: this.geomentry.position[1]};
+        if (this.geometry) {
+            return {x: this.geometry.position[0], y: this.geometry.position[1]};
         }
     }
 
     // Actions
-    public addDelegate(delegate: OperatorDelegateModel): OperatorDelegateModel {
-        this.delegates.push(delegate);
-        return delegate;
+    public createDelegate(name: string): OperatorDelegateModel {
+        return this.createChildNode(OperatorDelegateModel, {name});
     }
 
     public select() {
@@ -105,10 +107,10 @@ export class OperatorModel extends BlackBox {
     }
 
     public moveTo(pos: [number, number]) {
-        if (this.geomentry) {
-            this.geomentry.position = pos;
+        if (this.geometry) {
+            this.geometry.position = pos;
         } else {
-            this.geomentry = {position: pos};
+            this.geometry = {position: pos};
         }
     }
 
@@ -121,19 +123,5 @@ export class OperatorModel extends BlackBox {
 
     public subscribeDeleted(cb: () => void): void {
         this.removed.subscribe(cb);
-    }
-
-    // Slang tree
-
-    getChildNodes(): IterableIterator<OperatorPortModel | OperatorDelegateModel> {
-        const children: Array<OperatorPortModel | OperatorDelegateModel> = Array.from(this.getPorts() as IterableIterator<OperatorPortModel>);
-        for (const delegate of this.delegates) {
-            children.push(delegate);
-        }
-        return children.values();
-    }
-
-    getParentNode(): BlueprintModel {
-        return this.owner;
     }
 }

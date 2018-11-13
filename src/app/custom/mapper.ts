@@ -37,9 +37,10 @@ function toTypeIdentifier(typeName: string): TypeIdentifier {
 
 function setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupApiResponse) {
     Object.keys(delegates).forEach((delegateName: string) => {
-        const delegate = blueprint.createDelegate(delegateName);
-        createPort(delegates[delegateName].in, delegate, PortDirection.In);
-        createPort(delegates[delegateName].out, delegate, PortDirection.Out);
+        blueprint.createDelegate(delegateName, delegate => {
+            createPort(delegates[delegateName].in, delegate, PortDirection.In);
+            createPort(delegates[delegateName].out, delegate, PortDirection.Out);
+        });
     });
 }
 
@@ -112,7 +113,7 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
             throw `unknown blueprint type '${bpData.type}'`;
         }
 
-        const blueprint = landscape.createBlueprint(bpData.name, type);
+        const blueprint = landscape.createBlueprint({fullName: bpData.name, type});
         if (bpData.def.services) {
             setBlueprintServices(blueprint, bpData.def.services);
         }
@@ -124,7 +125,6 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
         }
         const def = bpData.def;
         blueprintToOperator.set(blueprint, def);
-        landscape.addBlueprint(blueprint);
     });
 
     // 2) Add Operators. Use previously defined Blueprints for assigning Operator.blueprint

@@ -5,13 +5,12 @@ import {OperatorModel} from "../../model/operator";
 import {Connection} from "../../custom/connections";
 import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";
-import {BlueprintPortModel, GenericPortModel, PortModel} from "../../model/port";
+import {BlueprintPortModel, GenericPortModel, PortModel} from '../../model/port';
 import {IsolatedBlueprintPort} from "../components/blueprint-port";
 import {PortGroupPosition} from "../components/port-group";
 import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {Styles} from "../../../styles/studio";
-import ElementView = dia.ElementView;
 
 export class BlueprintView extends PaperView {
 
@@ -125,8 +124,8 @@ export class BlueprintView extends PaperView {
                 return false;
             }
 
-            const sourcePort = that.blueprint.find(sourcePortRef);
-            const destinationPort = that.blueprint.find(destinationPortRef);
+            const sourcePort = that.blueprint.findNodeById(sourcePortRef);
+            const destinationPort = that.blueprint.findNodeById(destinationPortRef);
             if (!sourcePort || !destinationPort ||
                 !(sourcePort instanceof GenericPortModel) || !(destinationPort instanceof GenericPortModel)) {
                 return false;
@@ -147,11 +146,11 @@ export class BlueprintView extends PaperView {
             that.fitOuter();
         });
 
-        this.outer.on("pointerdblclick", function (elementView: ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
+        this.outer.on("pointerdblclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
             that.blueprintSelect = new BlueprintSelectComponent(that, [x, y], [evt.clientX, evt.clientY]);
 
         });
-        this.getPaper().on("blank:pointerclick cell:pointerclick", function (elementView: ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
+        this.getPaper().on("blank:pointerclick cell:pointerclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
             if (that.blueprintSelect) {
                 that.blueprintSelect.destroy();
                 that.blueprintSelect = null;
@@ -161,12 +160,12 @@ export class BlueprintView extends PaperView {
 
     private subscribe() {
         const that = this;
-        this.blueprint.subscribeOperatorAdded(function (op: OperatorModel) {
+        this.blueprint.subscribeChildCreated(OperatorModel, function (op: OperatorModel) {
             that.addOperator(op);
         });
 
         // Ports
-        const ports = Array.from(this.blueprint.getDescendentNodes<BlueprintPortModel>(BlueprintPortModel));
+        const ports = Array.from(this.blueprint.getDescendantNodes(BlueprintPortModel));
         ports.filter(port => port.isSource()).forEach(source => {
             source.subscribeConnected(connection => {
                 this.addConnection(connection);
@@ -330,6 +329,10 @@ export class BlueprintView extends PaperView {
             operator.translate(-(boundingBox.x + boundingBox.width / 2), -(boundingBox.y + boundingBox.height / 2));
         });
 
+        if (!boundingBox) {
+            boundingBox = new g.Rect({ x: 0, y: 0, width: 10, height: 10 });
+        }
+        
         boundingBox.x -= boundingBox.x + boundingBox.width / 2;
         boundingBox.y -= boundingBox.y + boundingBox.height / 2;
 
@@ -388,7 +391,7 @@ export class BlueprintView extends PaperView {
         });
 
         // Ports
-        const ports = Array.from(operator.getDescendentNodes<PortModel>(GenericPortModel));
+        const ports = Array.from(operator.getDescendantNodes(GenericPortModel));
         const sourcePorts = ports.filter(port => port.isSource());
         sourcePorts.forEach(source => {
             source.subscribeConnected(connection => {
@@ -525,11 +528,11 @@ export class BlueprintView extends PaperView {
         if (!magnet) {
             return undefined;
         }
-        const portRef = magnet.getAttribute("port");
-        if (!portRef) {
+        const portId = magnet.getAttribute("port");
+        if (!portId) {
             return undefined;
         }
-        const port = this.blueprint.find(portRef);
+        const port = this.blueprint.findNodeById(portId);
         if (!port || !(port instanceof GenericPortModel)) {
             return undefined;
         }
@@ -537,7 +540,7 @@ export class BlueprintView extends PaperView {
     }
 
     public getBlueprint(): BlueprintModel {
-        return this.blueprint
+        return this.blueprint;
     }
 
 }
