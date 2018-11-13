@@ -92,6 +92,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
             this.stream.replace(stream);
         }
     }
+    
+    public clearStream(): void {
+        // TODO
+    }
 
     public getStream(): Stream {
         return this.stream;
@@ -292,8 +296,14 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     
     public abstract isSource(): boolean;
     
-    public disconnect(destination: PortModel) {
+    public disconnectTo(destination: PortModel) {
+        if (!this.isSource()) {
+            throw new Error(`can only disconnect source ports`);
+        }
+
         const connection = {source: this, destination: destination};
+        
+        this.disconnectStreamsTo(destination);
         
         const idxS = this.connectedWith.indexOf(destination);
         if (idxS === -1) {
@@ -304,7 +314,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         
         const idxT = destination.connectedWith.indexOf(this);
         if (idxT === -1) {
-            throw new Error(`not connected with that port`);
+            throw new Error(`inconsistency: not connected with that port`);
         }
         destination.connectedWith.splice(idxT, 1);
         destination.disconnected.next(connection);
@@ -312,6 +322,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
     private connectStreamsTo(destination: PortModel): void {
         destination.setStream(this.stream);
+    }
+
+    private disconnectStreamsTo(destination: PortModel): void {
+        destination.clearStream();
     }
     
     /**

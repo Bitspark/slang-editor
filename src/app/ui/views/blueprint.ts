@@ -127,7 +127,7 @@ export class BlueprintView extends PaperView {
                 return false;
             }
 
-            sourcePort.disconnect(destinationPort);
+            sourcePort.disconnectTo(destinationPort);
         });
         return paper;
     }
