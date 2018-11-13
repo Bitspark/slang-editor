@@ -137,7 +137,7 @@ export class BlueprintView extends PaperView {
         const that = this;
         this.graph.on("change:position change:size", function (cell: dia.Cell) {
             // Moving around inner operators
-            if (!(cell instanceof BlackBoxComponent.Rectangle)) {
+            if (!(cell instanceof BlackBoxComponent.Rect)) {
                 return;
             }
             that.fitOuter(false);

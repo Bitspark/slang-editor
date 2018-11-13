@@ -75,7 +75,7 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 export class BlueprintSelectComponent extends AnchorComponent {
 	private readonly blueprint: BlueprintModel;
 	private readonly landscape: LandscapeModel;
-	private ghostRect: shapes.standard.Rectangle | BlackBoxComponent.Rectangle;
+	private ghostRect:  BlackBoxComponent.Rect | BlackBoxComponent.Rect.Ghost;
 	private filterExpr: string = "";
 
 	constructor(private blueprintView: BlueprintView, pos: AnchorPosition) {
@@ -150,8 +150,7 @@ export class BlueprintSelectComponent extends AnchorComponent {
 		}
 
 		if (!blueprint) {
-			this.ghostRect = new BlackBoxComponent.GhostRectangle();
-			this.ghostRect.attr("draggable", true);
+            this.ghostRect = new BlackBoxComponent.Rect.Ghost("• • •");
 			this.ghostRect.addTo(this.graph);
 		} else {
 			this.ghostRect = new BlueprintBoxComponent(this.graph, blueprint).getRectangle();

@@ -7,12 +7,12 @@ import {Styles} from "../../../styles/studio";
 
 export class BlackBoxComponent {
 
-    protected rectangle: BlackBoxComponent.Rectangle;
+    protected rectangle: BlackBoxComponent.Rect;
     protected portGroups: Array<PortGroupComponent>;
 
     constructor(protected graph: dia.Graph, protected readonly blackBox: BlackBox) {
         this.portGroups = this.createGroups(this.blackBox);
-        this.rectangle = new BlackBoxComponent.Rectangle(blackBox, this.portGroups);
+        this.rectangle = new BlackBoxComponent.Rect(blackBox, this.portGroups);
         this.rectangle.addTo(graph);
 
         this.portGroups.forEach(group => {
@@ -28,7 +28,7 @@ export class BlackBoxComponent {
         this.rectangle.translate(tx, ty);
     }
 
-    public getRectangle(): BlackBoxComponent.Rectangle {
+    public getRectangle(): BlackBoxComponent.Rect {
         return this.rectangle;
     }
 
@@ -42,12 +42,12 @@ export class BlackBoxComponent {
 
     private createGroups(blackBox: BlackBox): Array<PortGroupComponent> {
         const portGroups: Array<PortGroupComponent> = [];
-        
+
         const portIn = blackBox.getPortIn();
         if (portIn) {
             portGroups.push(new PortGroupComponent(this.graph, "MainIn", portIn, "top", 0.0, 1.0));
         }
-        
+
         const portOut = blackBox.getPortOut();
         if (portOut) {
             portGroups.push(new PortGroupComponent(this.graph, "MainOut", portOut, "bottom", 0.0, 1.0));
@@ -64,7 +64,7 @@ export class BlackBoxComponent {
                 portGroups.push(new PortGroupComponent(this.graph, `Delegate${delegate.getName()}Out`, portOut, "right", pos, width));
             }
             pos += step;
-            
+
             const portIn = delegate.getPortIn();
             if (portIn) {
                 portGroups.push(new PortGroupComponent(this.graph, `Delegate${delegate.getName()}In`, portIn, "right", pos, width));
@@ -107,70 +107,68 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 }
 
 export namespace BlackBoxComponent {
-    export class GhostRectangle extends shapes.standard.Rectangle.define("BlackBoxGhostRectangle", {}) {
+    import RectangleSelectors = shapes.standard.RectangleSelectors;
 
-        constructor() {
-            super({
-                size: Styles.BlackBox.size,
-                attrs: {
-                    root: {
-                        class: "joint-cell joint-element sl-blackbox-ghost",
-                    },
-                    body: {
-                        rx: Styles.BlackBox.rx,
-                        ry: Styles.BlackBox.ry,
-                        class: "sl-rectangle",
-                        filter: Styles.BlackBox.filter,
-                    },
-                    label: {
-                        text: "• • •",
-                        class: "sl-label",
-                    },
-                },
-            } as any);
-
-            this.attr("draggable", false);
-            this.set("obstacle", false);
-        }
-
+    interface BasicAttrs {
+        id?: string
+        label: string
+        draggable: boolean
+        obstacle: boolean
+        cssClass?: string
+        portGroups?: Array<PortGroupComponent>
     }
 
-    export class Rectangle extends shapes.standard.Rectangle.define("BlackBoxRectangle", {}) {
+    function constructRectAttrs(attrs: BasicAttrs): dia.Element.GenericAttributes<RectangleSelectors> {
+        return {
+            id: attrs.id,
+            size: Styles.BlackBox.size,
+            attrs: {
+                root: {
+                    class: "joint-cell joint-element sl-blackbox ${cssClass}",
+                },
+                body: {
+                    rx: Styles.BlackBox.rx,
+                    ry: Styles.BlackBox.ry,
+                    class: "sl-rectangle",
+                    filter: Styles.BlackBox.filter,
+                },
+                label: {
+                    text: attrs.label,
+                    class: "sl-label",
+                },
+            },
+            ports: !attrs.portGroups ? undefined : {
+                groups: attrs.portGroups!
+                    .reduce((result: { [key: string]: dia.Element.PortGroup }, group) => {
+                        result[group.getName()] = group.getPortGroupElement();
+                        return result;
+                    }, {})
+            },
+        }
+    }
 
+    export class Rect extends shapes.standard.Rectangle.define("BlackBoxRect", {}) {
         constructor(blackBox: BlackBox, portGroups: Array<PortGroupComponent>) {
-            const identity = blackBox.getIdentity();
-
-            const groupElements: { [key: string]: dia.Element.PortGroup } = {};
-            portGroups.forEach(group => {
-                groupElements[group.getName()] = group.getPortGroupElement();
-            });
-
-            super({
-                id: identity,
-                size: Styles.BlackBox.size,
-                attrs: {
-                    root: {
-                        class: "joint-cell joint-element sl-blackbox",
-                    },
-                    body: {
-                        rx: Styles.BlackBox.rx,
-                        ry: Styles.BlackBox.ry,
-                        class: "sl-rectangle",
-                        filter: Styles.BlackBox.filter,
-                    },
-                    label: {
-                        text: blackBox.getDisplayName(),
-                        class: "sl-label",
-                    },
-                },
-                ports: {
-                    groups: groupElements,
-                },
-            } as any);
-
-            this.set("obstacle", true);
+            super(constructRectAttrs({
+                id: blackBox.getIdentity(),
+                label: blackBox.getDisplayName(),
+                draggable: true, obstacle: true,
+                portGroups
+            }) as any);
         }
-
     }
+
+    export namespace Rect {
+        export class Ghost extends shapes.standard.Rectangle.define("BlackBoxGhost", {}) {
+            constructor(label: string) {
+                super(constructRectAttrs({
+                    label,
+                    draggable: false,
+                    obstacle: true,
+                }) as any);
+            }
+        }
+    }
+
 
 }
