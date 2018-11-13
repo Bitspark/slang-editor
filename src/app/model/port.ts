@@ -331,6 +331,9 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     }
     
     public subscribeConnected(cb: (connection: Connection) => void): void {
+        this.getConnectionsTo().forEach(connection => {
+            cb(connection);
+        });
         this.connected.subscribe(cb);
     }
 

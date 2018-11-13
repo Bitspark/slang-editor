@@ -5,12 +5,13 @@ import {OperatorModel} from "../../model/operator";
 import {Connection} from "../../custom/connections";
 import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";
-import {BlueprintPortModel, GenericPortModel, PortModel} from '../../model/port';
+import {BlueprintPortModel, GenericPortModel, PortModel} from "../../model/port";
 import {IsolatedBlueprintPort} from "../components/blueprint-port";
 import {PortGroupPosition} from "../components/port-group";
 import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {Styles} from "../../../styles/studio";
+import {BlueprintDelegateModel} from "../../model/delegate";
 
 export class BlueprintView extends PaperView {
 
@@ -30,19 +31,16 @@ export class BlueprintView extends PaperView {
         this.addZooming();
         this.addPanning();
 
-        this.subscribe();
+        this.subscribe().then(() => {
+            this.outer = this.createOuter();
 
-        this.createIsolatedPorts();
-        this.autoLayout();
+            this.autoLayout();
+            this.fitOuter();
 
-        this.outer = this.createOuter();
-        this.fitOuter();
+            this.attachEventHandlers();
 
-        this.attachEventHandlers();
-
-        // this.addOriginPoint();
-
-        this.fit();
+            this.fit();
+        });
     }
 
     protected createPaper(): dia.Paper {
@@ -156,12 +154,30 @@ export class BlueprintView extends PaperView {
         });
     }
 
-    private subscribe() {
-        this.blueprint.subscribeChildCreated(OperatorModel, operator => {
+    private async subscribe() {
+        await this.blueprint.subscribeChildCreated(OperatorModel, operator => {
             this.addOperator(operator);
         });
-        
-        this.blueprint.subscribeDescendantCreated(GenericPortModel, port => {
+
+        await this.blueprint.subscribeChildCreated(BlueprintPortModel, port => {
+            if (port.isDirectionIn()) {
+                this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
+            } else {
+                this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
+            }
+        });
+
+        await this.blueprint.subscribeChildCreated(BlueprintDelegateModel, async delegate => {
+            await delegate.subscribeChildCreated(BlueprintPortModel, port => {
+                if (port.isDirectionIn()) {
+                    this.createIsolatedPort(port, `${delegate.getIdentity()}_in`, `Delegate ${delegate.getName()} In-Port`, "right");
+                } else {
+                    this.createIsolatedPort(port, `${delegate.getIdentity()}_out`, `Delegate ${delegate.getName()} Out-Port`, "right");
+                }
+            });
+        });
+
+        await this.blueprint.subscribeDescendantCreated(GenericPortModel, port => {
             if (!port.isSource()) {
                 return;
             }
@@ -269,28 +285,6 @@ export class BlueprintView extends PaperView {
         });
     }
 
-    private createIsolatedPorts(): void {
-        this.createIsolatedPort(this.blueprint.getPortIn()!, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
-        this.createIsolatedPort(this.blueprint.getPortOut()!, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
-
-        for (const delegate of this.blueprint.getDelegates()) {
-            this.createIsolatedPort(delegate.getPortOut()!, `${delegate.getIdentity()}_out`, `Delegate ${delegate.getName()} Out-Port`, "right");
-            this.createIsolatedPort(delegate.getPortIn()!, `${delegate.getIdentity()}_in`, `Delegate ${delegate.getName()} In-Port`, "right");
-        }
-    }
-
-    // private createOperators() {
-    //     for (const op of this.blueprint.getOperators()) {
-    //         this.addOperator(op);
-    //     }
-    // }
-
-    // private createConnections() {
-    //     this.blueprint.getConnectionsTo().forEach(connection => {
-    //         this.addConnection(connection);
-    //     });
-    // }
-
     private addConnection(connection: Connection) {
         const connectionComponent = new ConnectionComponent(this.graph, connection);
         this.connections.push(connectionComponent);
@@ -328,9 +322,9 @@ export class BlueprintView extends PaperView {
         });
 
         if (!boundingBox) {
-            boundingBox = new g.Rect({ x: 0, y: 0, width: 10, height: 10 });
+            boundingBox = new g.Rect({x: 0, y: 0, width: 10, height: 10});
         }
-        
+
         boundingBox.x -= boundingBox.x + boundingBox.width / 2;
         boundingBox.y -= boundingBox.y + boundingBox.height / 2;
 
@@ -476,26 +470,6 @@ export class BlueprintView extends PaperView {
                 });
             });
         }
-    }
-
-    private addOriginPoint() {
-        const origin = new shapes.standard.Circle({
-            size: {
-                width: 4,
-                height: 4,
-            },
-            position: {
-                x: -2,
-                y: -2,
-            }
-        }).addTo(this.graph);
-
-        origin.attr("body/fill", "blue");
-        origin.attr("body/fill-opacity", ".05");
-        origin.attr("body/rx", "24");
-        origin.attr("body/ry", "24");
-        origin.attr("draggable", false);
-        origin.set("obstacle", false);
     }
 
     private getPortFromMagnet(magnet: SVGElement): PortModel | undefined {

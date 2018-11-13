@@ -1,4 +1,4 @@
-import {dia, g, util} from 'jointjs';
+import {dia, g, shapes, util} from "jointjs";
 import {ViewFrame} from "../frame";
 import {View} from "./view";
 
@@ -188,6 +188,26 @@ export abstract class PaperView extends View {
 
     protected getHeight(): number {
         return this.paper.getArea().height;
+    }
+
+    protected addOriginPoint() {
+        const origin = new shapes.standard.Circle({
+            size: {
+                width: 4,
+                height: 4,
+            },
+            position: {
+                x: -2,
+                y: -2,
+            }
+        }).addTo(this.graph);
+
+        origin.attr("body/fill", "blue");
+        origin.attr("body/fill-opacity", ".05");
+        origin.attr("body/rx", "24");
+        origin.attr("body/ry", "24");
+        origin.attr("draggable", false);
+        origin.set("obstacle", false);
     }
 }
 
