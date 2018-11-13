@@ -31,16 +31,16 @@ export class BlueprintView extends PaperView {
         this.addZooming();
         this.addPanning();
 
-        this.subscribe().then(() => {
-            this.outer = this.createOuter();
+        this.subscribe();
+        
+        this.outer = this.createOuter();
 
-            this.autoLayout();
-            this.fitOuter();
+        this.autoLayout();
+        this.fitOuter();
 
-            this.attachEventHandlers();
+        this.attachEventHandlers();
 
-            this.fit();
-        });
+        this.fit();
     }
 
     protected createPaper(): dia.Paper {
@@ -154,12 +154,12 @@ export class BlueprintView extends PaperView {
         });
     }
 
-    private async subscribe() {
-        await this.blueprint.subscribeChildCreated(OperatorModel, operator => {
+    private subscribe() {
+        this.blueprint.subscribeChildCreated(OperatorModel, operator => {
             this.addOperator(operator);
         });
 
-        await this.blueprint.subscribeChildCreated(BlueprintPortModel, port => {
+        this.blueprint.subscribeChildCreated(BlueprintPortModel, port => {
             if (port.isDirectionIn()) {
                 this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
             } else {
@@ -167,8 +167,8 @@ export class BlueprintView extends PaperView {
             }
         });
 
-        await this.blueprint.subscribeChildCreated(BlueprintDelegateModel, async delegate => {
-            await delegate.subscribeChildCreated(BlueprintPortModel, port => {
+        this.blueprint.subscribeChildCreated(BlueprintDelegateModel, delegate => {
+            delegate.subscribeChildCreated(BlueprintPortModel, port => {
                 if (port.isDirectionIn()) {
                     this.createIsolatedPort(port, `${delegate.getIdentity()}_in`, `Delegate ${delegate.getName()} In-Port`, "right");
                 } else {
@@ -177,7 +177,7 @@ export class BlueprintView extends PaperView {
             });
         });
 
-        await this.blueprint.subscribeDescendantCreated(GenericPortModel, port => {
+        this.blueprint.subscribeDescendantCreated(GenericPortModel, port => {
             if (!port.isSource()) {
                 return;
             }

@@ -157,30 +157,24 @@ export abstract class SlangNode {
 
     // Events
     
-    public async subscribeChildCreated<T extends SlangNode>(types: Types<T>, cb: (child: T) => void): Promise<void> {
-        return new Promise<void>(resolve => {
-            this.children.subscribeAdded(child => {
-                for (const type of getTypes(types)) {
-                    if (child instanceof type) {
-                        cb(child as T);
-                    }
+    public subscribeChildCreated<T extends SlangNode>(types: Types<T>, cb: (child: T) => void) {
+        this.children.subscribeAdded(child => {
+            for (const type of getTypes(types)) {
+                if (child instanceof type) {
+                    cb(child as T);
                 }
-            });
-            resolve();
+            }
         });
     }
 
-    public async subscribeDescendantCreated<T extends SlangNode>(types: Types<T>, cb: (child: T) => void): Promise<void> {
-        return new Promise<void>(async resolve => {
-            await this.children.subscribeAdded(child => {
-                for (const type of getTypes(types)) {
-                    if (child instanceof type) {
-                        cb(child as T);
-                    }
+    public subscribeDescendantCreated<T extends SlangNode>(types: Types<T>, cb: (child: T) => void) {
+        this.children.subscribeAdded(child => {
+            for (const type of getTypes(types)) {
+                if (child instanceof type) {
+                    cb(child as T);
                 }
-                child.subscribeDescendantCreated(types, cb);
-            });
-            resolve();
+            }
+            child.subscribeDescendantCreated(types, cb);
         });
     }
     
