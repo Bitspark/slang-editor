@@ -32,23 +32,12 @@ export class LandscapeView extends PaperView {
     }
 
     private subscribe(landscape: LandscapeModel) {
-        const that = this;
-        landscape.subscribeChildCreated(BlueprintModel, function (bp: BlueprintModel) {
-            if (!that.filter || that.filter(bp)) {
-                that.addBlueprint(bp);
-                that.reorder();
+        landscape.subscribeChildCreated(BlueprintModel, blueprint => {
+            if (!this.filter || this.filter(blueprint)) {
+                this.addBlueprint(blueprint);
+                this.reorder();
             }
         });
-    }
-
-    private addBlueprints(landscape: LandscapeModel) {
-        let blueprints = Array.from(landscape.getChildNodes(BlueprintModel));
-        if (this.filter) {
-            blueprints = blueprints.filter(this.filter);
-        }
-        for (const bp of blueprints) {
-            this.addBlueprint(bp);
-        }
     }
 
     public resize(width: number, height: number) {
@@ -72,7 +61,6 @@ export class LandscapeView extends PaperView {
 
         this.addBlueprintButton = this.createAddBlueprintButton();
         this.slangLogo = this.createSlangLogo();
-        this.addBlueprints(this.landscape);
 
         this.reorder();
     }

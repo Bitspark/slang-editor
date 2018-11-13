@@ -1,7 +1,7 @@
 import {GenericPortModel, PortDirection, PortModel, PortModelArgs} from '../model/port';
 import {DelegateModel} from "../model/delegate";
 import {SlangType, TypeIdentifier} from "./type";
-import {SlangSubject} from './events';
+import {SlangArrayBehaviorSubject} from "./events";
 
 type Type<T> = Function & { prototype: T };
 
@@ -23,9 +23,8 @@ export abstract class SlangNode {
     }
     
     private id = "";
-    private children = new Map<string, SlangNode>();
     private lastId = "0";
-    private childCreated = new Map<Type<SlangNode>, SlangSubject<SlangNode>>();
+    private children = new SlangArrayBehaviorSubject<SlangNode>('children', []);
     
     protected constructor(protected readonly parent: SlangNode | null) {}
 
@@ -35,6 +34,10 @@ export abstract class SlangNode {
         } else {
             return "sl";
         }
+    }
+
+    public getScopedIdentity(): string {
+        return this.id;
     }
     
     public findNodeById(id: string): SlangNode | undefined {        
@@ -63,13 +66,13 @@ export abstract class SlangNode {
     }
 
     public getNodeById(id: string): SlangNode | undefined {
-        return this.children.get(id);
+        return this.children.getNode(id);
     }
 
     public getChildNodes<T extends SlangNode>(types: Types<T>): IterableIterator<T> {
         types = getTypes(types);
         const children: Array<T> = [];
-        for (const childNode of this.children.values()) {
+        for (const childNode of this.children.getNodes()) {
             for (const t of types) {
                 if (childNode instanceof t) {
                     children.push(childNode as T);
@@ -82,10 +85,10 @@ export abstract class SlangNode {
 
     public getChildNode<T extends SlangNode>(types: Types<T>): T | null {
         types = getTypes(types);
-        if (this.children.size === 0) {
+        if (this.children.size() === 0) {
             return null;
         }
-        for (const childNode of this.children.values()) {
+        for (const childNode of this.children.getNodes()) {
             for (const t of types) {
                 if (childNode instanceof t) {
                     return childNode as T;
@@ -141,11 +144,7 @@ export abstract class SlangNode {
     protected createChildNode<T extends SlangNode, A>(ctor: new(parent: SlangNode, args: A) => T, args: A, cb?: (child: T) => void): T {
         const childNode = new ctor(this, args);
         childNode.id = this.nextId();
-        this.children.set(childNode.id, childNode);
-        if (cb) {
-            cb(childNode);
-        }
-        this.getSubjectChildCreated(ctor).next(childNode);
+        this.children.nextAdd(childNode, cb);
         
         return childNode;
     }
@@ -157,21 +156,25 @@ export abstract class SlangNode {
 
     // Events
     
-    private getSubjectChildCreated<T extends SlangNode>(type: Type<T>): SlangSubject<T> {
-        const subject = this.childCreated.get(type);
-        if (subject) {
-            return subject as SlangSubject<T>;
-        } else {
-            const subject = new SlangSubject<T>(`${type.name}-created`);
-            this.childCreated.set(type, subject);
-            return subject;
-        }
-    }
-    
     public subscribeChildCreated<T extends SlangNode>(types: Types<T>, cb: (child: T) => void) {
-        for (const type of getTypes(types)) {
-            this.getSubjectChildCreated(type).subscribe(cb);
-        }
+        this.children.subscribeAdded(child => {
+            for (const type of getTypes(types)) {
+                if (child instanceof type) {
+                    cb(child as T);
+                }
+            }
+        });
+    }
+
+    public subscribeDescendantCreated<T extends SlangNode>(types: Types<T>, cb: (child: T) => void) {
+        this.children.subscribeAdded(child => {
+            for (const type of getTypes(types)) {
+                if (child instanceof type) {
+                    cb(child as T);
+                }
+            }
+            child.subscribeDescendantCreated(types, cb);
+        });
     }
     
 }

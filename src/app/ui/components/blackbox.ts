@@ -19,17 +19,6 @@ export class BlackBoxComponent {
             group.setParent(this.rectangle);
         });
     }
-    
-    public refresh() {
-        this.portGroups = this.createGroups(this.blackBox);
-        this.rectangle.remove();
-        this.rectangle = new BlackBoxComponent.Rectangle(this.blackBox, this.portGroups);
-        this.rectangle.addTo(this.graph);
-
-        this.portGroups.forEach(group => {
-            group.setParent(this.rectangle);
-        });
-    }
 
     public getBBox(): g.Rect {
         return this.rectangle.getBBox();
@@ -112,13 +101,6 @@ export class OperatorBoxComponent extends BlackBoxComponent {
         super(graph, operator);
         if (operator.position) {
             this.getRectangle().position(operator.position.x, operator.position.y);
-        }
-    }
-
-    public refresh() {
-        super.refresh();
-        if (this.blackBox && this.blackBox instanceof OperatorModel && this.blackBox.position) {
-            this.getRectangle().position(this.blackBox.position.x, this.blackBox.position.y);
         }
     }
 
