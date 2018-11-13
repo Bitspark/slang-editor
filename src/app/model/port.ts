@@ -36,17 +36,23 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         this.typeIdentifier = type.getTypeIdentifier();
         this.direction = direction;
         
-        this.setStream(new Stream(null, this));
+        if (parent instanceof PortOwner) {
+            this.setStream(parent.getBaseStream());
+        } else {
+            this.setStream(new Stream(null, this));
+        }
 
         switch (this.typeIdentifier) {
             case TypeIdentifier.Map:
                 for (const [subName, subType] of type.getMapSubs()) {
-                    this.createChildNode(P, {name: subName, type: subType, direction});
+                    const sub = this.createChildNode(P, {name: subName, type: subType, direction});
+                    sub.setStream(this.stream);
                 }
                 break;
             case TypeIdentifier.Stream:
                 const subType = type.getStreamSub();
-                this.createChildNode(P, {name: "~", type: subType, direction});
+                const sub = this.createChildNode(P, {name: "~", type: subType, direction});
+                sub.setStream(this.stream.createSubStream(sub));
                 break;
             case TypeIdentifier.Generic:
                 this.setGenericIdentifier(type.getGenericIdentifier());
@@ -79,12 +85,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     public setStream(stream: Stream): void {
         if (!this.stream) {
             this.stream = stream;
-            // if (this.streamSub) {
-            //     this.streamSub.setStream(new Stream(stream, this.streamSub));
-            // }
-            // if (this.mapSubs) {
-            //     this.mapSubs.forEach(sub => sub.setStream(stream));
-            // }
             stream.subscribeReplaced(newStream => {
                 this.stream = newStream;
             });
@@ -99,12 +99,13 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     
     private setStreamDepth(depth: number): void {
         this.streamDepth = depth;
-        // if (this.streamSub) {
-        //     this.streamSub.setStreamDepth(depth + 1);
-        // }
-        // if (this.mapSubs) {
-        //     this.mapSubs.forEach(sub => sub.setStreamDepth(depth));
-        // }
+        const sub = this.getStreamSub();
+        if (sub) {
+            sub.setStreamDepth(depth + 1);
+        }
+        for (const sub of this.getMapSubs()) {
+            sub.setStreamDepth(depth);
+        }
     }
 
     public getStreamSub(): GenericPortModel<O> {
@@ -165,13 +166,18 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         return this.streamDepth;
     }
 
-    public getConnectionsTo(): Connections {
+    private gitDirectConnectionsTo(): Connections {
         const connections = new Connections();
         for (const connectedWith of this.connectedWith) {
             if (this.isSource()) {
                 connections.addConnection({source: this, destination: connectedWith});
             }
         }
+        return connections;
+    }
+    
+    public getConnectionsTo(): Connections {
+        const connections = this.gitDirectConnectionsTo();
         switch (this.typeIdentifier) {
             case TypeIdentifier.Map:
                 const mapSubs = this.getMapSubs();
@@ -305,7 +311,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     }
 
     private connectStreamsTo(destination: PortModel): void {
-        // destination.setStream(this.stream);
+        destination.setStream(this.stream);
     }
     
     /**
@@ -368,7 +374,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     }
     
     public subscribeConnected(cb: (connection: Connection) => void): void {
-        this.getConnectionsTo().forEach(connection => {
+        this.gitDirectConnectionsTo().forEach(connection => {
             cb(connection);
         });
         this.connected.subscribe(cb);

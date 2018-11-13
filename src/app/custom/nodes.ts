@@ -1,6 +1,5 @@
-import {GenericPortModel, PortDirection, PortModel, PortModelArgs} from '../model/port';
+import {GenericPortModel, PortModel, PortModelArgs} from '../model/port';
 import {DelegateModel} from "../model/delegate";
-import {SlangType, TypeIdentifier} from "./type";
 import {SlangArrayBehaviorSubject, SlangSubject} from "./events";
 import {Subscription} from "rxjs";
 
@@ -199,6 +198,10 @@ export class Stream {
             });
         }
     }
+    
+    public createSubStream(sourcePort: PortModel): Stream {
+        return new Stream(this, sourcePort);
+    }
 
     public getId(): string {
         return this.id;
@@ -238,8 +241,12 @@ export class Stream {
             return;
         }
         if (stream.hasAncestor(this)) {
-            console.error(this, stream);
             throw new Error(`stream circle detected: ${stream.id}`);
+        }
+        if (this.baseStream) {
+            if (stream.baseStream) {
+                this.baseStream.replace(stream.baseStream);
+            }
         }
         this.replaced.next(stream);
         this.subscriptions.forEach(subscription => subscription.unsubscribe());
@@ -260,7 +267,7 @@ export abstract class PortOwner extends SlangNode {
         this.baseStream = new Stream(null, undefined);
         this.baseStream.subscribeReplaced(newStream => this.baseStream = newStream);
     }
-
+    
     protected abstract createPort(args: PortModelArgs): PortModel;
 
     public getPortIn(): PortModel | null {

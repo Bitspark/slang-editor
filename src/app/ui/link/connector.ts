@@ -59,6 +59,7 @@ function slangConnectorFunction(sourcePoint: g.PlainPoint, targetPoint: g.PlainP
 }
 
 export function slangConnector(sourcePort: PortModel, destinationPort: PortModel | null = null): (sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: Array<g.PlainPoint>, opt: any) => string {
+    console.log(sourcePort);
     const streamDepth = sourcePort.getStream().getStreamDepth();
     return (sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: Array<g.PlainPoint>) => slangConnectorFunction(sourcePoint, targetPoint, route, streamDepth);
 }
