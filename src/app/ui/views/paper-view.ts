@@ -1,4 +1,4 @@
-import {dia, g, util} from 'jointjs';
+import {dia, g, shapes, util} from "jointjs";
 import {ViewFrame} from "../frame";
 import {View} from "./view";
 
@@ -19,11 +19,11 @@ export abstract class PaperView extends View {
         this.paper.translate(width / 2, height / 2);
     }
 
-    protected getGraph(): dia.Graph {
+    public getGraph(): dia.Graph {
         return this.graph;
     }
-    
-    protected getPaper(): dia.Paper {
+
+    public getPaper(): dia.Paper {
         return this.paper;
     }
 
@@ -35,7 +35,7 @@ export abstract class PaperView extends View {
     protected center() {
         this.paper.setOrigin(this.paper.options.width as number / 2, this.paper.options.height as number / 2);
     }
-    
+
     protected fit() {
         this.paper.scaleContentToFit();
     }
@@ -68,7 +68,7 @@ export abstract class PaperView extends View {
                 return {x: -(Number.MAX_VALUE / 2), y: -(Number.MAX_VALUE / 2), width: Number.MAX_VALUE, height: Number.MAX_VALUE};
             },
         }, opt);
-        
+
         return new dia.Paper(opt);
     }
 
@@ -149,9 +149,7 @@ export abstract class PaperView extends View {
 
         const doPanning = function (x: number, y: number) {
             if (panning) {
-                const deltaX = x - startX;
-                const deltaY = y - startY;
-                paper.translate(deltaX, deltaY);
+                paper.translate(x - startX, y - startY);
             }
         };
 
@@ -191,7 +189,26 @@ export abstract class PaperView extends View {
     protected getHeight(): number {
         return this.paper.getArea().height;
     }
-    
+
+    protected addOriginPoint() {
+        const origin = new shapes.standard.Circle({
+            size: {
+                width: 4,
+                height: 4,
+            },
+            position: {
+                x: -2,
+                y: -2,
+            }
+        }).addTo(this.graph);
+
+        origin.attr("body/fill", "blue");
+        origin.attr("body/fill-opacity", ".05");
+        origin.attr("body/rx", "24");
+        origin.attr("body/ry", "24");
+        origin.attr("draggable", false);
+        origin.set("obstacle", false);
+    }
 }
 
 (util.filter as any).innerShadow = function (args: any) {

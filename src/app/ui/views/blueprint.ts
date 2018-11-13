@@ -8,8 +8,10 @@ import {PaperView} from "./paper-view";
 import {BlueprintPortModel, GenericPortModel, PortModel} from "../../model/port";
 import {IsolatedBlueprintPort} from "../components/blueprint-port";
 import {PortGroupPosition} from "../components/port-group";
+import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {Styles} from "../../../styles/studio";
+import {BlueprintDelegateModel} from "../../model/delegate";
 
 export class BlueprintView extends PaperView {
 
@@ -22,26 +24,23 @@ export class BlueprintView extends PaperView {
     private connections: Array<ConnectionComponent> = [];
     private outerPadding = 120;
 
+    private blueprintSelect: BlueprintSelectComponent | null;
+
     constructor(frame: ViewFrame, private blueprint: BlueprintModel) {
         super(frame);
         this.addZooming();
         this.addPanning();
 
-        this.subscribe();
+        this.subscribe().then(() => {
+            this.outer = this.createOuter();
 
-        this.createIsolatedPorts();
-        this.createOperators();
-        this.createConnections();
-        this.autoLayout();
+            this.autoLayout();
+            this.fitOuter();
 
-        this.outer = this.createOuter();
-        this.fitOuter();
+            this.attachEventHandlers();
 
-        this.attachEventHandlers();
-
-        // this.addOriginPoint();
-
-        this.fit();
+            this.fit();
+        });
     }
 
     protected createPaper(): dia.Paper {
@@ -102,7 +101,7 @@ export class BlueprintView extends PaperView {
                 if (!portT) {
                     return false;
                 }
-                
+
                 return portS.canConnect(portT);
             },
             snapLinks: {radius: 75,},
@@ -121,8 +120,8 @@ export class BlueprintView extends PaperView {
                 return false;
             }
 
-            const sourcePort = that.blueprint.find(sourcePortRef);
-            const destinationPort = that.blueprint.find(destinationPortRef);
+            const sourcePort = that.blueprint.findNodeById(sourcePortRef);
+            const destinationPort = that.blueprint.findNodeById(destinationPortRef);
             if (!sourcePort || !destinationPort ||
                 !(sourcePort instanceof GenericPortModel) || !(destinationPort instanceof GenericPortModel)) {
                 return false;
@@ -136,27 +135,56 @@ export class BlueprintView extends PaperView {
     private attachEventHandlers() {
         const that = this;
         this.graph.on("change:position change:size", function (cell: dia.Cell) {
+            // Moving around inner operators
             if (!(cell instanceof BlackBoxComponent.Rectangle)) {
                 return;
             }
-
             that.fitOuter();
+        });
+
+        this.outer.on("pointerdblclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
+            that.blueprintSelect = new BlueprintSelectComponent(that, [x, y], [evt.clientX, evt.clientY]);
+
+        });
+        this.getPaper().on("blank:pointerclick cell:pointerclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
+            if (that.blueprintSelect) {
+                that.blueprintSelect.destroy();
+                that.blueprintSelect = null;
+            }
         });
     }
 
-    private subscribe() {
-        const that = this;
-        this.blueprint.subscribeOperatorAdded(function (op: OperatorModel) {
-            that.addOperator(op);
+    private async subscribe() {
+        await this.blueprint.subscribeChildCreated(OperatorModel, operator => {
+            this.addOperator(operator);
         });
 
-        // Ports
-        const ports = Array.from(this.blueprint.getDescendentNodes<BlueprintPortModel>(BlueprintPortModel));
-        ports.filter(port => port.isSource()).forEach(source => {
-            source.subscribeConnected(connection => {
+        await this.blueprint.subscribeChildCreated(BlueprintPortModel, port => {
+            if (port.isDirectionIn()) {
+                this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
+            } else {
+                this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
+            }
+        });
+
+        await this.blueprint.subscribeChildCreated(BlueprintDelegateModel, async delegate => {
+            await delegate.subscribeChildCreated(BlueprintPortModel, port => {
+                if (port.isDirectionIn()) {
+                    this.createIsolatedPort(port, `${delegate.getIdentity()}_in`, `Delegate ${delegate.getName()} In-Port`, "right");
+                } else {
+                    this.createIsolatedPort(port, `${delegate.getIdentity()}_out`, `Delegate ${delegate.getName()} Out-Port`, "right");
+                }
+            });
+        });
+
+        await this.blueprint.subscribeDescendantCreated(GenericPortModel, port => {
+            if (!port.isSource()) {
+                return;
+            }
+            port.subscribeConnected(connection => {
                 this.addConnection(connection);
             });
-            source.subscribeDisconnected(connection => {
+            port.subscribeDisconnected(connection => {
                 this.removeConnection(connection);
             });
         });
@@ -257,28 +285,6 @@ export class BlueprintView extends PaperView {
         });
     }
 
-    private createIsolatedPorts(): void {
-        this.createIsolatedPort(this.blueprint.getPortIn()!, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
-        this.createIsolatedPort(this.blueprint.getPortOut()!, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
-
-        for (const delegate of this.blueprint.getDelegates()) {
-            this.createIsolatedPort(delegate.getPortOut()!, `${delegate.getIdentity()}_out`, `Delegate ${delegate.getName()} Out-Port`, "right");
-            this.createIsolatedPort(delegate.getPortIn()!, `${delegate.getIdentity()}_in`, `Delegate ${delegate.getName()} In-Port`, "right");
-        }
-    }
-
-    private createOperators() {
-        for (const op of this.blueprint.getOperators()) {
-            this.addOperator(op);
-        }
-    }
-
-    private createConnections() {
-        for (const connection of this.blueprint.getConnectionsTo().getIterator()) {
-            this.addConnection(connection);
-        }
-    }
-
     private addConnection(connection: Connection) {
         const connectionComponent = new ConnectionComponent(this.graph, connection);
         this.connections.push(connectionComponent);
@@ -314,6 +320,10 @@ export class BlueprintView extends PaperView {
         this.operators.forEach(operator => {
             operator.translate(-(boundingBox.x + boundingBox.width / 2), -(boundingBox.y + boundingBox.height / 2));
         });
+
+        if (!boundingBox) {
+            boundingBox = new g.Rect({x: 0, y: 0, width: 10, height: 10});
+        }
 
         boundingBox.x -= boundingBox.x + boundingBox.width / 2;
         boundingBox.y -= boundingBox.y + boundingBox.height / 2;
@@ -358,30 +368,6 @@ export class BlueprintView extends PaperView {
         // JointJS -> Model
         operatorElement.on("pointerclick", function (evt: Event, x: number, y: number) {
             operator.select();
-        });
-
-        // Model -> JointJS
-        operator.subscribeDeleted(function () {
-            operatorElement.remove();
-        });
-        operator.subscribeSelectChanged(function (selected: boolean) {
-            if (selected) {
-                operatorElement.getRectangle().attr("body/fill", "orange");
-            } else {
-                operatorElement.getRectangle().attr("body/fill", "blue");
-            }
-        });
-
-        // Ports
-        const ports = Array.from(operator.getDescendentNodes<PortModel>(GenericPortModel));
-        const sourcePorts = ports.filter(port => port.isSource());
-        sourcePorts.forEach(source => {
-            source.subscribeConnected(connection => {
-                this.addConnection(connection);
-            });
-            source.subscribeDisconnected(connection => {
-                this.removeConnection(connection);
-            });
         });
     }
 
@@ -486,39 +472,23 @@ export class BlueprintView extends PaperView {
         }
     }
 
-    private addOriginPoint() {
-        const origin = new shapes.standard.Circle({
-            size: {
-                width: 4,
-                height: 4,
-            },
-            position: {
-                x: -2,
-                y: -2,
-            }
-        }).addTo(this.graph);
-
-        origin.attr("body/fill", "blue");
-        origin.attr("body/fill-opacity", ".05");
-        origin.attr("body/rx", "24");
-        origin.attr("body/ry", "24");
-        origin.attr("draggable", false);
-        origin.set("obstacle", false);
-    }
-
     private getPortFromMagnet(magnet: SVGElement): PortModel | undefined {
         if (!magnet) {
             return undefined;
         }
-        const portRef = magnet.getAttribute("port");
-        if (!portRef) {
+        const portId = magnet.getAttribute("port");
+        if (!portId) {
             return undefined;
         }
-        const port = this.blueprint.find(portRef);
+        const port = this.blueprint.findNodeById(portId);
         if (!port || !(port instanceof GenericPortModel)) {
             return undefined;
         }
         return port;
+    }
+
+    public getBlueprint(): BlueprintModel {
+        return this.blueprint;
     }
 
 }

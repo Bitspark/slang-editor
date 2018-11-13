@@ -1,6 +1,5 @@
 import {dia, shapes} from "jointjs";
 import {BlueprintModel, BlueprintType} from "../../model/blueprint";
-import {Subject} from "rxjs";
 import {LandscapeModel} from "../../model/landscape";
 import {BlueprintBoxComponent} from "../components/blackbox";
 import {ViewFrame} from "../frame";
@@ -12,7 +11,6 @@ export class LandscapeView extends PaperView {
     private blueprintRects = new Map<string, shapes.standard.Rectangle>();
     private addBlueprintButton: dia.Element;
     private slangLogo: dia.Element;
-    private destroyed = new Subject<void>();
     private dimensions: [number, number] = [0, 0];
 
     constructor(frame: ViewFrame, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
@@ -34,23 +32,12 @@ export class LandscapeView extends PaperView {
     }
 
     private subscribe(landscape: LandscapeModel) {
-        const that = this;
-        landscape.subscribeBlueprintAdded(function (bp: BlueprintModel) {
-            if (!that.filter || that.filter(bp)) {
-                that.addBlueprint(bp);
-                that.reorder();
+        landscape.subscribeChildCreated(BlueprintModel, blueprint => {
+            if (!this.filter || this.filter(blueprint)) {
+                this.addBlueprint(blueprint);
+                this.reorder();
             }
         });
-    }
-
-    private addBlueprints(landscape: LandscapeModel) {
-        let blueprints = Array.from(landscape.getBlueprints());
-        if (this.filter) {
-            blueprints = blueprints.filter(this.filter);
-        }
-        for (const bp of blueprints) {
-            this.addBlueprint(bp);
-        }
     }
 
     public resize(width: number, height: number) {
@@ -74,7 +61,6 @@ export class LandscapeView extends PaperView {
 
         this.addBlueprintButton = this.createAddBlueprintButton();
         this.slangLogo = this.createSlangLogo();
-        this.addBlueprints(this.landscape);
 
         this.reorder();
     }
@@ -238,8 +224,8 @@ export class LandscapeView extends PaperView {
         rect.addTo(this.graph);
 
         const that = this;
-        rect.on('pointerclick', function (evt: Event, x: number, y: number) {
-            that.landscape.createBlueprint(`Unnamed${new Date().getTime()}`, BlueprintType.Local).open();
+        rect.on('pointerclick pointerup', function (evt: Event, x: number, y: number) {
+            that.landscape.createBlueprint({fullName: `Unnamed${new Date().getTime()}`, type: BlueprintType.Local}).open();
         });
 
         return rect;
@@ -279,15 +265,8 @@ export class LandscapeView extends PaperView {
         this.blueprintRects.set(blueprint.getFullName(), blueprintBox.getRectangle());
 
         // JointJS -> Model
-        blueprintBox.on("pointerclick", function (evt: Event, x: number, y: number) {
+        blueprintBox.on("pointerclick pointerup", function (evt: Event, x: number, y: number) {
             blueprint.open();
-        });
-        blueprintBox.on("pointerdblclick", function (evt: Event, x: number, y: number) {
-        });
-
-        // Model -> JointJS
-        blueprint.subscribeDeleted(function () {
-            blueprintBox.remove();
         });
     }
     

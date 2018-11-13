@@ -1,22 +1,118 @@
-import {PortDirection, PortModel} from "../model/port";
+import {GenericPortModel, PortDirection, PortModel, PortModelArgs} from '../model/port';
 import {DelegateModel} from "../model/delegate";
 import {SlangType, TypeIdentifier} from "./type";
-import {Subject, Subscription} from "rxjs";
+import {SlangArrayBehaviorSubject, SlangSubject} from "./events";
+import {Subscription} from "rxjs";
 
 type Type<T> = Function & { prototype: T };
 
+export type Types<T> = [Type<T>, ...Array<Type<T>>] | Type<T>;
+
+function getTypes<T>(types: Types<T>): [Type<T>, ...Array<Type<T>>] {
+    if (types instanceof Array) {
+        return types;
+    }
+    return [types];
+}
+
 export abstract class SlangNode {
+    
+    protected static createRoot<T extends SlangNode, A>(ctor: new(args: A) => T, args: A): T {
+        const root = new ctor(args);
+        root.id = "root";
+        return root;
+    }
+    
+    private id = "";
+    private lastId = "0";
+    private children = new SlangArrayBehaviorSubject<SlangNode>('children', []);
+    
+    protected constructor(protected readonly parent: SlangNode | null) {}
 
-    abstract getIdentity(): string;
+    public getIdentity(): string {
+        if (this.parent) {
+            return this.parent.getIdentity() + "." + this.id;
+        } else {
+            return "sl";
+        }
+    }
 
-    abstract getChildNodes(): IterableIterator<SlangNode>;
-
-    abstract getParentNode(): SlangNode | null;
-
-    getAncestorNode<T extends SlangNode>(...types: Array<Type<T>>): T | undefined {
-        if (types.length === 0) {
+    public getScopedIdentity(): string {
+        return this.id;
+    }
+    
+    public findNodeById(id: string): SlangNode | undefined {        
+        const thisId = this.getIdentity();
+        if (thisId === id) {
+            return this;
+        }
+        
+        if (!id.startsWith(thisId + ".")) {
             return undefined;
         }
+        
+        const idSplit = id.substr(thisId.length + 1).split(".");
+
+        const child = this.getNodeById(idSplit[0]);
+        if (!child) {
+            return undefined;
+        }
+        
+        const found = child.findNodeById(id);
+        if (found) {
+            return found;
+        }
+        
+        return undefined;
+    }
+
+    public getNodeById(id: string): SlangNode | undefined {
+        return this.children.getNode(id);
+    }
+
+    public getChildNodes<T extends SlangNode>(types: Types<T>): IterableIterator<T> {
+        types = getTypes(types);
+        const children: Array<T> = [];
+        for (const childNode of this.children.getNodes()) {
+            for (const t of types) {
+                if (childNode instanceof t) {
+                    children.push(childNode as T);
+                    break;
+                }
+            }
+        }
+        return children.values();
+    }
+
+    public getChildNode<T extends SlangNode>(types: Types<T>): T | null {
+        types = getTypes(types);
+        if (this.children.size() === 0) {
+            return null;
+        }
+        for (const childNode of this.children.getNodes()) {
+            for (const t of types) {
+                if (childNode instanceof t) {
+                    return childNode as T;
+                }
+            }
+        }
+        return null;
+    }
+        
+    public scanChildNode<T extends SlangNode>(types: Types<T>, cb: (child: T) => boolean): T | undefined {
+        for (const child of this.getChildNodes(types)) {
+            if (cb(child)) {
+                return child as T;
+            }
+        }
+    }
+
+    public getParentNode(): SlangNode | null {
+        return this.parent;
+    }
+
+    public getAncestorNode<T extends SlangNode>(types: Types<T>): T | undefined {
+        types = getTypes(types);
         for (const t of types) {
             if (this instanceof t) {
                 return this as any;
@@ -26,78 +122,74 @@ export abstract class SlangNode {
         if (!parentNode) {
             return undefined;
         }
-        return parentNode.getAncestorNode<T>(...types);
+        return parentNode.getAncestorNode(types);
     }
 
-    getTopMostAncestorNode<T extends SlangNode>(...types: Array<Type<T>>): T | undefined {
-        if (types.length === 0) {
-            return undefined;
-        }
-        const parentNode = this.getParentNode();
-        if (!parentNode) {
-            return this as any;
-        }
-        let hasType = false;
-        for (const t of types) {
-            if (parentNode instanceof t) {
-                hasType = true;
-                break;
-            }
-        }
-        if (!hasType) {
-            return this as any;
-        }
-        return parentNode.getTopMostAncestorNode<T>(...types);
-    }
-
-    getDescendentNodes<T extends SlangNode>(...types: Array<Type<T>>): IterableIterator<T> {
+    public getDescendantNodes<T extends SlangNode>(types: Types<T>): IterableIterator<T> {
+        types = getTypes(types);
         const children: Array<T> = [];
-        if (types.length === 0) {
-            return children.values();
-        }
-        for (const childNode of this.getChildNodes()) {
+        for (const childNode of this.getChildNodes(SlangNode)) {
             for (const t of types) {
                 if (childNode instanceof t) {
                     children.push(childNode as T);
                     break;
                 }
             }
-            for (const descendant of childNode.getDescendentNodes<T>(...types)) {
+            for (const descendant of childNode.getDescendantNodes(types)) {
                 children.push(descendant);
             }
         }
         return children.values();
     }
 
-    // TODO: Can be heavily optimized
-    public find(id: string): SlangNode | undefined {
-        if (this.getIdentity() === id) {
-            return this;
-        }
-
-        for (const child of this.getChildNodes()) {
-            const found = child.find(id);
-            if (found) {
-                return found;
-            }
-        }
-
-        return undefined;
+    protected createChildNode<T extends SlangNode, A>(ctor: new(parent: SlangNode, args: A) => T, args: A, cb?: (child: T) => void): T {
+        const childNode = new ctor(this, args);
+        childNode.id = this.nextId();
+        this.children.nextAdd(childNode, cb);
+        
+        return childNode;
+    }
+    
+    private nextId(): string {
+        this.lastId = Number(Number.parseInt(this.lastId, 16) + 1).toString(16);
+        return this.lastId;
     }
 
-    public getRoot(): SlangNode {
-        if (!this.getParentNode()) {
-            return this;
-        }
-        return this.getParentNode()!;
+    // Events
+    
+    public async subscribeChildCreated<T extends SlangNode>(types: Types<T>, cb: (child: T) => void): Promise<void> {
+        return new Promise<void>(resolve => {
+            this.children.subscribeAdded(child => {
+                for (const type of getTypes(types)) {
+                    if (child instanceof type) {
+                        cb(child as T);
+                    }
+                }
+            });
+            resolve();
+        });
     }
 
+    public async subscribeDescendantCreated<T extends SlangNode>(types: Types<T>, cb: (child: T) => void): Promise<void> {
+        return new Promise<void>(async resolve => {
+            await this.children.subscribeAdded(child => {
+                for (const type of getTypes(types)) {
+                    if (child instanceof type) {
+                        cb(child as T);
+                    }
+                }
+                child.subscribeDescendantCreated(types, cb);
+            });
+            resolve();
+        });
+    }
+    
 }
 
 export class Stream {
     private static id = "0";
     private readonly id: string;
-    private replaced = new Subject<Stream>();
+    private replaced = new SlangSubject<Stream>('replaced');
     private subscriptions: Array<Subscription> = [];
 
     constructor(private baseStream: Stream | null, private sourcePort: PortModel | undefined) {
@@ -167,71 +259,26 @@ export class Stream {
 
 export abstract class PortOwner extends SlangNode {
 
-    private ports: { in: PortModel | null, out: PortModel | null } = {in: null, out: null};
     protected baseStream: Stream;
 
-    protected constructor() {
-        super();
+    protected constructor(parent: SlangNode) {
+        super(parent);
         this.baseStream = new Stream(null, undefined);
         this.baseStream.subscribeReplaced(newStream => this.baseStream = newStream);
     }
 
-    private attachPort(port: PortModel) {
-        if (port.getParentNode() !== this) {
-            throw `wrong parent ${port.getParentNode().getIdentity()}, should be ${this.getIdentity()}`;
-        }
-
-        if (port.isDirectionIn()) {
-            this.ports.in = port;
-        } else {
-            this.ports.out = port;
-        }
-
-        port.setStream(this.baseStream);
-    }
-
-    protected createPortFromType(P: new(p: PortModel | null, o: PortOwner, tid: TypeIdentifier, d: PortDirection) => PortModel, type: SlangType, direction: PortDirection): PortModel {
-        const port = new P(null, this, type.getTypeIdentifier(), direction);
-
-        switch (type.getTypeIdentifier()) {
-            case TypeIdentifier.Map:
-                for (const [subName, subType] of type.getMapSubs()) {
-                    const subPort = this.createPortFromType(P, subType, direction);
-                    port.addMapSub(subName, subPort);
-                }
-                break;
-            case TypeIdentifier.Stream:
-                port.setStreamSub(this.createPortFromType(P, type.getStreamSub(), direction));
-                break;
-            case TypeIdentifier.Generic:
-                port.setGenericIdentifier(type.getGenericIdentifier());
-                break;
-        }
-
-        if (port.getParentNode() === this) {
-            this.attachPort(port);
-        }
-
-        return port;
-    }
+    protected abstract createPort(args: PortModelArgs): PortModel;
 
     public getPortIn(): PortModel | null {
-        return this.ports.in;
+        return this.scanChildNode(GenericPortModel, p => p.isDirectionIn()) || null;
     }
 
     public getPortOut(): PortModel | null {
-        return this.ports.out;
+        return this.scanChildNode(GenericPortModel, p => p.isDirectionOut() ) || null;
     }
 
     public getPorts(): IterableIterator<PortModel> {
-        const p: Array<PortModel> = [];
-        if (this.ports.in) {
-            p.push(this.ports.in);
-        }
-        if (this.ports.out) {
-            p.push(this.ports.out);
-        }
-        return p.values();
+        return this.getChildNodes(GenericPortModel);
     }
 
     public getBaseStream(): Stream {

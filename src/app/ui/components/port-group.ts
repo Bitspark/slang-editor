@@ -15,8 +15,8 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
                 portItems.push(new PortComponent(port, parent));
                 break;
             }
-            for (const [, each] of port.getMapSubs()) {
-                portItems.push.apply(portItems, createPortItems(parent, position, each));
+            for (const sub of port.getMapSubs()) {
+                portItems.push.apply(portItems, createPortItems(parent, position, sub));
             }
             break;
 
@@ -83,7 +83,7 @@ export class PortGroupComponent {
     private refreshPorts() {
         const parentElement = this.parentElement;
         if (!parentElement) {
-            return;
+            throw new Error(`need parent`);
         }
         
         this.ports.forEach(port => {

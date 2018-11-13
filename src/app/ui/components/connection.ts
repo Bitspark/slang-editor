@@ -93,8 +93,8 @@ export class ConnectionComponent {
     }
 
     public static getBoxOwnerIds(connection: Connection): [string, string] {
-        const sourceOwner = connection.source.getAncestorNode<BlackBox>(BlackBox);
-        const destinationOwner = connection.destination.getAncestorNode<BlackBox>(BlackBox);
+        const sourceOwner = connection.source.getAncestorNode(BlackBox);
+        const destinationOwner = connection.destination.getAncestorNode(BlackBox);
 
         if (!sourceOwner) {
             throw new Error(`no source owner found`);
@@ -105,12 +105,12 @@ export class ConnectionComponent {
 
         let sourceIdentity = sourceOwner.getIdentity();
         if (sourceOwner instanceof BlueprintModel) {
-            sourceIdentity = connection.source.getAncestorNode<PortOwner>(PortOwner)!.getIdentity() + "_in";
+            sourceIdentity = connection.source.getAncestorNode(PortOwner)!.getIdentity() + "_in";
         }
 
         let destinationIdentity = destinationOwner.getIdentity();
         if (destinationOwner instanceof BlueprintModel) {
-            destinationIdentity = connection.destination.getAncestorNode<PortOwner>(PortOwner)!.getIdentity() + "_out";
+            destinationIdentity = connection.destination.getAncestorNode(PortOwner)!.getIdentity() + "_out";
         }
 
         return [sourceIdentity, destinationIdentity];
