@@ -24,4 +24,11 @@ export class Connections {
             this.connections.push(connection);
         }
     }
+    
+    public forEach(cb: (connection: Connection) => void): void {
+        for (const connection of this.connections) {
+            cb(connection);
+        }
+    }
+    
 }

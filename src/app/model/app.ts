@@ -13,16 +13,16 @@ export class AppModel extends SlangNode {
 
     private readonly name: string;
     private loading: Array<Promise<void>> = [];
-
-    constructor({name}: AppModelArgs) {
+    
+    public constructor({name}: AppModelArgs) {
         super(null);
-        this.name = name;
+        this.name = name;        
         const landscape = this.createChildNode(LandscapeModel, {});
         this.subscribeLandscape(landscape);
     }
     
     public static create(name: string): AppModel {
-        return SlangNode.createRoot<AppModel, AppModelArgs>(AppModel, {name});
+        return SlangNode.createRoot(AppModel, {name});
     }
     
     private subscribeLandscape(landscape: LandscapeModel) {

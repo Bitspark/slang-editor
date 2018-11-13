@@ -33,8 +33,6 @@ export class BlueprintView extends PaperView {
         this.subscribe();
 
         this.createIsolatedPorts();
-        this.createOperators();
-        this.createConnections();
         this.autoLayout();
 
         this.outer = this.createOuter();
@@ -159,18 +157,18 @@ export class BlueprintView extends PaperView {
     }
 
     private subscribe() {
-        const that = this;
-        this.blueprint.subscribeChildCreated(OperatorModel, function (op: OperatorModel) {
-            that.addOperator(op);
+        this.blueprint.subscribeChildCreated(OperatorModel, operator => {
+            this.addOperator(operator);
         });
-
-        // Ports
-        const ports = Array.from(this.blueprint.getDescendantNodes(BlueprintPortModel));
-        ports.filter(port => port.isSource()).forEach(source => {
-            source.subscribeConnected(connection => {
+        
+        this.blueprint.subscribeDescendantCreated(GenericPortModel, port => {
+            if (!port.isSource()) {
+                return;
+            }
+            port.subscribeConnected(connection => {
                 this.addConnection(connection);
             });
-            source.subscribeDisconnected(connection => {
+            port.subscribeDisconnected(connection => {
                 this.removeConnection(connection);
             });
         });
@@ -281,17 +279,17 @@ export class BlueprintView extends PaperView {
         }
     }
 
-    private createOperators() {
-        for (const op of this.blueprint.getOperators()) {
-            this.addOperator(op);
-        }
-    }
+    // private createOperators() {
+    //     for (const op of this.blueprint.getOperators()) {
+    //         this.addOperator(op);
+    //     }
+    // }
 
-    private createConnections() {
-        for (const connection of this.blueprint.getConnectionsTo().getIterator()) {
-            this.addConnection(connection);
-        }
-    }
+    // private createConnections() {
+    //     this.blueprint.getConnectionsTo().forEach(connection => {
+    //         this.addConnection(connection);
+    //     });
+    // }
 
     private addConnection(connection: Connection) {
         const connectionComponent = new ConnectionComponent(this.graph, connection);
@@ -376,30 +374,6 @@ export class BlueprintView extends PaperView {
         // JointJS -> Model
         operatorElement.on("pointerclick", function (evt: Event, x: number, y: number) {
             operator.select();
-        });
-
-        // Model -> JointJS
-        operator.subscribeDeleted(function () {
-            operatorElement.remove();
-        });
-        operator.subscribeSelectChanged(function (selected: boolean) {
-            if (selected) {
-                operatorElement.getRectangle().attr("body/fill", "orange");
-            } else {
-                operatorElement.getRectangle().attr("body/fill", "blue");
-            }
-        });
-
-        // Ports
-        const ports = Array.from(operator.getDescendantNodes(GenericPortModel));
-        const sourcePorts = ports.filter(port => port.isSource());
-        sourcePorts.forEach(source => {
-            source.subscribeConnected(connection => {
-                this.addConnection(connection);
-            });
-            source.subscribeDisconnected(connection => {
-                this.removeConnection(connection);
-            });
         });
     }
 

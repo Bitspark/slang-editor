@@ -113,15 +113,4 @@ export class OperatorModel extends BlackBox {
             this.geometry = {position: pos};
         }
     }
-
-
-    // Subscriptions
-
-    public subscribeSelectChanged(cb: (selected: boolean) => void): void {
-        this.selected.subscribe(cb);
-    }
-
-    public subscribeDeleted(cb: () => void): void {
-        this.removed.subscribe(cb);
-    }
 }
