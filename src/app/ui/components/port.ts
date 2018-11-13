@@ -70,7 +70,7 @@ export class PortComponent {
             }
             markup += `<path class="${classes.join(" ")}" d="${PortComponent.getPortShape(width, height)}"></path>`;
         }
-        return markup;
+        return `<g>${markup}</g>`;
     }
 
     private static getPortAttributes(position: PortGroupPosition, port: PortModel): attributes.SVGAttributes {
