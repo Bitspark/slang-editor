@@ -1,7 +1,6 @@
 import {GenericPortModel, PortModel, PortModelArgs} from '../model/port';
 import {DelegateModel} from "../model/delegate";
-import {SlangArrayBehaviorSubject, SlangSubject} from "./events";
-import {Subscription} from "rxjs";
+import {SlangNodeSetBehaviorSubject} from "./events";
 
 type Type<T> = Function & { prototype: T };
 
@@ -24,7 +23,7 @@ export abstract class SlangNode {
     
     private id = "";
     private lastId = "0";
-    private children = new SlangArrayBehaviorSubject<SlangNode>('children', []);
+    private children = new SlangNodeSetBehaviorSubject<SlangNode>('children', []);
     
     protected constructor(protected readonly parent: SlangNode | null) {}
 
@@ -156,21 +155,21 @@ export abstract class SlangNode {
 
     // Events
     
-    public subscribeChildCreated<T extends SlangNode>(types: Types<T>, cb: (child: T) => void) {
-        this.children.subscribeAdded(child => {
+    public subscribeChildCreated<T extends SlangNode>(types: Types<T>, cb: (child: T, initial: boolean) => void) {
+        this.children.subscribeAdded((child, initial) => {
             for (const type of getTypes(types)) {
                 if (child instanceof type) {
-                    cb(child as T);
+                    cb(child as T, initial);
                 }
             }
         });
     }
 
-    public subscribeDescendantCreated<T extends SlangNode>(types: Types<T>, cb: (child: T) => void) {
-        this.children.subscribeAdded(child => {
+    public subscribeDescendantCreated<T extends SlangNode>(types: Types<T>, cb: (child: T, initial: boolean) => void) {
+        this.children.subscribeAdded((child, initial) => {
             for (const type of getTypes(types)) {
                 if (child instanceof type) {
-                    cb(child as T);
+                    cb(child as T, initial);
                 }
             }
             child.subscribeDescendantCreated(types, cb);
@@ -182,8 +181,6 @@ export abstract class SlangNode {
 export class Stream {
     private static id = "0";
     private readonly id: string;
-    private replaced = new SlangSubject<Stream>('replaced');
-    private subscriptions: Array<Subscription> = [];
 
     constructor(private baseStream: Stream | null, private sourcePort: PortModel | undefined) {
         Stream.id = (Number.parseInt(Stream.id, 16) + 1).toString(16);
@@ -193,9 +190,6 @@ export class Stream {
             if (baseStream.hasAncestor(this)) {
                 throw new Error(`stream circle detected`);
             }
-            baseStream.subscribeReplaced(newStream => {
-                this.baseStream = newStream;
-            });
         }
     }
     
@@ -236,26 +230,6 @@ export class Stream {
         return false;
     }
 
-    public replace(stream: Stream): void {
-        if (stream === this) {
-            return;
-        }
-        if (stream.hasAncestor(this)) {
-            throw new Error(`stream circle detected: ${stream.id}`);
-        }
-        if (this.baseStream) {
-            if (stream.baseStream) {
-                this.baseStream.replace(stream.baseStream);
-            }
-        }
-        this.replaced.next(stream);
-        this.subscriptions.forEach(subscription => subscription.unsubscribe());
-    }
-
-    public subscribeReplaced(cb: (newStream: Stream) => void) {
-        this.subscriptions.push(this.replaced.subscribe(cb));
-    }
-
 }
 
 export abstract class PortOwner extends SlangNode {
@@ -265,7 +239,6 @@ export abstract class PortOwner extends SlangNode {
     protected constructor(parent: SlangNode) {
         super(parent);
         this.baseStream = new Stream(null, undefined);
-        this.baseStream.subscribeReplaced(newStream => this.baseStream = newStream);
     }
     
     protected abstract createPort(args: PortModelArgs): PortModel;
@@ -284,11 +257,6 @@ export abstract class PortOwner extends SlangNode {
 
     public getBaseStream(): Stream {
         return this.baseStream;
-    }
-
-    public setBaseStream(stream: Stream) {
-        this.baseStream = stream;
-        stream.subscribeReplaced(newStream => this.baseStream = newStream);
     }
 
 }

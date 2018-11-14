@@ -45,7 +45,7 @@ export class SlangBehaviorSubject<T> extends BaseSlangSubject<T> {
     }
 }
 
-export class SlangArraySubject<T> extends BaseSlangSubject<T> {
+export class SlangBagSubject<T> extends BaseSlangSubject<T> {
     private readonly subjectAdded = new Subject<T>();
     private readonly subjectRemoved = new Subject<T>();
 
@@ -75,7 +75,7 @@ export class SlangArraySubject<T> extends BaseSlangSubject<T> {
     }
 }
 
-export class SlangArrayBehaviorSubject<T extends SlangNode> extends SlangArraySubject<T> {
+export class SlangNodeSetBehaviorSubject<T extends SlangNode> extends SlangBagSubject<T> {
     private readonly nodes: Map<string, T> = new Map<string, T>();
 
     constructor(protected readonly name: string, initial: Array<T>) {
@@ -104,13 +104,13 @@ export class SlangArrayBehaviorSubject<T extends SlangNode> extends SlangArraySu
         super.nextRemove(value);
     }
 
-    public subscribeAdded(next: (value: T) => void) {
+    public subscribeAdded(next: (value: T, initial: boolean) => void) {
         if (this.nodes) {
             this.nodes.forEach(node => {
-                next(node);
+                next(node, true);
             });
         }
-        super.subscribeAdded(next);
+        super.subscribeAdded(value => next(value, false));
     }
 
     public size(): number {

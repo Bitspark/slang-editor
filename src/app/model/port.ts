@@ -15,10 +15,8 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
     // Topics
     // self
-    private removed = new SlangSubject<void>("removed");
     private connected = new SlangSubject<Connection>("connected");
     private disconnected = new SlangSubject<Connection>("disconnected");
-    private selected = new SlangBehaviorSubject<boolean>("selected", false);
     private collapsed = new SlangBehaviorSubject<boolean>("collapsed", false);
 
     // Properties
@@ -35,33 +33,21 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         this.name = name;
         this.typeIdentifier = type.getTypeIdentifier();
         this.direction = direction;
-        
-        if (parent instanceof PortOwner) {
-            this.setStream(parent.getBaseStream());
-        } else {
-            this.setStream(new Stream(null, this));
-        }
 
         switch (this.typeIdentifier) {
             case TypeIdentifier.Map:
                 for (const [subName, subType] of type.getMapSubs()) {
-                    const sub = this.createChildNode(P, {name: subName, type: subType, direction});
-                    sub.setStream(this.stream);
+                    this.createChildNode(P, {name: subName, type: subType, direction});
                 }
                 break;
             case TypeIdentifier.Stream:
                 const subType = type.getStreamSub();
-                const sub = this.createChildNode(P, {name: "~", type: subType, direction});
-                sub.setStream(this.stream.createSubStream(sub));
+                this.createChildNode(P, {name: "~", type: subType, direction});
                 break;
             case TypeIdentifier.Generic:
                 this.setGenericIdentifier(type.getGenericIdentifier());
                 break;
         }
-    }
-
-    public isSelected(): boolean {
-        return this.selected.getValue();
     }
 
     public getMapSubs(): IterableIterator<GenericPortModel<O>> {
@@ -81,20 +67,34 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         }
         return mapSub;
     }
-    
-    public setStream(stream: Stream): void {
-        if (!this.stream) {
-            this.stream = stream;
-            stream.subscribeReplaced(newStream => {
-                this.stream = newStream;
-            });
-        } else {
-            this.stream.replace(stream);
+
+    public createStreams(baseStream: Stream): void {
+        this.stream = baseStream;
+        
+        if (this.typeIdentifier === TypeIdentifier.Stream) {
+            const sub = this.getStreamSub();
+            if (sub) {
+                sub.setStream(new Stream(baseStream, sub));
+            }
+        } else if (this.typeIdentifier === TypeIdentifier.Map) {
+            for (const sub of this.getMapSubs()) {
+                sub.setStream(baseStream);
+            }
         }
     }
     
-    public clearStream(): void {
-        // TODO
+    public trackStreams(): void {
+        if (!this.isSource()) {
+            throw new Error(`can only track streams from source port`);
+        }
+        
+        for (const destination of this.connectedWith) {
+            
+        }
+    }
+    
+    public setStream(stream: Stream): void {
+        this.stream = stream;
     }
 
     public getStream(): Stream {
@@ -237,22 +237,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     }
 
     // Actions
-
-    public select() {
-        if (!this.selected.getValue()) {
-            this.selected.next(true);
-        }
-    }
-
-    public deselect() {
-        if (this.selected.getValue()) {
-            this.selected.next(false);
-        }
-    }
-
-    public delete() {
-        this.removed.next();
-    }
     
     public collapse(): void {
         if (this.getType().getTypeIdentifier() !== TypeIdentifier.Map) {
@@ -303,8 +287,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
         const connection = {source: this, destination: destination};
         
-        this.disconnectStreamsTo(destination);
-        
         const idxS = this.connectedWith.indexOf(destination);
         if (idxS === -1) {
             throw new Error(`not connected with that port`);
@@ -318,14 +300,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         }
         destination.connectedWith.splice(idxT, 1);
         destination.disconnected.next(connection);
-    }
-
-    private connectStreamsTo(destination: PortModel): void {
-        destination.setStream(this.stream);
-    }
-
-    private disconnectStreamsTo(destination: PortModel): void {
-        destination.clearStream();
     }
     
     /**
@@ -348,7 +322,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
                 break;
             default:
                 const connection = {source: this, destination: destination};
-                this.connectStreamsTo(destination);
                 this.connectedWith.push(destination);
                 this.connected.next(connection);
                 destination.connectedWith.push(this);
@@ -375,23 +348,15 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
     // Subscriptions
 
-    public subscribeSelectChanged(cb: (selected: boolean) => void): void {
-        this.selected.subscribe(cb);
-    }
-
-    public subscribeDeleted(cb: () => void): void {
-        this.removed.subscribe(cb);
-    }
-
     public subscribeCollapsed(cb: (collapsed: boolean) => void): void {
         this.collapsed.subscribe(cb);
     }
     
-    public subscribeConnected(cb: (connection: Connection) => void): void {
+    public subscribeConnected(cb: (connection: Connection, initial: boolean) => void): void {
         this.gitDirectConnectionsTo().forEach(connection => {
-            cb(connection);
+            cb(connection, true);
         });
-        this.connected.subscribe(cb);
+        this.connected.subscribe(value => cb(value!, false));
     }
 
     public subscribeDisconnected(cb: (connection: Connection) => void): void {

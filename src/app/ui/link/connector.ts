@@ -7,7 +7,7 @@ function movePoint(p: g.PlainPoint, i: number, total: number): g.PlainPoint {
     return {x, y};
 }
 
-function slangConnectorFunction(sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: Array<g.PlainPoint>, lines: number) {
+function slangConnectorFunction(sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: Array<g.PlainPoint>, lines: number): string {
     let svg = "";
     for (let i = 0; i < lines; i++) {
         const sourcePointI = movePoint(sourcePoint, i, lines);
@@ -54,12 +54,9 @@ function slangConnectorFunction(sourcePoint: g.PlainPoint, targetPoint: g.PlainP
 
         svg += path.serialize();
     }
-
     return svg;
 }
 
-export function slangConnector(sourcePort: PortModel, destinationPort: PortModel | null = null): (sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: Array<g.PlainPoint>, opt: any) => string {
-    console.log(sourcePort);
-    const streamDepth = sourcePort.getStream().getStreamDepth();
-    return (sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: Array<g.PlainPoint>) => slangConnectorFunction(sourcePoint, targetPoint, route, streamDepth);
+export function slangConnector(sourcePort: PortModel, destinationPort: PortModel | null, lines: number): (sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: Array<g.PlainPoint>, opt: any) => string {
+    return (sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: Array<g.PlainPoint>) => slangConnectorFunction(sourcePoint, targetPoint, route, lines);
 }

@@ -39,6 +39,8 @@ export class BlueprintView extends PaperView {
         this.fitOuter();
 
         this.attachEventHandlers();
+        
+        this.refreshConnections();
 
         this.fit();
     }
@@ -79,7 +81,7 @@ export class BlueprintView extends PaperView {
                 const port = that.getPortFromMagnet(magnet);
                 if (port) {
                     const link = ConnectionComponent.createGhostLink(port);
-                    link.on("remove", function () {
+                    link.on("remove", () => {
                         link.transition("attrs/.connection/stroke-opacity", 0.0);
                     });
                     return link;
@@ -181,8 +183,11 @@ export class BlueprintView extends PaperView {
             if (!port.isSource()) {
                 return;
             }
-            port.subscribeConnected(connection => {
+            port.subscribeConnected((connection, initial) => {
                 this.addConnection(connection);
+                if (!initial) {
+                    this.refreshConnections();
+                }
             });
             port.subscribeDisconnected(connection => {
                 this.removeConnection(connection);
@@ -190,6 +195,12 @@ export class BlueprintView extends PaperView {
         });
     }
 
+    private refreshConnections(): void {
+        for (const connection of this.connections) {
+            connection.refresh();
+        }
+    }
+    
     private createOuter(): dia.Element {
         const size = {width: this.outerPadding * 2 + this.minimumSpace, height: this.outerPadding * 2 + this.minimumSpace};
         const position = {x: -size.width / 2, y: -size.height / 2};

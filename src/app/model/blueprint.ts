@@ -3,7 +3,7 @@ import {BlueprintPortModel, PortModel, PortModelArgs} from "./port";
 import {BlueprintDelegateModel} from './delegate';
 import {SlangParsing} from "../custom/parsing";
 import {PropertyEvaluator} from "../custom/utils";
-import {BlackBox} from "../custom/nodes";
+import {BlackBox, Stream} from "../custom/nodes";
 import {Geometry} from "./operator";
 import {Connections} from '../custom/connections';
 import {TypeIdentifier} from "../custom/type";
@@ -27,9 +27,6 @@ export class BlueprintModel extends BlackBox {
     private removed = new SlangSubject<void>("removed");
     private selected = new SlangBehaviorSubject<boolean>("selected", false);
     private opened = new SlangBehaviorSubject<boolean>("opened", false);
-
-    // children
-    private operatorRemoved = new SlangSubject<OperatorModel>("operator-removed");
 
     // Properties
     private readonly fullName: string;
@@ -292,27 +289,20 @@ export class BlueprintModel extends BlackBox {
         return connections;
     }
 
+    public trackStreams(): void {
+        const portIn = this.getPortIn();
+        if (portIn) {
+            this.baseStream = new Stream(null, portIn);
+            portIn.setStream(this.baseStream);
+            portIn.trackStreams();
+        }
+    }
+    
     // Actions
 
     public addProperty(property: PropertyModel): PropertyModel {
         this.properties.push(property);
         return property
-    }
-
-    public select() {
-        if (!this.selected.getValue()) {
-            this.selected.next(true);
-        }
-    }
-
-    public deselect() {
-        if (this.selected.getValue()) {
-            this.selected.next(false);
-        }
-    }
-
-    public delete() {
-        this.removed.next();
     }
 
     public open() {

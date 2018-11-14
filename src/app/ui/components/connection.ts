@@ -37,7 +37,7 @@ export class ConnectionComponent {
     private readonly link: dia.Link;
     private readonly id: string;
 
-    constructor(private graph: dia.Graph, connection: Connection) {
+    constructor(private graph: dia.Graph, private connection: Connection) {
         const ownerIds = ConnectionComponent.getBoxOwnerIds(connection);
         this.id = ConnectionComponent.getLinkId(connection);
         this.link = new ConnectionLink({
@@ -50,16 +50,12 @@ export class ConnectionComponent {
                 id: ownerIds[1],
                 port: connection.destination.getIdentity(),
             },
+            z: -1,
             attrs: {
                 ".connection": {
-                    stroke: Styles.Connection.Ordinary.stroke(connection.source.getTypeIdentifier()),
-                    "stroke-width": Styles.Connection.Ordinary.strokeWidth,
                     "stroke-opacity": Styles.Connection.Ghost.strokeOpacity,
-                    "vector-effect": Styles.Connection.Ordinary.vectorEffect,
                 },
             },
-            connector: slangConnector(connection.source, connection.destination),
-            z: -1,
         } as any);
         this.link.transition("attrs/.connection/stroke-opacity", Styles.Connection.Ordinary.strokeOpacity, {
             duration: 360,
@@ -69,27 +65,37 @@ export class ConnectionComponent {
         });
         this.link.addTo(graph);
     }
-
-    public getLink(): dia.Link {
-        return this.link;
+    
+    public refresh(): void {
+        ConnectionComponent.refresh(this.connection.source, this.connection.destination, this.link);
     }
 
     public getId(): string {
         return this.id;
     }
 
+    // STATIC
+    
     public static createGhostLink(sourcePort: PortModel): dia.Link {
-        return new GhostConnectionLink({
+        const link = new GhostConnectionLink({
             attrs: {
                 ".connection": {
-                    stroke: Styles.Connection.Ghost.stroke(sourcePort.getTypeIdentifier()),
-                    "stroke-width": Styles.Connection.Ghost.strokeWidth,
                     "stroke-opacity": Styles.Connection.Ghost.strokeOpacity,
-                    "vector-effect": Styles.Connection.Ghost.vectorEffect,
                 }
             },
-            connector: slangConnector(sourcePort)
         } as any);
+        ConnectionComponent.refresh(sourcePort, null, link);
+        return link;
+    }
+
+    private static refresh(sourcePort: PortModel, destinationPort: PortModel | null, link: dia.Link) {
+        const stream = sourcePort.getStream();
+        const lines = stream ? stream.getStreamDepth() : 1;
+
+        link.connector(slangConnector(sourcePort, destinationPort, lines));
+        link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(sourcePort.getTypeIdentifier()));
+        link.attr(".connection/stroke-width", Math.ceil(3 / lines));
+        link.attr(".connection/vector-effect", Styles.Connection.Ordinary.vectorEffect);
     }
 
     public static getBoxOwnerIds(connection: Connection): [string, string] {
