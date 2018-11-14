@@ -1,10 +1,10 @@
 import {dia, g, shapes, util} from "jointjs";
 import {ViewFrame} from "../frame";
 import {View} from "./view";
-import {SlangSubject} from "../../custom/events";
+import {SlangBehaviorSubject} from "../../custom/events";
 
 export abstract class PaperView extends View {
-	private positionChanged = new SlangSubject<void>("positionChanged");
+	private positionChanged = new SlangBehaviorSubject<void>("positionChanged", undefined);
 
 	protected readonly graph = new dia.Graph();
 	private readonly paper: dia.Paper;
@@ -121,10 +121,10 @@ export abstract class PaperView extends View {
 			const [px, py] = [translation.tx, translation.ty];
 			const deltaPx = x * (oldScale - newScale);
 			const deltaPy = y * (oldScale - newScale);
+
 			paper.translate(px + deltaPx, py + deltaPy);
 
-
-			that.positionChanged.next();
+			that.positionChanged.next(undefined);
 		};
 
 		paper.on('blank:mousewheel', function (evt: Event, x: number, y: number, delta: number) {
@@ -157,7 +157,7 @@ export abstract class PaperView extends View {
 		const doPanning = function (x: number, y: number) {
 			if (panning) {
 				paper.translate(x - startX, y - startY);
-				that.positionChanged.next();
+				that.positionChanged.next(undefined);
 			}
 		};
 
@@ -218,7 +218,7 @@ export abstract class PaperView extends View {
 		origin.set("obstacle", false);
 	}
 
-	public subscribePositionchanged(cb: () => void): void {
+	public subscribePositionChanged(cb: () => void): void {
 		this.positionChanged.subscribe(cb);
 	}
 }

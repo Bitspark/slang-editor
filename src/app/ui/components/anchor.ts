@@ -1,67 +1,72 @@
-import m, {CVnodeDOM} from 'mithril';
-import {dia, g} from 'jointjs';
-
-import {ClassComponent, CVnode} from "mithril";
+import {dia, g, shapes} from 'jointjs';
 import {PaperView} from "../views/paper-view";
 
-export class AnchorComponent {
-	private readonly anchorEl: HTMLElement;
+export interface AnchorPosition extends g.PlainPoint {
+}
+
+export abstract class AnchorComponent {
+	protected readonly htmlRoot: HTMLElement;
+	protected readonly graph: dia.Graph;
+	protected readonly anchor: dia.Element;
 	private readonly paper: dia.Paper;
 
-	constructor(private readonly paperView: PaperView, private readonly attachedElement: dia.Element) {
+	protected constructor(private readonly paperView: PaperView, private pos: [number, number]) {
 		this.paper = paperView.getPaper();
-		this.anchorEl = this.createRoot();
-		this.updateAnchorPosition();
+		this.graph = this.paperView.getGraph();
+
+		const frame = this.paperView.getFrame();
+
+		this.htmlRoot = AnchorComponent.createRoot();
+		frame.getHTMLElement().appendChild(this.htmlRoot);
+		this.anchor = new shapes.basic.Rect({
+			position: {
+				x: pos[0], y: pos[1]
+			},
+			size: {
+				width: 0, height: 0
+			}
+		});
+		this.anchor.set('draggable', false);
+		this.anchor.addTo(this.graph);
+
+		//this.draw();
+
 		const that = this;
-
-		this.paperView.subscribePositionchanged(function () {
-			that.updateAnchorPosition()
+		this.paperView.subscribePositionChanged(function () {
+			that.draw()
 		});
-
-		attachedElement.on("change:position change:size", function () {
-			that.updateAnchorPosition()
+		this.anchor.on("change:position change:size", function () {
+			that.draw();
 		});
-
-		m.mount(this.anchorEl, AnchorComponent.Anchor);
 	}
 
-	private createRoot(): HTMLElement {
+	protected destroy() {
+		this.anchor.remove();
+		this.htmlRoot.remove();
+	}
+
+	protected updatePosition({x, y}: AnchorPosition) {
+		this.anchor.position(x, y);
+	}
+
+	private static createRoot(): HTMLElement {
 		const el = document.createElement('div');
 		el.style.position = "absolute";
-		el.style.height = "1px";
-		el.style.width = "1px";
-		el.style.background = "#f400a1";
-		el.style.border = "1px solid #f400a1";
-		this.paperView.getFrame().getHTMLElement().appendChild(el);
 		return el;
 	}
 
-	private updateAnchorPosition() {
-		const p = this.convertToClientPoint(this.attachedElement.position());
-		this.anchorEl.style.left = `${p.x}px`;
-		this.anchorEl.style.top = `${p.y}px`;
+	private draw() {
+		const p = this.convertToClientPoint(this.anchor.position());
+		this.htmlRoot.style.left = `${p.x}px`;
+		this.htmlRoot.style.top = `${p.y}px`;
 	}
 
-	private convertToClientPoint(p: g.PlainPoint): g.PlainPoint {
+	private convertToClientPoint(p: g.PlainPoint): AnchorPosition {
 		return this.paper.localToClientPoint(p);
 	}
 
-	private convertToPaperPoint({x, y}: g.PlainPoint): g.Point {
+	private convertToPaperPoint({x, y}: AnchorPosition): g.Point {
 		return this.paper.clientToLocalPoint(x, y);
 	}
 
-
 }
-
-export namespace AnchorComponent {
-	export interface Attrs {
-	}
-
-	export class Anchor implements ClassComponent<AnchorComponent.Attrs> {
-		private el: HTMLElement;
-
-		view(v: CVnode<AnchorComponent.Attrs>) {
-		}
-	}
-}
-

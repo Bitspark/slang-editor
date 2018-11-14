@@ -144,11 +144,7 @@ export class BlueprintView extends PaperView {
         });
 
 		this.outer.on("pointerdblclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
-			//that.blueprintSelect = new BlueprintSelectComponent(that, [x, y], [evt.clientX, evt.clientY]);
-			const ghost = new BlackBoxComponent.GhostRectangle();
-			ghost.addTo(this.graph);
-			ghost.position(x, y);
-			new AnchorComponent(that, ghost);
+			that.blueprintSelect = new BlueprintSelectComponent(that, [x, y]);
 		});
 		this.getPaper().on("blank:pointerclick cell:pointerclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
 			if (that.blueprintSelect) {
