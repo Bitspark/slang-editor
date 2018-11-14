@@ -1,4 +1,3 @@
-import {dia, g, layout, shapes} from "jointjs";
 import {BlackBoxComponent, OperatorBoxComponent} from "../components/blackbox";
 import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
@@ -10,21 +9,21 @@ import {IsolatedBlueprintPort} from "../components/blueprint-port";
 import {PortGroupPosition} from "../components/port-group";
 import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
-import {Styles} from "../../../styles/studio";
 import {BlueprintDelegateModel} from "../../model/delegate";
-import {AnchorComponent} from "../components/anchor";
+import {WhiteBox} from "../components/whitebox";
+import {dia, g, layout} from "jointjs";
 
 export class BlueprintView extends PaperView {
 
-    private outer: dia.Element;
-    private topPorts: Array<dia.Element> = [];
-    private bottomPorts: Array<dia.Element> = [];
-    private rightPorts: Array<dia.Element> = [];
-    private leftPorts: Array<dia.Element> = [];
-    private operators: Array<BlackBoxComponent> = [];
-    private connections: Array<ConnectionComponent> = [];
-    private outerPadding = 120;
-    private minimumSpace = 10;
+	private outer: WhiteBox.Shape;
+	private topPorts: Array<dia.Element> = [];
+	private bottomPorts: Array<dia.Element> = [];
+	private rightPorts: Array<dia.Element> = [];
+	private leftPorts: Array<dia.Element> = [];
+	private operators: Array<BlackBoxComponent> = [];
+	private connections: Array<ConnectionComponent> = [];
+	private outerPadding = 120;
+	private minimumSpace = 10;
 
 	private blueprintSelect: BlueprintSelectComponent | null;
 
@@ -33,11 +32,11 @@ export class BlueprintView extends PaperView {
 		this.addZooming();
 		this.addPanning();
 
-        this.subscribe();
+		this.subscribe();
 
-        this.autoLayout();
-        this.outer = this.createOuter();
-        this.fitOuter(false);
+		this.autoLayout();
+		this.outer = this.createOuter();
+		this.fitOuter(false);
 
 		this.attachEventHandlers();
 
@@ -133,15 +132,15 @@ export class BlueprintView extends PaperView {
 		return paper;
 	}
 
-    private attachEventHandlers() {
-        const that = this;
-        this.graph.on("change:position change:size", function (cell: dia.Cell) {
-            // Moving around inner operators
-            if (!(cell instanceof BlackBoxComponent.Rect)) {
-                return;
-            }
-            that.fitOuter(false);
-        });
+	private attachEventHandlers() {
+		const that = this;
+		this.graph.on("change:position change:size", function (cell: dia.Cell) {
+			// Moving around inner operators
+			if (!(cell instanceof BlackBoxComponent.Rect)) {
+				return;
+			}
+			that.fitOuter(false);
+		});
 
 		this.outer.on("pointerdblclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
 			that.blueprintSelect = new BlueprintSelectComponent(that, {x, y});
@@ -190,19 +189,10 @@ export class BlueprintView extends PaperView {
 		});
 	}
 
-    private createOuter(): dia.Element {
-        const size = {width: this.outerPadding * 2 + this.minimumSpace, height: this.outerPadding * 2 + this.minimumSpace};
-        const position = {x: -size.width / 2, y: -size.height / 2};
-        const outer = new (shapes.standard.Rectangle.define("BlueprintOuter", Styles.Defaults.Outer))({
-            id: `${this.blueprint.getIdentity()}_outer}`,
-            position: position,
-            size: size,
-        } as any);
-        outer.set("obstacle", false);
-		outer.set("z", -2);
-        outer.attr("draggable", false);
-        outer.addTo(this.graph);
-
+	private createOuter(): WhiteBox.Shape {
+		const size = {width: this.outerPadding * 2 + this.minimumSpace, height: this.outerPadding * 2 + this.minimumSpace};
+		const outer = new WhiteBox.Shape(this.blueprint, size);
+		outer.addTo(this.graph);
 		return outer;
 	}
 
@@ -308,9 +298,9 @@ export class BlueprintView extends PaperView {
 			operator.translate(-(boundingBox.x + boundingBox.width / 2), -(boundingBox.y + boundingBox.height / 2));
 		});
 
-        if (!boundingBox) {
-            boundingBox = new g.Rect({x: 0, y: 0, width: this.minimumSpace, height: this.minimumSpace});
-        }
+		if (!boundingBox) {
+			boundingBox = new g.Rect({x: 0, y: 0, width: this.minimumSpace, height: this.minimumSpace});
+		}
 
 		boundingBox.x -= boundingBox.x + boundingBox.width / 2;
 		boundingBox.y -= boundingBox.y + boundingBox.height / 2;
@@ -348,13 +338,13 @@ export class BlueprintView extends PaperView {
 		});
 	}
 
-    private addOperator(operator: OperatorModel) {
-        const operatorElement = new OperatorBoxComponent(this.graph, operator);
-        this.operators.push(operatorElement);
+	private addOperator(operator: OperatorModel) {
+		const operatorElement = new OperatorBoxComponent(this.graph, operator);
+		this.operators.push(operatorElement);
 
-        if (this.outer) {
-            this.fitOuter(true);
-        }
+		if (this.outer) {
+			this.fitOuter(true);
+		}
 
 		// JointJS -> Model
 		operatorElement.on("pointerclick", function (evt: Event, x: number, y: number) {
@@ -362,37 +352,37 @@ export class BlueprintView extends PaperView {
 		});
 	}
 
-    private fitOuter(animation: boolean) {
-        const padding = this.outerPadding;
-        const currentPosition = this.outer.get("position");
-        const currentSize = this.outer.get("size");
+	private fitOuter(animation: boolean) {
+		const padding = this.outerPadding;
+		const currentPosition = this.outer.get("position");
+		const currentSize = this.outer.get("size");
 
 		let newX: number = currentPosition.x + padding;
 		let newY: number = currentPosition.y + padding;
 		let newCornerX: number = currentPosition.x + currentSize.width - 2 * padding;
 		let newCornerY: number = currentPosition.y + currentSize.height - 2 * padding;
 
-        this.operators.forEach((operator: BlackBoxComponent) => {
-            const childBBox = operator.getBBox();
-            if (childBBox.x < newX) {
-                newX = childBBox.x;
-            }
-            if (childBBox.y < newY) {
-                newY = childBBox.y;
-            }
-            const corner = childBBox.corner();
-            if (corner.x > newCornerX) {
-                newCornerX = corner.x;
-            }
-            if (corner.y > newCornerY) {
-                newCornerY = corner.y;
-            }
-        });
+		this.operators.forEach((operator: BlackBoxComponent) => {
+			const childBBox = operator.getBBox();
+			if (childBBox.x < newX) {
+				newX = childBBox.x;
+			}
+			if (childBBox.y < newY) {
+				newY = childBBox.y;
+			}
+			const corner = childBBox.corner();
+			if (corner.x > newCornerX) {
+				newCornerX = corner.x;
+			}
+			if (corner.y > newCornerY) {
+				newCornerY = corner.y;
+			}
+		});
 
-        const set = {
-            position: {x: 0, y: 0},
-            size: {width: 0, height: 0},
-        };
+		const set = {
+			position: {x: 0, y: 0},
+			size: {width: 0, height: 0},
+		};
 
 		set.position.x = newX - padding;
 		set.position.y = newY - padding;
@@ -429,19 +419,19 @@ export class BlueprintView extends PaperView {
 			newSize = set.size;
 		}
 
-        if (!!set.position || !!set.size) {
-            if (!animation) {
-                this.outer.set(set);
-            } else {
-                if (!!set.size) {
-                    this.outer.transition("size/height", set.size.height);
-                    this.outer.transition("size/width", set.size.width);
-                }
-                if (!!set.position) {
-                    this.outer.transition("position/x", set.position.x);
-                    this.outer.transition("position/y", set.position.y);
-                }
-            }
+		if (!!set.position || !!set.size) {
+			if (!animation) {
+				this.outer.set(set);
+			} else {
+				if (!!set.size) {
+					this.outer.transition("size/height", set.size.height);
+					this.outer.transition("size/width", set.size.width);
+				}
+				if (!!set.position) {
+					this.outer.transition("position/x", set.position.x);
+					this.outer.transition("position/y", set.position.y);
+				}
+			}
 
 			for (const port of this.topPorts) {
 				const currentPortPosition = port.get("position");
