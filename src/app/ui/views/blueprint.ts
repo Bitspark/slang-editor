@@ -23,6 +23,7 @@ export class BlueprintView extends PaperView {
     private operators: Array<BlackBoxComponent> = [];
     private connections: Array<ConnectionComponent> = [];
     private outerPadding = 120;
+    private minimumSpace = 10;
 
     private blueprintSelect: BlueprintSelectComponent | null;
 
@@ -33,9 +34,8 @@ export class BlueprintView extends PaperView {
 
         this.subscribe();
         
-        this.outer = this.createOuter();
-
         this.autoLayout();
+        this.outer = this.createOuter();
         this.fitOuter();
 
         this.attachEventHandlers();
@@ -191,11 +191,10 @@ export class BlueprintView extends PaperView {
     }
 
     private createOuter(): dia.Element {
-        const size = {width: this.outerPadding * 2 + 10, height: this.outerPadding * 2 + 10};
+        const size = {width: this.outerPadding * 2 + this.minimumSpace, height: this.outerPadding * 2 + this.minimumSpace};
         const position = {x: -size.width / 2, y: -size.height / 2};
 
         const outer = new (shapes.standard.Rectangle.define("BlueprintOuter", {
-            position: position,
             attrs: {
                 root: {
                     class: "joint-cell joint-element sl-outer",
@@ -211,10 +210,10 @@ export class BlueprintView extends PaperView {
         }))({id: `${this.blueprint.getIdentity()}_outer}`});
         outer.set("obstacle", false);
         outer.set("size", size);
+        outer.set("position", position);
+        outer.set("z", -2);
         outer.attr("draggable", false);
-        outer.position(position);
         outer.addTo(this.graph);
-        outer.toBack();
 
         return outer;
     }
@@ -322,7 +321,7 @@ export class BlueprintView extends PaperView {
         });
 
         if (!boundingBox) {
-            boundingBox = new g.Rect({x: 0, y: 0, width: 10, height: 10});
+            boundingBox = new g.Rect({x: 0, y: 0, width: this.minimumSpace, height: this.minimumSpace});
         }
 
         boundingBox.x -= boundingBox.x + boundingBox.width / 2;
@@ -371,7 +370,7 @@ export class BlueprintView extends PaperView {
         });
     }
 
-    private fitOuter() {
+    private fitOuter() {        
         const padding = this.outerPadding;
         const currentPosition = this.outer.get("position");
         const currentSize = this.outer.get("size");
@@ -382,24 +381,25 @@ export class BlueprintView extends PaperView {
         let newCornerY: number = currentPosition.y + currentSize.height - 2 * padding;
 
         this.operators.forEach((operator: BlackBoxComponent) => {
-            const childBbox = operator.getBBox();
-            if (childBbox.x < newX) {
-                newX = childBbox.x;
+            const childBBox = operator.getBBox();
+            if (childBBox.x < newX) {
+                newX = childBBox.x;
             }
-            if (childBbox.y < newY) {
-                newY = childBbox.y;
+            if (childBBox.y < newY) {
+                newY = childBBox.y;
             }
-            if (childBbox.corner().x > newCornerX) {
-                newCornerX = childBbox.corner().x;
+            const corner = childBBox.corner();
+            if (corner.x > newCornerX) {
+                newCornerX = corner.x;
             }
-            if (childBbox.corner().y > newCornerY) {
-                newCornerY = childBbox.corner().y;
+            if (corner.y > newCornerY) {
+                newCornerY = corner.y;
             }
         });
 
         const set = {
             position: {x: 0, y: 0},
-            size: {width: 0, height: 0}
+            size: {width: 0, height: 0},
         };
 
         set.position.x = newX - padding;
