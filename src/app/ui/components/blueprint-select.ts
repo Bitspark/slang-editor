@@ -6,7 +6,7 @@ import {BlueprintModel} from '../../model/blueprint';
 import {ClassComponent, CVnode} from "mithril";
 import {BlueprintView} from "../views/blueprint";
 import {Geometry} from "../../model/operator";
-import {BlackBoxComponent, BlueprintBoxComponent} from "./blackbox";
+import {BlackBoxComponent} from "./blackbox";
 import {AnchorComponent, AnchorPosition} from "./anchor";
 
 export interface Attrs {
@@ -35,7 +35,6 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 				onmouseleave: (e: MithrilMouseEvent) => {
 					e.redraw = false;
 					attrs.onHover(undefined);
-					return true;
 				}
 			},
 			[
@@ -61,8 +60,11 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 								onmouseenter: (e: MithrilMouseEvent) => {
 									e.redraw = false;
 									attrs.onHover(blueprint);
-									return true;
 								},
+								onmouseleave: (e: MithrilMouseEvent) => {
+									e.redraw = false;
+									attrs.onHover(undefined);
+								}
 							},
 							m(".sl-blupr-title", blueprint.getFullName()))
 					}) : m(".sl-blupr-entry-none")
@@ -75,7 +77,7 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 export class BlueprintSelectComponent extends AnchorComponent {
 	private readonly blueprint: BlueprintModel;
 	private readonly landscape: LandscapeModel;
-	private ghostRect:  BlackBoxComponent.Rect | BlackBoxComponent.Rect.Ghost;
+	private ghostRect: BlackBoxComponent.Rect | BlackBoxComponent.Rect.Ghost;
 	private filterExpr: string = "";
 
 	constructor(private blueprintView: BlueprintView, pos: AnchorPosition) {
@@ -148,15 +150,12 @@ export class BlueprintSelectComponent extends AnchorComponent {
 		if (this.ghostRect) {
 			this.ghostRect.remove();
 		}
-
 		if (!blueprint) {
-            this.ghostRect = new BlackBoxComponent.Rect.Ghost("• • •");
+			this.ghostRect = BlackBoxComponent.Rect.Ghost.place("• • •", {x, y});
 			this.ghostRect.addTo(this.graph);
 		} else {
-			this.ghostRect = new BlueprintBoxComponent(this.graph, blueprint).getRectangle();
+			this.ghostRect = BlackBoxComponent.Rect.place(this.graph, blueprint, {x, y});
 		}
-		const {width, height} = this.ghostRect.size();
-		this.ghostRect.position(x - width / 2, y - height / 2);
 
 		this.ghostRect.on("change:position change:size", () => {
 			this.updatePosition(this.ghostRect.getBBox().center());

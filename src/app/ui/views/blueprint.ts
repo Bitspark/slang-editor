@@ -34,7 +34,7 @@ export class BlueprintView extends PaperView {
 		this.addPanning();
 
         this.subscribe();
-        
+
         this.autoLayout();
         this.outer = this.createOuter();
         this.fitOuter(false);
@@ -193,25 +193,13 @@ export class BlueprintView extends PaperView {
     private createOuter(): dia.Element {
         const size = {width: this.outerPadding * 2 + this.minimumSpace, height: this.outerPadding * 2 + this.minimumSpace};
         const position = {x: -size.width / 2, y: -size.height / 2};
-
-        const outer = new (shapes.standard.Rectangle.define("BlueprintOuter", {
-            attrs: {
-                root: {
-                    class: "joint-cell joint-element sl-outer",
-                },
-                body: {
-                    rx: Styles.Outer.rx,
-                    ry: Styles.Outer.ry,
-                    class: "sl-rectangle",
-                    cursor: "default",
-                    filter: Styles.Outer.filter,
-                },
-            },
-        }))({id: `${this.blueprint.getIdentity()}_outer}`});
+        const outer = new (shapes.standard.Rectangle.define("BlueprintOuter", Styles.Defaults.Outer))({
+            id: `${this.blueprint.getIdentity()}_outer}`,
+            position: position,
+            size: size,
+        } as any);
         outer.set("obstacle", false);
-        outer.set("size", size);
-        outer.set("position", position);
-        outer.set("z", -2);
+		outer.set("z", -2);
         outer.attr("draggable", false);
         outer.addTo(this.graph);
 
