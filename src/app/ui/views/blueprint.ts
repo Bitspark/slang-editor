@@ -211,9 +211,9 @@ export class BlueprintView extends PaperView {
         outer.set("obstacle", false);
         outer.set("size", size);
         outer.set("position", position);
+        outer.set("z", -2);
         outer.attr("draggable", false);
         outer.addTo(this.graph);
-        outer.toBack();
 
         return outer;
     }

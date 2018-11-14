@@ -116,7 +116,7 @@ export class ConnectionComponent {
     }
 
     public static getLinkId(connection: Connection): string {
-        return `${connection.source.getIdentity()}>${connection.destination.getIdentity()}`;
+        return `${connection.source.getIdentity()}:${connection.destination.getIdentity()}`;
     }
 
     public static findLink(graph: dia.Graph, connection: Connection): dia.Link | undefined {

@@ -32,7 +32,7 @@ export abstract class SlangNode {
         if (this.parent) {
             return this.parent.getIdentity() + "." + this.id;
         } else {
-            return "sl";
+            return "SL";
         }
     }
 
