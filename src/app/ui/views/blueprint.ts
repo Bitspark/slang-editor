@@ -36,7 +36,7 @@ export class BlueprintView extends PaperView {
         
         this.autoLayout();
         this.outer = this.createOuter();
-        this.fitOuter();
+        this.fitOuter(false);
 
         this.attachEventHandlers();
 
@@ -139,7 +139,7 @@ export class BlueprintView extends PaperView {
             if (!(cell instanceof BlackBoxComponent.Rectangle)) {
                 return;
             }
-            that.fitOuter();
+            that.fitOuter(false);
         });
 
         this.outer.on("pointerdblclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
@@ -363,6 +363,10 @@ export class BlueprintView extends PaperView {
     private addOperator(operator: OperatorModel) {
         const operatorElement = new OperatorBoxComponent(this.graph, operator);
         this.operators.push(operatorElement);
+        
+        if (this.outer) {
+            this.fitOuter(true);
+        }
 
         // JointJS -> Model
         operatorElement.on("pointerclick", function (evt: Event, x: number, y: number) {
@@ -370,7 +374,7 @@ export class BlueprintView extends PaperView {
         });
     }
 
-    private fitOuter() {        
+    private fitOuter(animation: boolean) {        
         const padding = this.outerPadding;
         const currentPosition = this.outer.get("position");
         const currentSize = this.outer.get("size");
@@ -438,7 +442,18 @@ export class BlueprintView extends PaperView {
         }
 
         if (!!set.position || !!set.size) {
-            this.outer.set(set);
+            if (!animation) {
+                this.outer.set(set);
+            } else {
+                if (!!set.size) {
+                    this.outer.transition("size/height", set.size.height);
+                    this.outer.transition("size/width", set.size.width);
+                }
+                if (!!set.position) {
+                    this.outer.transition("position/x", set.position.x);
+                    this.outer.transition("position/y", set.position.y);
+                }
+            }
 
             for (const port of this.topPorts) {
                 const currentPortPosition = port.get("position");
