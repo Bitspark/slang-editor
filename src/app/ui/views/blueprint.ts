@@ -40,7 +40,7 @@ export class BlueprintView extends PaperView {
 
 		this.attachEventHandlers();
 
-		this.refreshConnections();
+		this.refreshStreams();
 
 		this.fit();
 	}
@@ -184,7 +184,7 @@ export class BlueprintView extends PaperView {
 			port.subscribeConnected((connection, initial) => {
 				this.addConnection(connection);
 				if (!initial) {
-					this.refreshConnections();
+					this.refreshStreams();
 				}
 			});
 			port.subscribeDisconnected(connection => {
@@ -193,7 +193,8 @@ export class BlueprintView extends PaperView {
 		});
 	}
 
-	private refreshConnections(): void {
+	private refreshStreams(): void {
+		this.blueprint.trackStreams();
 		for (const connection of this.connections) {
 			connection.refresh();
 		}

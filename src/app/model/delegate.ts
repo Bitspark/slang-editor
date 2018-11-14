@@ -1,7 +1,7 @@
 import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel, PortModelArgs} from "./port";
 import {BlueprintModel} from './blueprint';
 import {OperatorModel} from './operator';
-import {BlackBox, PortOwner} from "../custom/nodes";
+import {BlackBox, PortOwner, Stream} from "../custom/nodes";
 import {Connections} from '../custom/connections';
 import {SlangType} from "../custom/type";
 
@@ -46,6 +46,10 @@ export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel,
     public getPortOut(): BlueprintPortModel | null {
         return super.getPortOut() as BlueprintPortModel;
     }
+
+	public trackStreams(): void {
+		// TODO
+	}
 }
 
 export type OperatorDelegateModelArgs = {name: string};
@@ -58,4 +62,8 @@ export class OperatorDelegateModel extends GenericDelegateModel<OperatorModel, O
     public createPort(args: PortModelArgs): OperatorPortModel {
         return super.createChildNode(OperatorPortModel, args);
     }
+
+	public trackStreams(): void {
+		// TODO
+	}
 }

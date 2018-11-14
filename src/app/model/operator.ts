@@ -1,7 +1,7 @@
 import {BlueprintModel, BlueprintType} from './blueprint';
 import {BlueprintPortModel, OperatorPortModel, PortModelArgs} from "./port";
 import {OperatorDelegateModel} from './delegate';
-import {BlackBox} from "../custom/nodes";
+import {BlackBox, Stream} from "../custom/nodes";
 import {Connections} from '../custom/connections';
 import {SlangBehaviorSubject} from '../custom/events';
 
@@ -82,6 +82,20 @@ export class OperatorModel extends BlackBox {
             return {x: this.geometry.position[0], y: this.geometry.position[1]};
         }
     }
+
+	public trackStreams(): void {
+        if (!this.baseStream) {
+            console.log(this, "have no base stream");
+            return;
+        }
+        
+		const portOut = this.getPortOut();
+		if (portOut) {
+			console.log(portOut);
+		    portOut.createStreams(this.baseStream);
+		    portOut.trackStreams();
+        }
+	}
 
     // Actions
     public createDelegate(name: string): OperatorDelegateModel {

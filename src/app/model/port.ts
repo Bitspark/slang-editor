@@ -26,7 +26,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     private genericIdentifier?: string;
     private streamDepth: number = 0;
     protected connectedWith: Array<PortModel> = [];
-    protected stream: Stream;
+    protected stream: Stream | null = null;
 
     protected constructor(parent: GenericPortModel<O> | O, {type, name, direction}: PortModelArgs, P: new(p: PortModel | PortOwner, args: PortModelArgs) => PortModel) {
         super(parent);
@@ -69,35 +69,91 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     }
 
     public createStreams(baseStream: Stream): void {
-        this.stream = baseStream;
+        if (!this.isSource()) {
+			throw new Error(`can only create streams on source ports`);
+        }
+        
+        this.setStream(baseStream);
         
         if (this.typeIdentifier === TypeIdentifier.Stream) {
             const sub = this.getStreamSub();
             if (sub) {
-                sub.setStream(new Stream(baseStream, sub));
+                sub.createStreams(baseStream.createSubStream(sub));
             }
         } else if (this.typeIdentifier === TypeIdentifier.Map) {
             for (const sub of this.getMapSubs()) {
-                sub.setStream(baseStream);
+                sub.createStreams(baseStream);
             }
         }
     }
     
     public trackStreams(): void {
-        if (!this.isSource()) {
-            throw new Error(`can only track streams from source port`);
+        if (!this.stream) {
+            return;
         }
         
-        for (const destination of this.connectedWith) {
-            
+		if (this.isSource()) {
+			for (const destination of this.connectedWith) {
+				destination.setStream(this.stream);
+				destination.trackStreams();
+			}
+
+			if (this.typeIdentifier === TypeIdentifier.Stream) {
+				const sub = this.getStreamSub();
+				if (sub) {
+					sub.trackStreams();
+				}
+			} else if (this.typeIdentifier === TypeIdentifier.Map) {
+				for (const sub of this.getMapSubs()) {
+					sub.trackStreams();
+				}
+			}
+		} else {
+			const owner = this.getAncestorNode(PortOwner);
+			if (!owner || !(owner instanceof OperatorModel)) {
+				// TODO: Check if correct stream returned
+				console.log(this, "end reached.");
+				return;
+			}
+		    
+		    owner.trackStreams();
         }
     }
     
-    public setStream(stream: Stream): void {
+    private setStream(stream: Stream): void {
         this.stream = stream;
+        
+        const parent = this.getParentNode();
+        if (!parent) {
+            throw new Error(`port must have a parent`);
+        }
+        
+        if (parent instanceof GenericPortModel) {
+            const parentStream = parent.getStream();
+            const baseStream = stream.getBaseStream();
+			if (baseStream !== null) {
+				if (parentStream !== null) {
+				    if (baseStream !== parentStream) {
+				        throw new Error(`stream types not matching`);
+                    } else {
+				        // Nothing to do
+                    }
+				} else {
+				    parent.setStream(baseStream);
+				}
+			} else {
+				if (parentStream !== null) {
+				    throw new Error(`target stream depth too high`);
+				} else {
+				    // Nothing to go, bottom reached
+				}
+			}
+        } else if (parent instanceof PortOwner) {
+            parent.setBaseStream(stream);
+        }
     }
 
-    public getStream(): Stream {
+    public getStream(): Stream | null {
         return this.stream;
     }
     

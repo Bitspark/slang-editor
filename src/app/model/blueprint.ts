@@ -266,37 +266,14 @@ export class BlueprintModel extends BlackBox {
         return this.getShortName();
     }
 
-    public getConnectionsTo(): Connections {
-        const connections = new Connections();
-
-        const portIn = this.getPortIn();
-
-        if (portIn) {
-            connections.addConnections(portIn.getConnectionsTo());
-        }
-
-        for (const operator of this.getOperators()) {
-            connections.addConnections(operator.getConnectionsTo());
-        }
-
-        for (const delegate of this.getDelegates()) {
-            const delegatePortIn = delegate.getPortIn();
-            if (delegatePortIn) {
-                connections.addConnections(delegatePortIn.getConnectionsTo());
-            }
-        }
-
-        return connections;
-    }
-
-    public trackStreams(): void {
-        const portIn = this.getPortIn();
-        if (portIn) {
-            this.baseStream = new Stream(null, portIn);
-            portIn.setStream(this.baseStream);
-            portIn.trackStreams();
-        }
-    }
+	public trackStreams(): void {
+		const portIn = this.getPortIn();
+		if (portIn) {
+			this.baseStream = new Stream(null, portIn);
+			portIn.createStreams(this.baseStream);
+			portIn.trackStreams();
+		}
+	}
     
     // Actions
 

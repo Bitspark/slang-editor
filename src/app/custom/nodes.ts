@@ -182,7 +182,7 @@ export class Stream {
     private static id = "0";
     private readonly id: string;
 
-    constructor(private baseStream: Stream | null, private sourcePort: PortModel | undefined) {
+    constructor(private baseStream: Stream | null, private sourcePort: PortModel) {
         Stream.id = (Number.parseInt(Stream.id, 16) + 1).toString(16);
         this.id = Stream.id;
 
@@ -205,7 +205,7 @@ export class Stream {
         return this.baseStream;
     }
 
-    public getPort(): PortModel | undefined {
+    public getPort(): PortModel {
         return this.sourcePort;
     }
 
@@ -234,11 +234,10 @@ export class Stream {
 
 export abstract class PortOwner extends SlangNode {
 
-    protected baseStream: Stream;
+    protected baseStream: Stream | undefined = undefined;
 
     protected constructor(parent: SlangNode) {
         super(parent);
-        this.baseStream = new Stream(null, undefined);
     }
     
     protected abstract createPort(args: PortModelArgs): PortModel;
@@ -255,9 +254,15 @@ export abstract class PortOwner extends SlangNode {
         return this.getChildNodes(GenericPortModel);
     }
 
-    public getBaseStream(): Stream {
+	public setBaseStream(stream: Stream): void {
+		this.baseStream = stream;
+	}
+
+    public getBaseStream(): Stream | undefined {
         return this.baseStream;
     }
+
+	public abstract trackStreams(): void;
 
 }
 
