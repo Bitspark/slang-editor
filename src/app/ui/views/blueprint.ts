@@ -144,7 +144,7 @@ export class BlueprintView extends PaperView {
         });
 
 		this.outer.on("pointerdblclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
-			that.blueprintSelect = new BlueprintSelectComponent(that, [x, y]);
+			that.blueprintSelect = new BlueprintSelectComponent(that, {x, y});
 		});
 		this.getPaper().on("blank:pointerclick cell:pointerclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
 			if (that.blueprintSelect) {

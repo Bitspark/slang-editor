@@ -1,4 +1,4 @@
-import {dia, shapes} from 'jointjs';
+import {shapes} from 'jointjs';
 import m, {CVnodeDOM} from 'mithril';
 
 import {LandscapeModel} from '../../model/landscape';
@@ -31,47 +31,47 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 		return true;
 	}
 
-    view({attrs}: CVnode<Attrs>) {
-        const blueprints = attrs.onLoad();
-        return m(".sl-blupr-menu", {
-                onmouseleave: (e: MithrilMouseEvent) => {
-                    e.redraw = false;
-                    attrs.onHover(undefined);
-                    return true;
-                }
-            },
-            [
-                m(".sl-blupr-fltr",
-                    m("input.sl-blupr-input[type=text]", {
-                        oncreate: (v: CVnodeDOM<any>) => {
-                            if (v.attrs.autofocus) {
-                                (v.dom as HTMLElement).focus();
-                            }
-                        },
-                        oninput: m.withAttr("value", function (f: string) {
-                            attrs.onFilter(f.trim());
-                        }),
-                        autofocus: true,
-                    })),
-                m(".sl-blupr-entries",
-                    blueprints.length ? blueprints.map((blueprint: BlueprintModel) => {
-                        return m(".sl-blupr-entry", {
-                                onclick: (e: MithrilMouseEvent) => {
-                                    e.redraw = false;
-                                    attrs.onSelect(blueprint);
-                                },
-                                onmouseenter: (e: MithrilMouseEvent) => {
-                                    e.redraw = false;
-                                    attrs.onHover(blueprint);
+	view({attrs}: CVnode<Attrs>) {
+		const blueprints = attrs.onLoad();
+		return m(".sl-blupr-menu", {
+				onmouseleave: (e: MithrilMouseEvent) => {
+					e.redraw = false;
+					attrs.onHover(undefined);
+					return true;
+				}
+			},
+			[
+				m(".sl-blupr-fltr",
+					m("input.sl-blupr-input[type=text]", {
+						oncreate: (v: CVnodeDOM<any>) => {
+							if (v.attrs.autofocus) {
+								(v.dom as HTMLElement).focus();
+							}
+						},
+						oninput: m.withAttr("value", function (f: string) {
+							attrs.onFilter(f.trim());
+						}),
+						autofocus: true,
+					})),
+				m(".sl-blupr-entries",
+					blueprints.length ? blueprints.map((blueprint: BlueprintModel) => {
+						return m(".sl-blupr-entry", {
+								onclick: (e: MithrilMouseEvent) => {
+									e.redraw = false;
+									attrs.onSelect(blueprint);
+								},
+								onmouseenter: (e: MithrilMouseEvent) => {
+									e.redraw = false;
+									attrs.onHover(blueprint);
 									return true;
-                                },
-                            },
-                            m(".sl-blupr-title", blueprint.getFullName()))
-                    }) : m(".sl-blupr-entry-none")
-                )
-            ]
-        );
-    }
+								},
+							},
+							m(".sl-blupr-title", blueprint.getFullName()))
+					}) : m(".sl-blupr-entry-none")
+				)
+			]
+		);
+	}
 }
 
 export class BlueprintSelectComponent extends AnchorComponent {
@@ -80,12 +80,12 @@ export class BlueprintSelectComponent extends AnchorComponent {
 	private ghostRect: shapes.standard.Rectangle | BlackBoxComponent.Rectangle;
 	private filterExpr: string = "";
 
-	constructor(private blueprintView: BlueprintView, pos: [number, number]) {
+	constructor(private blueprintView: BlueprintView, pos: AnchorPosition) {
 		super(blueprintView, pos);
 		this.blueprint = blueprintView.getBlueprint();
 		this.landscape = this.blueprint.getAncestorNode(LandscapeModel)!;
 
-		this.placeGhostRect({x: pos[0], y: pos[1]});
+		this.placeGhostRect(pos);
 
 		m.mount(this.htmlRoot, {
 			view: () => m(BlueprintMenuComponent, {

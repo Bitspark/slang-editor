@@ -10,7 +10,7 @@ export abstract class AnchorComponent {
 	protected readonly anchor: dia.Element;
 	private readonly paper: dia.Paper;
 
-	protected constructor(private readonly paperView: PaperView, private pos: [number, number]) {
+	protected constructor(private readonly paperView: PaperView, private pos: AnchorPosition) {
 		this.paper = paperView.getPaper();
 		this.graph = this.paperView.getGraph();
 
@@ -19,9 +19,7 @@ export abstract class AnchorComponent {
 		this.htmlRoot = AnchorComponent.createRoot();
 		frame.getHTMLElement().appendChild(this.htmlRoot);
 		this.anchor = new shapes.basic.Rect({
-			position: {
-				x: pos[0], y: pos[1]
-			},
+			position: pos,
 			size: {
 				width: 0, height: 0
 			}
