@@ -11,7 +11,17 @@ export class AnchorComponent {
 	constructor(private readonly paperView: PaperView, private readonly attachedElement: dia.Element) {
 		this.paper = paperView.getPaper();
 		this.anchorEl = this.createRoot();
-		this.updateAnchorPosition(attachedElement.position());
+		this.updateAnchorPosition();
+		const that = this;
+
+		this.paperView.subscribePositionchanged(function () {
+			that.updateAnchorPosition()
+		});
+
+		attachedElement.on("change:position change:size", function () {
+			that.updateAnchorPosition()
+		});
+
 		m.mount(this.anchorEl, AnchorComponent.Anchor);
 	}
 
@@ -26,10 +36,10 @@ export class AnchorComponent {
 		return el;
 	}
 
-	private updateAnchorPosition(localP: g.PlainPoint) {
-		const clientP = this.convertToClientPoint(localP);
-		this.anchorEl.style.left = `${clientP.x}px`;
-		this.anchorEl.style.top = `${clientP.y}px`;
+	private updateAnchorPosition() {
+		const p = this.convertToClientPoint(this.attachedElement.position());
+		this.anchorEl.style.left = `${p.x}px`;
+		this.anchorEl.style.top = `${p.y}px`;
 	}
 
 	private convertToClientPoint(p: g.PlainPoint): g.PlainPoint {
