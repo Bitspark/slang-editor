@@ -7,10 +7,9 @@ export interface AnchorPosition extends g.PlainPoint {
 export abstract class AnchorComponent {
 	protected readonly htmlRoot: HTMLElement;
 	protected readonly graph: dia.Graph;
-	protected readonly anchor: dia.Element;
 	private readonly paper: dia.Paper;
 
-	protected constructor(private readonly paperView: PaperView, private pos: AnchorPosition) {
+	protected constructor(private readonly paperView: PaperView, private position: AnchorPosition) {
 		this.paper = paperView.getPaper();
 		this.graph = this.paperView.getGraph();
 
@@ -18,33 +17,20 @@ export abstract class AnchorComponent {
 
 		this.htmlRoot = AnchorComponent.createRoot();
 		frame.getHTMLElement().appendChild(this.htmlRoot);
-		this.anchor = new shapes.basic.Rect({
-			position: pos,
-			size: {
-				width: 0, height: 0
-			}
-		});
-		this.anchor.set('draggable', false);
-		this.anchor.addTo(this.graph);
 
-		//this.draw();
-
-		const that = this;
-		this.paperView.subscribePositionChanged(function () {
-			that.draw()
-		});
-		this.anchor.on("change:position change:size", function () {
-			that.draw();
+		this.draw();
+		this.paperView.subscribePositionChanged(() => {
+			this.draw()
 		});
 	}
 
 	protected destroy() {
-		this.anchor.remove();
 		this.htmlRoot.remove();
 	}
 
-	protected updatePosition({x, y}: AnchorPosition) {
-		this.anchor.position(x, y);
+	protected updatePosition(position: AnchorPosition) {
+		this.position = position;
+		this.draw();
 	}
 
 	private static createRoot(): HTMLElement {
@@ -54,7 +40,7 @@ export abstract class AnchorComponent {
 	}
 
 	private draw() {
-		const p = this.convertToClientPoint(this.anchor.position());
+		const p = this.convertToClientPoint(this.position);
 		this.htmlRoot.style.left = `${p.x}px`;
 		this.htmlRoot.style.top = `${p.y}px`;
 	}

@@ -159,9 +159,8 @@ export class BlueprintSelectComponent extends AnchorComponent {
 		const {width, height} = this.ghostRect.size();
 		this.ghostRect.position(x - width / 2, y - height / 2);
 
-		const that = this;
-		this.ghostRect.on("change:position change:size", function () {
-			that.updatePosition(that.ghostRect.getBBox().center());
+		this.ghostRect.on("change:position change:size", () => {
+			this.updatePosition(this.ghostRect.getBBox().center());
 		});
 	}
 }
