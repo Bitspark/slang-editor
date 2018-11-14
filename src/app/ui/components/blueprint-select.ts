@@ -21,8 +21,6 @@ export interface MithrilMouseEvent extends MouseEvent {
 }
 
 class BlueprintMenuComponent implements ClassComponent<Attrs> {
-	private filterExpr: string = "";
-
 	// Note that class methods cannot infer parameter types
 	oninit({attrs}: CVnode<Attrs>) {
 	}
