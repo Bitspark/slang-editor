@@ -45,7 +45,7 @@ export class BlueprintModel extends BlackBox {
 		this.type = type;
 		this.hierarchy = fullName.split(".");
 		this.genericIdentifiers = new Set<string>();
-	}	
+	}
 
 	private static revealGenericIdentifiers(port: PortModel): Set<string> {
 		let genericIdentifiers = new Set<string>();

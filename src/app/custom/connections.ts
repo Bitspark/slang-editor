@@ -1,34 +1,34 @@
-import {PortModel} from '../model/port';
+import {PortModel} from "../model/port";
 
 export interface Connection {
-    source: PortModel
-    destination: PortModel
+	source: PortModel
+	destination: PortModel
 }
 
 export class Connections {
-    private connections: Array<Connection> = [];
+	private connections: Array<Connection> = [];
 
-    constructor() {
-    }
+	constructor() {
+	}
 
-    public getIterator(): IterableIterator<Connection> {
-        return this.connections.values();
-    }
+	public getIterator(): IterableIterator<Connection> {
+		return this.connections.values();
+	}
 
-    public addConnection(connection: Connection) {
-        this.connections.push(connection);
-    }
+	public addConnection(connection: Connection) {
+		this.connections.push(connection);
+	}
 
-    public addConnections(connections: Connections) {
-        for (const connection of connections.getIterator()) {
-            this.connections.push(connection);
-        }
-    }
-    
-    public forEach(cb: (connection: Connection) => void): void {
-        for (const connection of this.connections) {
-            cb(connection);
-        }
-    }
-    
+	public addConnections(connections: Connections) {
+		for (const connection of connections.getIterator()) {
+			this.connections.push(connection);
+		}
+	}
+
+	public forEach(cb: (connection: Connection) => void): void {
+		for (const connection of this.connections) {
+			cb(connection);
+		}
+	}
+
 }

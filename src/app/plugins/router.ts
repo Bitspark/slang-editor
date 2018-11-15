@@ -1,68 +1,68 @@
-import {AppModel} from '../model/app';
+import {AppModel} from "../model/app";
 import {SlangPlugin} from "./plugin";
-import {LandscapeModel} from '../model/landscape';
+import {LandscapeModel} from "../model/landscape";
 
 export class RouterPlugin extends SlangPlugin {
 
-    constructor(app: AppModel) {
-        super(app);
-        this.subscribe();
-        this.addEventListeners();
-    }
+	constructor(app: AppModel) {
+		super(app);
+		this.subscribe();
+		this.addEventListeners();
+	}
 
-    public checkRoute(): void {
-        const url = window.location.pathname;
-        const paths = url.split('/');
-        if (paths.length <= 2) {
-            this.openLandscape();
-            return;
-        } else {
-            switch (paths[1]) {
-                case 'blueprint':
-                    this.openBlueprint(paths[2]);
-            }
-        }
-    }
+	public checkRoute(): void {
+		const url = window.location.pathname;
+		const paths = url.split("/");
+		if (paths.length <= 2) {
+			this.openLandscape();
+			return;
+		} else {
+			switch (paths[1]) {
+				case "blueprint":
+					this.openBlueprint(paths[2]);
+			}
+		}
+	}
 
-    private openBlueprint(fullName: string) {
-        const blueprint = this.app.getChildNode(LandscapeModel)!.findBlueprint(fullName);
-        if (blueprint) {
-            blueprint.open();
-        }
-    }
+	private openBlueprint(fullName: string) {
+		const blueprint = this.app.getChildNode(LandscapeModel)!.findBlueprint(fullName);
+		if (blueprint) {
+			blueprint.open();
+		}
+	}
 
-    private openLandscape() {
-        this.app.getChildNode(LandscapeModel)!.open();
-    }
+	private openLandscape() {
+		this.app.getChildNode(LandscapeModel)!.open();
+	}
 
-    private subscribe(): void {
-        this.app.subscribeLoadRequested((): Promise<void> => {
-            return new Promise<void>(resolve => {
-                this.checkRoute();
-                resolve();
-            });
-        });
-        this.app.subscribeOpenedBlueprintChanged(blueprint => {
-            if (blueprint !== null) {
-                const title = `${blueprint.getFullName()} Blueprint | Slang Studio`;
-                const url = `blueprint/${blueprint.getFullName()}`;
-                window.history.pushState({type: 'blueprint', fullName: blueprint.getFullName()}, title, url);
-            }
-        });
-        this.app.subscribeOpenedLandscapeChanged(blueprint => {
-            if (blueprint !== null) {
-                const title = `Blueprint Landscape | Slang Studio`;
-                const url = `/`;
-                window.history.pushState({type: 'landscape'}, title, url);
-            }
-        });
-    }
+	private subscribe(): void {
+		this.app.subscribeLoadRequested((): Promise<void> => {
+			return new Promise<void>(resolve => {
+				this.checkRoute();
+				resolve();
+			});
+		});
+		this.app.subscribeOpenedBlueprintChanged(blueprint => {
+			if (blueprint !== null) {
+				const title = `${blueprint.getFullName()} Blueprint | Slang Studio`;
+				const url = `blueprint/${blueprint.getFullName()}`;
+				window.history.pushState({type: "blueprint", fullName: blueprint.getFullName()}, title, url);
+			}
+		});
+		this.app.subscribeOpenedLandscapeChanged(blueprint => {
+			if (blueprint !== null) {
+				const title = `Blueprint Landscape | Slang Studio`;
+				const url = `/`;
+				window.history.pushState({type: "landscape"}, title, url);
+			}
+		});
+	}
 
-    private addEventListeners() {
-        const that = this;
-        window.addEventListener('popstate', function (event: PopStateEvent) {
-            that.checkRoute();
-        });
-    }
+	private addEventListeners() {
+		const that = this;
+		window.addEventListener("popstate", function (event: PopStateEvent) {
+			that.checkRoute();
+		});
+	}
 
 }

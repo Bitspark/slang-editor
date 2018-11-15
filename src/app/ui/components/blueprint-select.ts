@@ -1,7 +1,7 @@
-import m, {CVnodeDOM} from 'mithril';
+import m, {CVnodeDOM} from "mithril";
 
-import {LandscapeModel} from '../../model/landscape';
-import {BlueprintModel} from '../../model/blueprint';
+import {LandscapeModel} from "../../model/landscape";
+import {BlueprintModel} from "../../model/blueprint";
 import {ClassComponent, CVnode} from "mithril";
 import {BlueprintView} from "../views/blueprint";
 import {Geometry} from "../../model/operator";
@@ -65,7 +65,7 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 									attrs.onHover(undefined);
 								}
 							},
-							m(".sl-blupr-title", blueprint.getFullName()))
+							m(".sl-blupr-title", blueprint.getFullName()));
 					}) : m(".sl-blupr-entry-none")
 				)
 			]
@@ -102,7 +102,7 @@ export class BlueprintSelectComponent extends AnchorComponent {
 				},
 				onHover: (bp?: BlueprintModel) => {
 					const pos = this.ghostRect.getBBox().center();
-					this.placeGhostRect(pos, bp)
+					this.placeGhostRect(pos, bp);
 				}
 			})
 		});

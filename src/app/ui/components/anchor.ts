@@ -1,4 +1,4 @@
-import {dia, g} from 'jointjs';
+import {dia, g} from "jointjs";
 import {PaperView} from "../views/paper-view";
 
 export interface AnchorPosition extends g.PlainPoint {
@@ -20,7 +20,7 @@ export abstract class AnchorComponent {
 
 		this.draw();
 		this.paperView.subscribePositionChanged(() => {
-			this.draw()
+			this.draw();
 		});
 	}
 
@@ -34,7 +34,7 @@ export abstract class AnchorComponent {
 	}
 
 	private static createRoot(): HTMLElement {
-		const el = document.createElement('div');
+		const el = document.createElement("div");
 		el.style.position = "absolute";
 		el.style.lineHeight = "1px";
 		return el;

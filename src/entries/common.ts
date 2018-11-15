@@ -1,1 +1,1 @@
-import 'jointjs/css/layout.css';
+import "jointjs/css/layout.css";
