@@ -13,324 +13,346 @@ import {SlangBehaviorSubject, SlangSubject} from '../custom/events';
 import {LandscapeModel} from './landscape';
 
 export enum BlueprintType {
-    Local,
-    Elementary,
-    Library,
+	Local,
+	Elementary,
+	Library,
 }
 
-export type BlueprintModelArgs = {fullName: string, type: BlueprintType};
+export type BlueprintModelArgs = { fullName: string, type: BlueprintType };
+
+export type BlueprintInstanceAccess = { handle: string, url: string };
 
 export class BlueprintModel extends BlackBox {
 
-    // Topics
-    // self
-    private removed = new SlangSubject<void>("removed");
-    private selected = new SlangBehaviorSubject<boolean>("selected", false);
-    private opened = new SlangBehaviorSubject<boolean>("opened", false);
+	// Topics::self
+	private removed = new SlangSubject<void>("removed");
+	private selected = new SlangBehaviorSubject<boolean>("selected", false);
+	private opened = new SlangBehaviorSubject<boolean>("opened", false);
 
-    // children
-    private operatorRemoved = new SlangSubject<OperatorModel>("operator-removed");
+	// Topics::Deployment
+	private deploymentTriggered = new SlangSubject<boolean>("deployment-triggered");
+	private deployed = new SlangBehaviorSubject<BlueprintInstanceAccess | undefined>("deployed", undefined);
 
-    // Properties
-    private readonly fullName: string;
-    private readonly type: BlueprintType;
-    
-    private readonly hierarchy: Array<string> = [];
+	// children
+	private operatorRemoved = new SlangSubject<OperatorModel>("operator-removed");
 
-    private properties: Array<PropertyModel> = [];
-    private genericIdentifiers: Set<string>;
+	// Properties
+	private readonly fullName: string;
+	private readonly type: BlueprintType;
 
-    constructor(parent: LandscapeModel, {fullName, type}: BlueprintModelArgs) {
-        super(parent);
-        this.fullName = fullName;
-        this.type = type;
-        this.hierarchy = fullName.split('.');
-        this.genericIdentifiers = new Set<string>();
-    }
+	private readonly hierarchy: Array<string> = [];
 
-    private static revealGenericIdentifiers(port: PortModel): Set<string> {
-        let genericIdentifiers = new Set<string>();
-        switch (port.getTypeIdentifier()) {
-            case TypeIdentifier.Map:
-                for (const [_, subPort] of port.getMapSubs()) {
-                    genericIdentifiers = new Set<string>([...genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(subPort)]);
-                }
-                break;
-            case TypeIdentifier.Stream:
-                const subPort = port.getStreamSub();
-                if (subPort) {
-                    genericIdentifiers = new Set<string>([...genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(subPort)]);
-                }
-                break;
-            case TypeIdentifier.Generic:
-                genericIdentifiers.add(port.getGenericIdentifier());
-        }
-        return genericIdentifiers;
-    }
+	private properties: Array<PropertyModel> = [];
+	private genericIdentifiers: Set<string>;
 
-    private instantiateOperator(operator: OperatorModel, params?: { props: PropertyAssignments, gen: GenericSpecifications }) {
+	constructor(parent: LandscapeModel, {fullName, type}: BlueprintModelArgs) {
+		super(parent);
+		this.fullName = fullName;
+		this.type = type;
+		this.hierarchy = fullName.split('.');
+		this.genericIdentifiers = new Set<string>();
+	}
 
-        function copyAndAddDelegates(owner: OperatorModel, delegate: BlueprintDelegateModel) {
-            if (params) {
-                for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), params.props)) {
-                    const delegateCopy = owner.createDelegate(expandedDlgName);
-                    for (const port of delegate.getPorts()) {
-                        delegateCopy.createPort(port.getType().specifyGenerics(params.gen).expand(params.props), port.getDirection());
-                    }
-                }
-            } else {
-                const delegateCopy = owner.createDelegate(delegate.getName());
-                for (const port of delegate.getPorts()) {
-                    delegateCopy.createPort(port.getType(), port.getDirection());
-                }
-            }
-        }
-        
-        for (const port of this.getPorts()) {
-            if (params) {
-                operator.createPort(port.getType().specifyGenerics(params.gen).expand(params.props), port.getDirection());
-            } else {
-                operator.createPort(port.getType(), port.getDirection());
-            }
-        }
-        for (const delegate of this.getDelegates()) {
-            copyAndAddDelegates(operator, delegate);
-        }
-    }
+	private static revealGenericIdentifiers(port: PortModel): Set<string> {
+		let genericIdentifiers = new Set<string>();
+		switch (port.getTypeIdentifier()) {
+			case TypeIdentifier.Map:
+				for (const [_, subPort] of port.getMapSubs()) {
+					genericIdentifiers = new Set<string>([...genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(subPort)]);
+				}
+				break;
+			case TypeIdentifier.Stream:
+				const subPort = port.getStreamSub();
+				if (subPort) {
+					genericIdentifiers = new Set<string>([...genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(subPort)]);
+				}
+				break;
+			case TypeIdentifier.Generic:
+				genericIdentifiers.add(port.getGenericIdentifier());
+		}
+		return genericIdentifiers;
+	}
 
-    public createOperator(name: string, blueprint: BlueprintModel, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
-        return this.createChildNode(OperatorModel, {name, blueprint}, operator => {
-            blueprint.instantiateOperator(operator, {props: propAssigns, gen: genSpeci});
-        });
-    }
+	private instantiateOperator(operator: OperatorModel, params?: { props: PropertyAssignments, gen: GenericSpecifications }) {
 
-    private getRandomOperatorName(blueprint: BlueprintModel): string {
-        const cnt = Array.from(this.getChildNodes(OperatorModel)).filter((op: OperatorModel) => op.getBlueprint() === blueprint).length;
-        return `${blueprint.getFullName()}-${cnt + 1}`;
-    }
+		function copyAndAddDelegates(owner: OperatorModel, delegate: BlueprintDelegateModel) {
+			if (params) {
+				for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), params.props)) {
+					const delegateCopy = owner.createDelegate(expandedDlgName);
+					for (const port of delegate.getPorts()) {
+						delegateCopy.createPort(port.getType().specifyGenerics(params.gen).expand(params.props), port.getDirection());
+					}
+				}
+			} else {
+				const delegateCopy = owner.createDelegate(delegate.getName());
+				for (const port of delegate.getPorts()) {
+					delegateCopy.createPort(port.getType(), port.getDirection());
+				}
+			}
+		}
 
-    public createBlankOperator(blueprint: BlueprintModel, geometry: Geometry): OperatorModel {
-        const name = this.getRandomOperatorName(blueprint);
-        return this.createChildNode(OperatorModel, {name, blueprint, geometry}, operator => {
-            blueprint.instantiateOperator(operator);
-        });
-    }
+		for (const port of this.getPorts()) {
+			if (params) {
+				operator.createPort(port.getType().specifyGenerics(params.gen).expand(params.props), port.getDirection());
+			} else {
+				operator.createPort(port.getType(), port.getDirection());
+			}
+		}
+		for (const delegate of this.getDelegates()) {
+			copyAndAddDelegates(operator, delegate);
+		}
+	}
 
-    public createDelegate(name: string, cb?: (delegate: BlueprintDelegateModel) => void): BlueprintDelegateModel {
-        return this.createChildNode(BlueprintDelegateModel, {name}, cb);
-    }
+	public createOperator(name: string, blueprint: BlueprintModel, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
+		return this.createChildNode(OperatorModel, {name, blueprint}, operator => {
+			blueprint.instantiateOperator(operator, {props: propAssigns, gen: genSpeci});
+		});
+	}
 
-    public createPort(type: SlangType, direction: PortDirection): BlueprintPortModel {
-        return super.createPortFromType(BlueprintPortModel, type, direction) as BlueprintPortModel;
-    }
+	private getRandomOperatorName(blueprint: BlueprintModel): string {
+		const cnt = Array.from(this.getChildNodes(OperatorModel)).filter((op: OperatorModel) => op.getBlueprint() === blueprint).length;
+		return `${blueprint.getFullName()}-${cnt + 1}`;
+	}
 
-    public getFullName(): string {
-        return this.fullName;
-    }
+	public createBlankOperator(blueprint: BlueprintModel, geometry: Geometry): OperatorModel {
+		const name = this.getRandomOperatorName(blueprint);
+		return this.createChildNode(OperatorModel, {name, blueprint, geometry}, operator => {
+			blueprint.instantiateOperator(operator);
+		});
+	}
 
-    public getPackageName(level: number): string {
-        return this.hierarchy[level];
-    }
+	public createDelegate(name: string, cb?: (delegate: BlueprintDelegateModel) => void): BlueprintDelegateModel {
+		return this.createChildNode(BlueprintDelegateModel, {name}, cb);
+	}
 
-    public getPackageDepth(): number {
-        return this.hierarchy.length;
-    }
+	public createPort(type: SlangType, direction: PortDirection): BlueprintPortModel {
+		return super.createPortFromType(BlueprintPortModel, type, direction) as BlueprintPortModel;
+	}
 
-    public getShortName(): string {
-        return this.hierarchy[this.hierarchy.length - 1];
-    }
+	public getFullName(): string {
+		return this.fullName;
+	}
 
-    public isSelected(): boolean {
-        return this.selected.getValue();
-    }
+	public getPackageName(level: number): string {
+		return this.hierarchy[level];
+	}
 
-    public getType(): BlueprintType {
-        return this.type;
-    }
+	public getPackageDepth(): number {
+		return this.hierarchy.length;
+	}
 
-    public getOperators(): IterableIterator<OperatorModel> {
-        return this.getChildNodes(OperatorModel);
-    }
+	public getShortName(): string {
+		return this.hierarchy[this.hierarchy.length - 1];
+	}
 
-    public findOperator(name: string): OperatorModel | undefined {
-        return this.scanChildNode(OperatorModel, operator => operator.getName() === name);
-    }
+	public isSelected(): boolean {
+		return this.selected.getValue();
+	}
 
-    public getDelegates(): IterableIterator<BlueprintDelegateModel> {
-        return this.getChildNodes(BlueprintDelegateModel);
-    }
+	public getType(): BlueprintType {
+		return this.type;
+	}
 
-    public findDelegate(name: string): BlueprintDelegateModel | undefined {
-        return this.scanChildNode(BlueprintDelegateModel, delegate => delegate.getName() === name);
-    }
+	public getOperators(): IterableIterator<OperatorModel> {
+		return this.getChildNodes(OperatorModel);
+	}
 
-    public getProperties(): IterableIterator<PropertyModel> {
-        return this.properties.values();
-    }
+	public findOperator(name: string): OperatorModel | undefined {
+		return this.scanChildNode(OperatorModel, operator => operator.getName() === name);
+	}
 
-    public getPorts(): IterableIterator<BlueprintPortModel> {
-        return this.getChildNodes(BlueprintPortModel);
-    }
+	public getDelegates(): IterableIterator<BlueprintDelegateModel> {
+		return this.getChildNodes(BlueprintDelegateModel);
+	}
 
-    public getPortIn(): BlueprintPortModel | null {
-        return super.getPortIn() as BlueprintPortModel;
-    }
+	public findDelegate(name: string): BlueprintDelegateModel | undefined {
+		return this.scanChildNode(BlueprintDelegateModel, delegate => delegate.getName() === name);
+	}
 
-    public getPortOut(): BlueprintPortModel | null {
-        return super.getPortOut() as BlueprintPortModel;
-    }
+	public getProperties(): IterableIterator<PropertyModel> {
+		return this.properties.values();
+	}
 
-    public getGenericIdentifiers(): IterableIterator<string> {
-        this.genericIdentifiers = new Set<string>();
-        for (const port of this.getPorts()) {
-            this.genericIdentifiers = new Set<string>([...this.genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(port)]);
-        }
-        for (const delegate of this.getDelegates()) {
-            for (const port of delegate.getPorts()) {
-                this.genericIdentifiers = new Set<string>([...this.genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(port)]);
-            }
-        }
-        return this.genericIdentifiers.values();
-    }
+	public getPorts(): IterableIterator<BlueprintPortModel> {
+		return this.getChildNodes(BlueprintPortModel);
+	}
 
-    public resolvePortReference(portReference: string): PortModel | null | undefined {
-        const portInfo = SlangParsing.parseReferenceString(portReference);
+	public getPortIn(): BlueprintPortModel | null {
+		return super.getPortIn() as BlueprintPortModel;
+	}
 
-        if (!portInfo || typeof portInfo.instance === 'undefined') {
-            return undefined;
-        }
+	public getPortOut(): BlueprintPortModel | null {
+		return super.getPortOut() as BlueprintPortModel;
+	}
 
-        let blackbox: BlackBox | undefined = undefined;
-        let port: PortModel | null | undefined = undefined;
+	public getGenericIdentifiers(): IterableIterator<string> {
+		this.genericIdentifiers = new Set<string>();
+		for (const port of this.getPorts()) {
+			this.genericIdentifiers = new Set<string>([...this.genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(port)]);
+		}
+		for (const delegate of this.getDelegates()) {
+			for (const port of delegate.getPorts()) {
+				this.genericIdentifiers = new Set<string>([...this.genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(port)]);
+			}
+		}
+		return this.genericIdentifiers.values();
+	}
 
-        if (portInfo.instance === '') {
-            blackbox = this;
-        } else {
-            blackbox = this.findOperator(portInfo.instance);
-        }
+	public resolvePortReference(portReference: string): PortModel | null | undefined {
+		const portInfo = SlangParsing.parseReferenceString(portReference);
 
-        if (!blackbox) {
-            return undefined;
-        }
+		if (!portInfo || typeof portInfo.instance === 'undefined') {
+			return undefined;
+		}
 
-        if (portInfo.service) {
-            if (portInfo.service !== "main" && portInfo.service !== "") {
-                throw `services other than main are not supported yet: ${portInfo.service}`;
-            }
-            if (portInfo.directionIn) {
-                port = blackbox.getPortIn();
-            } else {
-                port = blackbox.getPortOut();
-            }
-        }
+		let blackbox: BlackBox | undefined = undefined;
+		let port: PortModel | null | undefined = undefined;
 
-        if (portInfo.delegate) {
-            const delegate = blackbox.findDelegate(portInfo.delegate);
-            if (!delegate) {
-                throw `delegate ${portInfo.delegate} not found`;
-            }
-            if (portInfo.directionIn) {
-                port = delegate.getPortIn();
-            } else {
-                port = delegate.getPortOut();
-            }
-        }
+		if (portInfo.instance === '') {
+			blackbox = this;
+		} else {
+			blackbox = this.findOperator(portInfo.instance);
+		}
 
-        if (!port) {
-            return port;
-        }
+		if (!blackbox) {
+			return undefined;
+		}
 
-        const pathSplit = portInfo.port.split('.');
-        if (pathSplit.length === 1 && pathSplit[0] === '') {
-            return port;
-        }
+		if (portInfo.service) {
+			if (portInfo.service !== "main" && portInfo.service !== "") {
+				throw `services other than main are not supported yet: ${portInfo.service}`;
+			}
+			if (portInfo.directionIn) {
+				port = blackbox.getPortIn();
+			} else {
+				port = blackbox.getPortOut();
+			}
+		}
 
-        for (let i = 0; i < pathSplit.length; i++) {
-            if (pathSplit[i] === '~') {
-                port = port.getStreamSub();
-                continue;
-            }
+		if (portInfo.delegate) {
+			const delegate = blackbox.findDelegate(portInfo.delegate);
+			if (!delegate) {
+				throw `delegate ${portInfo.delegate} not found`;
+			}
+			if (portInfo.directionIn) {
+				port = delegate.getPortIn();
+			} else {
+				port = delegate.getPortOut();
+			}
+		}
 
-            if (port.getTypeIdentifier() !== TypeIdentifier.Map) {
-                return null;
-            }
+		if (!port) {
+			return port;
+		}
 
-            const mapSubName = pathSplit[i];
-            port = port.findMapSub(mapSubName);
-            if (!port) {
-                return undefined;
-            }
-        }
+		const pathSplit = portInfo.port.split('.');
+		if (pathSplit.length === 1 && pathSplit[0] === '') {
+			return port;
+		}
 
-        return port;
-    }
+		for (let i = 0; i < pathSplit.length; i++) {
+			if (pathSplit[i] === '~') {
+				port = port.getStreamSub();
+				continue;
+			}
 
-    public getDisplayName(): string {
-        return this.getShortName();
-    }
+			if (port.getTypeIdentifier() !== TypeIdentifier.Map) {
+				return null;
+			}
 
-    public getConnectionsTo(): Connections {
-        const connections = new Connections();
+			const mapSubName = pathSplit[i];
+			port = port.findMapSub(mapSubName);
+			if (!port) {
+				return undefined;
+			}
+		}
 
-        const portIn = this.getPortIn();
+		return port;
+	}
 
-        if (portIn) {
-            connections.addConnections(portIn.getConnectionsTo());
-        }
+	public getDisplayName(): string {
+		return this.getShortName();
+	}
 
-        for (const operator of this.getOperators()) {
-            connections.addConnections(operator.getConnectionsTo());
-        }
+	public getConnectionsTo(): Connections {
+		const connections = new Connections();
 
-        for (const delegate of this.getDelegates()) {
-            const delegatePortIn = delegate.getPortIn();
-            if (delegatePortIn) {
-                connections.addConnections(delegatePortIn.getConnectionsTo());
-            }
-        }
+		const portIn = this.getPortIn();
 
-        return connections;
-    }
+		if (portIn) {
+			connections.addConnections(portIn.getConnectionsTo());
+		}
 
-    // Actions
+		for (const operator of this.getOperators()) {
+			connections.addConnections(operator.getConnectionsTo());
+		}
 
-    public addProperty(property: PropertyModel): PropertyModel {
-        this.properties.push(property);
-        return property
-    }
+		for (const delegate of this.getDelegates()) {
+			const delegatePortIn = delegate.getPortIn();
+			if (delegatePortIn) {
+				connections.addConnections(delegatePortIn.getConnectionsTo());
+			}
+		}
 
-    public select() {
-        if (!this.selected.getValue()) {
-            this.selected.next(true);
-        }
-    }
+		return connections;
+	}
 
-    public deselect() {
-        if (this.selected.getValue()) {
-            this.selected.next(false);
-        }
-    }
+	// Actions
 
-    public delete() {
-        this.removed.next();
-    }
+	public addProperty(property: PropertyModel): PropertyModel {
+		this.properties.push(property);
+		return property
+	}
 
-    public open() {
-        this.opened.next(true);
-    }
+	public select() {
+		if (!this.selected.getValue()) {
+			this.selected.next(true);
+		}
+	}
 
-    public close() {
-        this.opened.next(false);
-    }
+	public deselect() {
+		if (this.selected.getValue()) {
+			this.selected.next(false);
+		}
+	}
 
-    // Subscriptions
+	public delete() {
+		this.removed.next();
+	}
 
-    public subscribeSelectChanged(cb: (selected: boolean) => void): void {
-        this.selected.subscribe(cb);
-    }
+	public open() {
+		this.opened.next(true);
+	}
 
-    public subscribeOpenedChanged(cb: (opened: boolean) => void): void {
-        this.opened.subscribe(cb);
-    }
+	public deploy() {
+		if (!this.deployed.getValue()) {
+			this.deploymentTriggered.next(true);
+		}
+	}
 
+	public run(instanceAcess: BlueprintInstanceAccess) {
+		this.deployed.next(instanceAcess);
+	}
+
+	public close() {
+		this.opened.next(false);
+	}
+
+	// Subscriptions
+
+	public subscribeSelectChanged(cb: (selected: boolean) => void): void {
+		this.selected.subscribe(cb);
+	}
+
+	public subscribeOpenedChanged(cb: (opened: boolean) => void): void {
+		this.opened.subscribe(cb);
+	}
+
+	public subscribeDeployed(cb: (opened: BlueprintInstanceAccess) => void): void {
+		this.deployed.subscribe(cb);
+	}
+
+	public subscribeDeploymentTriggered(cb: (opened: boolean) => void): void {
+		this.deploymentTriggered.subscribe(cb);
+	}
 }
