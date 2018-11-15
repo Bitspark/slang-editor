@@ -155,21 +155,21 @@ export abstract class SlangNode {
 
     // Events
     
-    public subscribeChildCreated<T extends SlangNode>(types: Types<T>, cb: (child: T, initial: boolean) => void) {
-        this.children.subscribeAdded((child, initial) => {
+    public subscribeChildCreated<T extends SlangNode>(types: Types<T>, cb: (child: T) => void) {
+        this.children.subscribeAdded(child => {
             for (const type of getTypes(types)) {
                 if (child instanceof type) {
-                    cb(child as T, initial);
+                    cb(child as T);
                 }
             }
         });
     }
 
-    public subscribeDescendantCreated<T extends SlangNode>(types: Types<T>, cb: (child: T, initial: boolean) => void) {
-        this.children.subscribeAdded((child, initial) => {
+    public subscribeDescendantCreated<T extends SlangNode>(types: Types<T>, cb: (child: T) => void) {
+        this.children.subscribeAdded(child => {
             for (const type of getTypes(types)) {
                 if (child instanceof type) {
-                    cb(child as T, initial);
+                    cb(child as T);
                 }
             }
             child.subscribeDescendantCreated(types, cb);

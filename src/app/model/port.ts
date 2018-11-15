@@ -18,6 +18,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     private connected = new SlangSubject<Connection>("connected");
     private disconnected = new SlangSubject<Connection>("disconnected");
     private collapsed = new SlangBehaviorSubject<boolean>("collapsed", false);
+    private stream = new SlangBehaviorSubject<Stream | null>("stream", null);
 
     // Properties
     private readonly name: string;
@@ -26,7 +27,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     private genericIdentifier?: string;
     private streamDepth: number = 0;
     protected connectedWith: Array<PortModel> = [];
-    protected stream: Stream | null = null;
 
     protected constructor(parent: GenericPortModel<O> | O, {type, name, direction}: PortModelArgs, P: new(p: PortModel | PortOwner, args: PortModelArgs) => PortModel) {
         super(parent);
@@ -88,13 +88,14 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     }
     
     public trackStreams(): void {
-        if (!this.stream) {
+        const stream = this.stream.getValue();
+        if (!stream) {
             return;
         }
         
-		if (this.isSource()) {
+		if (this.isSource()) {		    
 			for (const destination of this.connectedWith) {
-				destination.setStream(this.stream);
+				destination.setStream(stream);
 				destination.trackStreams();
 			}
 
@@ -121,7 +122,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     }
     
     private setStream(stream: Stream): void {
-        this.stream = stream;
+        this.stream.next(stream);
         
         const parent = this.getParentNode();
         if (!parent) {
@@ -154,7 +155,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     }
 
     public getStream(): Stream | null {
-        return this.stream;
+        return this.stream.getValue();
     }
     
     private setStreamDepth(depth: number): void {
@@ -382,6 +383,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
                 this.connected.next(connection);
                 destination.connectedWith.push(this);
                 destination.connected.next(connection);
+                this.trackStreams();
                 break;
         }
     }
@@ -408,15 +410,19 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         this.collapsed.subscribe(cb);
     }
     
-    public subscribeConnected(cb: (connection: Connection, initial: boolean) => void): void {
+    public subscribeConnected(cb: (connection: Connection) => void): void {
         this.gitDirectConnectionsTo().forEach(connection => {
-            cb(connection, true);
+            cb(connection);
         });
-        this.connected.subscribe(value => cb(value!, false));
+        this.connected.subscribe(cb);
     }
 
     public subscribeDisconnected(cb: (connection: Connection) => void): void {
         this.disconnected.subscribe(cb);
+    }
+    
+    public subscribeStreamChanged(cb: (stream: Stream | null) => void): void {
+        this.stream.subscribe(cb);
     }
 }
 

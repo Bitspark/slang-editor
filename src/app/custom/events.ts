@@ -104,13 +104,11 @@ export class SlangNodeSetBehaviorSubject<T extends SlangNode> extends SlangBagSu
         super.nextRemove(value);
     }
 
-    public subscribeAdded(next: (value: T, initial: boolean) => void) {
+    public subscribeAdded(next: (value: T) => void) {
         if (this.nodes) {
-            this.nodes.forEach(node => {
-                next(node, true);
-            });
+            this.nodes.forEach(node => next(node));
         }
-        super.subscribeAdded(value => next(value, false));
+        super.subscribeAdded(next);
     }
 
     public size(): number {
