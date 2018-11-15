@@ -3,9 +3,8 @@ import {BlueprintPortModel, PortModel, PortModelArgs} from "./port";
 import {BlueprintDelegateModel} from './delegate';
 import {SlangParsing} from "../custom/parsing";
 import {PropertyEvaluator} from "../custom/utils";
-import {BlackBox, Stream} from "../custom/nodes";
+import {BlackBox, StreamType} from "../custom/nodes";
 import {Geometry} from "./operator";
-import {Connections} from '../custom/connections';
 import {TypeIdentifier} from "../custom/type";
 import {PropertyAssignments, PropertyModel} from "./property";
 import {GenericSpecifications} from "./generic";
@@ -24,7 +23,6 @@ export class BlueprintModel extends BlackBox {
 
     // Topics
     // self
-    private removed = new SlangSubject<void>("removed");
     private selected = new SlangBehaviorSubject<boolean>("selected", false);
     private opened = new SlangBehaviorSubject<boolean>("opened", false);
 
@@ -118,7 +116,14 @@ export class BlueprintModel extends BlackBox {
     }
 
     public createPort(args: PortModelArgs): BlueprintPortModel {
-        return this.createChildNode(BlueprintPortModel, args);
+        const port = this.createChildNode(BlueprintPortModel, args);
+        if (port.isSource()) {
+            if (this.getBaseStreamType()) {
+                throw new Error(`blueprint already has a base stream`);
+            }
+			this.setBaseStreamType(port.createStream());
+		}
+        return port;
     }
 
     public getFullName(): string {
@@ -266,15 +271,13 @@ export class BlueprintModel extends BlackBox {
         return this.getShortName();
     }
 
-	public trackStreams(): void {
-		const portIn = this.getPortIn();
-		if (portIn) {
-			this.baseStream = new Stream(null, portIn);
-			portIn.createStreams(this.baseStream);
-			portIn.trackStreams();
-		}
-	}
-    
+	// public trackStreams(): void {
+	// 	const portIn = this.getPortIn();
+	// 	if (portIn) {
+	// 		portIn.trackStreams();
+	// 	}
+	// }
+	
     // Actions
 
     public addProperty(property: PropertyModel): PropertyModel {

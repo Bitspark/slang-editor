@@ -176,6 +176,14 @@ export class BlueprintView extends PaperView {
 		});
 
 		this.blueprint.subscribeDescendantCreated(GenericPortModel, port => {
+			port.subscribeStreamTypeChanged(() => {
+				this.connections
+					.filter(connectionComponent => connectionComponent.getConnection().source === port)
+					.forEach(connectionComponent => connectionComponent.refresh());
+			});
+		});
+
+		this.blueprint.subscribeDescendantCreated(GenericPortModel, port => {
 			if (!port.isSource()) {
 				return;
 			}
@@ -186,13 +194,6 @@ export class BlueprintView extends PaperView {
 				this.removeConnection(connection);
 			});
 		});
-	}
-
-	private refreshStreams(): void {
-		this.blueprint.trackStreams();
-		for (const connection of this.connections) {
-			connection.refresh();
-		}
 	}
 
 	private createOuter(): dia.Element {

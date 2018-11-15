@@ -25,7 +25,7 @@ export abstract class SlangNode {
     private lastId = "0";
     private children = new SlangNodeSetBehaviorSubject<SlangNode>('children', []);
     
-    protected constructor(protected readonly parent: SlangNode | null) {}
+    protected constructor(private readonly parent: SlangNode | null) {}
 
     public getIdentity(): string {
         if (this.parent) {
@@ -178,31 +178,31 @@ export abstract class SlangNode {
     
 }
 
-export class Stream {
+export class StreamType {
     private static id = "0";
     private readonly id: string;
 
-    constructor(private baseStream: Stream | null, private sourcePort: PortModel) {
-        Stream.id = (Number.parseInt(Stream.id, 16) + 1).toString(16);
-        this.id = Stream.id;
+    constructor(private baseStreamType: StreamType | null, private sourcePort: PortModel) {
+        StreamType.id = (Number.parseInt(StreamType.id, 16) + 1).toString(16);
+        this.id = StreamType.id;
 
-        if (baseStream) {
-            if (baseStream.hasAncestor(this)) {
+        if (baseStreamType) {
+            if (baseStreamType.hasAncestor(this)) {
                 throw new Error(`stream circle detected`);
             }
         }
     }
     
-    public createSubStream(sourcePort: PortModel): Stream {
-        return new Stream(this, sourcePort);
+    public createSubStream(sourcePort: PortModel): StreamType {
+        return new StreamType(this, sourcePort);
     }
 
     public getId(): string {
         return this.id;
     }
 
-    public getBaseStream(): Stream | null {
-        return this.baseStream;
+    public getBaseStreamType(): StreamType | null {
+        return this.baseStreamType;
     }
 
     public getPort(): PortModel {
@@ -214,18 +214,18 @@ export class Stream {
     }
 
     public getStreamDepth(): number {
-        if (this.baseStream) {
-            return this.baseStream.getStreamDepth() + 1;
+        if (this.baseStreamType) {
+            return this.baseStreamType.getStreamDepth() + 1;
         }
         return 1;
     }
     
-    private hasAncestor(stream: Stream): boolean {
+    private hasAncestor(stream: StreamType): boolean {
         if (stream === this) {
             return true;
         }
-        if (this.baseStream) {
-            return this.baseStream.hasAncestor(stream);
+        if (this.baseStreamType) {
+            return this.baseStreamType.hasAncestor(stream);
         }
         return false;
     }
@@ -234,7 +234,7 @@ export class Stream {
 
 export abstract class PortOwner extends SlangNode {
 
-    protected baseStream: Stream | undefined = undefined;
+    private baseStreamType: StreamType | undefined = undefined;
 
     protected constructor(parent: SlangNode) {
         super(parent);
@@ -254,15 +254,15 @@ export abstract class PortOwner extends SlangNode {
         return this.getChildNodes(GenericPortModel);
     }
 
-	public setBaseStream(stream: Stream): void {
-		this.baseStream = stream;
+	protected setBaseStreamType(stream: StreamType): void {
+		this.baseStreamType = stream;
 	}
 
-    public getBaseStream(): Stream | undefined {
-        return this.baseStream;
+	protected getBaseStreamType(): StreamType | undefined {
+        return this.baseStreamType;
     }
 
-	public abstract trackStreams(): void;
+	// public abstract trackStreams(): void;
 
 }
 
