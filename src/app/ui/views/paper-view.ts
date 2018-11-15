@@ -47,8 +47,8 @@ export abstract class PaperView extends View {
 
 	protected createPaper(opt: dia.Paper.Options = {}): dia.Paper {
 		const container = this.getFrame().getHTMLElement();
-		container.innerHTML = '';
-		const inner = document.createElement('div');
+		container.innerHTML = "";
+		const inner = document.createElement("div");
 		container.appendChild(inner);
 
 		opt = Object.assign({
@@ -57,7 +57,7 @@ export abstract class PaperView extends View {
 			gridSize: 5,
 			drawGrid: false,
 			interactive: function (cellView: dia.CellView) {
-				if (cellView.model.attr('draggable') === false) {
+				if (cellView.model.attr("draggable") === false) {
 					return false;
 				}
 				if (cellView.model.isLink()) {
@@ -66,11 +66,16 @@ export abstract class PaperView extends View {
 				return true;
 			},
 			restrictTranslate: function (elementView: dia.ElementView): g.PlainRect {
-				const fn = elementView.model.get('restrictTranslate');
+				const fn = elementView.model.get("restrictTranslate");
 				if (typeof fn === "function") {
 					return fn();
 				}
-				return {x: -(Number.MAX_VALUE / 2), y: -(Number.MAX_VALUE / 2), width: Number.MAX_VALUE, height: Number.MAX_VALUE};
+				return {
+					x: -(Number.MAX_VALUE / 2),
+					y: -(Number.MAX_VALUE / 2),
+					width: Number.MAX_VALUE,
+					height: Number.MAX_VALUE
+				};
 			},
 		}, opt);
 
@@ -80,23 +85,23 @@ export abstract class PaperView extends View {
 	protected redirectPaperEvents() {
 		const paper = this.paper;
 
-		['mousewheel'].forEach(event => {
+		["mousewheel"].forEach(event => {
 			(function (event) {
-				paper.on('cell:' + event, function (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) {
+				paper.on("cell:" + event, function (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) {
 					cellView.model.trigger(event, cellView, evt, x, y, delta);
 				});
 			})(event);
 		});
-		['pointerdblclick', 'pointerclick', 'contextmenu', 'pointerdown', 'pointermove', 'pointerup'].forEach(event => {
+		["pointerdblclick", "pointerclick", "contextmenu", "pointerdown", "pointermove", "pointerup"].forEach(event => {
 			(function (event) {
-				paper.on('cell:' + event, function (cellView: dia.CellView, evt: Event, x: number, y: number) {
+				paper.on("cell:" + event, function (cellView: dia.CellView, evt: Event, x: number, y: number) {
 					cellView.model.trigger(event, cellView, evt, x, y);
 				});
 			})(event);
 		});
-		['mouseover', 'mouseout', 'mouseenter', 'mouseleave'].forEach(event => {
+		["mouseover", "mouseout", "mouseenter", "mouseleave"].forEach(event => {
 			(function (event) {
-				paper.on('cell:' + event, function (cellView: dia.CellView, evt: Event) {
+				paper.on("cell:" + event, function (cellView: dia.CellView, evt: Event) {
 					cellView.model.trigger(event, cellView, evt);
 				});
 			})(event);
@@ -130,10 +135,10 @@ export abstract class PaperView extends View {
 			that.positionChanged.next();
 		};
 
-		paper.on('blank:mousewheel', function (evt: Event, x: number, y: number, delta: number) {
+		paper.on("blank:mousewheel", function (evt: Event, x: number, y: number, delta: number) {
 			zoom(x, y, delta);
 		});
-		paper.on('cell:mousewheel', function (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) {
+		paper.on("cell:mousewheel", function (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) {
 			zoom(x, y, delta);
 		});
 	}
@@ -164,31 +169,31 @@ export abstract class PaperView extends View {
 			}
 		};
 
-		paper.on('blank:pointerdown', function (evt: Event, x: number, y: number) {
+		paper.on("blank:pointerdown", function (evt: Event, x: number, y: number) {
 			startPanning(x, y);
 		});
-		paper.on('cell:pointerdown', function (cellView: dia.CellView, evt: Event, x: number, y: number) {
-			if (cellView.model.attr('draggable') === false) {
+		paper.on("cell:pointerdown", function (cellView: dia.CellView, evt: Event, x: number, y: number) {
+			if (cellView.model.attr("draggable") === false) {
 				startPanning(x, y);
 			}
 		});
-		paper.on('blank:pointerup', function (evt: Event, x: number, y: number) {
+		paper.on("blank:pointerup", function (evt: Event, x: number, y: number) {
 			stopPanning();
 		});
-		paper.on('cell:pointerup', function (cellView: dia.CellView, evt: Event, x: number, y: number) {
+		paper.on("cell:pointerup", function (cellView: dia.CellView, evt: Event, x: number, y: number) {
 			stopPanning();
 		});
-		paper.svg.addEventListener('mousemove', function (event: any) {
+		paper.svg.addEventListener("mousemove", function (event: any) {
 			doPanning(event.offsetX, event.offsetY);
 		});
 	}
 
 	protected catchPaperEvents() {
 		const paper = this.paper;
-		paper.on('blank:mousewheel', function (evt: Event, x: number, y: number, delta: number) {
+		paper.on("blank:mousewheel", function (evt: Event, x: number, y: number, delta: number) {
 			evt.preventDefault();
 		});
-		paper.on('cell:mousewheel', function (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) {
+		paper.on("cell:mousewheel", function (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) {
 			evt.preventDefault();
 		});
 	}

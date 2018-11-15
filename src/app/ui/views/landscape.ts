@@ -7,267 +7,270 @@ import {PaperView} from "./paper-view";
 
 export class LandscapeView extends PaperView {
 
-    private readonly filter: ((blueprint: BlueprintModel) => boolean) | null;
-    private blueprintRects = new Map<string, shapes.standard.Rectangle>();
-    private addBlueprintButton: dia.Element;
-    private slangLogo: dia.Element;
-    private dimensions: [number, number] = [0, 0];
+	private readonly filter: ((blueprint: BlueprintModel) => boolean) | null;
+	private blueprintRects = new Map<string, shapes.standard.Rectangle>();
+	private addBlueprintButton: dia.Element;
+	private slangLogo: dia.Element;
+	private dimensions: [number, number] = [0, 0];
 
-    constructor(frame: ViewFrame, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
-        super(frame);
-        this.addZooming();
-        this.addPanning();
-        
-        if (filter) {
-            this.filter = filter;
-        } else {
-            this.filter = null;
-        }
+	constructor(frame: ViewFrame, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
+		super(frame);
+		this.addZooming();
+		this.addPanning();
 
-        this.addBlueprintButton = this.createAddBlueprintButton();
-        this.slangLogo = this.createSlangLogo();
+		if (filter) {
+			this.filter = filter;
+		} else {
+			this.filter = null;
+		}
 
-        this.redraw();
-        this.subscribe(landscape);
-    }
+		this.addBlueprintButton = this.createAddBlueprintButton();
+		this.slangLogo = this.createSlangLogo();
 
-    private subscribe(landscape: LandscapeModel) {
-        landscape.subscribeChildCreated(BlueprintModel, blueprint => {
-            if (!this.filter || this.filter(blueprint)) {
-                this.addBlueprint(blueprint);
-                this.reorder();
-            }
-        });
-    }
+		this.redraw();
+		this.subscribe(landscape);
+	}
 
-    public resize(width: number, height: number) {
-        super.resize(width, height);
-        this.dimensions = [width, height];
-        this.reorder();
-    }
+	private subscribe(landscape: LandscapeModel) {
+		landscape.subscribeChildCreated(BlueprintModel, blueprint => {
+			if (!this.filter || this.filter(blueprint)) {
+				this.addBlueprint(blueprint);
+				this.reorder();
+			}
+		});
+	}
 
-    private reorder() {
-        const blueprintFullnames = Array.from(this.blueprintRects.keys());
-        blueprintFullnames.sort();
-        this.reorderEqually(blueprintFullnames, this.dimensions[0], this.dimensions[1]);
-    }
+	public resize(width: number, height: number) {
+		super.resize(width, height);
+		this.dimensions = [width, height];
+		this.reorder();
+	}
 
-    public redraw() {
-        if (!this.graph) {
-            return;
-        }
+	private reorder() {
+		const blueprintFullnames = Array.from(this.blueprintRects.keys());
+		blueprintFullnames.sort();
+		this.reorderEqually(blueprintFullnames, this.dimensions[0], this.dimensions[1]);
+	}
 
-        this.graph.clear();
+	public redraw() {
+		if (!this.graph) {
+			return;
+		}
 
-        this.addBlueprintButton = this.createAddBlueprintButton();
-        this.slangLogo = this.createSlangLogo();
+		this.graph.clear();
 
-        this.reorder();
-    }
+		this.addBlueprintButton = this.createAddBlueprintButton();
+		this.slangLogo = this.createSlangLogo();
 
-    private reorderCircle(blueprintFullnames: Array<string>) {
-        const blueprintCount = blueprintFullnames.length + 1;
-        const ankleStep = 2 * Math.PI / blueprintCount;
-        const radius = 100 + blueprintCount * 150 / 2 / Math.PI;
-        let ankle = -Math.PI / 2 + ankleStep;
+		this.reorder();
+	}
 
-        // Blueprints
-        for (const fullname of blueprintFullnames) {
-            const rect = this.blueprintRects.get(fullname)!;
-            const posX = Math.cos(ankle) * radius;
-            const posY = Math.sin(ankle) * radius;
-            rect.position(posX - rect.getBBox().width / 2, posY - rect.getBBox().height / 2);
-            ankle += ankleStep;
-        }
+	private reorderCircle(blueprintFullnames: Array<string>) {
+		const blueprintCount = blueprintFullnames.length + 1;
+		const ankleStep = 2 * Math.PI / blueprintCount;
+		const radius = 100 + blueprintCount * 150 / 2 / Math.PI;
+		let ankle = -Math.PI / 2 + ankleStep;
 
-        // Button
-        const btn = this.addBlueprintButton;
-        let posX = Math.cos(ankle) * radius;
-        let posY = Math.sin(ankle) * radius;
-        btn.position(posX - btn.getBBox().width / 2, posY - btn.getBBox().height / 2);
+		// Blueprints
+		for (const fullname of blueprintFullnames) {
+			const rect = this.blueprintRects.get(fullname)!;
+			const posX = Math.cos(ankle) * radius;
+			const posY = Math.sin(ankle) * radius;
+			rect.position(posX - rect.getBBox().width / 2, posY - rect.getBBox().height / 2);
+			ankle += ankleStep;
+		}
 
-        // Slang logo
-        const logo = this.slangLogo;
-        posX = 0;
-        posY = 0;
-        logo.position(posX - logo.getBBox().width / 2, posY - logo.getBBox().height / 2);
-    }
+		// Button
+		const btn = this.addBlueprintButton;
+		let posX = Math.cos(ankle) * radius;
+		let posY = Math.sin(ankle) * radius;
+		btn.position(posX - btn.getBBox().width / 2, posY - btn.getBBox().height / 2);
 
-    private reorderSpiral(blueprintFullnames: Array<string>) {
-        const ankleStep = 200;
-        const radiusStep = 8000;
-        let radius = 200;
-        let ankle = 0;
+		// Slang logo
+		const logo = this.slangLogo;
+		posX = 0;
+		posY = 0;
+		logo.position(posX - logo.getBBox().width / 2, posY - logo.getBBox().height / 2);
+	}
 
-        // Blueprints
-        for (const fullname of blueprintFullnames) {
-            const rect = this.blueprintRects.get(fullname)!;
-            const posX = Math.cos(ankle) * radius - rect.getBBox().width / 2;
-            const posY = Math.sin(ankle) * radius - rect.getBBox().height / 2;
-            rect.position(posX, posY);
-            ankle += 1 / radius * ankleStep;
-            radius += 1 / radius * radiusStep;
-        }
+	private reorderSpiral(blueprintFullnames: Array<string>) {
+		const ankleStep = 200;
+		const radiusStep = 8000;
+		let radius = 200;
+		let ankle = 0;
 
-        // Button
-        const btn = this.addBlueprintButton;
-        let posX = Math.cos(ankle) * radius;
-        let posY = Math.sin(ankle) * radius;
-        btn.position(posX - btn.getBBox().width / 2, posY - btn.getBBox().height / 2);
+		// Blueprints
+		for (const fullname of blueprintFullnames) {
+			const rect = this.blueprintRects.get(fullname)!;
+			const posX = Math.cos(ankle) * radius - rect.getBBox().width / 2;
+			const posY = Math.sin(ankle) * radius - rect.getBBox().height / 2;
+			rect.position(posX, posY);
+			ankle += 1 / radius * ankleStep;
+			radius += 1 / radius * radiusStep;
+		}
 
-        // Slang logo
-        const logo = this.slangLogo;
-        posX = 0;
-        posY = 0;
-        logo.position(posX - logo.getBBox().width / 2, posY - logo.getBBox().height / 2);
-    }
+		// Button
+		const btn = this.addBlueprintButton;
+		let posX = Math.cos(ankle) * radius;
+		let posY = Math.sin(ankle) * radius;
+		btn.position(posX - btn.getBBox().width / 2, posY - btn.getBBox().height / 2);
 
-    private reorderConcentric(blueprintFullnames: Array<string>) {
-        const blueprintCount = blueprintFullnames.length + 1;
+		// Slang logo
+		const logo = this.slangLogo;
+		posX = 0;
+		posY = 0;
+		logo.position(posX - logo.getBBox().width / 2, posY - logo.getBBox().height / 2);
+	}
 
-        const circleStep = 8;
+	private reorderConcentric(blueprintFullnames: Array<string>) {
+		const blueprintCount = blueprintFullnames.length + 1;
 
-        let circle = 1;
-        let circleCapacity = 8;
-        let elements = 0;
+		const circleStep = 8;
 
-        // Blueprints
-        for (const fullname of blueprintFullnames) {
+		let circle = 1;
+		let circleCapacity = 8;
+		let elements = 0;
 
-            const ankle = (2 * Math.PI / circleCapacity) * elements;
-            const radius = circleCapacity * 200 / 2 / Math.PI;
+		// Blueprints
+		for (const fullname of blueprintFullnames) {
 
-            const rect = this.blueprintRects.get(fullname)!;
-            const posX = Math.cos(ankle) * radius;
-            const posY = Math.sin(ankle) * radius;
+			const ankle = (2 * Math.PI / circleCapacity) * elements;
+			const radius = circleCapacity * 200 / 2 / Math.PI;
 
-            rect.position(posX - rect.getBBox().width / 2, posY - rect.getBBox().height / 2);
+			const rect = this.blueprintRects.get(fullname)!;
+			const posX = Math.cos(ankle) * radius;
+			const posY = Math.sin(ankle) * radius;
 
-            elements++;
+			rect.position(posX - rect.getBBox().width / 2, posY - rect.getBBox().height / 2);
 
-            if (elements % circleCapacity == 0) {
-                circle++;
-                circleCapacity += circleStep;
-                elements = 0;
-            }
-        }
+			elements++;
 
-        // Button
-        const btn = this.addBlueprintButton;
-        let posX = 0;
-        let posY = 0;
-        btn.position(posX - btn.getBBox().width / 2, posY - btn.getBBox().height / 2);
+			if (elements % circleCapacity == 0) {
+				circle++;
+				circleCapacity += circleStep;
+				elements = 0;
+			}
+		}
 
-        // Slang logo
-        const logo = this.slangLogo;
-        posX = 0;
-        posY = 0;
-        logo.position(posX - logo.getBBox().width / 2, posY - logo.getBBox().height / 2);
-    }
+		// Button
+		const btn = this.addBlueprintButton;
+		let posX = 0;
+		let posY = 0;
+		btn.position(posX - btn.getBBox().width / 2, posY - btn.getBBox().height / 2);
 
-    private reorderEqually(blueprintFullnames: Array<string>, width: number, height: number) {
-        const columns = Math.min(5, Math.floor((width - 400) / 200));
-        const rows = Math.max((blueprintFullnames.length + 1) / columns);
+		// Slang logo
+		const logo = this.slangLogo;
+		posX = 0;
+		posY = 0;
+		logo.position(posX - logo.getBBox().width / 2, posY - logo.getBBox().height / 2);
+	}
 
-        let i = 0;
-        for (let row = 0; row < rows; row++) {
-            for (let col = 0; col < columns; col++) {
-                let rect: dia.Element | null = null;
+	private reorderEqually(blueprintFullnames: Array<string>, width: number, height: number) {
+		const columns = Math.min(5, Math.floor((width - 400) / 200));
+		const rows = Math.max((blueprintFullnames.length + 1) / columns);
 
-                if (i > 0) {
-                    const fullname = blueprintFullnames[i - 1];
-                    if (!fullname) {
-                        break;
-                    }
-                    rect = this.blueprintRects.get(fullname)!;
-                } else {
-                    rect = this.addBlueprintButton;
-                }
+		let i = 0;
+		for (let row = 0; row < rows; row++) {
+			for (let col = 0; col < columns; col++) {
+				let rect: dia.Element | null = null;
 
-                const posX = (col - columns / 2 + 0.5) * 200;
-                const posY = -height / 2 + 100 + (row + 1) * 200;
+				if (i > 0) {
+					const fullname = blueprintFullnames[i - 1];
+					if (!fullname) {
+						break;
+					}
+					rect = this.blueprintRects.get(fullname)!;
+				} else {
+					rect = this.addBlueprintButton;
+				}
 
-                rect.position(posX - rect.getBBox().width / 2, posY - rect.getBBox().height / 2);
+				const posX = (col - columns / 2 + 0.5) * 200;
+				const posY = -height / 2 + 100 + (row + 1) * 200;
 
-                i++;
-            }
-        }
+				rect.position(posX - rect.getBBox().width / 2, posY - rect.getBBox().height / 2);
 
-        // Slang logo
-        const logo = this.slangLogo;
-        let posX = 0;
-        let posY = -height / 2 + 100;
-        logo.position(posX - logo.getBBox().width / 2, posY - logo.getBBox().height / 2);
-    }
+				i++;
+			}
+		}
 
-    private createAddBlueprintButton(): dia.Element {
-        if (!this.graph) {
-            throw `no graph`;
-        }
+		// Slang logo
+		const logo = this.slangLogo;
+		let posX = 0;
+		let posY = -height / 2 + 100;
+		logo.position(posX - logo.getBBox().width / 2, posY - logo.getBBox().height / 2);
+	}
 
-        const rect = new shapes.standard.Rectangle();
-        rect.resize(100, 100);
-        rect.attr({
-            body: {
-                fill: "red",
-                cursor: "pointer",
-                rx: 8,
-                ry: 8,
-            },
-            label: {
-                text: "+",
-                fill: 'white',
-                cursor: "pointer"
-            }
-        });
-        rect.attr("draggable", false);
-        rect.addTo(this.graph);
+	private createAddBlueprintButton(): dia.Element {
+		if (!this.graph) {
+			throw `no graph`;
+		}
 
-        const that = this;
-        rect.on('pointerclick pointerup', function (evt: Event, x: number, y: number) {
-            that.landscape.createBlueprint({fullName: `Unnamed${new Date().getTime()}`, type: BlueprintType.Local}).open();
-        });
+		const rect = new shapes.standard.Rectangle();
+		rect.resize(100, 100);
+		rect.attr({
+			body: {
+				fill: "red",
+				cursor: "pointer",
+				rx: 8,
+				ry: 8,
+			},
+			label: {
+				text: "+",
+				fill: "white",
+				cursor: "pointer"
+			}
+		});
+		rect.attr("draggable", false);
+		rect.addTo(this.graph);
 
-        return rect;
-    }
+		const that = this;
+		rect.on("pointerclick pointerup", function (evt: Event, x: number, y: number) {
+			that.landscape.createBlueprint({
+				fullName: `Unnamed${new Date().getTime()}`,
+				type: BlueprintType.Local
+			}).open();
+		});
 
-    private createSlangLogo(): dia.Element {
-        if (!this.graph) {
-            throw `no graph`;
-        }
+		return rect;
+	}
 
-        let image = new shapes.basic.Image({
-            size: {
-                width: 177,
-                height: 203
-            },
-            attrs: {
-                image: {
-                    "xlink:href": "https://files.bitspark.de/slang2.png",
-                    width: 177,
-                    height: 203,
-                    cursor: "default"
-                }
-            }
-        });
-        image.attr('draggable', false);
-        this.graph.addCell(image);
+	private createSlangLogo(): dia.Element {
+		if (!this.graph) {
+			throw `no graph`;
+		}
 
-        return image;
-    }
+		let image = new shapes.basic.Image({
+			size: {
+				width: 177,
+				height: 203
+			},
+			attrs: {
+				image: {
+					"xlink:href": "https://files.bitspark.de/slang2.png",
+					width: 177,
+					height: 203,
+					cursor: "default"
+				}
+			}
+		});
+		image.attr("draggable", false);
+		this.graph.addCell(image);
 
-    private addBlueprint(blueprint: BlueprintModel) {
-        if (!this.graph) {
-            return;
-        }
+		return image;
+	}
 
-        const blueprintBox = new BlueprintBoxComponent(this.graph, blueprint);
-        this.blueprintRects.set(blueprint.getFullName(), blueprintBox.getRectangle());
+	private addBlueprint(blueprint: BlueprintModel) {
+		if (!this.graph) {
+			return;
+		}
 
-        // JointJS -> Model
-        blueprintBox.on("pointerclick pointerup", function (evt: Event, x: number, y: number) {
-            blueprint.open();
-        });
-    }
-    
+		const blueprintBox = new BlueprintBoxComponent(this.graph, blueprint);
+		this.blueprintRects.set(blueprint.getFullName(), blueprintBox.getRectangle());
+
+		// JointJS -> Model
+		blueprintBox.on("pointerclick pointerup", function (evt: Event, x: number, y: number) {
+			blueprint.open();
+		});
+	}
+
 }

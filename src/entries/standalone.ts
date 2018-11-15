@@ -10,24 +10,24 @@ import {ViewFrame} from "../app/ui/frame";
 import {DeploymentPlugin} from "../app/plugins/deployment";
 
 function SlangStudioStandalone(el: HTMLElement): Promise<void> {
-    return new Promise<void>(resolve => {
-        const appModel = AppModel.create("slang");
-        const app = new SlangApp(appModel);
-        const frame = new ViewFrame(el);
-        app.addFrame(frame, true);
+	return new Promise<void>(resolve => {
+		const appModel = AppModel.create("slang");
+		const app = new SlangApp(appModel);
+		const frame = new ViewFrame(el);
+		app.addFrame(frame, true);
 
-        new APIStoragePlugin(appModel, "http://localhost:5149/");
-        new DeploymentPlugin(appModel, "http://localhost:5149/");
+		new APIStoragePlugin(appModel, "http://localhost:5149/");
+		new DeploymentPlugin(appModel, "http://localhost:5149/");
 
-        app.load().then(() => {
-            const router = new RouterPlugin(appModel);
-            router.checkRoute();
-            resolve();
-        });
-    });
+		app.load().then(() => {
+			const router = new RouterPlugin(appModel);
+			router.checkRoute();
+			resolve();
+		});
+	});
 }
 
 const el = document.getElementById("slang-studio");
 if (el) {
-    SlangStudioStandalone(el);
+	SlangStudioStandalone(el);
 }

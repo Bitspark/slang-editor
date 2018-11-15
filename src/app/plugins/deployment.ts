@@ -17,7 +17,7 @@ export class DeploymentPlugin extends SlangPlugin {
 			if (blueprint !== null) {
 				blueprint.subscribeDeploymentTriggered(() => {
 					this.deploy(blueprint);
-				})
+				});
 			}
 		});
 	}

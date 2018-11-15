@@ -142,7 +142,7 @@ export namespace BlackBoxComponent {
 						return result;
 					}, {})
 			}
-		}
+		};
 	}
 
 	export class Rect extends shapes.standard.Rectangle.define("BlackBoxRect", Styles.Defaults.BlackBox) {

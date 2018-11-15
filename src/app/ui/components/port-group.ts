@@ -7,27 +7,27 @@ import {Styles} from "../../../styles/studio";
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";
 
 function createPortItems(parent: PortGroupComponent, position: PortGroupPosition, port: PortModel): Array<PortComponent> {
-    let portItems: Array<PortComponent> = [];
+	let portItems: Array<PortComponent> = [];
 
-    switch (port.getTypeIdentifier()) {
-        case TypeIdentifier.Map:
-            if (port.isCollapsed()) {
-                portItems.push(new PortComponent(port, parent));
-                break;
-            }
-            for (const sub of port.getMapSubs()) {
-                portItems.push.apply(portItems, createPortItems(parent, position, sub));
-            }
-            break;
+	switch (port.getTypeIdentifier()) {
+		case TypeIdentifier.Map:
+			if (port.isCollapsed()) {
+				portItems.push(new PortComponent(port, parent));
+				break;
+			}
+			for (const sub of port.getMapSubs()) {
+				portItems.push.apply(portItems, createPortItems(parent, position, sub));
+			}
+			break;
 
-        case TypeIdentifier.Stream:
-            portItems.push.apply(portItems, createPortItems(parent, position, port.getStreamSub()));
-            break;
+		case TypeIdentifier.Stream:
+			portItems.push.apply(portItems, createPortItems(parent, position, port.getStreamSub()));
+			break;
 
-        default:
-            portItems.push(new PortComponent(port, parent));
-    }
-    return portItems;
+		default:
+			portItems.push(new PortComponent(port, parent));
+	}
+	return portItems;
 }
 
 /**
@@ -37,114 +37,114 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
  */
 export class PortGroupComponent {
 
-    private readonly ports: Array<PortComponent> = [];
-    private parentElement: dia.Element | null;
-    private portGroupElement: dia.Element.PortGroup = {};
+	private readonly ports: Array<PortComponent> = [];
+	private parentElement: dia.Element | null;
+	private portGroupElement: dia.Element.PortGroup = {};
 
-    constructor(private graph: dia.Graph,
-                private readonly name: string,
-                private readonly port: PortModel,
-                private readonly groupPosition: PortGroupPosition,
-                start: number,
-                width: number) {
-        switch (groupPosition) {
-            case "top":
-                this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "top", start, width) as any;
-                break;
-            case "right":
-                this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "right", start, width) as any;
-                break;
-            case "bottom":
-                this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "bottom", start, width) as any;
-                break;
-            case "left":
-                this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "left", start, width) as any;
-                break;
-        }
-    }
+	constructor(private graph: dia.Graph,
+				private readonly name: string,
+				private readonly port: PortModel,
+				private readonly groupPosition: PortGroupPosition,
+				start: number,
+				width: number) {
+		switch (groupPosition) {
+			case "top":
+				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "top", start, width) as any;
+				break;
+			case "right":
+				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "right", start, width) as any;
+				break;
+			case "bottom":
+				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "bottom", start, width) as any;
+				break;
+			case "left":
+				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "left", start, width) as any;
+				break;
+		}
+	}
 
-    public getPortGroupElement(): dia.Element.PortGroup {
-        return this.portGroupElement;
-    }
+	public getPortGroupElement(): dia.Element.PortGroup {
+		return this.portGroupElement;
+	}
 
-    public getName(): string {
-        return this.name;
-    }
+	public getName(): string {
+		return this.name;
+	}
 
-    public getGroupPosition(): PortGroupPosition {
-        return this.groupPosition;
-    }
+	public getGroupPosition(): PortGroupPosition {
+		return this.groupPosition;
+	}
 
-    public setParent(parent: dia.Element) {
-        this.parentElement = parent;
-        this.refreshPorts();
-    }
+	public setParent(parent: dia.Element) {
+		this.parentElement = parent;
+		this.refreshPorts();
+	}
 
-    private refreshPorts() {
-        const parentElement = this.parentElement;
-        if (!parentElement) {
-            throw new Error(`need parent`);
-        }
-        
-        this.ports.forEach(port => {
-            parentElement.removePort(port.getPortElement());
-        });
-        
-        this.ports.length = 0;
-        this.ports.push.apply(this.ports, createPortItems(this, this.getGroupPosition(), this.port));
-        parentElement.addPorts(this.ports.map(port => port.getPortElement()));
-    }
+	private refreshPorts() {
+		const parentElement = this.parentElement;
+		if (!parentElement) {
+			throw new Error(`need parent`);
+		}
 
-    // STATIC:
+		this.ports.forEach(port => {
+			parentElement.removePort(port.getPortElement());
+		});
 
-    public static layoutFunction(portComponents: Array<PortComponent>, position: PortGroupPosition, offset: number, space: number): (ports: Array<any>, elBBox: g.Rect, opt: any) => Array<g.Point> {
-        return function (ports: Array<PortComponent>, elBBox: g.Rect, opt: any): Array<g.Point> {
-            return ports.map((port: PortComponent, index: number, ports: Array<any>) => {
-                const count = ports.length;
+		this.ports.length = 0;
+		this.ports.push.apply(this.ports, createPortItems(this, this.getGroupPosition(), this.port));
+		parentElement.addPorts(this.ports.map(port => port.getPortElement()));
+	}
 
-                let total = 0;
-                switch (position) {
-                    case "top":
-                    case "bottom":
-                        total = elBBox.width;
-                        break;
-                    case "left":
-                    case "right":
-                        total = elBBox.height;
-                        break;
-                }
+	// STATIC:
 
-                const lengthAbs = (count - 1) * Styles.PortGroup.portSpacing;
-                const spaceAbs = space * total;
-                const offsetAbs = offset * total;
-                const positionAbs =
-                    offsetAbs +
-                    index * Styles.PortGroup.portSpacing +
-                    (spaceAbs - lengthAbs) / 2;
+	public static layoutFunction(portComponents: Array<PortComponent>, position: PortGroupPosition, offset: number, space: number): (ports: Array<any>, elBBox: g.Rect, opt: any) => Array<g.Point> {
+		return function (ports: Array<PortComponent>, elBBox: g.Rect, opt: any): Array<g.Point> {
+			return ports.map((port: PortComponent, index: number, ports: Array<any>) => {
+				const count = ports.length;
 
-                let portPosition: g.PlainPoint = {x: 0, y: 0};
+				let total = 0;
+				switch (position) {
+					case "top":
+					case "bottom":
+						total = elBBox.width;
+						break;
+					case "left":
+					case "right":
+						total = elBBox.height;
+						break;
+				}
 
-                const translate = portComponents[index].getModel().isDirectionIn() ? Styles.PortGroup.TranslationIn : Styles.PortGroup.TranslationOut;
-                
-                switch (position) {
-                    case "top":
-                        portPosition = {x: positionAbs, y: -translate};
-                        break;
-                    case "bottom":
-                        portPosition = {x: positionAbs, y: elBBox.height + translate};
-                        break;
-                    case "left":
-                        portPosition = {x: translate, y: positionAbs};
-                        break;
-                    case "right":
-                        portPosition = {x: elBBox.width - translate, y: positionAbs};
-                        break;
-                }
+				const lengthAbs = (count - 1) * Styles.PortGroup.portSpacing;
+				const spaceAbs = space * total;
+				const offsetAbs = offset * total;
+				const positionAbs =
+					offsetAbs +
+					index * Styles.PortGroup.portSpacing +
+					(spaceAbs - lengthAbs) / 2;
 
-                portComponents[index].setPosition(portPosition);
-                return new g.Point(portPosition);
-            });
-        };
-    }
+				let portPosition: g.PlainPoint = {x: 0, y: 0};
+
+				const translate = portComponents[index].getModel().isDirectionIn() ? Styles.PortGroup.TranslationIn : Styles.PortGroup.TranslationOut;
+
+				switch (position) {
+					case "top":
+						portPosition = {x: positionAbs, y: -translate};
+						break;
+					case "bottom":
+						portPosition = {x: positionAbs, y: elBBox.height + translate};
+						break;
+					case "left":
+						portPosition = {x: translate, y: positionAbs};
+						break;
+					case "right":
+						portPosition = {x: elBBox.width - translate, y: positionAbs};
+						break;
+				}
+
+				portComponents[index].setPosition(portPosition);
+				return new g.Point(portPosition);
+			});
+		};
+	}
 
 }
