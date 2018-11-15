@@ -7,6 +7,7 @@ import {SlangApp} from "../app/app";
 import {APIStoragePlugin} from "../app/plugins/storage";
 import {RouterPlugin} from "../app/plugins/router";
 import {ViewFrame} from "../app/ui/frame";
+import {DeploymentPlugin} from "../app/plugins/deployment";
 
 function SlangStudioStandalone(el: HTMLElement): Promise<void> {
     return new Promise<void>(resolve => {
@@ -16,6 +17,7 @@ function SlangStudioStandalone(el: HTMLElement): Promise<void> {
         app.addFrame(frame, true);
 
         new APIStoragePlugin(appModel, "http://localhost:5149/");
+        new DeploymentPlugin(appModel, "http://localhost:5149/");
 
         app.load().then(() => {
             const router = new RouterPlugin(appModel);
