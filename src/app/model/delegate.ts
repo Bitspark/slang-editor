@@ -1,9 +1,8 @@
-import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel, PortModelArgs} from "./port";
+import {BlueprintPortModel, OperatorPortModel, PortModel, PortModelArgs} from "./port";
 import {BlueprintModel} from './blueprint';
 import {OperatorModel} from './operator';
-import {BlackBox, PortOwner, StreamType} from "../custom/nodes";
+import {BlackBox, PortOwner} from "../custom/nodes";
 import {Connections} from '../custom/connections';
-import {SlangType} from "../custom/type";
 
 export abstract class GenericDelegateModel<B extends BlackBox, P extends PortModel> extends PortOwner {
     protected constructor(parent: B, private name: string) {
