@@ -70,7 +70,7 @@ export class ApiService {
 
 	private fetch<S, T>(method: string, path: string, data: S, process: (_: any) => T, error: (error: any) => void): Promise<T> {
 		return new Promise<T>((resolve) => {
-			const reqInit = (method === "post") ? {method, body: JSON.stringify(data)} : {};
+			const reqInit = (method !== "get") ? {method, body: JSON.stringify(data)} : {};
 			fetch(this.host + path, reqInit)
 				.then((response: Response) => response.json())
 				.then((data: any) => resolve(process(data)))
@@ -98,6 +98,16 @@ export class ApiService {
 		);
 	}
 
+	private DELETE<ReqT, RespT>(path: string, data: ReqT, process: (_: any) => RespT, error: (error: any) => void): Promise<RespT> {
+		return this.fetch<ReqT, RespT>(
+			"delete",
+			path,
+			data,
+			process,
+			error
+		);
+	}
+
 	public async getBlueprints(): Promise<Array<BlueprintApiResponse>> {
 		return this.GET<{}, Array<BlueprintApiResponse>>(
 			"/operator/",
@@ -107,13 +117,27 @@ export class ApiService {
 		);
 	}
 
-	public async deploy(blueprintFullName: string): Promise<DeploymentStatusApiResponse> {
+	public async deployBlueprint(blueprintFullName: string): Promise<DeploymentStatusApiResponse> {
 		return this.POST<{ fqn: string, props: any, gens: any, stream: boolean }, DeploymentStatusApiResponse>(
 			"/run/",
 			{fqn: blueprintFullName, props: {}, gens: {}, stream: false},
 			(data: any) => {
 				if (data.status === "success") {
 					return data as DeploymentStatusApiResponse;
+				}
+				throw(data);
+			},
+			(err: any) => console.error(err)
+		);
+	}
+
+	public async shutdownBlueprintInstance(accessHandle: string): Promise<{}> {
+		return this.DELETE<{ handle: string }, {}>(
+			"/run/",
+			{handle: accessHandle},
+			(data: any) => {
+				if (data.status === "success") {
+					return data;
 				}
 				throw(data);
 			},

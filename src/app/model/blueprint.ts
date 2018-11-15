@@ -19,7 +19,7 @@ export enum BlueprintType {
 
 export type BlueprintModelArgs = { fullName: string, type: BlueprintType };
 
-export type BlueprintInstanceAccess = { handle: string, url: string };
+export type BlueprintInstance = { handle: string, url: string };
 
 export class BlueprintModel extends BlackBox {
 	// Topics::self
@@ -27,8 +27,9 @@ export class BlueprintModel extends BlackBox {
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
 
 	// Topics::Deployment
-	private deploymentTriggered = new SlangSubject<boolean>("deployment-triggered");
-	private deployed = new SlangBehaviorSubject<BlueprintInstanceAccess | undefined>("deployed", undefined);
+	private deploymentRequested = new SlangSubject<boolean>("deployment-triggered");
+	private shutdownRequested = new SlangSubject<boolean>("requestShutdown-triggered");
+	private instance = new SlangBehaviorSubject<BlueprintInstance | null>("instance", null);
 
 	// Properties
 	private readonly fullName: string;
@@ -283,6 +284,10 @@ export class BlueprintModel extends BlackBox {
 		return this.getShortName();
 	}
 
+	public getInstanceAccess(): BlueprintInstance | null {
+		return this.instance.getValue();
+	}
+
 	// Actions
 
 	public addProperty(property: PropertyModel): PropertyModel {
@@ -298,14 +303,24 @@ export class BlueprintModel extends BlackBox {
 		this.opened.next(false);
 	}
 
-	public deploy() {
-		if (!this.deployed.getValue()) {
-			this.deploymentTriggered.next(true);
+	public requestDeployment() {
+		if (!this.instance.getValue()) {
+			this.deploymentRequested.next(true);
 		}
 	}
 
-	public run(instanceAcess: BlueprintInstanceAccess) {
-		this.deployed.next(instanceAcess);
+	public requestShutdown() {
+		if (this.instance.getValue()) {
+			this.shutdownRequested.next(true);
+		}
+	}
+
+	public deploy(instanceAcess: BlueprintInstance) {
+		this.instance.next(instanceAcess);
+	}
+
+	public shutdown() {
+		this.instance.next(null);
 	}
 
 	// Subscriptions
@@ -318,11 +333,15 @@ export class BlueprintModel extends BlackBox {
 		this.opened.subscribe(cb);
 	}
 
-	public subscribeDeployed(cb: (instanceAcess: BlueprintInstanceAccess) => void): void {
-		this.deployed.subscribe(cb);
+	public subscribeDeployed(cb: (instance: BlueprintInstance | null) => void): void {
+		this.instance.subscribe(cb);
 	}
 
-	public subscribeDeploymentTriggered(cb: (opened: boolean) => void): void {
-		this.deploymentTriggered.subscribe(cb);
+	public subscribeDeploymentRequested(cb: (opened: boolean) => void): void {
+		this.deploymentRequested.subscribe(cb);
+	}
+
+	public subscribeShutdownRequested(cb: (opened: boolean) => void): void {
+		this.shutdownRequested.subscribe(cb);
 	}
 }
