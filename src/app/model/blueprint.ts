@@ -1,16 +1,16 @@
-import {OperatorModel} from './operator';
-import {BlueprintPortModel, PortDirection, PortModel} from './port';
-import {BlueprintDelegateModel} from './delegate';
+import {OperatorModel} from "./operator";
+import {BlueprintPortModel, PortDirection, PortModel} from "./port";
+import {BlueprintDelegateModel} from "./delegate";
 import {Geometry} from "./operator";
 import {SlangParsing} from "../custom/parsing";
 import {PropertyEvaluator} from "../custom/utils";
-import {BlackBox} from '../custom/nodes';
-import {Connections} from '../custom/connections';
+import {BlackBox} from "../custom/nodes";
+import {Connections} from "../custom/connections";
 import {TypeIdentifier, SlangType} from "../custom/type";
 import {PropertyAssignments, PropertyModel} from "./property";
 import {GenericSpecifications} from "./generic";
-import {SlangBehaviorSubject, SlangSubject} from '../custom/events';
-import {LandscapeModel} from './landscape';
+import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
+import {LandscapeModel} from "./landscape";
 
 export enum BlueprintType {
 	Local,
@@ -49,7 +49,7 @@ export class BlueprintModel extends BlackBox {
 		super(parent);
 		this.fullName = fullName;
 		this.type = type;
-		this.hierarchy = fullName.split('.');
+		this.hierarchy = fullName.split(".");
 		this.genericIdentifiers = new Set<string>();
 	}
 
@@ -201,14 +201,14 @@ export class BlueprintModel extends BlackBox {
 	public resolvePortReference(portReference: string): PortModel | null | undefined {
 		const portInfo = SlangParsing.parseReferenceString(portReference);
 
-		if (!portInfo || typeof portInfo.instance === 'undefined') {
+		if (!portInfo || typeof portInfo.instance === "undefined") {
 			return undefined;
 		}
 
 		let blackbox: BlackBox | undefined = undefined;
 		let port: PortModel | null | undefined = undefined;
 
-		if (portInfo.instance === '') {
+		if (portInfo.instance === "") {
 			blackbox = this;
 		} else {
 			blackbox = this.findOperator(portInfo.instance);
@@ -245,13 +245,13 @@ export class BlueprintModel extends BlackBox {
 			return port;
 		}
 
-		const pathSplit = portInfo.port.split('.');
-		if (pathSplit.length === 1 && pathSplit[0] === '') {
+		const pathSplit = portInfo.port.split(".");
+		if (pathSplit.length === 1 && pathSplit[0] === "") {
 			return port;
 		}
 
 		for (let i = 0; i < pathSplit.length; i++) {
-			if (pathSplit[i] === '~') {
+			if (pathSplit[i] === "~") {
 				port = port.getStreamSub();
 				continue;
 			}
@@ -301,7 +301,7 @@ export class BlueprintModel extends BlackBox {
 
 	public addProperty(property: PropertyModel): PropertyModel {
 		this.properties.push(property);
-		return property
+		return property;
 	}
 
 	public select() {

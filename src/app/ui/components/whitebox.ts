@@ -1,4 +1,4 @@
-import m from 'mithril';
+import m from "mithril";
 import {AnchorComponent, AnchorPosition} from "./anchor";
 import {Styles} from "../../../styles/studio";
 import {BlackBox} from "../../custom/nodes";
@@ -63,7 +63,7 @@ export namespace WhiteBox {
 							class: "stop"
 						}),
 					])
-				})
+				});
 			});
 
 
@@ -273,7 +273,7 @@ export namespace WhiteBox {
 					class: "joint-cell joint-element sl-blackbox ${cssClass}",
 				},
 			},
-		}
+		};
 	}
 
 	export class Shape extends shapes.standard.Rectangle.define("WhiteBox", Styles.Defaults.Outer) {
