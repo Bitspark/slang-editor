@@ -49,8 +49,18 @@ export interface BlueprintApiResponse {
 }
 
 export class ApiService {
+	private readonly host: string;
 
-	constructor(private host: string = '') {
+	constructor(host: string) {
+		this.host = ApiService.normalizeUrl(host);
+	}
+
+	private static normalizeUrl(host: string): string {
+		let [protocol, url] = (host.startsWith("//")) ? ["", host] : host.split("://");
+		protocol = (protocol) ? protocol + ":" : "";
+		url = url.replace("//", "/");
+		url = (url.endsWith("/")) ? url.slice(0, -1) : url;
+		return `${protocol}//${url}`;
 	}
 
 	private fetch<S, T>(method: string, path: string, data: S, process: (_: any) => T, error: (error: any) => void): Promise<T> {
