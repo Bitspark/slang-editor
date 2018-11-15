@@ -19,8 +19,8 @@ export class SlangSubject<T> extends BaseSlangSubject<T> {
         this.subject.next(value);
     }
 
-    public subscribe(next: (value?: T) => void): Subscription {
-        return this.subject.subscribe(next);
+    public subscribe(next: (value?: T) => void): void {
+        this.subject.subscribe(next);
     }
 }
 

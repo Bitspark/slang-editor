@@ -179,13 +179,8 @@ export abstract class SlangNode {
 }
 
 export class StreamType {
-    private static id = "0";
-    private readonly id: string;
-
+    
     constructor(private baseStreamType: StreamType | null, private sourcePort: PortModel) {
-        StreamType.id = (Number.parseInt(StreamType.id, 16) + 1).toString(16);
-        this.id = StreamType.id;
-
         if (baseStreamType) {
             if (baseStreamType.hasAncestor(this)) {
                 throw new Error(`stream circle detected`);
@@ -197,20 +192,12 @@ export class StreamType {
         return new StreamType(this, sourcePort);
     }
 
-    public getId(): string {
-        return this.id;
-    }
-
     public getBaseStreamType(): StreamType | null {
         return this.baseStreamType;
     }
 
-    public getPort(): PortModel {
+    public getSourcePort(): PortModel {
         return this.sourcePort;
-    }
-
-    public setSourcePort(port: PortModel): void {
-        this.sourcePort = port;
     }
 
     public getStreamDepth(): number {
@@ -261,8 +248,6 @@ export abstract class PortOwner extends SlangNode {
 	protected getBaseStreamType(): StreamType | null | undefined {
         return this.baseStreamType;
     }
-
-	// public abstract trackStreams(): void;
 
 }
 

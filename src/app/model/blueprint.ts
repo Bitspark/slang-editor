@@ -271,13 +271,6 @@ export class BlueprintModel extends BlackBox {
         return this.getShortName();
     }
 
-	// public trackStreams(): void {
-	// 	const portIn = this.getPortIn();
-	// 	if (portIn) {
-	// 		portIn.trackStreams();
-	// 	}
-	// }
-	
     // Actions
 
     public addProperty(property: PropertyModel): PropertyModel {
