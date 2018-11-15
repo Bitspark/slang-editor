@@ -2,8 +2,12 @@ import {g} from "jointjs";
 import {PortModel} from "../../model/port";
 
 function movePoint(p: g.PlainPoint, i: number, total: number): g.PlainPoint {
-    const x = p.x + i * 2.5;
-    const y = p.y + i * 0;
+	if (total <= 1) {
+		return p;
+	}
+	const move = (i - 0.5 * (total - 1)) * 3;
+    const x = Math.round(p.x + move);
+    const y = p.y;
     return {x, y};
 }
 

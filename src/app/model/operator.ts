@@ -1,5 +1,5 @@
 import {BlueprintModel, BlueprintType} from './blueprint';
-import {BlueprintPortModel, OperatorPortModel, PortModelArgs} from "./port";
+import {OperatorPortModel, PortModelArgs} from "./port";
 import {OperatorDelegateModel} from './delegate';
 import {BlackBox, StreamType} from "../custom/nodes";
 import {Connections} from '../custom/connections';
@@ -45,7 +45,13 @@ export class OperatorModel extends BlackBox {
     }
 
     public createPort(args: PortModelArgs): OperatorPortModel {
-        return this.createChildNode(OperatorPortModel, args);
+        const port = this.createChildNode(OperatorPortModel, args);
+        if (port.isDestination()) {
+            port.subscribeStreamTypeChanged(streamType => {
+                this.setBaseStreamType(streamType);
+            });
+        }
+        return port;
     }
 
     public getDelegates(): IterableIterator<OperatorDelegateModel> {
@@ -83,19 +89,13 @@ export class OperatorModel extends BlackBox {
         }
     }
 
-	// public trackStreams(): void {
-    //     if (!this.baseStreamType) {
-    //         console.log(this, "have no base stream");
-    //         return;
-    //     }
-    //    
-	// 	const portOut = this.getPortOut();
-	// 	if (portOut) {
-	// 		console.log(portOut.getAncestorNode(BlackBox)!.getDisplayName(), portOut);
-	// 	    portOut.createStreams(this.baseStreamType);
-	// 	    portOut.trackStreams();
-    //     }
-	// }
+    protected setBaseStreamType(baseStreamType: StreamType | null): void {
+        super.setBaseStreamType(baseStreamType);
+        const portOut = this.getPortOut();
+        if (portOut) {
+            portOut.setSubStreamTypes(baseStreamType);
+        }
+    }
 
     // Actions
     public createDelegate(name: string): OperatorDelegateModel {

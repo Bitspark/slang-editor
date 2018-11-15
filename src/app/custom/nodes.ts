@@ -234,7 +234,7 @@ export class StreamType {
 
 export abstract class PortOwner extends SlangNode {
 
-    private baseStreamType: StreamType | undefined = undefined;
+    private baseStreamType: StreamType | null | undefined = undefined;
 
     protected constructor(parent: SlangNode) {
         super(parent);
@@ -254,11 +254,11 @@ export abstract class PortOwner extends SlangNode {
         return this.getChildNodes(GenericPortModel);
     }
 
-	protected setBaseStreamType(stream: StreamType): void {
+	protected setBaseStreamType(stream: StreamType | null): void {
 		this.baseStreamType = stream;
 	}
 
-	protected getBaseStreamType(): StreamType | undefined {
+	protected getBaseStreamType(): StreamType | null | undefined {
         return this.baseStreamType;
     }
 

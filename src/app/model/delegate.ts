@@ -46,10 +46,6 @@ export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel,
     public getPortOut(): BlueprintPortModel | null {
         return super.getPortOut() as BlueprintPortModel;
     }
-
-	public trackStreams(): void {
-		// TODO
-	}
 }
 
 export type OperatorDelegateModelArgs = {name: string};
@@ -60,10 +56,13 @@ export class OperatorDelegateModel extends GenericDelegateModel<OperatorModel, O
     }
 
     public createPort(args: PortModelArgs): OperatorPortModel {
-        return super.createChildNode(OperatorPortModel, args);
+		const port = this.createChildNode(OperatorPortModel, args);
+		if (port.isSource()) {
+			if (this.getBaseStreamType()) {
+				throw new Error(`operator delegate already has a base stream`);
+			}
+			this.setBaseStreamType(port.createStream());
+		}
+		return port;
     }
-
-	public trackStreams(): void {
-		// TODO
-	}
 }
