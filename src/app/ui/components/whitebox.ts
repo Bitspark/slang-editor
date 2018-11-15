@@ -82,7 +82,6 @@ export namespace WhiteBox {
 			m.mount(this.htmlRoot, {
 				view: () => m(Tool.Button, {
 					onClick: () => {
-						console.log(">>> DEPLOY");
 						this.blueprint.deploy();
 					},
 					label: "Deploy",

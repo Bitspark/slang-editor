@@ -22,11 +22,9 @@ export class DeploymentPlugin extends SlangPlugin {
 		});
 	}
 
-	private async deploy(blueprint: BlueprintModel): Promise<void> {
-		return new Promise<void>(async resolve => {
-			const {url, handle} = await this.api.deploy(blueprint.getFullName());
+	private deploy(blueprint: BlueprintModel): void {
+		this.api.deploy(blueprint.getFullName()).then(({url, handle}) => {
 			blueprint.run({url, handle} as BlueprintInstanceAccess);
-			resolve();
 		});
 	}
 }
