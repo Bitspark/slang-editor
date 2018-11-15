@@ -5,12 +5,12 @@ import {Connection} from "../../custom/connections";
 import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";
 import {BlueprintPortModel, GenericPortModel, PortModel} from "../../model/port";
-import {IsolatedBlueprintPort} from "../components/blueprint-port";
+import {IsolatedBlueprintPortComponent} from "../components/blueprint-port";
 import {PortGroupPosition} from "../components/port-group";
 import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {BlueprintDelegateModel} from "../../model/delegate";
-import {WhiteBox} from "../components/whitebox";
+import {WhiteBoxComponent} from "../components/whitebox";
 import {dia, g} from "jointjs";
 
 export class BlueprintView extends PaperView {
@@ -21,7 +21,7 @@ export class BlueprintView extends PaperView {
 	private operators: Array<BlackBoxComponent> = [];
 	private connections: Array<ConnectionComponent> = [];
 
-	private outer: WhiteBox.Component;
+	private readonly outer: WhiteBoxComponent;
 	private blueprintSelect: BlueprintSelectComponent | null;
 
 	constructor(frame: ViewFrame, private blueprint: BlueprintModel) {
@@ -31,7 +31,7 @@ export class BlueprintView extends PaperView {
 
 		this.subscribe();
 
-		this.outer = new WhiteBox.Component(this);
+		this.outer = new WhiteBoxComponent(this, blueprint);
 		this.autoLayout();
 		this.fitOuter(false);
 
@@ -202,7 +202,7 @@ export class BlueprintView extends PaperView {
 		};
 
 		const that = this;
-		const portComponent = new IsolatedBlueprintPort(this.graph, name, id, port, invertedPosition[position]);
+		const portComponent = new IsolatedBlueprintPortComponent(this.graph, name, id, port, invertedPosition[position]);
 		const portElement = portComponent.getElement();
 
 		let calculateRestrictedRect: (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => g.PlainRect;
