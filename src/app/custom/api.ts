@@ -1,51 +1,56 @@
 export interface TypeDefApiResponse {
-    type: "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic"
-    map?: {
-        [portName: string]: TypeDefApiResponse,
-    }
-    stream?: TypeDefApiResponse
-    generic?: string
+	type: "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic"
+	map?: {
+		[portName: string]: TypeDefApiResponse,
+	}
+	stream?: TypeDefApiResponse
+	generic?: string
 }
 
 export interface PortGroupApiResponse {
-    [portGroupName: string]: {
-        in: TypeDefApiResponse,
-        out: TypeDefApiResponse,
-    }
+	[portGroupName: string]: {
+		in: TypeDefApiResponse,
+		out: TypeDefApiResponse,
+	}
 }
 
 export interface PropertyApiResponse {
-    [propertyName: string]: TypeDefApiResponse
+	[propertyName: string]: TypeDefApiResponse
 }
 
 export interface PropertyAssignmentsApiResponse {
-    [propertyName: string]: any
+	[propertyName: string]: any
 }
 
 export interface GenericSpecificationsApiResponse {
-    [genericIdentifier: string]: any
+	[genericIdentifier: string]: any
+}
+
+export interface DeploymentStatusApiResponse {
+	url: string
+	handle: string
 }
 
 export interface BlueprintDefApiResponse {
-    operators?: {
-        [operatorName: string]: {
-            operator: string
-            properties: PropertyAssignmentsApiResponse
-            generics: GenericSpecificationsApiResponse
-        }
-    }
-    properties?: PropertyApiResponse
-    services?: PortGroupApiResponse
-    delegates?: PortGroupApiResponse
-    connections?: {
-        [sourcePortReference: string]: [string]
-    }
+	operators?: {
+		[operatorName: string]: {
+			operator: string
+			properties: PropertyAssignmentsApiResponse
+			generics: GenericSpecificationsApiResponse
+		}
+	}
+	properties?: PropertyApiResponse
+	services?: PortGroupApiResponse
+	delegates?: PortGroupApiResponse
+	connections?: {
+		[sourcePortReference: string]: [string]
+	}
 }
 
 export interface BlueprintApiResponse {
-    type: string,
-    name: string,
-    def: BlueprintDefApiResponse,
+	type: string,
+	name: string,
+	def: BlueprintDefApiResponse,
 }
 
 export class ApiService {
@@ -65,7 +70,8 @@ export class ApiService {
 
 	private fetch<S, T>(method: string, path: string, data: S, process: (_: any) => T, error: (error: any) => void): Promise<T> {
 		return new Promise<T>((resolve) => {
-			fetch(this.host + path, {method, data} as any)
+			const reqInit = (method === 'post') ? {method, body: JSON.stringify(data)} : {};
+			fetch(this.host + path, reqInit)
 				.then((response: Response) => response.json())
 				.then((data: any) => resolve(process(data)))
 				.catch(error);
@@ -74,7 +80,17 @@ export class ApiService {
 
 	private GET<ReqT, RespT>(path: string, data: ReqT, process: (_: any) => RespT, error: (error: any) => void): Promise<RespT> {
 		return this.fetch<ReqT, RespT>(
-			"GET",
+			"get",
+			path,
+			data,
+			process,
+			error
+		)
+	}
+
+	private POST<ReqT, RespT>(path: string, data: ReqT, process: (_: any) => RespT, error: (error: any) => void): Promise<RespT> {
+		return this.fetch<ReqT, RespT>(
+			"post",
 			path,
 			data,
 			process,
@@ -91,4 +107,17 @@ export class ApiService {
 		);
 	}
 
+	public async deploy(blueprintFullName: string): Promise<DeploymentStatusApiResponse> {
+		return this.POST<{ fqn: string, props: any, gens: any, stream: boolean }, DeploymentStatusApiResponse>(
+			'/run/',
+			{fqn: blueprintFullName, props: {}, gens: {}, stream: false},
+			(data: any) => {
+				if (data.status === "success") {
+					return data as DeploymentStatusApiResponse
+				}
+				throw(data);
+			},
+			(err: any) => console.error(err)
+		);
+	}
 }
