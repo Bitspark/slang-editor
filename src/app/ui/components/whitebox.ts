@@ -1,10 +1,12 @@
-import {AnchorComponent} from "./anchor";
+import m from 'mithril';
+import {AnchorComponent, AnchorPosition} from "./anchor";
 import {Styles} from "../../../styles/studio";
 import {BlackBox} from "../../custom/nodes";
 import {dia, g, layout, shapes} from "jointjs";
 import {BlueprintView} from "../views/blueprint";
-import {BlueprintModel} from "../../model/blueprint";
+import {BlueprintInstanceAccess, BlueprintModel} from "../../model/blueprint";
 import {BlackBoxComponent} from "./blackbox";
+import {ClassComponent, CVnode} from "mithril";
 
 export namespace WhiteBox {
 	import RectangleSelectors = shapes.standard.RectangleSelectors;
@@ -38,15 +40,56 @@ export namespace WhiteBox {
 		public shape: Shape;
 		protected blueprint: BlueprintModel;
 
-		constructor(private readonly blueprintView: BlueprintView) {
+		constructor(blueprintView: BlueprintView) {
 			super(blueprintView, {x: 0, y: 0});
+
 			this.blueprint = blueprintView.getBlueprint();
+			this.blueprint.subscribeDeployed((instanceAcess: BlueprintInstanceAccess) => {
+				m.mount(this.htmlRoot, {
+					view: () => m(".toolbox", [
+						m(Tool.Button, {
+							onClick: () => {
+								window.open(instanceAcess.url, "_blank");
+							},
+							label: "Running",
+							icon: "X",
+							class: "running"
+						}),
+						m(Tool.Button, {
+							onClick: () => {
+							},
+							label: "Running",
+							icon: "S",
+							class: "stop"
+						}),
+					])
+				})
+			});
+
+
 			const size = {
 				width: Component.padding * 2 + Component.minimumSpace,
 				height: Component.padding * 2 + Component.minimumSpace
 			};
 			this.shape = new WhiteBox.Shape(this.blueprint, size);
 			this.shape.addTo(this.graph);
+			this.shape.on("change:position change:size", () => {
+				const {x, y} = this.shape.position();
+				const {width, height} = this.shape.size();
+				this.updatePosition({x: x + width * .7, y});
+			});
+
+			m.mount(this.htmlRoot, {
+				view: () => m(Tool.Button, {
+					onClick: () => {
+						console.log(">>> DEPLOY");
+						this.blueprint.deploy();
+					},
+					label: "Deploy",
+					icon: "D",
+					class: "dply"
+				})
+			});
 		}
 
 		public autoLayout({operators, ports}: Inner) {
@@ -240,9 +283,43 @@ export namespace WhiteBox {
 				id: `${blackBox.getIdentity()}_outer`,
 				size,
 			}) as any);
-
 			this.attr("draggable", false);
 			this.set("obstacle", false);
+		}
+	}
+
+	export namespace Tool {
+		export interface Attrs {
+			onClick: () => void
+			label: string
+			icon: string
+			class: string
+		}
+
+		export class Button implements ClassComponent<Attrs> {
+			private alreadyClicked: boolean = false;
+			private bounceInterval = 500;
+
+			oninit({attrs}: CVnode<Attrs>) {
+			}
+
+			view({attrs}: CVnode<Attrs>) {
+				return m("a.btn.sl-tool-btn", {
+						class: attrs.class,
+						onclick: () => {
+							if (!this.alreadyClicked) {
+								this.alreadyClicked = true;
+								attrs.onClick();
+								const that = this;
+								setTimeout(() => {
+									that.alreadyClicked = false;
+								}, this.bounceInterval);
+							}
+						},
+						tooltip: attrs.label,
+					},
+					attrs.icon);
+			}
 		}
 	}
 }

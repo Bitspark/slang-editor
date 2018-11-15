@@ -1,10 +1,6 @@
-%bordered {
-	box-shadow: 0px 0px 3px -1px $black inset;
-	border-radius: 20px;
-}
-
 .sl-blupr-menu {
 	@extend %bordered;
+	@extend %translucent;
 
 	position: absolute;
 	overflow-y: scroll;
@@ -13,12 +9,7 @@
 	background: $white;
 	padding: 0;
 
-	transition: 360ms opacity;
-
-	opacity: .45;
-	&:hover {
-		opacity: .97;
-	}
+	transition: 450ms opacity;
 }
 
 .sl-blupr-fltr {
@@ -45,7 +36,7 @@
 		border-bottom: 1px solid transparentize($black, .85);
 
 		cursor: pointer;
-		transition: 360ms background-color;
+		transition: 450ms background-color, color;
 
 		&:hover {
 			background-color: $black;

@@ -1,4 +1,3 @@
-import {shapes} from 'jointjs';
 import m, {CVnodeDOM} from 'mithril';
 
 import {LandscapeModel} from '../../model/landscape';
@@ -80,7 +79,7 @@ export class BlueprintSelectComponent extends AnchorComponent {
 	private ghostRect: BlackBoxComponent.Rect | BlackBoxComponent.Rect.Ghost;
 	private filterExpr: string = "";
 
-	constructor(private blueprintView: BlueprintView, pos: AnchorPosition) {
+	constructor(blueprintView: BlueprintView, pos: AnchorPosition) {
 		super(blueprintView, pos);
 		this.blueprint = blueprintView.getBlueprint();
 		this.landscape = this.blueprint.getAncestorNode(LandscapeModel)!;

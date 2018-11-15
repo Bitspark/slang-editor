@@ -348,7 +348,7 @@ export class BlueprintModel extends BlackBox {
 		this.opened.subscribe(cb);
 	}
 
-	public subscribeDeployed(cb: (opened: BlueprintInstanceAccess) => void): void {
+	public subscribeDeployed(cb: (instanceAcess: BlueprintInstanceAccess) => void): void {
 		this.deployed.subscribe(cb);
 	}
 
