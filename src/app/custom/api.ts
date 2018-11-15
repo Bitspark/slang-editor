@@ -50,24 +50,35 @@ export interface BlueprintApiResponse {
 
 export class ApiService {
 
-    constructor(private host: string = '') {
-    }
+	constructor(private host: string = '') {
+	}
 
-    private fetch<T>(path: string, process: (_: any) => T, error: (error: any) => void): Promise<T> {
-        return new Promise<T>((resolve) => {
-            fetch(this.host + path)
-                .then((response: Response) => response.json())
-                .then((data: any) => resolve(process(data)))
-                .catch(error);
-        });
-    }
+	private fetch<S, T>(method: string, path: string, data: S, process: (_: any) => T, error: (error: any) => void): Promise<T> {
+		return new Promise<T>((resolve) => {
+			fetch(this.host + path, {method, data} as any)
+				.then((response: Response) => response.json())
+				.then((data: any) => resolve(process(data)))
+				.catch(error);
+		});
+	}
 
-    public async getBlueprints(): Promise<Array<BlueprintApiResponse>> {
-        return this.fetch<Array<BlueprintApiResponse>>(
-            '/operator',
-            (data: any) => (data as { objects: any }).objects as Array<BlueprintApiResponse>,
-            (err: any) => console.error(err)
-        );
-    }
+	private GET<ReqT, RespT>(path: string, data: ReqT, process: (_: any) => RespT, error: (error: any) => void): Promise<RespT> {
+		return this.fetch<ReqT, RespT>(
+			"GET",
+			path,
+			data,
+			process,
+			error
+		)
+	}
+
+	public async getBlueprints(): Promise<Array<BlueprintApiResponse>> {
+		return this.GET<{}, Array<BlueprintApiResponse>>(
+			'/operator/',
+			{},
+			(data: any) => (data as { objects: any }).objects as Array<BlueprintApiResponse>,
+			(err: any) => console.error(err)
+		);
+	}
 
 }
