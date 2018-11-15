@@ -36,6 +36,7 @@ export abstract class AnchorComponent {
 	private static createRoot(): HTMLElement {
 		const el = document.createElement('div');
 		el.style.position = "absolute";
+		el.style.lineHeight = "1px";
 		return el;
 	}
 

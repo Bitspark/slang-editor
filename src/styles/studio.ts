@@ -77,4 +77,35 @@ export namespace Styles {
         };
     }
 
+    export class Defaults {
+        public static BlackBox = {
+            size: Styles.BlackBox.size,
+            attrs: {
+                body: {
+                    rx: Styles.BlackBox.rx,
+                    ry: Styles.BlackBox.ry,
+                    class: "sl-rectangle",
+                    filter: Styles.BlackBox.filter,
+                },
+                label: {
+                    class: "sl-label",
+                },
+            },
+        };
+
+        public static Outer = {
+            attrs: {
+                root: {
+                    class: "joint-cell joint-element sl-outer",
+                },
+                body: {
+                    rx: Styles.Outer.rx,
+                    ry: Styles.Outer.ry,
+                    class: "sl-rectangle",
+                    cursor: "default",
+                    filter: Styles.Outer.filter,
+                },
+            },
+        };
+    }
 }

@@ -19,6 +19,7 @@ export abstract class PaperView extends View {
 	public resize(width: number, height: number) {
 		this.paper.setDimensions(width, height);
 		this.paper.translate(width / 2, height / 2);
+		this.positionChanged.next();
 	}
 
 	public getGraph(): dia.Graph {
@@ -36,10 +37,12 @@ export abstract class PaperView extends View {
 
 	protected center() {
 		this.paper.setOrigin(this.paper.options.width as number / 2, this.paper.options.height as number / 2);
+		this.positionChanged.next();
 	}
 
 	protected fit() {
 		this.paper.scaleContentToFit();
+		this.positionChanged.next();
 	}
 
 	protected createPaper(opt: dia.Paper.Options = {}): dia.Paper {

@@ -1,10 +1,10 @@
 import {OperatorModel} from "./operator";
 import {BlueprintPortModel, PortModel, PortModelArgs} from "./port";
 import {BlueprintDelegateModel} from "./delegate";
+import {Geometry} from "./operator";
 import {SlangParsing} from "../custom/parsing";
 import {PropertyEvaluator} from "../custom/utils";
-import {BlackBox, StreamType} from "../custom/nodes";
-import {Geometry} from "./operator";
+import {BlackBox} from "../custom/nodes";
 import {TypeIdentifier} from "../custom/type";
 import {PropertyAssignments, PropertyModel} from "./property";
 import {GenericSpecifications} from "./generic";
@@ -19,12 +19,16 @@ export enum BlueprintType {
 
 export type BlueprintModelArgs = { fullName: string, type: BlueprintType };
 
-export class BlueprintModel extends BlackBox {
+export type BlueprintInstanceAccess = { handle: string, url: string };
 
-	// Topics
-	// self
+export class BlueprintModel extends BlackBox {
+	// Topics::self
 	private selected = new SlangBehaviorSubject<boolean>("selected", false);
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
+
+	// Topics::Deployment
+	private deploymentTriggered = new SlangSubject<boolean>("deployment-triggered");
+	private deployed = new SlangBehaviorSubject<BlueprintInstanceAccess | undefined>("deployed", undefined);
 
 	// Properties
 	private readonly fullName: string;
@@ -41,7 +45,7 @@ export class BlueprintModel extends BlackBox {
 		this.type = type;
 		this.hierarchy = fullName.split(".");
 		this.genericIdentifiers = new Set<string>();
-	}
+	}	
 
 	private static revealGenericIdentifiers(port: PortModel): Set<string> {
 		let genericIdentifiers = new Set<string>();
@@ -294,6 +298,16 @@ export class BlueprintModel extends BlackBox {
 		this.opened.next(false);
 	}
 
+	public deploy() {
+		if (!this.deployed.getValue()) {
+			this.deploymentTriggered.next(true);
+		}
+	}
+
+	public run(instanceAcess: BlueprintInstanceAccess) {
+		this.deployed.next(instanceAcess);
+	}
+
 	// Subscriptions
 
 	public subscribeSelectChanged(cb: (selected: boolean) => void): void {
@@ -304,4 +318,11 @@ export class BlueprintModel extends BlackBox {
 		this.opened.subscribe(cb);
 	}
 
+	public subscribeDeployed(cb: (instanceAcess: BlueprintInstanceAccess) => void): void {
+		this.deployed.subscribe(cb);
+	}
+
+	public subscribeDeploymentTriggered(cb: (opened: boolean) => void): void {
+		this.deploymentTriggered.subscribe(cb);
+	}
 }
