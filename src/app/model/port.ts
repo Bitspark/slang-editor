@@ -1,10 +1,10 @@
-import {BlueprintModel} from './blueprint';
-import {OperatorModel} from './operator';
-import {BlueprintDelegateModel, OperatorDelegateModel} from './delegate';
-import {PortOwner, SlangNode} from '../custom/nodes';
-import {Connection, Connections} from '../custom/connections';
-import {SlangType, TypeIdentifier} from '../custom/type';
-import {SlangBehaviorSubject, SlangSubject} from '../custom/events';
+import {BlueprintModel} from "./blueprint";
+import {OperatorModel} from "./operator";
+import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
+import {BlackBox, PortOwner, SlangNode, StreamType} from "../custom/nodes";
+import {Connection, Connections} from "../custom/connections";
+import {SlangType, TypeIdentifier} from "../custom/type";
+import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
 
 export enum PortDirection {
     In, // 0
@@ -15,85 +15,201 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
     // Topics
     // self
-    private removed = new SlangSubject<void>("removed");
     private connected = new SlangSubject<Connection>("connected");
     private disconnected = new SlangSubject<Connection>("disconnected");
-    private selected = new SlangBehaviorSubject<boolean>("selected", false);
     private collapsed = new SlangBehaviorSubject<boolean>("collapsed", false);
+    private streamType = new SlangBehaviorSubject<StreamType | null>("streamType", null);
 
     // Properties
-    private readonly mapSubs: Map<string, GenericPortModel<O>> | undefined;
+    private readonly name: string;
+    private readonly typeIdentifier: TypeIdentifier;
+    private readonly direction: PortDirection;
     private genericIdentifier?: string;
-    private streamSub: GenericPortModel<O> | undefined;
+    private streamDepth: number = 0;
     protected connectedWith: Array<PortModel> = [];
 
-    protected constructor(parent: GenericPortModel<O> | O, private typeIdentifier: TypeIdentifier, private direction: PortDirection) {
+    protected constructor(parent: GenericPortModel<O> | O, {type, name, direction}: PortModelArgs, P: new(p: PortModel | PortOwner, args: PortModelArgs) => PortModel) {
         super(parent);
-        if (this.typeIdentifier === TypeIdentifier.Map) {
-            this.mapSubs = new Map<string, GenericPortModel<O>>();
+        this.name = name;
+        this.typeIdentifier = type.getTypeIdentifier();
+        this.direction = direction;
+
+        switch (this.typeIdentifier) {
+            case TypeIdentifier.Map:
+                for (const [subName, subType] of type.getMapSubs()) {
+                    this.createChildNode(P, {name: subName, type: subType, direction});
+                }
+                break;
+            case TypeIdentifier.Stream:
+                const subType = type.getStreamSub();
+                this.createChildNode(P, {name: "~", type: subType, direction});
+                break;
+            case TypeIdentifier.Generic:
+                this.setGenericIdentifier(type.getGenericIdentifier());
+                break;
+        }
+        
+        if (this.isDestination()) {
+            this.subscribeConnected(connection => {
+                connection.source.subscribeStreamTypeChanged(streamType => {
+                    this.setStream(streamType);
+                })
+            });
+            
+			this.subscribeDisconnected(() => {
+                this.setStream(null);
+			});
         }
     }
 
-    public isSelected(): boolean {
-        return this.selected.getValue();
-    }
-
-    public addMapSub(name: string, port: GenericPortModel<O>): GenericPortModel<O> {
+    public getMapSubs(): IterableIterator<GenericPortModel<O>> {
         if (this.typeIdentifier !== TypeIdentifier.Map) {
-            throw `add map sub port to a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+            throw new Error(`access of map sub ports of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);
         }
-        this.mapSubs!.set(name, port);
-        return this;
-    }
-
-    public getMapSubs(): IterableIterator<[string, GenericPortModel<O>]> {
-        if (this.typeIdentifier !== TypeIdentifier.Map) {
-            throw `access of map sub ports of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
-        }
-        return this.mapSubs!.entries();
+        return this.getChildNodes(GenericPortModel);
     }
 
     public findMapSub(name: string): GenericPortModel<O> {
         if (this.typeIdentifier !== TypeIdentifier.Map) {
-            throw `accessing map sub port of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+            throw new Error(`accessing map sub port of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);
         }
-        const mapSub = this.mapSubs!.get(name);
+        const mapSub = this.scanChildNode(GenericPortModel, port => port.getName() === name);
         if (!mapSub) {
-            throw `map sub port '${name}' not found: '${this.getIdentity()}'`
+            throw new Error(`map sub port '${name}' not found: '${this.getIdentity()}'`);
         }
         return mapSub;
     }
 
-    public setStreamSub(port: GenericPortModel<O>) {
-        if (this.typeIdentifier !== TypeIdentifier.Stream) {
-            throw `set stream sub port of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
-        }
-        this.streamSub = port;
+    public getStreamType(): StreamType | null {
+        return this.streamType.getValue();
     }
+    
+    public setSubStreamTypes(baseStreamType: StreamType | null): void {
+		this.streamType.next(baseStreamType);
+		
+		if (this.typeIdentifier === TypeIdentifier.Stream) {
+			const sub = this.getStreamSub();
+			if (sub) {
+				sub.setSubStreamTypes(baseStreamType ? baseStreamType.createSubStream(sub) : null);
+			}
+		} else if (this.typeIdentifier === TypeIdentifier.Map) {
+			for (const sub of this.getMapSubs()) {
+				sub.setSubStreamTypes(baseStreamType);
+			}
+		}
+    }
+    
+    public createStream(): StreamType {
+        if (!this.isSource()) {
+			throw new Error(`can only create streams on source ports`);
+        }
+        
+        const parent = this.getParentNode();
+        if (!(parent instanceof PortOwner)) {
+            throw new Error(`can only create streams on topmost ports`);
+        }
+		
+        const baseStreamType = new StreamType(null, this);
+        this.setSubStreamTypes(new StreamType(null, this));
+        return baseStreamType;
+    }
+    
+    public setStream(streamType: StreamType | null): void {
+        // Set streams *upwards*
+
+		const oldStreamType = this.getStreamType();
+		if (streamType === oldStreamType) {
+		    // Nothing changed
+			return;
+		}
+        if (oldStreamType && streamType) {
+			// Assert that (streamType !== oldStreamType) in case of reordering if statements!
+            throw new Error(`${this.getOwnerName()}: already have different stream type`);
+        }
+        
+        if (!streamType) {
+			if (this.typeIdentifier === TypeIdentifier.Map) {
+				for (const sub of this.getMapSubs()) {
+					if (sub.getStreamType()) {
+						// At least one sub still has a stream, so keep your stream
+						return;
+					}
+				}
+			} else if (this.typeIdentifier === TypeIdentifier.Stream) {
+			    const sub = this.getStreamSub();
+			    if (sub && sub.getStreamType()) {
+					// Sub still has a stream, so keep your stream as well
+			        return;
+                }
+			}
+        }
+        
+        this.streamType.next(streamType);
+
+		const parent = this.getParentNode();
+		if (parent instanceof GenericPortModel) {
+		    if (parent.typeIdentifier === TypeIdentifier.Map) {
+				parent.setStream(streamType);
+            } else if (parent.typeIdentifier === TypeIdentifier.Stream) {
+				if (!streamType) {
+					parent.setStream(null);
+				} else {
+					const baseStreamType = streamType.getBaseStreamType();
+					if (!baseStreamType) {
+						throw new Error(`${this.getOwnerName()}: insufficient stream type depth`);
+					}
+					parent.setStream(baseStreamType);
+				}
+            } else {
+		        throw new Error(`${this.getOwnerName()}: unexpected port type, cannot be a parent`);
+            }
+        }
+    }
+    
+    public getOwnerName(): string {
+        const ownerBox = this.getAncestorNode(BlackBox);
+        if (ownerBox) {
+            return ownerBox.getDisplayName();
+        } else {
+            return "unknown";
+        }
+    }
+    
+    // private setStreamDepth(depth: number): void {
+    //     this.streamDepth = depth;
+    //     const sub = this.getStreamSub();
+    //     if (sub) {
+    //         sub.setStreamDepth(depth + 1);
+    //     }
+    //     for (const sub of this.getMapSubs()) {
+    //         sub.setStreamDepth(depth);
+    //     }
+    // }
 
     public getStreamSub(): GenericPortModel<O> {
         if (this.typeIdentifier !== TypeIdentifier.Stream) {
-            throw `accessing stream port of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+            throw new Error(`accessing stream port of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);
         }
-        if (!this.streamSub) {
-            throw `stream port not having sub stream port: '${this.getIdentity()}'`;
+        const streamSub = this.getChildNode(GenericPortModel);
+        if (!streamSub) {
+            throw new Error(`stream port not having sub stream port: '${this.getIdentity()}'`);
         }
-        return this.streamSub;
+        return streamSub;
     }
 
     public setGenericIdentifier(genericIdentifier: string) {
         if (this.typeIdentifier !== TypeIdentifier.Generic) {
-            throw `set generic identifier of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+            throw new Error(`set generic identifier of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);
         }
         this.genericIdentifier = genericIdentifier;
     }
 
     public getGenericIdentifier(): string {
         if (this.typeIdentifier !== TypeIdentifier.Generic) {
-            throw `accessing of generic identifier of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+            throw new Error(`accessing of generic identifier of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);
         }
         if (!this.genericIdentifier) {
-            throw `generic port requires a generic identifier`;
+            throw new Error(`generic port requires a generic identifier`);
         }
         return this.genericIdentifier;
     }
@@ -102,8 +218,8 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
         const type = new SlangType(null, this.typeIdentifier);
         switch (this.typeIdentifier) {
             case TypeIdentifier.Map:
-                for (const [subName, subPort] of this.getMapSubs()) {
-                    type.addMapSub(subName, subPort.getType());
+                for (const subPort of this.getMapSubs()) {
+                    type.addMapSub(subPort.getName(), subPort.getType());
                 }
                 break;
             case TypeIdentifier.Stream:
@@ -121,41 +237,41 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     }
 
     public getName(): string {
-        if (!(this.parent instanceof GenericPortModel) || this.parent.getTypeIdentifier() !== TypeIdentifier.Map) {
-            throw `not a map entry`;
-        }
-
-        for (const entry of this.parent.getMapSubs()) {
-            if (entry[1] === this) {
-                return entry[0];
-            }
-        }
-        throw `entry not found`;
+        return this.name;
+    }
+    
+    public getStreamDepth(): number {
+        return this.streamDepth;
     }
 
-    public getConnectionsTo(): Connections {
+    private getDirectConnectionsTo(): Connections {
         const connections = new Connections();
         for (const connectedWith of this.connectedWith) {
             if (this.isSource()) {
                 connections.addConnection({source: this, destination: connectedWith});
             }
         }
+        return connections;
+    }
+    
+    public getConnectionsTo(): Connections {
+        const connections = this.getDirectConnectionsTo();
         switch (this.typeIdentifier) {
             case TypeIdentifier.Map:
                 const mapSubs = this.getMapSubs();
                 let noMapSubs = true;
                 for (const mapSub of mapSubs) {
-                    connections.addConnections(mapSub[1].getConnectionsTo());
+                    connections.addConnections(mapSub.getConnectionsTo());
                     noMapSubs = false;
                 }
                 if (noMapSubs) {
-                    throw `map port without map sub ports`;
+                    throw new Error(`map port without map sub ports`);
                 }
                 break;
             case TypeIdentifier.Stream:
                 const streamSub = this.getStreamSub();
                 if (!streamSub) {
-                    throw `stream port without stream sub port`;
+                    throw new Error(`stream port without stream sub port`);
                 }
                 connections.addConnections(streamSub.getConnectionsTo());
                 break;
@@ -164,16 +280,17 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     }
 
     private getPortReference(): string {
-        if (!(this.parent instanceof GenericPortModel)) {
+        const parent = this.getParentNode();
+        if (!(parent instanceof GenericPortModel)) {
             return '';
         }
-        const parentRefString = this.parent.getPortReference();
-        if (this.parent.getTypeIdentifier() === TypeIdentifier.Map) {
+        const parentRefString = parent.getPortReference();
+        if (parent.getTypeIdentifier() === TypeIdentifier.Map) {
             if (parentRefString === '') {
                 return this.getName();
             }
             return parentRefString + '.' + this.getName();
-        } else if (this.parent.getTypeIdentifier() === TypeIdentifier.Stream) {
+        } else if (parent.getTypeIdentifier() === TypeIdentifier.Stream) {
             if (parentRefString === '') {
                 return '~';
             }
@@ -195,22 +312,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     }
 
     // Actions
-
-    public select() {
-        if (!this.selected.getValue()) {
-            this.selected.next(true);
-        }
-    }
-
-    public deselect() {
-        if (this.selected.getValue()) {
-            this.selected.next(false);
-        }
-    }
-
-    public delete() {
-        this.removed.next();
-    }
     
     public collapse(): void {
         if (this.getType().getTypeIdentifier() !== TypeIdentifier.Map) {
@@ -237,7 +338,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
      * @param destination port
      */
     private canConnectTo(destination: PortModel): boolean {
-        if (!this.isSource() || destination.isSource()) {
+        if (!this.isSource() || !destination.isDestination()) {
             return false;
         }
         if (destination.connectedWith.length !== 0) {
@@ -254,24 +355,32 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     
     public abstract isSource(): boolean;
     
-    public disconnect(destination: PortModel) {
+    public isDestination(): boolean {
+        return !this.isSource();
+    }
+    
+    public disconnectTo(destination: PortModel) {
+        if (!this.isSource()) {
+            throw new Error(`can only disconnect source ports`);
+        }
+
         const connection = {source: this, destination: destination};
         
         const idxS = this.connectedWith.indexOf(destination);
         if (idxS === -1) {
-            throw `not connected with that port`;
+            throw new Error(`not connected with that port`);
         }
         this.connectedWith.splice(idxS, 1);
         this.disconnected.next(connection);
         
         const idxT = destination.connectedWith.indexOf(this);
         if (idxT === -1) {
-            throw `not connected with that port`;
+            throw new Error(`inconsistency: not connected with that port`);
         }
         destination.connectedWith.splice(idxT, 1);
         destination.disconnected.next(connection);
     }
-
+    
     /**
      * Connects this port to the destination port.
      * This has to be a source port and destination a destination port.
@@ -279,12 +388,12 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
      */
     private connectTo(destination: PortModel) {
         if (!this.canConnectTo(destination)) {
-            throw `cannot connect: ${this.getIdentity()} --> ${destination.getIdentity()}`;
+            throw new Error(`cannot connect: ${this.getIdentity()} --> ${destination.getIdentity()}`);
         }
         switch (this.typeIdentifier) {
             case TypeIdentifier.Map:
-                for (const [subName, subPort] of this.getMapSubs()) {
-                    subPort.connectTo(destination.findMapSub(subName));
+                for (const subPort of this.getMapSubs()) {
+                    subPort.connectTo(destination.findMapSub(subPort.getName()));
                 }
                 break;
             case TypeIdentifier.Stream:
@@ -292,10 +401,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
                 break;
             default:
                 const connection = {source: this, destination: destination};
-                this.connectedWith.push(destination);
-                this.connected.next(connection);
                 destination.connectedWith.push(this);
                 destination.connected.next(connection);
+				this.connectedWith.push(destination);
+				this.connected.next(connection);
                 break;
         }
     }
@@ -318,20 +427,12 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
     // Subscriptions
 
-    public subscribeSelectChanged(cb: (selected: boolean) => void): void {
-        this.selected.subscribe(cb);
-    }
-
-    public subscribeDeleted(cb: () => void): void {
-        this.removed.subscribe(cb);
-    }
-
     public subscribeCollapsed(cb: (collapsed: boolean) => void): void {
         this.collapsed.subscribe(cb);
     }
     
     public subscribeConnected(cb: (connection: Connection) => void): void {
-        this.getConnectionsTo().forEach(connection => {
+        this.getDirectConnectionsTo().forEach(connection => {
             cb(connection);
         });
         this.connected.subscribe(cb);
@@ -340,15 +441,19 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
     public subscribeDisconnected(cb: (connection: Connection) => void): void {
         this.disconnected.subscribe(cb);
     }
+    
+    public subscribeStreamTypeChanged(cb: (streamType: StreamType | null) => void): void {
+        this.streamType.subscribe(cb);
+    }
 }
 
 export type PortModel = GenericPortModel<PortOwner>;
 
-export type PortModelArgs = {type: TypeIdentifier, direction: PortDirection};
+export type PortModelArgs = {name: string, type: SlangType, direction: PortDirection};
 
 export class BlueprintPortModel extends GenericPortModel<BlueprintModel | BlueprintDelegateModel> {
-    public constructor(parent: BlueprintModel | BlueprintDelegateModel | BlueprintPortModel, {type, direction}: PortModelArgs) {
-        super(parent, type, direction);
+    public constructor(parent: BlueprintModel | BlueprintDelegateModel | BlueprintPortModel, args: PortModelArgs) {
+        super(parent, args, BlueprintPortModel);
     }
 
     public isSource(): boolean {
@@ -357,8 +462,13 @@ export class BlueprintPortModel extends GenericPortModel<BlueprintModel | Bluepr
 }
 
 export class OperatorPortModel extends GenericPortModel<OperatorModel | OperatorDelegateModel> {
-    public constructor(parent:  OperatorModel | OperatorDelegateModel | OperatorPortModel, {type, direction}: PortModelArgs) {
-        super(parent, type, direction);
+    public constructor(parent: OperatorModel | OperatorDelegateModel | OperatorPortModel, args: PortModelArgs) {
+        super(parent, args, OperatorPortModel);
+        
+        if (parent instanceof OperatorModel) {
+			this.subscribeStreamTypeChanged(streamType => {
+			});
+        }
     }
 
     public isSource(): boolean {

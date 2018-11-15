@@ -45,7 +45,7 @@ function setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupAp
 }
 
 function createPort(typeDef: TypeDefApiResponse, owner: BlueprintModel | BlueprintDelegateModel, direction: PortDirection): BlueprintPortModel {
-    return owner.createPort(createTypeModel(typeDef), direction);
+    return owner.createPort({name: "", type: createTypeModel(typeDef), direction});
 }
 
 function createTypeModel(typeDef: TypeDefApiResponse): SlangType {

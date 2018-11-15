@@ -14,7 +14,6 @@ import {WhiteBox} from "../components/whitebox";
 import {dia, g} from "jointjs";
 
 export class BlueprintView extends PaperView {
-
 	private topPorts: Array<dia.Element> = [];
 	private bottomPorts: Array<dia.Element> = [];
 	private rightPorts: Array<dia.Element> = [];
@@ -76,8 +75,8 @@ export class BlueprintView extends PaperView {
 			defaultLink: function (cellView: dia.CellView, magnet: SVGElement): dia.Link {
 				const port = that.getPortFromMagnet(magnet);
 				if (port) {
-					const link = ConnectionComponent.createGhostLink(port.getTypeIdentifier());
-					link.on("remove", function () {
+					const link = ConnectionComponent.createGhostLink(port);
+					link.on("remove", () => {
 						link.transition("attrs/.connection/stroke-opacity", 0.0);
 					});
 					return link;
@@ -125,7 +124,7 @@ export class BlueprintView extends PaperView {
 				return false;
 			}
 
-			sourcePort.disconnect(destinationPort);
+			sourcePort.disconnectTo(destinationPort);
 		});
 		return paper;
 	}
@@ -139,7 +138,6 @@ export class BlueprintView extends PaperView {
 			}
 			that.fitOuter(false);
 		});
-
 		this.outer.shape.on("pointerdblclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
 			that.blueprintSelect = new BlueprintSelectComponent(that, {x, y});
 		});
@@ -175,6 +173,14 @@ export class BlueprintView extends PaperView {
 		});
 
 		this.blueprint.subscribeDescendantCreated(GenericPortModel, port => {
+			port.subscribeStreamTypeChanged(() => {
+				this.connections
+					.filter(connectionComponent => connectionComponent.getConnection().source === port)
+					.forEach(connectionComponent => connectionComponent.refresh());
+			});
+		});
+
+		this.blueprint.subscribeDescendantCreated(GenericPortModel, port => {
 			if (!port.isSource()) {
 				return;
 			}
@@ -186,7 +192,6 @@ export class BlueprintView extends PaperView {
 			});
 		});
 	}
-
 
 	private createIsolatedPort(port: BlueprintPortModel, id: string, name: string, position: PortGroupPosition): void {
 		const invertedPosition: { [key in PortGroupPosition]: PortGroupPosition } = {

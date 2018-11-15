@@ -1,8 +1,3 @@
-/**
- * A component for which there is no directly corresponding Slang model.
- * It can be thought of a component that represents a port which has no parent port but is the topmost ports.
- * Currently these are main in- and out-ports and delegate in- and out-ports.
- */
 import {PortComponent} from "./port";
 import {dia, g} from "jointjs";
 import {PortModel} from "../../model/port";
@@ -20,8 +15,8 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
                 portItems.push(new PortComponent(port, parent));
                 break;
             }
-            for (const [, each] of port.getMapSubs()) {
-                portItems.push.apply(portItems, createPortItems(parent, position, each));
+            for (const sub of port.getMapSubs()) {
+                portItems.push.apply(portItems, createPortItems(parent, position, sub));
             }
             break;
 
@@ -35,6 +30,11 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
     return portItems;
 }
 
+/**
+ * A component for which there is no directly corresponding Slang model.
+ * It can be thought of a component that represents a port which has no parent port but is the topmost ports.
+ * Currently these are main in- and out-ports and delegate in- and out-ports.
+ */
 export class PortGroupComponent {
 
     private readonly ports: Array<PortComponent> = [];
@@ -50,19 +50,15 @@ export class PortGroupComponent {
         switch (groupPosition) {
             case "top":
                 this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "top", start, width) as any;
-                this.portGroupElement.markup = "<path class='sl-port' d=''></path>";
                 break;
             case "right":
                 this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "right", start, width) as any;
-                this.portGroupElement.markup = "<path class='sl-port' d=''></path>";
                 break;
             case "bottom":
                 this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "bottom", start, width) as any;
-                this.portGroupElement.markup = "<path class='sl-port' d=''></path>";
                 break;
             case "left":
                 this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "left", start, width) as any;
-                this.portGroupElement.markup = "<path class='sl-port' d=''></path>";
                 break;
         }
     }

@@ -1,12 +1,11 @@
 import {OperatorModel} from "./operator";
-import {BlueprintPortModel, PortDirection, PortModel} from "./port";
+import {BlueprintPortModel, PortModel, PortModelArgs} from "./port";
 import {BlueprintDelegateModel} from "./delegate";
 import {Geometry} from "./operator";
 import {SlangParsing} from "../custom/parsing";
 import {PropertyEvaluator} from "../custom/utils";
 import {BlackBox} from "../custom/nodes";
-import {Connections} from "../custom/connections";
-import {TypeIdentifier, SlangType} from "../custom/type";
+import {TypeIdentifier} from "../custom/type";
 import {PropertyAssignments, PropertyModel} from "./property";
 import {GenericSpecifications} from "./generic";
 import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
@@ -23,18 +22,13 @@ export type BlueprintModelArgs = { fullName: string, type: BlueprintType };
 export type BlueprintInstanceAccess = { handle: string, url: string };
 
 export class BlueprintModel extends BlackBox {
-
 	// Topics::self
-	private removed = new SlangSubject<void>("removed");
 	private selected = new SlangBehaviorSubject<boolean>("selected", false);
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
 
 	// Topics::Deployment
 	private deploymentTriggered = new SlangSubject<boolean>("deployment-triggered");
 	private deployed = new SlangBehaviorSubject<BlueprintInstanceAccess | undefined>("deployed", undefined);
-
-	// children
-	private operatorRemoved = new SlangSubject<OperatorModel>("operator-removed");
 
 	// Properties
 	private readonly fullName: string;
@@ -51,13 +45,13 @@ export class BlueprintModel extends BlackBox {
 		this.type = type;
 		this.hierarchy = fullName.split(".");
 		this.genericIdentifiers = new Set<string>();
-	}
+	}	
 
 	private static revealGenericIdentifiers(port: PortModel): Set<string> {
 		let genericIdentifiers = new Set<string>();
 		switch (port.getTypeIdentifier()) {
 			case TypeIdentifier.Map:
-				for (const [_, subPort] of port.getMapSubs()) {
+				for (const subPort of port.getMapSubs()) {
 					genericIdentifiers = new Set<string>([...genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(subPort)]);
 				}
 				break;
@@ -80,22 +74,30 @@ export class BlueprintModel extends BlackBox {
 				for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), params.props)) {
 					const delegateCopy = owner.createDelegate(expandedDlgName);
 					for (const port of delegate.getPorts()) {
-						delegateCopy.createPort(port.getType().specifyGenerics(params.gen).expand(params.props), port.getDirection());
+						delegateCopy.createPort({
+							name: "",
+							type: port.getType().specifyGenerics(params.gen).expand(params.props),
+							direction: port.getDirection()
+						});
 					}
 				}
 			} else {
 				const delegateCopy = owner.createDelegate(delegate.getName());
 				for (const port of delegate.getPorts()) {
-					delegateCopy.createPort(port.getType(), port.getDirection());
+					delegateCopy.createPort({name: "", type: port.getType(), direction: port.getDirection()});
 				}
 			}
 		}
 
 		for (const port of this.getPorts()) {
 			if (params) {
-				operator.createPort(port.getType().specifyGenerics(params.gen).expand(params.props), port.getDirection());
+				operator.createPort({
+					name: "",
+					type: port.getType().specifyGenerics(params.gen).expand(params.props),
+					direction: port.getDirection()
+				});
 			} else {
-				operator.createPort(port.getType(), port.getDirection());
+				operator.createPort({name: "", type: port.getType(), direction: port.getDirection()});
 			}
 		}
 		for (const delegate of this.getDelegates()) {
@@ -125,8 +127,15 @@ export class BlueprintModel extends BlackBox {
 		return this.createChildNode(BlueprintDelegateModel, {name}, cb);
 	}
 
-	public createPort(type: SlangType, direction: PortDirection): BlueprintPortModel {
-		return super.createPortFromType(BlueprintPortModel, type, direction) as BlueprintPortModel;
+	public createPort(args: PortModelArgs): BlueprintPortModel {
+		const port = this.createChildNode(BlueprintPortModel, args);
+		if (port.isSource()) {
+			if (this.getBaseStreamType()) {
+				throw new Error(`blueprint already has a base stream`);
+			}
+			this.setBaseStreamType(port.createStream());
+		}
+		return port;
 	}
 
 	public getFullName(): string {
@@ -274,29 +283,6 @@ export class BlueprintModel extends BlackBox {
 		return this.getShortName();
 	}
 
-	public getConnectionsTo(): Connections {
-		const connections = new Connections();
-
-		const portIn = this.getPortIn();
-
-		if (portIn) {
-			connections.addConnections(portIn.getConnectionsTo());
-		}
-
-		for (const operator of this.getOperators()) {
-			connections.addConnections(operator.getConnectionsTo());
-		}
-
-		for (const delegate of this.getDelegates()) {
-			const delegatePortIn = delegate.getPortIn();
-			if (delegatePortIn) {
-				connections.addConnections(delegatePortIn.getConnectionsTo());
-			}
-		}
-
-		return connections;
-	}
-
 	// Actions
 
 	public addProperty(property: PropertyModel): PropertyModel {
@@ -304,24 +290,12 @@ export class BlueprintModel extends BlackBox {
 		return property;
 	}
 
-	public select() {
-		if (!this.selected.getValue()) {
-			this.selected.next(true);
-		}
-	}
-
-	public deselect() {
-		if (this.selected.getValue()) {
-			this.selected.next(false);
-		}
-	}
-
-	public delete() {
-		this.removed.next();
-	}
-
 	public open() {
 		this.opened.next(true);
+	}
+
+	public close() {
+		this.opened.next(false);
 	}
 
 	public deploy() {
@@ -332,10 +306,6 @@ export class BlueprintModel extends BlackBox {
 
 	public run(instanceAcess: BlueprintInstanceAccess) {
 		this.deployed.next(instanceAcess);
-	}
-
-	public close() {
-		this.opened.next(false);
 	}
 
 	// Subscriptions

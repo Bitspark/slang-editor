@@ -1,9 +1,8 @@
-import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel} from './port';
+import {BlueprintPortModel, OperatorPortModel, PortModel, PortModelArgs} from "./port";
 import {BlueprintModel} from './blueprint';
 import {OperatorModel} from './operator';
-import {BlackBox, PortOwner} from '../custom/nodes';
+import {BlackBox, PortOwner} from "../custom/nodes";
 import {Connections} from '../custom/connections';
-import {SlangType} from "../custom/type";
 
 export abstract class GenericDelegateModel<B extends BlackBox, P extends PortModel> extends PortOwner {
     protected constructor(parent: B, private name: string) {
@@ -35,8 +34,8 @@ export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel,
         super(owner, name);
     }
 
-    public createPort(type: SlangType, direction: PortDirection): BlueprintPortModel {
-        return super.createPortFromType(BlueprintPortModel, type, direction) as BlueprintPortModel;
+    public createPort(args: PortModelArgs): BlueprintPortModel {
+        return this.createChildNode(BlueprintPortModel, args);
     }
     
     public getPortIn(): BlueprintPortModel | null {
@@ -55,7 +54,14 @@ export class OperatorDelegateModel extends GenericDelegateModel<OperatorModel, O
         super(owner, name);
     }
 
-    public createPort(type: SlangType, direction: PortDirection): OperatorPortModel {
-        return super.createPortFromType(OperatorPortModel, type, direction) as OperatorPortModel;
+    public createPort(args: PortModelArgs): OperatorPortModel {
+		const port = this.createChildNode(OperatorPortModel, args);
+		if (port.isSource()) {
+			if (this.getBaseStreamType()) {
+				throw new Error(`operator delegate already has a base stream`);
+			}
+			this.setBaseStreamType(port.createStream());
+		}
+		return port;
     }
 }

@@ -17,15 +17,11 @@ export namespace Styles {
     export class Port {
         public static width = 8;
         public static height = 8;
-        public static shape = 
-            `M ${-Port.width / 2} ${-Port.height / 2} ` +
-            `L ${Port.width / 2} ${-Port.height / 2} ` +
-            `L 0 ${Port.height / 2} z`
     }
     
     export namespace Connection {
         class Connection {
-            public static strokeWidth = 3;
+            public static strokeWidth = 1;
             public static stroke = (type: TypeIdentifier): string => TypeColors[type];
             public static vectorEffect = "default";
         }

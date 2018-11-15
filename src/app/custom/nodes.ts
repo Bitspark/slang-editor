@@ -1,7 +1,6 @@
-import {GenericPortModel, PortDirection, PortModel, PortModelArgs} from '../model/port';
+import {GenericPortModel, PortModel, PortModelArgs} from '../model/port';
 import {DelegateModel} from "../model/delegate";
-import {SlangType, TypeIdentifier} from "./type";
-import {SlangArrayBehaviorSubject} from "./events";
+import {SlangNodeSetBehaviorSubject} from "./events";
 
 type Type<T> = Function & { prototype: T };
 
@@ -24,9 +23,9 @@ export abstract class SlangNode {
     
     private id = "";
     private lastId = "0";
-    private children = new SlangArrayBehaviorSubject<SlangNode>('children', []);
+    private children = new SlangNodeSetBehaviorSubject<SlangNode>('children', []);
     
-    protected constructor(protected readonly parent: SlangNode | null) {}
+    protected constructor(private readonly parent: SlangNode | null) {}
 
     public getIdentity(): string {
         if (this.parent) {
@@ -97,7 +96,7 @@ export abstract class SlangNode {
         }
         return null;
     }
-    
+        
     public scanChildNode<T extends SlangNode>(types: Types<T>, cb: (child: T) => boolean): T | undefined {
         for (const child of this.getChildNodes(types)) {
             if (cb(child)) {
@@ -179,27 +178,56 @@ export abstract class SlangNode {
     
 }
 
+export class StreamType {
+    
+    constructor(private baseStreamType: StreamType | null, private sourcePort: PortModel) {
+        if (baseStreamType) {
+            if (baseStreamType.hasAncestor(this)) {
+                throw new Error(`stream circle detected`);
+            }
+        }
+    }
+    
+    public createSubStream(sourcePort: PortModel): StreamType {
+        return new StreamType(this, sourcePort);
+    }
+
+    public getBaseStreamType(): StreamType | null {
+        return this.baseStreamType;
+    }
+
+    public getSourcePort(): PortModel {
+        return this.sourcePort;
+    }
+
+    public getStreamDepth(): number {
+        if (this.baseStreamType) {
+            return this.baseStreamType.getStreamDepth() + 1;
+        }
+        return 1;
+    }
+    
+    private hasAncestor(stream: StreamType): boolean {
+        if (stream === this) {
+            return true;
+        }
+        if (this.baseStreamType) {
+            return this.baseStreamType.hasAncestor(stream);
+        }
+        return false;
+    }
+
+}
+
 export abstract class PortOwner extends SlangNode {
 
-    protected createPortFromType(P: new(p: PortModel | PortOwner, args: PortModelArgs) => PortModel, type: SlangType, direction: PortDirection): PortModel {
-        const port = this.createChildNode(P, {type: type.getTypeIdentifier(), direction});
+    private baseStreamType: StreamType | null | undefined = undefined;
 
-        switch (type.getTypeIdentifier()) {
-            case TypeIdentifier.Map:
-                for (const [subName, subType] of type.getMapSubs()) {
-                    port.addMapSub(subName, this.createPortFromType(P, subType, direction));
-                }
-                break;
-            case TypeIdentifier.Stream:
-                port.setStreamSub(this.createPortFromType(P, type.getStreamSub(), direction));
-                break;
-            case TypeIdentifier.Generic:
-                port.setGenericIdentifier(type.getGenericIdentifier());
-                break;
-        }
-
-        return port;
+    protected constructor(parent: SlangNode) {
+        super(parent);
     }
+    
+    protected abstract createPort(args: PortModelArgs): PortModel;
 
     public getPortIn(): PortModel | null {
         return this.scanChildNode(GenericPortModel, p => p.isDirectionIn()) || null;
@@ -211,6 +239,14 @@ export abstract class PortOwner extends SlangNode {
 
     public getPorts(): IterableIterator<PortModel> {
         return this.getChildNodes(GenericPortModel);
+    }
+
+	protected setBaseStreamType(stream: StreamType | null): void {
+		this.baseStreamType = stream;
+	}
+
+	protected getBaseStreamType(): StreamType | null | undefined {
+        return this.baseStreamType;
     }
 
 }

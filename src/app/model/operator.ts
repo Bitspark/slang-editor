@@ -1,10 +1,9 @@
 import {BlueprintModel, BlueprintType} from './blueprint';
-import {OperatorPortModel, PortDirection} from './port';
+import {OperatorPortModel, PortModelArgs} from "./port";
 import {OperatorDelegateModel} from './delegate';
-import {BlackBox} from '../custom/nodes';
+import {BlackBox, StreamType} from "../custom/nodes";
 import {Connections} from '../custom/connections';
-import {SlangType} from "../custom/type";
-import {SlangBehaviorSubject, SlangSubject} from '../custom/events';
+import {SlangBehaviorSubject} from '../custom/events';
 
 export type OperatorModelArgs = {name: string, blueprint: BlueprintModel, geometry: Geometry | undefined};
 
@@ -16,7 +15,6 @@ export class OperatorModel extends BlackBox {
 
     // Topics
     // self
-    private removed = new SlangSubject<void>("removed");
     private selected = new SlangBehaviorSubject<boolean>("selected", false);
 
     private readonly name: string;
@@ -46,8 +44,14 @@ export class OperatorModel extends BlackBox {
         return this.blueprint;
     }
 
-    public createPort(type: SlangType, direction: PortDirection): OperatorPortModel {
-        return super.createPortFromType(OperatorPortModel, type, direction) as OperatorPortModel;
+    public createPort(args: PortModelArgs): OperatorPortModel {
+        const port = this.createChildNode(OperatorPortModel, args);
+        if (port.isDestination()) {
+            port.subscribeStreamTypeChanged(streamType => {
+                this.setBaseStreamType(streamType);
+            });
+        }
+        return port;
     }
 
     public getDelegates(): IterableIterator<OperatorDelegateModel> {
@@ -85,6 +89,14 @@ export class OperatorModel extends BlackBox {
         }
     }
 
+    protected setBaseStreamType(baseStreamType: StreamType | null): void {
+        super.setBaseStreamType(baseStreamType);
+        const portOut = this.getPortOut();
+        if (portOut) {
+            portOut.setSubStreamTypes(baseStreamType);
+        }
+    }
+
     // Actions
     public createDelegate(name: string): OperatorDelegateModel {
         return this.createChildNode(OperatorDelegateModel, {name});
@@ -93,24 +105,6 @@ export class OperatorModel extends BlackBox {
     public select() {
         if (!this.selected.getValue()) {
             this.selected.next(true);
-        }
-    }
-
-    public deselect() {
-        if (this.selected.getValue()) {
-            this.selected.next(false);
-        }
-    }
-
-    public delete() {
-        this.removed.next();
-    }
-
-    public moveTo(pos: [number, number]) {
-        if (this.geometry) {
-            this.geometry.position = pos;
-        } else {
-            this.geometry = {position: pos};
         }
     }
 }

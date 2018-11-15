@@ -1,4 +1,4 @@
-import {dia, g, shapes} from 'jointjs';
+import {dia, g} from 'jointjs';
 import {PaperView} from "../views/paper-view";
 
 export interface AnchorPosition extends g.PlainPoint {

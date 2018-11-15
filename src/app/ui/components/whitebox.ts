@@ -1,5 +1,5 @@
 import m from "mithril";
-import {AnchorComponent, AnchorPosition} from "./anchor";
+import {AnchorComponent} from "./anchor";
 import {Styles} from "../../../styles/studio";
 import {BlackBox} from "../../custom/nodes";
 import {dia, g, layout, shapes} from "jointjs";

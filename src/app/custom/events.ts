@@ -1,4 +1,4 @@
-import {BehaviorSubject, Subject} from 'rxjs';
+import {BehaviorSubject, Subject} from "rxjs";
 import {SlangNode} from "./nodes";
 
 abstract class BaseSlangSubject<T> {
@@ -19,7 +19,7 @@ export class SlangSubject<T> extends BaseSlangSubject<T> {
         this.subject.next(value);
     }
 
-    public subscribe(next: (value?: T) => void) {
+    public subscribe(next: (value?: T) => void): void {
         this.subject.subscribe(next);
     }
 }
@@ -45,7 +45,7 @@ export class SlangBehaviorSubject<T> extends BaseSlangSubject<T> {
     }
 }
 
-export class SlangArraySubject<T> extends BaseSlangSubject<T> {
+export class SlangBagSubject<T> extends BaseSlangSubject<T> {
     private readonly subjectAdded = new Subject<T>();
     private readonly subjectRemoved = new Subject<T>();
 
@@ -75,7 +75,7 @@ export class SlangArraySubject<T> extends BaseSlangSubject<T> {
     }
 }
 
-export class SlangArrayBehaviorSubject<T extends SlangNode> extends SlangArraySubject<T> {
+export class SlangNodeSetBehaviorSubject<T extends SlangNode> extends SlangBagSubject<T> {
     private readonly nodes: Map<string, T> = new Map<string, T>();
 
     constructor(protected readonly name: string, initial: Array<T>) {
@@ -106,9 +106,7 @@ export class SlangArrayBehaviorSubject<T extends SlangNode> extends SlangArraySu
 
     public subscribeAdded(next: (value: T) => void) {
         if (this.nodes) {
-            this.nodes.forEach(node => {
-                next(node);
-            });
+            this.nodes.forEach(node => next(node));
         }
         super.subscribeAdded(next);
     }
