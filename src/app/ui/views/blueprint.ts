@@ -1,4 +1,3 @@
-import {dia, g, layout, shapes} from "jointjs";
 import {BlackBoxComponent, OperatorBoxComponent} from "../components/blackbox";
 import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
@@ -10,22 +9,20 @@ import {IsolatedBlueprintPort} from "../components/blueprint-port";
 import {PortGroupPosition} from "../components/port-group";
 import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
-import {Styles} from "../../../styles/studio";
 import {BlueprintDelegateModel} from "../../model/delegate";
-import {AnchorComponent} from "../components/anchor";
+import {WhiteBox} from "../components/whitebox";
+import {dia, g} from "jointjs";
 
 export class BlueprintView extends PaperView {
 
-    private outer: dia.Element;
-    private topPorts: Array<dia.Element> = [];
-    private bottomPorts: Array<dia.Element> = [];
-    private rightPorts: Array<dia.Element> = [];
-    private leftPorts: Array<dia.Element> = [];
-    private operators: Array<BlackBoxComponent> = [];
-    private connections: Array<ConnectionComponent> = [];
-    private outerPadding = 120;
-    private minimumSpace = 10;
+	private topPorts: Array<dia.Element> = [];
+	private bottomPorts: Array<dia.Element> = [];
+	private rightPorts: Array<dia.Element> = [];
+	private leftPorts: Array<dia.Element> = [];
+	private operators: Array<BlackBoxComponent> = [];
+	private connections: Array<ConnectionComponent> = [];
 
+	private outer: WhiteBox.Component;
 	private blueprintSelect: BlueprintSelectComponent | null;
 
 	constructor(frame: ViewFrame, private blueprint: BlueprintModel) {
@@ -33,11 +30,11 @@ export class BlueprintView extends PaperView {
 		this.addZooming();
 		this.addPanning();
 
-        this.subscribe();
-        
-        this.autoLayout();
-        this.outer = this.createOuter();
-        this.fitOuter(false);
+		this.subscribe();
+
+		this.outer = new WhiteBox.Component(this);
+		this.autoLayout();
+		this.fitOuter(false);
 
 		this.attachEventHandlers();
 
@@ -133,17 +130,17 @@ export class BlueprintView extends PaperView {
 		return paper;
 	}
 
-    private attachEventHandlers() {
-        const that = this;
-        this.graph.on("change:position change:size", function (cell: dia.Cell) {
-            // Moving around inner operators
-            if (!(cell instanceof BlackBoxComponent.Rectangle)) {
-                return;
-            }
-            that.fitOuter(false);
-        });
+	private attachEventHandlers() {
+		const that = this;
+		this.graph.on("change:position change:size", function (cell: dia.Cell) {
+			// Moving around inner operators
+			if (!(cell instanceof BlackBoxComponent.Rect)) {
+				return;
+			}
+			that.fitOuter(false);
+		});
 
-		this.outer.on("pointerdblclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
+		this.outer.shape.on("pointerdblclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
 			that.blueprintSelect = new BlueprintSelectComponent(that, {x, y});
 		});
 		this.getPaper().on("blank:pointerclick cell:pointerclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
@@ -190,33 +187,6 @@ export class BlueprintView extends PaperView {
 		});
 	}
 
-    private createOuter(): dia.Element {
-        const size = {width: this.outerPadding * 2 + this.minimumSpace, height: this.outerPadding * 2 + this.minimumSpace};
-        const position = {x: -size.width / 2, y: -size.height / 2};
-
-        const outer = new (shapes.standard.Rectangle.define("BlueprintOuter", {
-            attrs: {
-                root: {
-                    class: "joint-cell joint-element sl-outer",
-                },
-                body: {
-                    rx: Styles.Outer.rx,
-                    ry: Styles.Outer.ry,
-                    class: "sl-rectangle",
-                    cursor: "default",
-                    filter: Styles.Outer.filter,
-                },
-            },
-        }))({id: `${this.blueprint.getIdentity()}_outer}`});
-        outer.set("obstacle", false);
-        outer.set("size", size);
-        outer.set("position", position);
-        outer.set("z", -2);
-        outer.attr("draggable", false);
-        outer.addTo(this.graph);
-
-		return outer;
-	}
 
 	private createIsolatedPort(port: BlueprintPortModel, id: string, name: string, position: PortGroupPosition): void {
 		const invertedPosition: { [key in PortGroupPosition]: PortGroupPosition } = {
@@ -278,8 +248,8 @@ export class BlueprintView extends PaperView {
 		}
 
 		portElement.set("restrictTranslate", function (): g.PlainRect {
-			const outerPosition = that.outer.get("position") as g.PlainPoint;
-			const outerSize = that.outer.get("size") as g.PlainRect;
+			const outerPosition = that.outer.shape.get("position") as g.PlainPoint;
+			const outerSize = that.outer.shape.get("size") as g.PlainRect;
 			return calculateRestrictedRect(outerPosition, outerSize);
 		});
 	}
@@ -306,67 +276,24 @@ export class BlueprintView extends PaperView {
 	}
 
 	private autoLayout() {
-		layout.DirectedGraph.layout(this.graph, {
-			nodeSep: 120,
-			rankSep: 120,
-			edgeSep: 0,
-			rankDir: "TB",
-			resizeClusters: false,
-		});
-
-		let boundingBox = this.graph.getCellsBBox(this.operators.map(operator => operator.getRectangle()))!;
-
-		this.operators.forEach(operator => {
-			operator.translate(-(boundingBox.x + boundingBox.width / 2), -(boundingBox.y + boundingBox.height / 2));
-		});
-
-        if (!boundingBox) {
-            boundingBox = new g.Rect({x: 0, y: 0, width: this.minimumSpace, height: this.minimumSpace});
-        }
-
-		boundingBox.x -= boundingBox.x + boundingBox.width / 2;
-		boundingBox.y -= boundingBox.y + boundingBox.height / 2;
-
-		// Center ports
-
-		const padding = this.outerPadding;
-
-		for (const port of this.topPorts) {
-			port.set({
-				position: {
-					x: boundingBox.x - 50 + boundingBox.width / 2,
-					y: boundingBox.y - 100 - padding,
-				}
-			});
-		}
-
-		for (const port of this.bottomPorts) {
-			port.set({
-				position: {
-					x: boundingBox.x - 50 + boundingBox.width / 2,
-					y: boundingBox.y + boundingBox.height + padding,
-				}
-			});
-		}
-
-		const offset = boundingBox.y + (boundingBox.height - this.rightPorts.length * 100) / 2;
-		this.rightPorts.forEach((port, index) => {
-			port.set({
-				position: {
-					x: boundingBox.x + boundingBox.width + padding,
-					y: offset + index * 100,
-				}
-			});
+		this.outer.autoLayout({
+			operators: this.operators,
+			ports: {
+				l: this.leftPorts,
+				r: this.rightPorts,
+				t: this.topPorts,
+				b: this.bottomPorts,
+			}
 		});
 	}
 
-    private addOperator(operator: OperatorModel) {
-        const operatorElement = new OperatorBoxComponent(this.graph, operator);
-        this.operators.push(operatorElement);
+	private addOperator(operator: OperatorModel) {
+		const operatorElement = new OperatorBoxComponent(this.graph, operator);
+		this.operators.push(operatorElement);
 
-        if (this.outer) {
-            this.fitOuter(true);
-        }
+		if (this.outer) {
+			this.fitOuter(true);
+		}
 
 		// JointJS -> Model
 		operatorElement.on("pointerclick", function (evt: Event, x: number, y: number) {
@@ -374,117 +301,17 @@ export class BlueprintView extends PaperView {
 		});
 	}
 
-    private fitOuter(animation: boolean) {
-        const padding = this.outerPadding;
-        const currentPosition = this.outer.get("position");
-        const currentSize = this.outer.get("size");
-
-		let newX: number = currentPosition.x + padding;
-		let newY: number = currentPosition.y + padding;
-		let newCornerX: number = currentPosition.x + currentSize.width - 2 * padding;
-		let newCornerY: number = currentPosition.y + currentSize.height - 2 * padding;
-
-        this.operators.forEach((operator: BlackBoxComponent) => {
-            const childBBox = operator.getBBox();
-            if (childBBox.x < newX) {
-                newX = childBBox.x;
-            }
-            if (childBBox.y < newY) {
-                newY = childBBox.y;
-            }
-            const corner = childBBox.corner();
-            if (corner.x > newCornerX) {
-                newCornerX = corner.x;
-            }
-            if (corner.y > newCornerY) {
-                newCornerY = corner.y;
-            }
-        });
-
-        const set = {
-            position: {x: 0, y: 0},
-            size: {width: 0, height: 0},
-        };
-
-		set.position.x = newX - padding;
-		set.position.y = newY - padding;
-		set.size.width = newCornerX - newX + 2 * padding;
-		set.size.height = newCornerY - newY + 2 * padding;
-
-		let newPosition = {x: currentPosition.x, y: currentPosition.y};
-		let newSize = {width: currentPosition.width, height: currentPosition.height};
-
-		if (currentPosition.x <= set.position.x && currentPosition.y <= set.position.y) {
-			delete set.position;
-		} else {
-			if (currentPosition.x <= set.position.x) {
-				set.position.x = currentPosition.x;
-			} else if (currentPosition.y <= set.position.y) {
-				set.position.y = currentPosition.y;
+	private fitOuter(animation: boolean) {
+		this.outer.fitOuter(animation, {
+				operators: this.operators,
+				ports: {
+					l: this.leftPorts,
+					r: this.rightPorts,
+					t: this.topPorts,
+					b: this.bottomPorts,
+				}
 			}
-			const deltaX = currentPosition.x - set.position.x;
-			const deltaY = currentPosition.y - set.position.y;
-			set.size.width = Math.max(set.size.width, currentSize.width + deltaX);
-			set.size.height = Math.max(set.size.height, currentSize.height + deltaY);
-			newPosition = set.position;
-			newSize = set.size;
-		}
-
-		if (set.size.width <= currentSize.width && set.size.height <= currentSize.height) {
-			delete set.size;
-		} else {
-			if (set.size.width <= currentSize.width) {
-				set.size.width = currentSize.width;
-			} else if (set.size.height <= currentSize.height) {
-				set.size.height = currentSize.height;
-			}
-			newSize = set.size;
-		}
-
-        if (!!set.position || !!set.size) {
-            if (!animation) {
-                this.outer.set(set);
-            } else {
-                if (!!set.size) {
-                    this.outer.transition("size/height", set.size.height);
-                    this.outer.transition("size/width", set.size.width);
-                }
-                if (!!set.position) {
-                    this.outer.transition("position/x", set.position.x);
-                    this.outer.transition("position/y", set.position.y);
-                }
-            }
-
-			for (const port of this.topPorts) {
-				const currentPortPosition = port.get("position");
-				port.set({
-					position: {
-						x: currentPortPosition.x,
-						y: newPosition.y - 100,
-					}
-				});
-			}
-
-			for (const port of this.bottomPorts) {
-				const currentPortPosition = port.get("position");
-				port.set({
-					position: {
-						x: currentPortPosition.x,
-						y: newPosition.y + newSize.height,
-					}
-				});
-			}
-
-			this.rightPorts.forEach(port => {
-				const currentPortPosition = port.get("position");
-				port.set({
-					position: {
-						x: newPosition.x + newSize.width,
-						y: currentPortPosition.y,
-					}
-				});
-			});
-		}
+		);
 	}
 
 	private getPortFromMagnet(magnet: SVGElement): PortModel | undefined {
