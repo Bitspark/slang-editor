@@ -3,7 +3,7 @@ import {dia, shapes} from "jointjs";
 import {PortModel} from "../../model/port";
 import {Styles} from "../../../styles/studio";
 
-export class IsolatedBlueprintPort {
+export class IsolatedBlueprintPortComponent {
 
 	private portGroup: PortGroupComponent;
 	private readonly rectangle: shapes.standard.Rectangle;
