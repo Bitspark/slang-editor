@@ -3,7 +3,7 @@ import {AnchorComponent} from "./anchor";
 import {Styles} from "../../../styles/studio";
 import {BlackBox} from "../../custom/nodes";
 import {dia, g, layout, shapes} from "jointjs";
-import {BlueprintInstanceAccess, BlueprintModel} from "../../model/blueprint";
+import {BlueprintInstance, BlueprintModel} from "../../model/blueprint";
 import {BlackBoxComponent} from "./blackbox";
 import {ClassComponent, CVnode} from "mithril";
 import {PaperView} from "../views/paper-view";
@@ -16,28 +16,42 @@ export class WhiteBoxComponent extends AnchorComponent {
 	public shape: WhiteBoxComponent.Shape;
 
 	constructor(paperView: PaperView, private readonly blueprint: BlueprintModel) {
-		super(paperView, {x: 0, y: 0});
+		super(paperView, {x: 0, y: 0,});
 
-		this.blueprint.subscribeDeployed((instanceAcess: BlueprintInstanceAccess) => {
-			m.mount(this.htmlRoot, {
-				view: () => m(".toolbox", [
-					m(WhiteBoxComponent.Tool.Button, {
+		this.blueprint.subscribeDeployed((instance: BlueprintInstance) => {
+			if (!instance) {
+				m.mount(this.htmlRoot, {
+					view: () => m(WhiteBoxComponent.Tool.Button, {
 						onClick: () => {
-							window.open(instanceAcess.url, "_blank");
+							this.blueprint.requestDeployment();
 						},
-						label: "Running",
-						icon: "X",
-						class: "running",
-					}),
-					m(WhiteBoxComponent.Tool.Button, {
-						onClick: () => {
-						},
-						label: "Running",
-						icon: "S",
-						class: "stop",
-					}),
-				])
-			});
+						label: "Deploy",
+						icon: "D",
+						class: "dply",
+					})
+				});
+			} else {
+				m.mount(this.htmlRoot, {
+					view: () => m(".toolbox", [
+						m(WhiteBoxComponent.Tool.Button, {
+							onClick: () => {
+								window.open(instance.url, "_blank");
+							},
+							label: "Running",
+							icon: "X",
+							class: "running",
+						}),
+						m(WhiteBoxComponent.Tool.Button, {
+							onClick: () => {
+								this.blueprint.requestShutdown();
+							},
+							label: "",
+							icon: "S",
+							class: "stop",
+						}),
+					])
+				});
+			}
 		});
 
 		const size = {
@@ -53,17 +67,6 @@ export class WhiteBoxComponent extends AnchorComponent {
 		};
 		updateButtonPosition();
 		this.shape.on("change:position change:size", updateButtonPosition);
-
-		m.mount(this.htmlRoot, {
-			view: () => m(WhiteBoxComponent.Tool.Button, {
-				onClick: () => {
-					this.blueprint.deploy();
-				},
-				label: "Deploy",
-				icon: "D",
-				class: "dply",
-			})
-		});
 	}
 
 	public autoLayout({operators, ports}: WhiteBoxComponent.Inner) {
