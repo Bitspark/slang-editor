@@ -60,6 +60,18 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				this.setStream(null);
 			});
 		}
+
+		if (this.isSource()) {
+			this.subscribeConnected(connection => {
+				connection.destination.subscribeStreamTypeChanged(streamType => {
+					this.setStream(streamType);
+				});
+			});
+
+			this.subscribeDisconnected(() => {
+				this.setStream(null);
+			});
+		}
 	}
 
 	public getMapSubs(): IterableIterator<GenericPortModel<O>> {
@@ -254,6 +266,20 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		return connections;
 	}
 
+	public getDirectConnections(): Connections {
+		const connections = new Connections();
+		if (this.isSource()) {
+			for (const connectedWith of this.connectedWith) {
+				connections.addConnection({source: this, destination: connectedWith});
+			}
+		} else {
+			for (const connectedWith of this.connectedWith) {
+				connections.addConnection({source: connectedWith, destination: this});
+			}
+		}
+		return connections;
+	}
+	
 	public getConnectionsTo(): Connections {
 		const connections = this.getDirectConnectionsTo();
 		switch (this.typeIdentifier) {
@@ -432,7 +458,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	}
 
 	public subscribeConnected(cb: (connection: Connection) => void): void {
-		this.getDirectConnectionsTo().forEach(connection => {
+		this.getDirectConnections().forEach(connection => {
 			cb(connection);
 		});
 		this.connected.subscribe(cb);
