@@ -1,7 +1,7 @@
 import {BlueprintModel} from "./blueprint";
 import {LandscapeModel} from "./landscape";
 import {SlangNode} from "../custom/nodes";
-import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
+import {SlangBehaviorSubject, SlangSubjectTrigger} from "../custom/events";
 
 export type AppModelArgs = { name: string };
 
@@ -9,7 +9,7 @@ export class AppModel extends SlangNode {
 
 	private openedBlueprint = new SlangBehaviorSubject<BlueprintModel | null>("opened-blueprint", null);
 	private openedLandscape = new SlangBehaviorSubject<LandscapeModel | null>("opened-landscape", null);
-	private loadRequested = new SlangSubject<void>("load-requested");
+	private loadRequested = new SlangSubjectTrigger("load-requested");
 
 	private readonly name: string;
 	private loading: Array<Promise<void>> = [];

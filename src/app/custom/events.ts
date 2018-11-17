@@ -15,11 +15,27 @@ export class SlangSubject<T> extends BaseSlangSubject<T> {
 		super(name);
 	}
 
-	public next(value?: T) {
+	public next(value: T) {
 		this.subject.next(value);
 	}
 
-	public subscribe(next: (value?: T) => void): void {
+	public subscribe(next: (value: T) => void): void {
+		this.subject.subscribe(next);
+	}
+}
+
+export class SlangSubjectTrigger extends BaseSlangSubject<void> {
+	private readonly subject = new Subject<void>();
+
+	constructor(name: string) {
+		super(name);
+	}
+
+	public next() {
+		this.subject.next();
+	}
+
+	public subscribe(next: () => void): void {
 		this.subject.subscribe(next);
 	}
 }
@@ -83,7 +99,7 @@ export class SlangNodeSetBehaviorSubject<T extends SlangNode> extends SlangBagSu
 		initial.forEach(node => this.nodes.set(node.getScopedIdentity(), node));
 	}
 
-	public nextAdd(value: T, cb?: (node: T) => void) {
+	public nextAdd<U extends T>(value: U, cb?: (node: U) => void) {
 		if (this.nodes.has(value.getScopedIdentity())) {
 			return;
 		}

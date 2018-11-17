@@ -1,10 +1,10 @@
 import {dia, g, shapes, util} from "jointjs";
 import {ViewFrame} from "../frame";
 import {View} from "./view";
-import {SlangSubject} from "../../custom/events";
+import {SlangSubjectTrigger} from "../../custom/events";
 
 export abstract class PaperView extends View {
-	private positionChanged = new SlangSubject<void>("positionChanged");
+	private positionChanged = new SlangSubjectTrigger("positionChanged");
 
 	protected readonly graph = new dia.Graph();
 	private readonly paper: dia.Paper;

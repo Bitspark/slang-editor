@@ -38,7 +38,7 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
 export class PortGroupComponent {
 
 	private readonly ports: Array<PortComponent> = [];
-	private parentElement: dia.Element | null;
+	private parentElement: dia.Element | null = null;
 	private portGroupElement: dia.Element.PortGroup = {};
 
 	constructor(private graph: dia.Graph,

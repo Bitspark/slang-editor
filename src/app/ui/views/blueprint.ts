@@ -22,7 +22,7 @@ export class BlueprintView extends PaperView {
 	private connections: Array<ConnectionComponent> = [];
 
 	private readonly outer: WhiteBoxComponent;
-	private blueprintSelect: BlueprintSelectComponent | null;
+	private blueprintSelect: BlueprintSelectComponent | null = null;
 
 	constructor(frame: ViewFrame, private blueprint: BlueprintModel) {
 		super(frame);

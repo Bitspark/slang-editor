@@ -18,7 +18,7 @@ export class WhiteBoxComponent extends AnchorComponent {
 	constructor(paperView: PaperView, private readonly blueprint: BlueprintModel) {
 		super(paperView, {x: 0, y: 0,});
 
-		this.blueprint.subscribeDeployed((instance: BlueprintInstance) => {
+		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
 			if (!instance) {
 				m.mount(this.htmlRoot, {
 					view: () => m(WhiteBoxComponent.Tool.Button, {

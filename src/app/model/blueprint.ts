@@ -107,7 +107,7 @@ export class BlueprintModel extends BlackBox {
 	}
 
 	public createOperator(name: string, blueprint: BlueprintModel, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
-		return this.createChildNode(OperatorModel, {name, blueprint}, operator => {
+		return this.createChildNode(OperatorModel, {name, blueprint, geometry: undefined,}, operator => {
 			blueprint.instantiateOperator(operator, {props: propAssigns, gen: genSpeci});
 		});
 	}
