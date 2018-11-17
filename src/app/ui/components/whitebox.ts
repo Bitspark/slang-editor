@@ -282,32 +282,44 @@ export class WhiteBoxComponent extends AnchorComponent {
 
 			for (const port of this.ports.top) {
 				const currentPortPosition = port.get("position");
-				port.set({
-					position: {
-						x: currentPortPosition.x,
-						y: newPosition.y - 100,
-					}
-				});
+				const targetPosition = {
+					x: currentPortPosition.x,
+					y: newPosition.y - 100,
+				};
+				if (!animation) {
+					port.set({position: targetPosition});
+				} else {
+					port.transition("position/x", targetPosition.x);
+					port.transition("position/y", targetPosition.y);
+				}
 			}
 
 			for (const port of this.ports.bottom) {
 				const currentPortPosition = port.get("position");
-				port.set({
-					position: {
-						x: currentPortPosition.x,
-						y: newPosition.y + newSize.height,
-					}
-				});
+				const targetPosition = {
+					x: currentPortPosition.x,
+					y: newPosition.y + newSize.height,
+				};
+				if (!animation) {
+					port.set({position: targetPosition});
+				} else {
+					port.transition("position/x", targetPosition.x);
+					port.transition("position/y", targetPosition.y);
+				}
 			}
 
 			this.ports.right.forEach(port => {
 				const currentPortPosition = port.get("position");
-				port.set({
-					position: {
-						x: newPosition.x + newSize.width,
-						y: currentPortPosition.y,
-					}
-				});
+				const targetPosition = {
+					x: newPosition.x + newSize.width,
+					y: currentPortPosition.y,
+				};
+				if (!animation) {
+					port.set({position: targetPosition});
+				} else {
+					port.transition("position/x", targetPosition.x);
+					port.transition("position/y", targetPosition.y);
+				}
 			});
 		}
 	}
