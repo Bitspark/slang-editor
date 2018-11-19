@@ -28,7 +28,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	private streamDepth: number = 0;
 	protected connectedWith: Array<PortModel> = [];
 
-	protected constructor(parent: GenericPortModel<O> | O, {type, name, direction}: PortModelArgs, P: new(p: PortModel | PortOwner, args: PortModelArgs) => PortModel) {
+	protected constructor(parent: GenericPortModel<O> | O, {type, name, direction}: PortModelArgs, P: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel) {
 		super(parent);
 		this.name = name;
 		this.typeIdentifier = type.getTypeIdentifier();

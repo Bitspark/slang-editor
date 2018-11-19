@@ -19,7 +19,7 @@ export class OperatorModel extends BlackBox {
 
 	private readonly name: string;
 	private readonly blueprint: BlueprintModel;
-	private geometry: Geometry | undefined;
+	private readonly geometry: Geometry | undefined;
 
 	constructor(parent: BlueprintModel, args: OperatorModelArgs) {
 		super(parent);

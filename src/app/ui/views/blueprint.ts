@@ -10,7 +10,7 @@ import {dia} from "jointjs";
 
 export class BlueprintView extends PaperView {
 	private readonly whiteBox: WhiteBoxComponent;
-	private blueprintSelect: BlueprintSelectComponent | null;
+	private blueprintSelect: BlueprintSelectComponent | null = null;
 
 	constructor(frame: ViewFrame, private blueprint: BlueprintModel) {
 		super(frame);
