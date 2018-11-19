@@ -77,6 +77,10 @@ export class ConnectionComponent {
 	public getConnection(): Connection {
 		return this.connection;
 	}
+	
+	public getLink(): dia.Link {
+		return this.link;
+	}
 
 	// STATIC
 
