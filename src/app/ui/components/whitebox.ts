@@ -14,6 +14,7 @@ import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {Connection} from "../../custom/connections";
 import {OperatorModel} from "../../model/operator";
 import {BlueprintDelegateModel} from "../../model/delegate";
+import {Form} from "./mithril/form";
 
 export class WhiteBoxComponent extends AnchorComponent {
 	private static readonly padding = 120;
@@ -32,7 +33,6 @@ export class WhiteBoxComponent extends AnchorComponent {
 
 	constructor(paperView: PaperView, private readonly blueprint: BlueprintModel) {
 		super(paperView, {x: 0, y: 0,});
-
 		this.subscribe();
 
 		const size = {
@@ -41,16 +41,20 @@ export class WhiteBoxComponent extends AnchorComponent {
 		};
 		this.shape = new WhiteBoxComponent.Shape(this.blueprint, size);
 		this.shape.addTo(this.graph);
-		const updateButtonPosition = () => {
-			const {x, y} = this.shape.position();
-			const {width} = this.shape.size();
-			this.updatePosition({x: x + width, y: y - 17,});
-		};
-		updateButtonPosition();
-		this.shape.on("change:position change:size", updateButtonPosition);
-		
+		this.updateButtonPosition();
 		this.autoLayout();
 	}
+
+	private updateButtonPosition() {
+		if (!this.shape) {
+			return;
+		}
+
+		const elem = (this.ports.top.length) ? this.ports.top[0] : this.shape;
+		const {x, y} = elem.position();
+		const {width, height} = elem.size();
+		this.updatePosition({x: x + width, y: y + height});
+	};
 
 	private subscribe() {
 		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
@@ -96,7 +100,10 @@ export class WhiteBoxComponent extends AnchorComponent {
 
 		this.blueprint.subscribeChildCreated(BlueprintPortModel, port => {
 			if (port.isDirectionIn()) {
-				this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
+				const p = this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
+				p.getElement().on("change:position change:size", () => {
+					this.updateButtonPosition();
+				});
 			} else {
 				this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
 			}
@@ -124,11 +131,11 @@ export class WhiteBoxComponent extends AnchorComponent {
 			});
 		});
 	}
-	
+
 	public autoLayout() {
 		const operatorRectangles = this.operators.map(operatorComponent => operatorComponent.getRectangle());
 		const connectionLinks = this.connections.map(connectionComponent => connectionComponent.getLink());
-		
+
 		layout.DirectedGraph.layout(
 			[...operatorRectangles, ...connectionLinks, ...this.ports.top, ...this.ports.bottom, ...this.ports.left, ...this.ports.right,], {
 				nodeSep: 120,
@@ -183,15 +190,15 @@ export class WhiteBoxComponent extends AnchorComponent {
 				}
 			});
 		});
-		
+
 		this.fitOuter(false);
 	}
 
-	public fitOuter(animation: boolean) {	
+	public fitOuter(animation: boolean) {
 		if (!this.shape) {
 			return;
 		}
-		
+
 		const padding = WhiteBoxComponent.padding;
 		const currentPosition = this.shape.get("position");
 		const currentSize = this.shape.get("size");
@@ -200,7 +207,7 @@ export class WhiteBoxComponent extends AnchorComponent {
 		let newY: number = currentPosition.y + padding;
 		let newCornerX: number = currentPosition.x + currentSize.width - 2 * padding;
 		let newCornerY: number = currentPosition.y + currentSize.height - 2 * padding;
-		
+
 		this.operators.forEach(operator => {
 			const childBBox = operator.getBBox();
 			if (childBBox.x < newX) {
@@ -316,7 +323,7 @@ export class WhiteBoxComponent extends AnchorComponent {
 		}
 	}
 
-	private createIsolatedPort(port: BlueprintPortModel, id: string, name: string, position: PortGroupPosition): void {
+	private createIsolatedPort(port: BlueprintPortModel, id: string, name: string, position: PortGroupPosition): IsolatedBlueprintPortComponent {
 		const invertedPosition: { [key in PortGroupPosition]: PortGroupPosition } = {
 			top: "bottom",
 			bottom: "top",
@@ -380,6 +387,8 @@ export class WhiteBoxComponent extends AnchorComponent {
 			const outerSize = that.shape.get("size") as g.PlainRect;
 			return calculateRestrictedRect(outerPosition, outerSize);
 		});
+
+		return portComponent;
 	}
 
 	private addConnection(connection: Connection) {
