@@ -4,20 +4,55 @@ import {Styles} from "../../../styles/studio";
 import {BlackBox} from "../../custom/nodes";
 import {dia, g, layout, shapes} from "jointjs";
 import {BlueprintInstance, BlueprintModel} from "../../model/blueprint";
-import {BlackBoxComponent} from "./blackbox";
+import {BlackBoxComponent, OperatorBoxComponent} from "./blackbox";
 import {ClassComponent, CVnode} from "mithril";
 import {PaperView} from "../views/paper-view";
+import {ConnectionComponent} from "./connection";
+import {BlueprintPortModel, GenericPortModel} from "../../model/port";
+import {PortGroupPosition} from "./port-group";
+import {IsolatedBlueprintPortComponent} from "./blueprint-port";
+import {Connection} from "../../custom/connections";
+import {OperatorModel} from "../../model/operator";
+import {BlueprintDelegateModel} from "../../model/delegate";
 
 export class WhiteBoxComponent extends AnchorComponent {
 	private static readonly padding = 120;
 	private static readonly minimumSpace = 10;
 
-	// move all component specific code from BlueprintView to this class
-	public shape: WhiteBoxComponent.Shape;
+	private readonly shape: WhiteBoxComponent.Shape;
+
+	private readonly operators: Array<BlackBoxComponent> = [];
+	private readonly connections: Array<ConnectionComponent> = [];
+	private readonly ports = {
+		top: [] as Array<dia.Element>,
+		bottom: [] as Array<dia.Element>,
+		left: [] as Array<dia.Element>,
+		right: [] as Array<dia.Element>,
+	};
 
 	constructor(paperView: PaperView, private readonly blueprint: BlueprintModel) {
 		super(paperView, {x: 0, y: 0,});
 
+		this.subscribe();
+
+		const size = {
+			width: WhiteBoxComponent.padding * 2 + WhiteBoxComponent.minimumSpace,
+			height: WhiteBoxComponent.padding * 2 + WhiteBoxComponent.minimumSpace,
+		};
+		this.shape = new WhiteBoxComponent.Shape(this.blueprint, size);
+		this.shape.addTo(this.graph);
+		const updateButtonPosition = () => {
+			const {x, y} = this.shape.position();
+			const {width} = this.shape.size();
+			this.updatePosition({x: x + width, y: y - 17,});
+		};
+		updateButtonPosition();
+		this.shape.on("change:position change:size", updateButtonPosition);
+		
+		this.autoLayout();
+	}
+
+	private subscribe() {
 		this.blueprint.subscribeDeployed((instance: BlueprintInstance) => {
 			if (!instance) {
 				m.mount(this.htmlRoot, {
@@ -54,31 +89,62 @@ export class WhiteBoxComponent extends AnchorComponent {
 			}
 		});
 
-		const size = {
-			width: WhiteBoxComponent.padding * 2 + WhiteBoxComponent.minimumSpace,
-			height: WhiteBoxComponent.padding * 2 + WhiteBoxComponent.minimumSpace,
-		};
-		this.shape = new WhiteBoxComponent.Shape(this.blueprint, size);
-		this.shape.addTo(this.graph);
-		const updateButtonPosition = () => {
-			const {x, y} = this.shape.position();
-			const {width} = this.shape.size();
-			this.updatePosition({x: x + width, y: y - 17,});
-		};
-		updateButtonPosition();
-		this.shape.on("change:position change:size", updateButtonPosition);
-	}
-
-	public autoLayout({operators, ports}: WhiteBoxComponent.Inner) {
-		const operatorRectangles = operators.map(operatorComponent => operatorComponent.getRectangle());
-
-		layout.DirectedGraph.layout(operatorRectangles, {
-			nodeSep: 120,
-			rankSep: 120,
-			edgeSep: 0,
-			rankDir: "TB",
-			resizeClusters: false,
+		this.blueprint.subscribeChildCreated(OperatorModel, operator => {
+			this.addOperator(operator);
+			this.fitOuter(true);
 		});
+
+		this.blueprint.subscribeChildCreated(BlueprintPortModel, port => {
+			if (port.isDirectionIn()) {
+				this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
+			} else {
+				this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
+			}
+		});
+
+		this.blueprint.subscribeChildCreated(BlueprintDelegateModel, delegate => {
+			delegate.subscribeChildCreated(BlueprintPortModel, port => {
+				if (port.isDirectionIn()) {
+					this.createIsolatedPort(port, `${delegate.getIdentity()}_in`, `Delegate ${delegate.getName()} In-Port`, "right");
+				} else {
+					this.createIsolatedPort(port, `${delegate.getIdentity()}_out`, `Delegate ${delegate.getName()} Out-Port`, "right");
+				}
+			});
+		});
+
+		this.blueprint.subscribeDescendantCreated(GenericPortModel, port => {
+			port.subscribeStreamTypeChanged(() => {
+				this.connections
+					.filter(connectionComponent => connectionComponent.getConnection().source === port)
+					.forEach(connectionComponent => connectionComponent.refresh());
+			});
+		});
+
+		this.blueprint.subscribeDescendantCreated(GenericPortModel, port => {
+			if (!port.isSource()) {
+				return;
+			}
+			port.subscribeConnected(connection => {
+				this.addConnection(connection);
+			});
+			port.subscribeDisconnected(connection => {
+				this.removeConnection(connection);
+			});
+		});
+	}
+	
+	public autoLayout() {
+		const operatorRectangles = this.operators.map(operatorComponent => operatorComponent.getRectangle());
+		const connectionLinks = this.connections.map(connectionComponent => connectionComponent.getLink());
+		
+		layout.DirectedGraph.layout(
+			[...operatorRectangles, ...connectionLinks, ...this.ports.top, ...this.ports.bottom, ...this.ports.left, ...this.ports.right,], {
+				nodeSep: 120,
+				rankSep: 120,
+				edgeSep: 0,
+				rankDir: "TB",
+				resizeClusters: false,
+			});
 
 		const boundingBox = this.graph.getCellsBBox(operatorRectangles) || new g.Rect({
 			x: 0,
@@ -87,7 +153,7 @@ export class WhiteBoxComponent extends AnchorComponent {
 			height: WhiteBoxComponent.minimumSpace,
 		});
 
-		operators.forEach(operator => {
+		this.operators.forEach(operator => {
 			operator.translate(-(boundingBox.x + boundingBox.width / 2), -(boundingBox.y + boundingBox.height / 2));
 		});
 
@@ -98,7 +164,7 @@ export class WhiteBoxComponent extends AnchorComponent {
 
 		const padding = WhiteBoxComponent.padding;
 
-		for (const port of ports.t) {
+		for (const port of this.ports.top) {
 			port.set({
 				position: {
 					x: boundingBox.x - 50 + boundingBox.width / 2,
@@ -107,7 +173,7 @@ export class WhiteBoxComponent extends AnchorComponent {
 			});
 		}
 
-		for (const port of ports.b) {
+		for (const port of this.ports.bottom) {
 			port.set({
 				position: {
 					x: boundingBox.x - 50 + boundingBox.width / 2,
@@ -116,8 +182,8 @@ export class WhiteBoxComponent extends AnchorComponent {
 			});
 		}
 
-		const offset = boundingBox.y + (boundingBox.height - ports.r.length * 100) / 2;
-		ports.r.forEach((port, index) => {
+		const offset = boundingBox.y + (boundingBox.height - this.ports.right.length * 100) / 2;
+		this.ports.right.forEach((port, index) => {
 			port.set({
 				position: {
 					x: boundingBox.x + boundingBox.width + padding,
@@ -125,9 +191,15 @@ export class WhiteBoxComponent extends AnchorComponent {
 				}
 			});
 		});
+		
+		this.fitOuter(false);
 	}
 
-	public fitOuter(animation: boolean, {operators, ports}: WhiteBoxComponent.Inner) {
+	public fitOuter(animation: boolean) {	
+		if (!this.shape) {
+			return;
+		}
+		
 		const padding = WhiteBoxComponent.padding;
 		const currentPosition = this.shape.get("position");
 		const currentSize = this.shape.get("size");
@@ -136,8 +208,8 @@ export class WhiteBoxComponent extends AnchorComponent {
 		let newY: number = currentPosition.y + padding;
 		let newCornerX: number = currentPosition.x + currentSize.width - 2 * padding;
 		let newCornerY: number = currentPosition.y + currentSize.height - 2 * padding;
-
-		operators.forEach(operator => {
+		
+		this.operators.forEach(operator => {
 			const childBBox = operator.getBBox();
 			if (childBBox.x < newX) {
 				newX = childBBox.x;
@@ -208,37 +280,140 @@ export class WhiteBoxComponent extends AnchorComponent {
 				}
 			}
 
-			for (const port of ports.t) {
+			for (const port of this.ports.top) {
 				const currentPortPosition = port.get("position");
-				port.set({
-					position: {
-						x: currentPortPosition.x,
-						y: newPosition.y - 100,
-					}
-				});
+				const targetPosition = {
+					x: currentPortPosition.x,
+					y: newPosition.y - 100,
+				};
+				if (!animation) {
+					port.set({position: targetPosition});
+				} else {
+					port.transition("position/x", targetPosition.x);
+					port.transition("position/y", targetPosition.y);
+				}
 			}
 
-			for (const port of ports.b) {
+			for (const port of this.ports.bottom) {
 				const currentPortPosition = port.get("position");
-				port.set({
-					position: {
-						x: currentPortPosition.x,
-						y: newPosition.y + newSize.height,
-					}
-				});
+				const targetPosition = {
+					x: currentPortPosition.x,
+					y: newPosition.y + newSize.height,
+				};
+				if (!animation) {
+					port.set({position: targetPosition});
+				} else {
+					port.transition("position/x", targetPosition.x);
+					port.transition("position/y", targetPosition.y);
+				}
 			}
 
-			ports.r.forEach(port => {
+			this.ports.right.forEach(port => {
 				const currentPortPosition = port.get("position");
-				port.set({
-					position: {
-						x: newPosition.x + newSize.width,
-						y: currentPortPosition.y,
-					}
-				});
+				const targetPosition = {
+					x: newPosition.x + newSize.width,
+					y: currentPortPosition.y,
+				};
+				if (!animation) {
+					port.set({position: targetPosition});
+				} else {
+					port.transition("position/x", targetPosition.x);
+					port.transition("position/y", targetPosition.y);
+				}
 			});
 		}
 	}
+
+	private createIsolatedPort(port: BlueprintPortModel, id: string, name: string, position: PortGroupPosition): void {
+		const invertedPosition: { [key in PortGroupPosition]: PortGroupPosition } = {
+			top: "bottom",
+			bottom: "top",
+			left: "right",
+			right: "left",
+		};
+
+		const that = this;
+		const portComponent = new IsolatedBlueprintPortComponent(this.graph, name, id, port, invertedPosition[position]);
+		const portElement = portComponent.getElement();
+
+		let calculateRestrictedRect: (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => g.PlainRect;
+
+		const elementSize = portElement.get("size") as g.PlainRect;
+
+		switch (position) {
+			case "top":
+				portElement.set({position: {x: -elementSize.width / 2, y: 0}});
+				this.ports.top.push(portElement);
+				calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
+					x: outerPosition.x,
+					y: outerPosition.y - elementSize.height,
+					width: outerSize.width,
+					height: elementSize.height
+				});
+				break;
+			case "bottom":
+				portElement.set({position: {x: -elementSize.width / 2, y: 0}});
+				this.ports.bottom.push(portElement);
+				calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
+					x: outerPosition.x,
+					y: outerPosition.y + outerSize.height,
+					width: outerSize.width,
+					height: elementSize.height
+				});
+				break;
+			case "left":
+				portElement.set({position: {x: 0, y: -elementSize.height / 2}});
+				this.ports.left.push(portElement);
+				calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
+					x: outerPosition.x - elementSize.width,
+					y: outerPosition.y,
+					width: elementSize.width,
+					height: outerSize.height
+				});
+				break;
+			case "right":
+				portElement.set({position: {x: 0, y: -elementSize.height / 2}});
+				this.ports.right.push(portElement);
+				calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
+					x: outerPosition.x + outerSize.width,
+					y: outerPosition.y,
+					width: elementSize.width,
+					height: outerSize.height
+				});
+				break;
+		}
+
+		portElement.set("restrictTranslate", function (): g.PlainRect {
+			const outerPosition = that.shape.get("position") as g.PlainPoint;
+			const outerSize = that.shape.get("size") as g.PlainRect;
+			return calculateRestrictedRect(outerPosition, outerSize);
+		});
+	}
+
+	private addConnection(connection: Connection) {
+		this.connections.push(new ConnectionComponent(this.graph, connection));
+	}
+
+	private addOperator(operator: OperatorModel) {
+		this.operators.push(new OperatorBoxComponent(this.graph, operator));
+	}
+
+	private removeConnection(connection: Connection) {
+		const linkId = ConnectionComponent.getLinkId(connection);
+		const link = ConnectionComponent.findLink(this.graph, connection);
+		if (link) {
+			link.remove();
+		} else {
+			throw new Error(`link with id ${linkId} not found`);
+		}
+		const idx = this.connections.findIndex(conn => conn.getId() === linkId);
+		if (idx !== -1) {
+			this.connections.splice(idx, 1);
+		} else {
+			throw new Error(`connection with id ${linkId} not found`);
+		}
+	}
+
 }
 
 export namespace WhiteBoxComponent {
@@ -253,16 +428,6 @@ export namespace WhiteBoxComponent {
 		id?: string;
 		cssClass?: string;
 		size: Size;
-	}
-
-	export interface Inner {
-		operators: Array<BlackBoxComponent>;
-		ports: {
-			t: Array<dia.Element>;
-			b: Array<dia.Element>;
-			l: Array<dia.Element>;
-			r: Array<dia.Element>;
-		};
 	}
 
 	function constructRectAttrs({id, cssClass, size}: BasicAttrs): dia.Element.GenericAttributes<RectangleSelectors> {
