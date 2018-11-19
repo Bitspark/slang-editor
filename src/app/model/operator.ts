@@ -51,6 +51,11 @@ export class OperatorModel extends BlackBox {
 				this.setBaseStreamType(streamType);
 			});
 		}
+		if (port.isSource()) {
+			port.subscribeStreamTypeChanged(streamType => {
+				this.setBaseStreamType(streamType);
+			});
+		}
 		return port;
 	}
 
@@ -94,6 +99,10 @@ export class OperatorModel extends BlackBox {
 		const portOut = this.getPortOut();
 		if (portOut) {
 			portOut.setSubStreamTypes(baseStreamType);
+		}
+		const portIn = this.getPortIn();
+		if (portIn) {
+			portIn.setSubStreamTypes(baseStreamType);
 		}
 	}
 
