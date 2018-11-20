@@ -141,7 +141,7 @@ export abstract class SlangNode {
 		return children.values();
 	}
 
-	protected createChildNode<T extends SlangNode, A>(ctor: new(parent: SlangNode, args: A) => T, args: A, cb?: (child: T) => void): T {
+	protected createChildNode<T extends SlangNode, A>(ctor: new(parent: this, args: A) => T, args: A, cb?: (child: T) => void): T {
 		const childNode = new ctor(this, args);
 		childNode.id = this.nextId();
 		this.children.nextAdd(childNode, cb);

@@ -83,8 +83,8 @@ export class BlueprintSelectComponent extends AnchorComponent {
 		super(blueprintView, pos);
 		this.blueprint = blueprintView.getBlueprint();
 		this.landscape = this.blueprint.getAncestorNode(LandscapeModel)!;
-
-		this.placeGhostRect(pos);
+		
+		this.ghostRect = this.placeGhostRect(pos);
 
 		m.mount(this.htmlRoot, {
 			view: () => m(BlueprintMenuComponent, {
@@ -102,7 +102,7 @@ export class BlueprintSelectComponent extends AnchorComponent {
 				},
 				onHover: (bp?: BlueprintModel) => {
 					const pos = this.ghostRect.getBBox().center();
-					this.placeGhostRect(pos, bp);
+					this.ghostRect = this.placeGhostRect(pos, bp);
 				}
 			})
 		});
@@ -145,19 +145,24 @@ export class BlueprintSelectComponent extends AnchorComponent {
 		return blueprints;
 	}
 
-	private placeGhostRect({x, y}: AnchorPosition, blueprint?: BlueprintModel) {
+	private placeGhostRect({x, y}: AnchorPosition, blueprint?: BlueprintModel): BlackBoxComponent.Rect | BlackBoxComponent.Rect.Ghost {
 		if (this.ghostRect) {
 			this.ghostRect.remove();
 		}
+		
+		let ghostRect: BlackBoxComponent.Rect | BlackBoxComponent.Rect.Ghost;
+		
 		if (!blueprint) {
-			this.ghostRect = BlackBoxComponent.Rect.Ghost.place("• • •", {x, y});
-			this.ghostRect.addTo(this.graph);
+			ghostRect = BlackBoxComponent.Rect.Ghost.place("• • •", {x, y});
+			ghostRect.addTo(this.graph);
 		} else {
-			this.ghostRect = BlackBoxComponent.Rect.place(this.graph, blueprint, {x, y});
+			ghostRect = BlackBoxComponent.Rect.place(this.graph, blueprint, {x, y});
 		}
 
-		this.ghostRect.on("change:position change:size", () => {
-			this.updatePosition(this.ghostRect.getBBox().center());
+		ghostRect.on("change:position change:size", () => {
+			this.updatePosition(ghostRect.getBBox().center());
 		});
+		
+		return ghostRect;
 	}
 }

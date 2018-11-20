@@ -53,7 +53,7 @@ export class WhiteBoxComponent extends AnchorComponent {
 	}
 
 	private subscribe() {
-		this.blueprint.subscribeDeployed((instance: BlueprintInstance) => {
+		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
 			if (!instance) {
 				m.mount(this.htmlRoot, {
 					view: () => m(WhiteBoxComponent.Tool.Button, {
