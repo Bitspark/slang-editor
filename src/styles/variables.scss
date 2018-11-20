@@ -1,11 +1,12 @@
-$black: #1f1f1f;
-$white: #fffffe;
+$black: #212124;
+$white: #fefefd;
 $blue: #2e49b3;
 $brown: #a52e2e;
 $orange: #cb8000;
 $green: #83a91d;
 $cyan: #018b8a;
-$gray: #979797;
+$gray: #989897;
+$dim: #f1f1f0;
 $purple: #b25db2;
 
 @import url('https://fonts.googleapis.com/css?family=Roboto+Slab:300%7CRoboto');
@@ -13,14 +14,35 @@ $font-family-default: "Roboto", "sans-serif";
 $font-family-mono: "Roboto Slab", "sans-serif";
 $font-size: 1rem;
 
-%bordered {
-	box-shadow: 0px 0px 3px -1px $black inset;
+%transition {
+	transition-duration: 200ms;
+}
+
+%rounded {
 	border-radius: 20px;
 }
 
+%bordered {
+	@extend %rounded;
+	box-shadow: inset 0px 0px 2px -1px $black, 0px 0px 1px -1px $black;
+	//box-shadow: 0px 0px 3px -1px $black inset;
+}
+
 %translucent {
+	@extend %transition;
 	opacity: .55;
 	&:hover {
 		opacity: .97;
 	}
+	transition-property: opacity;
+}
+
+%proto-container {
+	@extend %bordered;
+	@extend %translucent;
+}
+
+%proto-entry {
+	padding: 18px 32px 16px 32px;
+	border-bottom: 1px solid transparentize($black, .85);
 }
