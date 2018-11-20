@@ -14,7 +14,7 @@ import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {Connection} from "../../custom/connections";
 import {OperatorModel} from "../../model/operator";
 import {BlueprintDelegateModel} from "../../model/delegate";
-import {Form} from "./mithril/form";
+import {SlangType, TypeIdentifier} from "../../custom/type";
 
 export class WhiteBoxComponent extends Component {
 	private static readonly padding = 120;
@@ -89,7 +89,7 @@ export class WhiteBoxComponent extends Component {
 
 				if (portIn) {
 					this.input.mount({
-						view: () => m(Form, {type: portIn.getType()})
+						view: () => m(WhiteBoxComponent.OperatorApiForm, {type: portIn.getType()})
 					});
 				}
 			}
@@ -492,6 +492,101 @@ export namespace WhiteBoxComponent {
 					},
 					attrs.icon);
 			}
+		}
+	}
+
+	export namespace OperatorApiForm {
+		export interface Attrs {
+			name?: string;
+			type: SlangType
+		}
+	}
+
+	export class OperatorApiForm implements ClassComponent<OperatorApiForm.Attrs> {
+		protected type: SlangType | undefined;
+
+		oninit({attrs}: CVnode<OperatorApiForm.Attrs>) {
+			this.type = attrs.type;
+		}
+
+		view({attrs}: CVnode<OperatorApiForm.Attrs>): any {
+			return m("form.sl-form", m(FormInputGroup, {type: this.type!}));
+		}
+
+	}
+
+	class FormInputGroup implements ClassComponent<OperatorApiForm.Attrs> {
+		protected name: string | undefined;
+		protected type: SlangType | undefined;
+
+		oninit({attrs}: CVnode<OperatorApiForm.Attrs>) {
+			this.type = attrs.type;
+			this.name = attrs.name;
+		}
+
+		view({attrs}: CVnode<OperatorApiForm.Attrs>): any {
+			if (!this.type) return m(".sl-inp.undef");
+			const t = this.type;
+			switch (this.type.getTypeIdentifier()) {
+				case TypeIdentifier.Map:
+					return m(".sl-inp-grp.map", Array.from(t.getMapSubs())
+						.map(([subName, subType]) => m(FormInputGroup, {
+								name: subName,
+								type: subType
+							})
+						)
+					);
+
+				case TypeIdentifier.Stream:
+					return m(".sl-inp-grp.stream",
+						m(FormInputGroup, {type: t.getStreamSub()})
+					);
+
+				case TypeIdentifier.Number:
+					return m(SimpleInputField, {
+						label: this.name, cssSelector: "input.sl-inp.number", inputType: "number"
+					});
+
+				case TypeIdentifier.Boolean:
+					return m(SimpleInputField, {
+						label: this.name, cssSelector: "input.sl-inp.boolean", inputType: "checkbox"
+					});
+
+				case TypeIdentifier.Trigger:
+					return m(SimpleInputField, {
+						label: this.name, cssSelector: "input.sl-inp.trigger", inputType: "button"
+					});
+
+				default:
+					return m(SimpleInputField, {
+						label: this.name, cssSelector: "input.sl-inp.string", inputType: "text"
+					});
+			}
+		}
+	}
+
+	export interface InputAttrs {
+		label?: string,
+		cssSelector: string,
+		inputType: "button" | "number" | "text" | "checkbox";
+	}
+
+	class SimpleInputField implements ClassComponent<InputAttrs> {
+		view({attrs}: CVnode<InputAttrs>) {
+			if (attrs.label) {
+				const labelName = attrs.label;
+				const labelText = `${attrs.label}:`;
+				return m("label", {
+					for: labelName
+				}, [
+					labelText,
+					m(attrs.cssSelector, {
+						name: labelName,
+						type: attrs.inputType
+					})
+				]);
+			}
+			return m(attrs.cssSelector, {type: attrs.inputType});
 		}
 	}
 }

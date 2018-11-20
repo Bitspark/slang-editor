@@ -1,0 +1,31 @@
+.sl-form {
+	@extend %bordered;
+	@extend %translucent;
+	width: 342px;
+	background: $white;
+	padding: 0;
+	margin: 0;
+	text-align: center;
+}
+
+.sl-inp-grp {
+	padding: 4px 0;
+	margin: 2px;
+	display: inline-block;
+	border: 1px solid $black;
+}
+
+.sl-inp {
+	&.number {
+		background-color: transparentize($type-color-number, .7);
+	}
+	&.boolean {
+		background-color: transparentize($type-color-boolean, .7);
+	}
+	&.string {
+		background-color: transparentize($type-color-string, .7);
+	}
+	&.trigger {
+		background-color: transparentize($type-color-trigger, .7);
+	}
+}
