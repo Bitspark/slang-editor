@@ -6,7 +6,7 @@ import {ClassComponent, CVnode} from "mithril";
 import {BlueprintView} from "../views/blueprint";
 import {Geometry} from "../../model/operator";
 import {BlackBoxComponent} from "./blackbox";
-import {AnchorComponent, AnchorPosition} from "./anchor";
+import {AnchoredComponent, AnchorPosition} from "./base";
 
 export interface Attrs {
 	onSelect: (bp: BlueprintModel) => void,
@@ -73,7 +73,7 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 	}
 }
 
-export class BlueprintSelectComponent extends AnchorComponent {
+export class BlueprintSelectComponent extends AnchoredComponent {
 	private readonly blueprint: BlueprintModel;
 	private readonly landscape: LandscapeModel;
 	private ghostRect: BlackBoxComponent.Rect | BlackBoxComponent.Rect.Ghost;
@@ -83,7 +83,7 @@ export class BlueprintSelectComponent extends AnchorComponent {
 		super(blueprintView, pos);
 		this.blueprint = blueprintView.getBlueprint();
 		this.landscape = this.blueprint.getAncestorNode(LandscapeModel)!;
-		
+
 		this.ghostRect = this.placeGhostRect(pos);
 
 		m.mount(this.htmlRoot, {
@@ -149,20 +149,15 @@ export class BlueprintSelectComponent extends AnchorComponent {
 		if (this.ghostRect) {
 			this.ghostRect.remove();
 		}
-		
+
 		let ghostRect: BlackBoxComponent.Rect | BlackBoxComponent.Rect.Ghost;
-		
+
 		if (!blueprint) {
 			ghostRect = BlackBoxComponent.Rect.Ghost.place("• • •", {x, y});
 			ghostRect.addTo(this.graph);
 		} else {
 			ghostRect = BlackBoxComponent.Rect.place(this.graph, blueprint, {x, y});
 		}
-
-		ghostRect.on("change:position change:size", () => {
-			this.updatePosition(ghostRect.getBBox().center());
-		});
-		
 		return ghostRect;
 	}
 }
