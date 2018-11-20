@@ -46,17 +46,14 @@ export class OperatorModel extends BlackBox {
 
 	public createPort(args: PortModelArgs): OperatorPortModel {
 		const port = this.createChildNode(OperatorPortModel, args);
-		if (port.isDestination()) {
-			port.subscribeStreamTypeChanged(streamType => {
-				this.setBaseStreamType(streamType);
-			});
-		}
-		if (port.isSource()) {
-			port.subscribeStreamTypeChanged(streamType => {
-				this.setBaseStreamType(streamType);
-			});
-		}
+		port.subscribeStreamTypeChanged(streamType => {
+			this.setBaseStreamType(streamType);
+		});
 		return port;
+	}
+
+	public resetBaseStreamType(): void {
+		this.setBaseStreamType(null);
 	}
 
 	public getDelegates(): IterableIterator<OperatorDelegateModel> {
@@ -91,18 +88,6 @@ export class OperatorModel extends BlackBox {
 	public get position(): { x: number, y: number } | undefined {
 		if (this.geometry) {
 			return {x: this.geometry.position[0], y: this.geometry.position[1]};
-		}
-	}
-
-	protected setBaseStreamType(baseStreamType: StreamType | null): void {
-		super.setBaseStreamType(baseStreamType);
-		const portOut = this.getPortOut();
-		if (portOut) {
-			portOut.setSubStreamTypes(baseStreamType);
-		}
-		const portIn = this.getPortIn();
-		if (portIn) {
-			portIn.setSubStreamTypes(baseStreamType);
 		}
 	}
 

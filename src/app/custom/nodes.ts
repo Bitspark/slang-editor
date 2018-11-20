@@ -1,6 +1,6 @@
 import {GenericPortModel, PortModel, PortModelArgs} from "../model/port";
 import {DelegateModel} from "../model/delegate";
-import {SlangNodeSetBehaviorSubject} from "./events";
+import {SlangBehaviorSubject, SlangNodeSetBehaviorSubject} from "./events";
 
 type Type<T> = Function & { prototype: T };
 
@@ -222,7 +222,7 @@ export class StreamType {
 
 export abstract class PortOwner extends SlangNode {
 
-	private baseStreamType: StreamType | null | undefined = undefined;
+	private readonly baseStreamType = new SlangBehaviorSubject<StreamType | null>("base-stream-type", null);
 
 	protected constructor(parent: SlangNode) {
 		super(parent);
@@ -242,12 +242,20 @@ export abstract class PortOwner extends SlangNode {
 		return this.getChildNodes(GenericPortModel);
 	}
 
+	public resetBaseStreamType(): void {}
+
+	public refreshBaseStreamType(): void {}
+	
 	protected setBaseStreamType(stream: StreamType | null): void {
-		this.baseStreamType = stream;
+		this.baseStreamType.next(stream);
 	}
 
-	protected getBaseStreamType(): StreamType | null | undefined {
-		return this.baseStreamType;
+	protected getBaseStreamType(): StreamType | null {
+		return this.baseStreamType.getValue();
+	}
+	
+	public subscribeBaseStreamTypeChanged(cb: (streamType: StreamType) => void) {
+		this.baseStreamType.subscribe(cb);
 	}
 
 }
