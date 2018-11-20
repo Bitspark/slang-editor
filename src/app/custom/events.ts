@@ -1,4 +1,4 @@
-import {BehaviorSubject, Subject} from "rxjs";
+import {BehaviorSubject, Subject, Subscription} from "rxjs";
 import {SlangNode} from "./nodes";
 
 abstract class BaseSlangSubject<T> {
@@ -19,8 +19,8 @@ export class SlangSubject<T> extends BaseSlangSubject<T> {
 		this.subject.next(value);
 	}
 
-	public subscribe(next: (value: T) => void): void {
-		this.subject.subscribe(next);
+	public subscribe(next: (value: T) => void): Subscription {
+		return this.subject.subscribe(next);
 	}
 }
 
@@ -35,8 +35,8 @@ export class SlangSubjectTrigger extends BaseSlangSubject<void> {
 		this.subject.next();
 	}
 
-	public subscribe(next: () => void): void {
-		this.subject.subscribe(next);
+	public subscribe(next: () => void): Subscription {
+		return this.subject.subscribe(next);
 	}
 }
 
@@ -52,8 +52,8 @@ export class SlangBehaviorSubject<T> extends BaseSlangSubject<T> {
 		this.subject.next(value);
 	}
 
-	public subscribe(next: (value: T) => void) {
-		this.subject.subscribe(next);
+	public subscribe(next: (value: T) => void): Subscription {
+		return this.subject.subscribe(next);
 	}
 
 	public getValue(): T {
@@ -77,17 +77,16 @@ export class SlangBagSubject<T> extends BaseSlangSubject<T> {
 		this.subjectRemoved.next(value);
 	}
 
-	public subscribe(nextAdd: (value: T) => void, nextRemove: (value: T) => void) {
-		this.subscribeAdded(nextAdd);
-		this.subscribeRemoved(nextRemove);
+	public subscribe(nextAdd: (value: T) => void, nextRemove: (value: T) => void): [Subscription, Subscription] {
+		return [this.subscribeAdded(nextAdd), this.subscribeRemoved(nextRemove)];
 	}
 
-	public subscribeAdded(next: (value: T) => void) {
-		this.subjectAdded.subscribe(next);
+	public subscribeAdded(next: (value: T) => void): Subscription {
+		return this.subjectAdded.subscribe(next);
 	}
 
-	public subscribeRemoved(next: (value: T) => void) {
-		this.subjectRemoved.subscribe(next);
+	public subscribeRemoved(next: (value: T) => void): Subscription {
+		return this.subjectRemoved.subscribe(next);
 	}
 }
 
@@ -120,11 +119,11 @@ export class SlangNodeSetBehaviorSubject<T extends SlangNode> extends SlangBagSu
 		super.nextRemove(value);
 	}
 
-	public subscribeAdded(next: (value: T) => void) {
+	public subscribeAdded(next: (value: T) => void): Subscription {
 		if (this.nodes) {
 			this.nodes.forEach(node => next(node));
 		}
-		super.subscribeAdded(next);
+		return super.subscribeAdded(next);
 	}
 
 	public size(): number {

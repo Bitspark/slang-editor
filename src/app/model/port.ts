@@ -5,6 +5,7 @@ import {BlackBox, PortOwner, SlangNode, StreamType} from "../custom/nodes";
 import {Connection, Connections} from "../custom/connections";
 import {SlangType, TypeIdentifier} from "../custom/type";
 import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
+import {Subscription} from "rxjs";
 
 export enum PortDirection {
 	In, // 0
@@ -27,6 +28,8 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	private genericIdentifier?: string;
 	private streamDepth: number = 0;
 	protected connectedWith: Array<PortModel> = [];
+	
+	private connectionSubscriptions = new Map<GenericPortModel<O>, Subscription>();
 
 	protected constructor(parent: GenericPortModel<O> | O, {type, name, direction}: PortModelArgs, P: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel) {
 		super(parent);
@@ -64,28 +67,45 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 		if (this.isDestination()) {
 			this.subscribeConnected(connection => {
-				connection.source.subscribeStreamTypeChanged(streamType => {
+				const subscription = connection.source.subscribeStreamTypeChanged(streamType => {
 					if (!streamType) {
 						return;
 					}
 					this.setStreamType(streamType);
 				});
+				this.connectionSubscriptions.set(connection.source, subscription);
+			});
+			
+			this.subscribeDisconnected(connection => {
+				const subscription = this.connectionSubscriptions.get(connection.source);
+				if (subscription) {
+					subscription.unsubscribe();
+				} else {
+					console.log("not found");
+				}
+				this.getAncestorNode(BlueprintModel)!.resetInternalStreamTypes();
+				this.getAncestorNode(BlueprintModel)!.refreshInternalStreamTypes();
 			});
 		}
 
 		if (this.isSource()) {
 			this.subscribeConnected(connection => {
-				connection.destination.subscribeStreamTypeChanged(streamType => {
+				const subscription = connection.destination.subscribeStreamTypeChanged(streamType => {
 					if (!streamType) {
 						return;
 					}
 					this.setStreamType(streamType);
 				});
+				this.connectionSubscriptions.set(connection.source, subscription);
 			});
 			
-			this.subscribeDisconnected(() => {
-				this.getAncestorNode(BlueprintModel)!.resetInternalStreamTypes();
-				this.getAncestorNode(BlueprintModel)!.refreshInternalStreamTypes();
+			this.subscribeDisconnected(connection => {
+				const subscription = this.connectionSubscriptions.get(connection.source);
+				if (subscription) {
+					subscription.unsubscribe();
+				} else {
+					console.log("not found");
+				}
 			});
 		}
 	}
@@ -467,8 +487,8 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		this.disconnected.subscribe(cb);
 	}
 
-	public subscribeStreamTypeChanged(cb: (streamType: StreamType | null) => void): void {
-		this.streamType.subscribe(cb);
+	public subscribeStreamTypeChanged(cb: (streamType: StreamType | null) => void): Subscription {
+		return this.streamType.subscribe(cb);
 	}
 }
 
