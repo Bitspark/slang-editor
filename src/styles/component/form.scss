@@ -5,14 +5,24 @@
 	background: $white;
 	padding: 0;
 	margin: 0;
-	text-align: center;
 }
 
 .sl-inp-grp {
+	display: block;
 	padding: 4px 0;
 	margin: 2px;
-	display: inline-block;
 	border: 1px solid $black;
+
+	&.map {
+		label {
+			display: block;
+			padding: 2px;
+			background: transparentize($gray, .9);
+		}
+		input {
+			display: block;
+		}
+	}
 }
 
 .sl-inp {

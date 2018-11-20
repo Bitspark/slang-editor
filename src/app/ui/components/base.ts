@@ -116,8 +116,6 @@ export abstract class AnchoredComponent extends Component {
 				break;
 		}
 
-		console.log("===>", [x, y], [v, h], [left, top], [this.htmlRoot.offsetWidth, this.htmlRoot.offsetHeight]);
-
 		this.htmlRoot.style.top = `${top}px`;
 		this.htmlRoot.style.left = `${left}px`;
 	}

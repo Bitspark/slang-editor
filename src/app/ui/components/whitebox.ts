@@ -529,18 +529,14 @@ export namespace WhiteBoxComponent {
 			const t = this.type;
 			switch (this.type.getTypeIdentifier()) {
 				case TypeIdentifier.Map:
-					return m(".sl-inp-grp.map", Array.from(t.getMapSubs())
-						.map(([subName, subType]) => m(FormInputGroup, {
-								name: subName,
-								type: subType
-							})
-						)
-					);
+					return m(MapInputField, {
+						label: this.name, entries: t.getMapSubs()
+					});
 
 				case TypeIdentifier.Stream:
-					return m(".sl-inp-grp.stream",
-						m(FormInputGroup, {type: t.getStreamSub()})
-					);
+					return m(StreamInputField, {
+						label: this.name, type: t.getStreamSub()
+					});
 
 				case TypeIdentifier.Number:
 					return m(SimpleInputField, {
@@ -587,6 +583,80 @@ export namespace WhiteBoxComponent {
 				]);
 			}
 			return m(attrs.cssSelector, {type: attrs.inputType});
+		}
+	}
+
+	export interface MapInputAttrs {
+		label?: string,
+		entries: IterableIterator<[string, SlangType]>
+	}
+
+	class MapInputField implements ClassComponent<MapInputAttrs> {
+		protected populate(attrs: MapInputAttrs): any {
+			return m(".sl-inp-grp.map", Array.from(attrs.entries)
+				.map(([subName, subType]) => m(FormInputGroup, {
+						name: subName,
+						type: subType
+					})
+				)
+			);
+		}
+
+		view({attrs}: CVnode<MapInputAttrs>) {
+			if (attrs.label) {
+				const labelName = attrs.label;
+				const labelText = `${attrs.label}:`;
+				return m("label", {
+					for: labelName
+				}, [labelText, this.populate(attrs)]);
+			}
+			return this.populate(attrs);
+		}
+	}
+
+	export interface StreamInputAttrs {
+		label?: string
+		type: SlangType
+	}
+
+	class StreamInputField implements ClassComponent<StreamInputAttrs> {
+		private entries: Array<any> = [];
+
+		protected populate(attrs: StreamInputAttrs): any {
+			return m(".sl-inp-grp.stream", [
+				this.entries.map((entry: any, index: number) => {
+					return m(".entry", [
+						m(FormInputGroup, {type: attrs.type}),
+						m(Tool.Button, {
+							onClick: () => {
+								this.entries.splice(index, 1);
+							},
+							label: "-",
+							icon: "-",
+							class: ".delete",
+						})
+					]);
+				}),
+				m(".entry", m(Tool.Button, {
+					onClick: () => {
+						this.entries.push("");
+					},
+					label: "+",
+					icon: "+",
+					class: ".add",
+				}))
+			]);
+		}
+
+		view({attrs}: CVnode<StreamInputAttrs>) {
+			if (attrs.label) {
+				const labelName = attrs.label;
+				const labelText = `${attrs.label}:`;
+				return m("label", {
+					for: labelName
+				}, [labelText, this.populate(attrs)]);
+			}
+			return this.populate(attrs);
 		}
 	}
 }
