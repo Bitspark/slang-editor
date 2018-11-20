@@ -6,7 +6,7 @@ import {ClassComponent, CVnode} from "mithril";
 import {BlueprintView} from "../views/blueprint";
 import {Geometry} from "../../model/operator";
 import {BlackBoxComponent} from "./blackbox";
-import {AnchoredComponent, AnchorPosition} from "./base";
+import {AttachedComponent, Component, XY} from "./base";
 
 export interface Attrs {
 	onSelect: (bp: BlueprintModel) => void,
@@ -73,43 +73,45 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 	}
 }
 
-export class BlueprintSelectComponent extends AnchoredComponent {
+export class BlueprintSelectComponent extends Component {
 	private readonly blueprint: BlueprintModel;
 	private readonly landscape: LandscapeModel;
+	private readonly menu: AttachedComponent;
 	private ghostRect: BlackBoxComponent.Rect | BlackBoxComponent.Rect.Ghost;
 	private filterExpr: string = "";
 
-	constructor(blueprintView: BlueprintView, pos: AnchorPosition) {
-		super(blueprintView, pos);
+	constructor(blueprintView: BlueprintView, {x, y}: XY) {
+		super(blueprintView, {x, y});
 		this.blueprint = blueprintView.getBlueprint();
 		this.landscape = this.blueprint.getAncestorNode(LandscapeModel)!;
-
-		this.ghostRect = this.placeGhostRect(pos);
-
-		m.mount(this.htmlRoot, {
-			view: () => m(BlueprintMenuComponent, {
-				onLoad: () => this.getBlueprints(),
-				onFilter: (fltrExpr: string) => {
-					this.filterExpr = fltrExpr;
-				},
-				onSelect: (bp: BlueprintModel) => {
-					const pos = this.ghostRect.position();
-					const geo: Geometry = {
-						position: [pos.x, pos.y]
-					};
-					this.blueprint.createBlankOperator(bp, geo);
-					this.destroy();
-				},
-				onHover: (bp?: BlueprintModel) => {
-					const pos = this.ghostRect.getBBox().center();
-					this.ghostRect = this.placeGhostRect(pos, bp);
-				}
-			})
-		});
+		this.ghostRect = this.placeGhostRect({x, y});
+		this.menu = this.createComponent({x: 0, y: 0, align: "c"})
+			.attachTo(this.ghostRect, "c")
+			.mount({
+				view: () => m(BlueprintMenuComponent, {
+					onLoad: () => this.getBlueprints(),
+					onFilter: (fltrExpr: string) => {
+						this.filterExpr = fltrExpr;
+					},
+					onSelect: (bp: BlueprintModel) => {
+						const pos = this.ghostRect.position();
+						const geo: Geometry = {
+							position: [pos.x, pos.y]
+						};
+						this.blueprint.createBlankOperator(bp, geo);
+						this.destroy();
+					},
+					onHover: (bp?: BlueprintModel) => {
+						const pos = this.ghostRect.getBBox().center();
+						this.ghostRect = this.placeGhostRect(pos, bp);
+					}
+				})
+			});
 	}
 
 	public destroy() {
 		super.destroy();
+		this.menu.destroy();
 		this.ghostRect.remove();
 	}
 
@@ -145,7 +147,7 @@ export class BlueprintSelectComponent extends AnchoredComponent {
 		return blueprints;
 	}
 
-	private placeGhostRect({x, y}: AnchorPosition, blueprint?: BlueprintModel): BlackBoxComponent.Rect | BlackBoxComponent.Rect.Ghost {
+	private placeGhostRect({x, y}: XY, blueprint?: BlueprintModel): BlackBoxComponent.Rect | BlackBoxComponent.Rect.Ghost {
 		if (this.ghostRect) {
 			this.ghostRect.remove();
 		}
@@ -153,10 +155,10 @@ export class BlueprintSelectComponent extends AnchoredComponent {
 		let ghostRect: BlackBoxComponent.Rect | BlackBoxComponent.Rect.Ghost;
 
 		if (!blueprint) {
-			ghostRect = BlackBoxComponent.Rect.Ghost.place("• • •", {x, y});
+			ghostRect = BlackBoxComponent.Rect.Ghost.place("• • •", this.getXY());
 			ghostRect.addTo(this.graph);
 		} else {
-			ghostRect = BlackBoxComponent.Rect.place(this.graph, blueprint, {x, y});
+			ghostRect = BlackBoxComponent.Rect.place(this.graph, blueprint, this.getXY());
 		}
 		return ghostRect;
 	}

@@ -22,6 +22,8 @@ export class WhiteBoxComponent extends Component {
 
 	private readonly shape: WhiteBoxComponent.Shape;
 	private readonly buttons: AttachedComponent;
+	private readonly input: AttachedComponent;
+
 
 	private readonly operators: Array<BlackBoxComponent> = [];
 	private readonly connections: Array<ConnectionComponent> = [];
@@ -33,8 +35,9 @@ export class WhiteBoxComponent extends Component {
 	};
 
 	constructor(paperView: PaperView, private readonly blueprint: BlueprintModel) {
-		super(paperView, {x: 0, y: 0,});
-		this.buttons = this.createComponent({x: 0, y: 0, alignment: "br"});
+		super(paperView, {x: 0, y: 0});
+		this.buttons = this.createComponent({x: 0, y: 0, align: "bl"});
+		this.input = this.createComponent({x: 0, y: 0, align: "b"});
 		this.subscribe();
 
 		const size = {
@@ -59,6 +62,7 @@ export class WhiteBoxComponent extends Component {
 						class: "dply",
 					})
 				});
+				this.input.unmount();
 			} else {
 				this.buttons.mount({
 					view: () => m(".toolbox", [
@@ -80,6 +84,14 @@ export class WhiteBoxComponent extends Component {
 						}),
 					])
 				});
+
+				const portIn = this.blueprint.getPortIn();
+
+				if (portIn) {
+					this.input.mount({
+						view: () => m(Form, {type: portIn.getType()})
+					});
+				}
 			}
 		});
 
@@ -91,7 +103,8 @@ export class WhiteBoxComponent extends Component {
 		this.blueprint.subscribeChildCreated(BlueprintPortModel, port => {
 			if (port.isDirectionIn()) {
 				const p = this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
-				this.buttons.attachTo(p.getElement());
+				this.buttons.attachTo(p.getElement(), "br");
+				this.input.attachTo(p.getElement(), "c");
 			} else {
 				this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
 			}

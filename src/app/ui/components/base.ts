@@ -3,46 +3,56 @@ import {dia, g} from "jointjs";
 import {PaperView} from "../views/paper-view";
 import {ClassComponent} from "mithril";
 
-export interface AnchorPosition extends g.PlainPoint {
-	alignment?:
-		"tl" | "t" | "tr" |
-		"ml" | "c" | "mr" |
-		"bl" | "b" | "br";
+
+export type Alignment =
+	"tl" | "t" | "tr" |
+	"l" | "c" | "r" |
+	"bl" | "b" | "br";
+
+export interface XY extends g.PlainPoint {
+}
+
+export interface Position extends XY {
+	align: Alignment;
 }
 
 export abstract class Component {
 	protected readonly graph: dia.Graph;
 	private readonly paper: dia.Paper;
 
-	protected constructor(private readonly paperView: PaperView, private position: AnchorPosition) {
+	protected constructor(private readonly paperView: PaperView, private xy: XY) {
 		this.graph = this.paperView.getGraph();
 		this.paper = this.paperView.getPaper();
 	}
 
-	protected destroy() {
+	public destroy() {
 	}
 
-	protected updatePosition(position: AnchorPosition) {
-		if (!position.alignment) {
-			position.alignment = "c";
-		}
-		this.position = position;
-	}
-
-	protected getClientPosition(): g.PlainPoint {
-		return this.paper.localToClientPoint(this.position);
-	}
-
-	public createComponent(offset: AnchorPosition): AttachedComponent {
+	public createComponent(offset: Position): AttachedComponent {
 		return new AttachedComponent(this.paperView, offset);
+	}
+
+	protected getXY(): XY {
+		return this.xy;
+	}
+
+
+	protected getClientXY(): XY {
+		return this.paper.localToClientPoint(this.xy);
+	}
+
+	protected updateXY({x, y}: XY) {
+		this.xy = {x, y};
 	}
 }
 
 export abstract class AnchoredComponent extends Component {
 	protected readonly htmlRoot: HTMLElement;
+	protected readonly align: Alignment;
 
-	protected constructor(paperView: PaperView, position: AnchorPosition) {
+	protected constructor(paperView: PaperView, position: Position) {
 		super(paperView, position);
+		this.align = position.align;
 		this.htmlRoot = AnchoredComponent.createRoot();
 
 		paperView.getFrame().getHTMLElement().appendChild(this.htmlRoot);
@@ -53,13 +63,13 @@ export abstract class AnchoredComponent extends Component {
 		});
 	}
 
-	protected destroy() {
+	public destroy() {
 		super.destroy();
 		this.htmlRoot.remove();
 	}
 
-	protected updatePosition(position: AnchorPosition) {
-		super.updatePosition(position);
+	protected updateXY(xy: XY) {
+		super.updateXY(xy);
 		this.draw();
 	}
 
@@ -70,38 +80,79 @@ export abstract class AnchoredComponent extends Component {
 		return el;
 	}
 
-	private draw() {
-		const p = this.getClientPosition();
-		this.htmlRoot.style.left = `${p.x}px`;
-		this.htmlRoot.style.top = `${p.y}px`;
-	}
+	protected draw() {
+		const {x, y} = this.getClientXY();
+		const align = this.align;
 
+		let top, left;
+
+		const v = align[0];
+		const h = align.slice(-1);
+
+		switch (h) {
+			case "l":
+				left = x;
+				break;
+			case "t":
+			case "c":
+			case "b":
+				left = x - (this.htmlRoot.offsetWidth / 2);
+				break;
+			case "r":
+				left = x - (this.htmlRoot.offsetWidth);
+				break;
+		}
+
+		switch (v) {
+			case "t":
+				top = y;
+				break;
+			case "l":
+			case "c":
+			case "r":
+				top = y - (this.htmlRoot.offsetHeight / 2);
+				break;
+			case "b":
+				top = y - (this.htmlRoot.offsetHeight);
+				break;
+		}
+
+		console.log("===>", [x, y], [v, h], [left, top], [this.htmlRoot.offsetWidth, this.htmlRoot.offsetHeight]);
+
+		this.htmlRoot.style.top = `${top}px`;
+		this.htmlRoot.style.left = `${left}px`;
+	}
 }
 
 export class AttachedComponent extends AnchoredComponent {
-	public constructor(paperView: PaperView, private offset: AnchorPosition) {
+	public constructor(paperView: PaperView, private offset: Position) {
 		super(paperView, offset);
 	}
 
-	public attachTo(elem: dia.Element) {
-		this.update(elem);
+	public attachTo(elem: dia.Element, align?: Alignment) {
+		this.update(elem, align);
 		elem.on("change:position change:size", () => {
-			this.update(elem);
+			this.update(elem, align);
 		});
 		return this;
 	}
 
 	public mount(mComp: ClassComponent) {
 		m.mount(this.htmlRoot, mComp);
+		this.draw();
 		return this;
 	}
 
+	public unmount() {
+		this.htmlRoot.innerHTML = "";
+		return this;
+	}
 
-	protected update(elem: dia.Element) {
+	protected update(elem: dia.Element, align?: Alignment) {
 		const bbox = elem.getBBox();
 		let originPos = bbox.center();
 
-		switch (this.offset.alignment) {
+		switch (align) {
 			case "tl":
 				originPos = bbox.topLeft();
 				break;
@@ -112,13 +163,12 @@ export class AttachedComponent extends AnchoredComponent {
 				originPos = bbox.topRight();
 				break;
 
-			case "ml":
+			case "l":
 				originPos = bbox.leftMiddle();
 				break;
 			case "c":
-				originPos = bbox.center();
 				break;
-			case "mr":
+			case "r":
 				originPos = bbox.rightMiddle();
 				break;
 
@@ -133,8 +183,7 @@ export class AttachedComponent extends AnchoredComponent {
 				break;
 		}
 
-		const pos = originPos;
-		super.updatePosition(pos);
+		super.updateXY(originPos);
 	}
 }
 

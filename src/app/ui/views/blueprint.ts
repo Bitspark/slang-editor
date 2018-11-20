@@ -69,11 +69,11 @@ export class BlueprintView extends PaperView {
 				}
 			},
 			validateConnection: function (cellViewS: dia.CellView,
-										  magnetS: SVGElement,
-										  cellViewT: dia.CellView,
-										  magnetT: SVGElement,
-										  end: "source" | "target",
-										  linkView: dia.LinkView): boolean {
+			                              magnetS: SVGElement,
+			                              cellViewT: dia.CellView,
+			                              magnetT: SVGElement,
+			                              end: "source" | "target",
+			                              linkView: dia.LinkView): boolean {
 				const portS = that.getPortFromMagnet(magnetS);
 				if (!portS) {
 					return false;
