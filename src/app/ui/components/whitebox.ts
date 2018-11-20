@@ -1,5 +1,5 @@
 import m from "mithril";
-import {AnchorComponent} from "./anchor";
+import {AttachedComponent, Component} from "./base";
 import {Styles} from "../../../styles/studio";
 import {BlackBox} from "../../custom/nodes";
 import {dia, g, layout, shapes} from "jointjs";
@@ -16,11 +16,12 @@ import {OperatorModel} from "../../model/operator";
 import {BlueprintDelegateModel} from "../../model/delegate";
 import {Form} from "./mithril/form";
 
-export class WhiteBoxComponent extends AnchorComponent {
+export class WhiteBoxComponent extends Component {
 	private static readonly padding = 120;
 	private static readonly minimumSpace = 10;
 
 	private readonly shape: WhiteBoxComponent.Shape;
+	private readonly buttons: AttachedComponent;
 
 	private readonly operators: Array<BlackBoxComponent> = [];
 	private readonly connections: Array<ConnectionComponent> = [];
@@ -33,6 +34,7 @@ export class WhiteBoxComponent extends AnchorComponent {
 
 	constructor(paperView: PaperView, private readonly blueprint: BlueprintModel) {
 		super(paperView, {x: 0, y: 0,});
+		this.buttons = this.createComponent({x: 0, y: 0, alignment: "br"});
 		this.subscribe();
 
 		const size = {
@@ -41,25 +43,13 @@ export class WhiteBoxComponent extends AnchorComponent {
 		};
 		this.shape = new WhiteBoxComponent.Shape(this.blueprint, size);
 		this.shape.addTo(this.graph);
-		this.updateButtonPosition();
 		this.autoLayout();
 	}
-
-	private updateButtonPosition() {
-		if (!this.shape) {
-			return;
-		}
-
-		const elem = (this.ports.top.length) ? this.ports.top[0] : this.shape;
-		const {x, y} = elem.position();
-		const {width, height} = elem.size();
-		this.updatePosition({x: x + width, y: y + height});
-	};
 
 	private subscribe() {
 		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
 			if (!instance) {
-				m.mount(this.htmlRoot, {
+				this.buttons.mount({
 					view: () => m(WhiteBoxComponent.Tool.Button, {
 						onClick: () => {
 							this.blueprint.requestDeployment();
@@ -70,7 +60,7 @@ export class WhiteBoxComponent extends AnchorComponent {
 					})
 				});
 			} else {
-				m.mount(this.htmlRoot, {
+				this.buttons.mount({
 					view: () => m(".toolbox", [
 						m(WhiteBoxComponent.Tool.Button, {
 							onClick: () => {
@@ -101,9 +91,7 @@ export class WhiteBoxComponent extends AnchorComponent {
 		this.blueprint.subscribeChildCreated(BlueprintPortModel, port => {
 			if (port.isDirectionIn()) {
 				const p = this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
-				p.getElement().on("change:position change:size", () => {
-					this.updateButtonPosition();
-				});
+				this.buttons.attachTo(p.getElement());
 			} else {
 				this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
 			}
