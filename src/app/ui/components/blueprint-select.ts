@@ -85,7 +85,7 @@ export class BlueprintSelectComponent extends Component {
 		this.blueprint = blueprintView.getBlueprint();
 		this.landscape = this.blueprint.getAncestorNode(LandscapeModel)!;
 		this.ghostRect = this.placeGhostRect({x, y});
-		this.menu = this.createComponent({x: 0, y: 0, align: "c"})
+		this.menu = this.createComponent({x: 0, y: 0, align: "tl"})
 			.attachTo(this.ghostRect, "c")
 			.mount({
 				view: () => m(BlueprintMenuComponent, {
