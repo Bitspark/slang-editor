@@ -107,7 +107,11 @@ export class ConnectionComponent {
 		if (!stream) {
 			link.attr(".connection/stroke-dasharray", 4);
 		} else {
-			link.removeAttr(".connection/stroke-dasharray");
+			if (sourcePort.isUnreachable()) {
+				link.attr(".connection/stroke-dasharray", 1);
+			} else {
+				link.removeAttr(".connection/stroke-dasharray");
+			}
 		}
 	}
 

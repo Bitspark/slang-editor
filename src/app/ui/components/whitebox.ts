@@ -113,7 +113,13 @@ export class WhiteBoxComponent extends AnchorComponent {
 		});
 
 		this.blueprint.subscribeDescendantCreated(GenericPortModel, port => {
-			port.subscribeStreamTypeChanged(() => {
+			port.subscribeStreamTypeChanged(stream => {
+				this.connections
+					.filter(connectionComponent => connectionComponent.getConnection().source === port)
+					.forEach(connectionComponent => connectionComponent.refresh());
+			});
+
+			port.subscribeStreamUnreachableChanged(unreachable => {
 				this.connections
 					.filter(connectionComponent => connectionComponent.getConnection().source === port)
 					.forEach(connectionComponent => connectionComponent.refresh());

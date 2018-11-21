@@ -21,6 +21,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	private disconnected = new SlangSubject<Connection>("disconnected");
 	private collapsed = new SlangBehaviorSubject<boolean>("collapsed", false);
 	private readonly streamType: SlangBehaviorSubject<StreamType | null>;
+	private readonly streamTypeUnreachable: SlangBehaviorSubject<boolean> = new SlangBehaviorSubject("stream-unreachable", false);
 
 	// Properties
 	private readonly name: string;
@@ -65,7 +66,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				this.setGenericIdentifier(type.getGenericIdentifier());
 				break;
 		}
-
+		
 		if (this.isDestination()) {
 			this.subscribeConnected(connection => {
 				const subscription = connection.source.subscribeStreamTypeChanged(streamType => {
@@ -81,8 +82,11 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				const subscription = this.connectionSubscriptions.get(connection.source);
 				if (subscription) {
 					subscription.unsubscribe();
-				} else {
-					console.log("not found");
+				}
+				
+				const stream = this.getStreamType();
+				if (stream) {
+					stream.getRootStream().collectGarbage();
 				}
 			});
 		}
@@ -102,11 +106,42 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				const subscription = this.connectionSubscriptions.get(connection.source);
 				if (subscription) {
 					subscription.unsubscribe();
-				} else {
-					console.log("not found");
 				}
 			});
 		}
+		
+		this.subscribeCollectGarbage();
+	}
+	
+	protected subscribeCollectGarbage() {
+		let subscriptions: Array<Subscription> = [];
+		let oldStream: StreamType | null = null;
+		
+		this.subscribeStreamTypeChanged(stream => {
+			if (!stream || oldStream === stream) {
+				return;
+			}
+
+			oldStream = stream;
+
+			subscriptions.forEach(subscription => subscription.unsubscribe());
+			subscriptions.length = 0;
+			
+			// TODO: Unsubscribe?
+			subscriptions.push(stream.subscribeMarkUnreachable(() => {
+				this.streamTypeUnreachable.next(true);
+			}));
+
+			subscriptions.push(stream.subscribeRemoveUnreachable(() => {
+				if (this.isUnreachable()) {
+					this.setSubStreamTypes(null);
+				}
+			}));
+		});
+	}
+	
+	public isUnreachable(): boolean {
+		return this.streamTypeUnreachable.getValue();
 	}
 
 	public getMapSubs(): IterableIterator<GenericPortModel<O>> {
@@ -137,17 +172,34 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	}
 
 	public setSubStreamTypes(baseStreamType: StreamType | null): void {
+		const streamTypeUnreachable = this.isUnreachable();
+		this.streamTypeUnreachable.next(false);
+		
 		if (this.isParentStreamOrOwner()) {
-			if (this.getStreamType() === baseStreamType) {
-				return;
+			const oldStream = this.getStreamType();
+			if (streamTypeUnreachable) {
+				if (!!oldStream && !!baseStreamType && oldStream !== baseStreamType) {
+					throw new Error(`unexpected stream change during garbage collection`);
+				}
+				this.streamType.next(baseStreamType);
+			} else {
+				if (oldStream === baseStreamType) {
+					return;
+				}
+				this.streamType.next(baseStreamType);
 			}
-			this.streamType.next(baseStreamType);
 		}
 
 		if (this.typeIdentifier === TypeIdentifier.Stream) {
 			const sub = this.getStreamSub();
 			if (sub) {
-				sub.setSubStreamTypes(baseStreamType ? baseStreamType.createSubStream(sub) : null);
+				if (this.isSource()) {
+					if (streamTypeUnreachable) {
+						sub.setSubStreamTypes(baseStreamType ? sub.getStreamType() : null);
+					} else {
+						sub.setSubStreamTypes(baseStreamType ? baseStreamType.createSubStream(sub) : null);
+					}
+				}
 			}
 		} else if (this.typeIdentifier === TypeIdentifier.Map) {
 			for (const sub of this.getMapSubs()) {
@@ -167,19 +219,22 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		}
 
 		const baseStreamType = new StreamType(null, this);
-		this.setSubStreamTypes(new StreamType(null, this));
+		this.setSubStreamTypes(baseStreamType);
 		return baseStreamType;
 	}
 
 	public setStreamType(streamType: StreamType): void {
 		// Set streams *upwards*
 
+		const streamTypeUnreachable = this.isUnreachable();
+		this.streamTypeUnreachable.next(false);
+		
 		const oldStreamType = this.getStreamType();
-		if (streamType === oldStreamType) {
+		if (streamType === oldStreamType && !streamTypeUnreachable) {
 			// Nothing changed
 			return;
 		}
-		if (oldStreamType) {
+		if (oldStreamType && !streamTypeUnreachable) {
 			// Assert that (streamType !== oldStreamType) in case of reordering if statements!
 			throw new Error(`${this.getOwnerName()}: already have different stream type`);
 		}
@@ -484,6 +539,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 	public subscribeStreamTypeChanged(cb: (streamType: StreamType | null) => void): Subscription {
 		return this.streamType.subscribe(cb);
+	}
+	
+	public subscribeStreamUnreachableChanged(cb: (unreachable: boolean) => void): Subscription {
+		return this.streamTypeUnreachable.subscribe(cb);
 	}
 }
 
