@@ -98,12 +98,6 @@ export class NumberInput extends SimpleInput<number> {
 	}
 }
 
-export class TriggerInput extends SimpleInput<Boolean> {
-	constructor() {
-		super("button");
-	}
-}
-
 export class BooleanInput extends SimpleInput<Boolean> {
 	constructor() {
 		super("checkbox");
@@ -155,11 +149,8 @@ export class TypeInput implements Input<any, TypeInput.Attrs> {
 				});
 
 			case TypeIdentifier.Trigger:
-				return m(TriggerInput, {
-					label: attrs.label,
-					class: attrs.class + " trigger",
-					onInput: attrs.onInput,
-				});
+				attrs.onInput(null);
+				return;
 
 			default:
 				return m(StringInput, {
