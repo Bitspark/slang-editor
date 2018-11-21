@@ -119,6 +119,19 @@ export abstract class AnchoredComponent extends Component {
 		this.htmlRoot.style.top = `${top}px`;
 		this.htmlRoot.style.left = `${left}px`;
 	}
+
+	public mount(mComp: ClassComponent) {
+		m.mount(this.htmlRoot, {
+			view: () => m(".sl-container", m(mComp))
+		});
+		this.draw();
+		return this;
+	}
+
+	public unmount() {
+		this.htmlRoot.innerHTML = "";
+		return this;
+	}
 }
 
 export class AttachedComponent extends AnchoredComponent {
@@ -131,17 +144,6 @@ export class AttachedComponent extends AnchoredComponent {
 		elem.on("change:position change:size", () => {
 			this.update(elem, align);
 		});
-		return this;
-	}
-
-	public mount(mComp: ClassComponent) {
-		m.mount(this.htmlRoot, mComp);
-		this.draw();
-		return this;
-	}
-
-	public unmount() {
-		this.htmlRoot.innerHTML = "";
 		return this;
 	}
 

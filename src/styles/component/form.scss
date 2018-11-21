@@ -35,6 +35,10 @@
 
 }
 
+.sl-container {
+	display: block;
+}
+
 .sl-inp {
 	@extend %bordered;
 	border-radius: 500px;
