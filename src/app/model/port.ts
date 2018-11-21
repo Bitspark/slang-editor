@@ -127,7 +127,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			subscriptions.forEach(subscription => subscription.unsubscribe());
 			subscriptions.length = 0;
 			
-			// TODO: Unsubscribe?
 			subscriptions.push(stream.subscribeMarkUnreachable(() => {
 				this.streamTypeUnreachable.next(true);
 			}));
