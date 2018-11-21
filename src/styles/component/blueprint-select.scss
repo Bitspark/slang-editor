@@ -1,14 +1,17 @@
 .sl-blupr-menu {
 	@extend %proto-container;
 	overflow-y: scroll;
+	width: $container-width;
 	max-height: 384px;
 	background: $white;
 }
 
 .sl-blupr-fltr {
 	position: fixed;
-	overflow: hidden;
-	width: 335px;
+	padding: 4px;
+	.sl-input {
+		width: 332px;
+	}
 }
 
 .sl-blupr-entries {
@@ -28,7 +31,7 @@
 		}
 
 		&:first-child {
-			margin-top: 41px;
+			margin-top: 27px;
 		}
 
 		&:last-child {

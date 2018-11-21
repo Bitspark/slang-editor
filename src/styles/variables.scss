@@ -1,7 +1,8 @@
 $black: #212124;
 $white: #fefefd;
 $blue: #2e49b3;
-$brown: #a52e2e;
+$brown: #952e2e;
+$red: #f5502e;
 $orange: #cb8000;
 $yellow: #cbaa00;
 $green: #83a91d;
@@ -15,6 +16,8 @@ $font-family-default: "Roboto", "sans-serif";
 $font-family-mono: "Roboto Slab", "sans-serif";
 $font-size: 1rem;
 
+$container-width: 343px;
+
 %transition {
 	transition-duration: 200ms;
 }
@@ -25,7 +28,12 @@ $font-size: 1rem;
 
 %bordered {
 	@extend %rounded;
-	box-shadow: inset 0px 0px 2px -1px $black, 0px 0px 1px -1px $black;
+	border: 1px solid transparentize($black, .85);
+}
+
+%hovering {
+	@extend %rounded;
+	box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
 }
 
 %translucent {
@@ -38,7 +46,5 @@ $font-size: 1rem;
 }
 
 %proto-container {
-	@extend %bordered;
-	@extend %translucent;
-	padding: 4px;
+	@extend %hovering;
 }

@@ -35,17 +35,47 @@ export class Button implements ClassComponent<Button.Attrs> {
 	oninit({attrs}: CVnode<Button.Attrs>) {
 	}
 
+
+	private getClass(attrs: Button.Attrs): string {
+		const cls = [];
+
+		if (attrs.full) {
+			cls.push("sl-fullwidth");
+		}
+
+		if (attrs.notAllowed) {
+			cls.push("sl-not-allowed");
+		}
+
+		if (this.isClickable(attrs)) {
+			cls.push("sl-clickable");
+		}
+
+		return attrs.class + " " + cls.join(" ");
+	}
+
+	private isClickable(attrs: Button.Attrs): boolean {
+		return !!attrs.onClick && !attrs.notAllowed;
+	}
+
+	private isInactive(attrs: Button.Attrs): boolean {
+		return !!attrs.notAllowed && !!attrs.inactive;
+	}
+
+
 	view({attrs}: CVnode<Button.Attrs>) {
+		const that = this;
+
 		return m("a.sl-btn", {
-				class: attrs.class + (attrs.onClick ? " sl-btn-clickable" : ""),
-				onclick: attrs.onClick ? () => {
-					if (!this.alreadyClicked) {
-						this.alreadyClicked = true;
+				class: that.getClass(attrs),
+				inacitve: that.isInactive(attrs),
+				onclick: (that.isClickable(attrs)) ? () => {
+					if (!that.alreadyClicked) {
+						that.alreadyClicked = true;
 						attrs.onClick!();
-						const that = this;
 						setTimeout(() => {
 							that.alreadyClicked = false;
-						}, this.bounceInterval);
+						}, that.bounceInterval);
 					}
 				} : undefined,
 				tooltip: attrs.label,
@@ -60,6 +90,9 @@ export namespace Button {
 		label: string
 		icon?: string
 		class?: string
+		notAllowed?: boolean
+		inactive?: boolean
+		full?: boolean
 	}
 }
 
@@ -151,13 +184,12 @@ export class TypeInput implements Input<any, TypeInput.Attrs> {
 	view({attrs}: CVnode<TypeInput.Attrs>): any {
 		if (!this.type) return m(".sl-inp.undef");
 		const t = this.type;
-		const that = this;
 		switch (this.type.getTypeIdentifier()) {
 			case TypeIdentifier.Map:
 				return m(MapInputField, {
 					label: attrs.label,
 					entries: t.getMapSubs(),
-					class: attrs.class + " sl-inp-grp stream",
+					class: attrs.class + " sl-inp-grp map",
 					onInput: attrs.onInput,
 				});
 
@@ -165,7 +197,7 @@ export class TypeInput implements Input<any, TypeInput.Attrs> {
 				return m(StreamInputField, {
 					label: attrs.label,
 					type: t.getStreamSub(),
-					class: attrs.class + " sl-inp-grp map",
+					class: attrs.class + " sl-inp-grp stream",
 					onInput: attrs.onInput,
 				});
 
@@ -241,44 +273,49 @@ export namespace MapInput {
 export class StreamInputField implements ClassComponent<StreamInput.Attrs> {
 	private values: Array<any> = [];
 
+	private getValues(): Array<any> {
+		return this.values.filter(v => !(v === null || v === undefined));
+	}
+
 	view({attrs}: CVnode<StreamInput.Attrs>) {
 		const labelName = attrs.label;
 		const labelText = (labelName) ? `${attrs.label}:` : "";
-		const values = this.values;
+		const that = this;
 
 		return m("div", {class: attrs.class},
 			m("label", {
 				for: labelName
 			}, [
 				labelText,
-				this.values.map((entry: any, index: number) => {
-					return m(".entry", [
-						m(TypeInput, {
-							label: "", class: "",
-							type: attrs.type,
-							onInput: (v: any) => {
-								values[index] = v;
-								attrs.onInput(values.filter(v => v !== null));
-							}
-						}),
-						m(Button, {
-							onClick: () => {
-								this.values.splice(index, 1);
-								attrs.onInput(values.filter(v => v !== null));
-							},
-							label: "-",
-							icon: "-",
-							class: "delete",
-						})
-					]);
+				that.values.map((entry: any, index: number) => {
+					return entry === undefined ? undefined :
+						m(".entry", [
+							m(Button, {
+								onClick: () => {
+									that.values[index] = undefined;
+									attrs.onInput(that.getValues());
+								},
+								label: "✖",
+								icon: "✖",
+								class: "sl-remove-entry",
+							}),
+							m(TypeInput, {
+								label: "", class: "",
+								type: attrs.type,
+								onInput: (v: any) => {
+									that.values[index] = v;
+									attrs.onInput(that.getValues());
+								}
+							}),
+						]);
 				}),
 				m(".entry", m(Button, {
 					onClick: () => {
-						this.values.push(null);
+						that.values.push(null);
 					},
-					label: "+",
-					icon: "+",
-					class: "add",
+					label: "✚",
+					icon: "✚",
+					class: "sl-add-entry",
 				}))
 			])
 		);

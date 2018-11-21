@@ -1,41 +1,77 @@
 .sl-form {
 	@extend %proto-container;
+	min-width: 120px;
+	max-width: $container-width;
 	background: $white;
+	padding: 4px;
 
-	> .sl-inp-grp {
+	label {
+		font-size: .7rem;
+	}
+
+	.sl-input {
+		margin-bottom: 4px;
+		padding-bottom: 2px;
+
 		@extend %rounded;
-		> label {
-			margin: 0;
-			padding: 0;
-			font-size: .7rem;
+		border-left: 1px;
 
-			> .sl-inp-grp {
-				padding: 12px 1px 8px 1px;
-				border-bottom: 1px solid transparentize($black, .85);
-			}
-			/*
-			> .sl-inp-wrap {
-				padding: 12px 1px 8px 1px;
-				border-bottom: 1px solid transparentize($black, .85);
-			}
-			*/
-
-		}
-
-		.sl-inp-grp {
-			&.map {
-
-			}
-			&.stream {
-
-			}
+		&:last-child {
+			border-bottom: 0;
 		}
 	}
 
+	.sl-inp-grp {
+		margin: 6px 0;
+		padding: 0px 0;
+
+		@extend %rounded;
+		border-left: 1px;
+
+		&:last-child {
+			border-bottom: 0;
+		}
+
+		&.stream {
+			.entry {
+				.sl-input, .sl-inp-grp {
+					margin-left: 12px;
+					padding-left: 4px;
+				}
+
+				position: relative;
+
+				.sl-btn {
+					font-size: 1rem;
+					padding: 1px 3px;
+					margin-bottom: 2px;
+
+					&.sl-add-entry {
+					}
+
+					&.sl-remove-entry {
+						position: absolute;
+						top: 0;
+						bottom: 0;
+						color: transparentize($red, .3);
+						background: $white;
+						&:hover {
+							color: $white;
+							background: transparentize($red, .3);
+						}
+					}
+				}
+			}
+		}
+
+		&.map {
+
+		}
+	}
 }
 
 .sl-container {
-	width: 343px;
+	@extend %translucent;
 	display: block;
 }
 
@@ -47,7 +83,7 @@
 		label {
 			display: inline-block;
 			font-size: .7rem;
-			padding: 2px 12px;
+			margin-right: 8px;
 		}
 		.sl-input-inner {
 			display: inline-block;
@@ -56,7 +92,7 @@
 			background: $dim;
 
 			.sl-input-wrap {
-				margin: 5px 10px;
+				margin: 2px 12px;
 				input {
 					font-size: .7rem;
 					background: transparent;
@@ -92,16 +128,16 @@
 
 button, .sl-btn {
 	@extend %bordered;
-	@extend %translucent;
 	@extend %transition;
 
 	font-size: .7rem;
 	text-align: center;
 	text-transform: uppercase;
 	padding: 6px 12px 4px;
-	margin: 1px;
 
 	display: inline-block;
+
+	user-select: none;
 
 	&.sl-fullwidth {
 		display: block;
@@ -109,10 +145,14 @@ button, .sl-btn {
 
 	color: $black;
 	background: $white;
+
 	cursor: default;
-	&.sl-btn-clickable {
-		transition-property: background-color, color;
+	&.sl-not-allowed {
+		cursor: not-allowed;
+	}
+	&.sl-clickable {
 		cursor: pointer;
+		transition-property: background-color, color;
 		&:hover {
 			color: $white;
 			background: $black;
@@ -128,6 +168,7 @@ button, .sl-btn {
 	}
 
 	&.sl-green-pulsing {
+		cursor: progress;
 		@keyframes isPulsing {
 			from {
 				background-color: transparentize($green, .6);

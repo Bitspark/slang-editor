@@ -38,14 +38,15 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 				}
 			},
 			[
-				m(StringInput, {
-					class: "sl-blupr-fltr sl-fullwidth",
-					label: "",
-					onInput: function (f: string) {
-						attrs.onFilter(f.trim());
-					},
-					autofocus: true,
-				}),
+				m(".sl-blupr-fltr",
+					m(StringInput, {
+						class: "sl-fullwidth",
+						label: "",
+						onInput: function (f: string) {
+							attrs.onFilter(f.trim());
+						},
+						autofocus: true,
+					})),
 				m(".sl-blupr-entries",
 					blueprints.length ? blueprints.map((blueprint: BlueprintModel) => {
 						return m(".sl-blupr-entry", {

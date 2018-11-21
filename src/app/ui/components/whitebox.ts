@@ -89,7 +89,7 @@ export class WhiteBoxComponent extends Component {
 
 				if (portIn) {
 					this.input.mount({
-						view: () => m(WhiteBoxComponent.OperatorInputForm, {
+						view: () => m(WhiteBoxComponent.DataInputForm, {
 							onSubmit: (values: SlangTypeValue) => {
 								this.blueprint.pushInput(values);
 							},
@@ -482,15 +482,19 @@ export namespace WhiteBoxComponent {
 		}
 	}
 
-	export class OperatorInputForm implements ClassComponent<OperatorInputForm.Attrs> {
+	export class DataInputForm implements ClassComponent<DataInputForm.Attrs> {
 		private type: SlangType | undefined;
-		private values: SlangTypeValue = null;
+		private values: SlangTypeValue | undefined;
 
-		oninit({attrs}: CVnode<OperatorInputForm.Attrs>) {
+		oninit({attrs}: CVnode<DataInputForm.Attrs>) {
 			this.type = attrs.type;
 		}
 
-		view({attrs}: CVnode<OperatorInputForm.Attrs>): any {
+		private isValid(): boolean {
+			return this.values !== undefined;
+		}
+
+		view({attrs}: CVnode<DataInputForm.Attrs>): any {
 			const that = this;
 			return m("form.sl-form",
 				m(TypeInput, {
@@ -501,8 +505,8 @@ export namespace WhiteBoxComponent {
 					}
 				}),
 				m(Button, {
-					class: "sl-fullwidth",
-					icon: "",
+					full: true,
+					notAllowed: !that.isValid(),
 					label: "Push",
 					onClick: () => {
 						attrs.onSubmit(that.values);
@@ -511,7 +515,7 @@ export namespace WhiteBoxComponent {
 		}
 	}
 
-	export namespace OperatorInputForm {
+	export namespace DataInputForm {
 		export interface Attrs {
 			type: SlangType
 			onSubmit: (values: SlangTypeValue) => void
