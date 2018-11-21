@@ -33,7 +33,7 @@ export type BlueprintDelegateModelArgs = { name: string };
 export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel, BlueprintPortModel> {
 	constructor(owner: BlueprintModel, {name}: BlueprintDelegateModelArgs) {
 		super(owner, name);
-		this.setBaseStream(new StreamType(null, this, true, true));
+		this.setBaseStream(new StreamType(null, this, true));
 	}
 
 	public createPort(args: PortModelArgs): BlueprintPortModel {
@@ -58,7 +58,7 @@ export type OperatorDelegateModelArgs = { name: string };
 export class OperatorDelegateModel extends GenericDelegateModel<OperatorModel, OperatorPortModel> {
 	constructor(owner: OperatorModel, {name}: OperatorDelegateModelArgs) {
 		super(owner, name);
-		this.setBaseStream(new StreamType(null, this, false, false));
+		this.setBaseStream(new StreamType(null, this, false));
 	}
 
 	public createPort(args: PortModelArgs): OperatorPortModel {

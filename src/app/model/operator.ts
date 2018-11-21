@@ -27,7 +27,7 @@ export class OperatorModel extends BlackBox {
 		this.name = args.name;
 		this.blueprint = args.blueprint;
 		this.geometry = args.geometry;
-		this.setBaseStream(new StreamType(null, this, true, true));
+		this.setBaseStream(new StreamType(null, this, true));
 	}
 
 	public getName(): string {
@@ -63,7 +63,7 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public getDisplayName(): string {
-		return this.blueprint.getShortName();
+		return this.getIdentity();
 	}
 
 	public getConnectionsTo(): Connections {

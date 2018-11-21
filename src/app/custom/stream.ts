@@ -8,10 +8,7 @@ export class StreamType {
 	private readonly removeUnreachableRequested = new SlangSubjectTrigger("remove-unreachable");
 	private readonly nestingChanged = new SlangSubjectTrigger("nesting");
 
-	constructor(private baseStream: StreamType | null, private source: PortOwner | null, private placeholder: boolean, private fluent: boolean) {
-		if (fluent && !placeholder) {
-			throw new Error(`fluent streams must be placeholders`);
-		}
+	constructor(private baseStream: StreamType | null, private source: PortOwner | null, private placeholder: boolean) {
 		if (baseStream) {
 			if (baseStream.hasAncestor(this)) {
 				throw new Error(`stream circle detected`);
@@ -32,20 +29,19 @@ export class StreamType {
 		return this.placeholder;
 	}
 
-	public isFluent(): boolean {
-		return this.fluent;
-	}
-
 	public createSubStream(sourcePort: PortOwner, placeholder: boolean): StreamType {
 		if (this.placeholder && !placeholder) {
 			throw new Error(`sub streams of placeholder streams must be placeholders as well`);
 		}
-		return new StreamType(this, sourcePort, placeholder, this.fluent);
+		return new StreamType(this, sourcePort, placeholder);
 	}
 
 	public getBaseStream(): StreamType | null {
-		if (!this.baseStream && this.fluent) {
-			this.baseStream = new StreamType(null, null, true, true);
+		if (!this.baseStream && this.placeholder) {
+			this.baseStream = new StreamType(null, null, true);
+			this.baseStream.subscribeNestingChanged(() => {
+				this.nestingChanged.next();
+			});
 			this.nestingChanged.next();
 		}
 		return this.baseStream;

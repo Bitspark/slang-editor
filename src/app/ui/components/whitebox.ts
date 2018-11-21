@@ -122,7 +122,9 @@ export class WhiteBoxComponent extends AnchorComponent {
 					stream.subscribeNestingChanged(() => {
 						this.connections
 							.filter(connectionComponent => connectionComponent.getConnection().source === port)
-							.forEach(connectionComponent => connectionComponent.refresh());
+							.forEach(connectionComponent => {
+								connectionComponent.refresh()
+							});
 					});
 				}
 			});

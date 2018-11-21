@@ -107,7 +107,7 @@ export class ConnectionComponent {
 		if (!stream) {
 			link.attr(".connection/stroke-dasharray", 5);
 		} else {
-			if (stream.isFluent()) {
+			if (stream.getRootStream().isPlaceholder()) {
 				link.attr(".connection/stroke-dasharray", 5);
 			} else if (stream.isPlaceholder()) {
 				link.attr(".connection/stroke-dasharray", 1);
