@@ -2,6 +2,32 @@ import m, {CVnodeDOM} from "mithril";
 import {ClassComponent, CVnode} from "mithril";
 import {SlangType, TypeIdentifier} from "../../custom/type";
 
+export class List implements ClassComponent<List.Attrs> {
+	oninit({attrs}: CVnode<List.Attrs>) {
+	}
+
+	view({children, attrs}: CVnode<List.Attrs>) {
+		return m("ul.sl-list", {
+			class: attrs.class,
+		}, children);
+	}
+}
+
+export namespace List {
+	export interface Attrs {
+		class?: string
+	}
+}
+
+export class ListEntry implements ClassComponent<{}> {
+	oninit({attrs}: CVnode<{}>) {
+	}
+
+	view({children, attrs}: CVnode<{}>) {
+		return m("li.sl-list-enrty", children);
+	}
+}
+
 export class Button implements ClassComponent<Button.Attrs> {
 	private alreadyClicked: boolean = false;
 	private bounceInterval = 500;

@@ -15,7 +15,7 @@ import {Connection} from "../../custom/connections";
 import {OperatorModel} from "../../model/operator";
 import {BlueprintDelegateModel} from "../../model/delegate";
 import {SlangType, SlangTypeValue} from "../../custom/type";
-import {Button, TypeInput} from "./toolkit";
+import {Button, List, ListEntry, TypeInput} from "./toolkit";
 
 export class WhiteBoxComponent extends Component {
 	private static readonly padding = 120;
@@ -24,6 +24,8 @@ export class WhiteBoxComponent extends Component {
 	private readonly shape: WhiteBoxComponent.Shape;
 	private readonly buttons: AttachedComponent;
 	private readonly input: AttachedComponent;
+	private readonly output: AttachedComponent;
+	private outputBuffer: Array<SlangTypeValue> = [];
 
 
 	private readonly operators: Array<BlackBoxComponent> = [];
@@ -39,6 +41,7 @@ export class WhiteBoxComponent extends Component {
 		super(paperView, {x: 0, y: 0});
 		this.buttons = this.createComponent({x: 0, y: 0, align: "l"});
 		this.input = this.createComponent({x: 0, y: 0, align: "b"});
+		this.output = this.createComponent({x: 0, y: 0, align: "t"});
 		this.subscribe();
 
 		const size = {
@@ -63,6 +66,7 @@ export class WhiteBoxComponent extends Component {
 					})
 				});
 				this.input.unmount();
+				this.output.unmount();
 			} else {
 				this.buttons.mount({
 					view: () => m(".toolbox", [
@@ -92,9 +96,21 @@ export class WhiteBoxComponent extends Component {
 							type: portIn.getType()
 						})
 					});
+				}
+
+				const portOut = this.blueprint.getPortOut();
+
+				if (portOut) {
+					this.output.mount({
+						view: () => m(List, this.outputBuffer.map((outputData) => {
+							return m(ListEntry, JSON.stringify(outputData))
+
+						}))
+					});
 
 					this.blueprint.subscribeOutputPushed((outputData: SlangTypeValue) => {
-						console.log("OUTPUT:", outputData);
+						this.outputBuffer.unshift(outputData);
+
 					});
 				}
 			}
@@ -111,7 +127,8 @@ export class WhiteBoxComponent extends Component {
 				this.buttons.attachTo(p.getElement(), "br");
 				this.input.attachTo(p.getElement(), "c");
 			} else {
-				this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
+				const p = this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
+				this.output.attachTo(p.getElement(), "c");
 			}
 		});
 
@@ -476,7 +493,6 @@ export namespace WhiteBoxComponent {
 		view({attrs}: CVnode<OperatorInputForm.Attrs>): any {
 			const that = this;
 			return m("form.sl-form",
-				m("div", JSON.stringify(that.values)),
 				m(TypeInput, {
 					label: "", class: "",
 					type: this.type!,
