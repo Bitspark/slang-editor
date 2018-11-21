@@ -117,6 +117,14 @@ export class WhiteBoxComponent extends AnchorComponent {
 				this.connections
 					.filter(connectionComponent => connectionComponent.getConnection().source === port)
 					.forEach(connectionComponent => connectionComponent.refresh());
+				
+				if (stream) {
+					stream.subscribeNestingChanged(() => {
+						this.connections
+							.filter(connectionComponent => connectionComponent.getConnection().source === port)
+							.forEach(connectionComponent => connectionComponent.refresh());
+					});
+				}
 			});
 
 			port.subscribeStreamUnreachableChanged(unreachable => {

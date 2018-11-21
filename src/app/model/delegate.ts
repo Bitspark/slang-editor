@@ -64,7 +64,7 @@ export class OperatorDelegateModel extends GenericDelegateModel<OperatorModel, O
 			if (this.getBaseStreamType()) {
 				throw new Error(`operator delegate already has a base stream`);
 			}
-			this.setBaseStreamType(port.createStream(false));
+			this.setBaseStreamType(port.createStream());
 		}
 		return port;
 	}

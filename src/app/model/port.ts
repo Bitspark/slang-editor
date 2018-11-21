@@ -196,10 +196,18 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 					if (streamTypeUnreachable) {
 						sub.setSubStreamTypes(baseStreamType ? sub.getStreamType() : null);
 					} else {
-						sub.setSubStreamTypes(baseStreamType ? baseStreamType.createSubStream(sub, false) : null);
+						if (baseStreamType) {
+							if (baseStreamType.isVirtual()) {
+								sub.setSubStreamTypes(baseStreamType.createSubStream(null));
+							} else {
+								sub.setSubStreamTypes(baseStreamType.createSubStream(sub));
+							}
+						} else {
+							sub.setSubStreamTypes(null);
+						}
 					}
 				} else {
-					sub.setSubStreamTypes(baseStreamType ? baseStreamType.createSubStream(sub, true) : null);
+					sub.setSubStreamTypes(baseStreamType ? baseStreamType.createSubStream(null) : null);
 				}
 			}
 		} else if (this.typeIdentifier === TypeIdentifier.Map) {
@@ -209,7 +217,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		}
 	}
 
-	public createStream(virtual: boolean): StreamType {
+	public createStream(): StreamType {
 		if (!this.isSource()) {
 			throw new Error(`can only create streams on source ports`);
 		}
@@ -235,7 +243,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			// Nothing changed
 			return;
 		}
-		if (oldStreamType && !streamTypeUnreachable) {
+		if (oldStreamType && !oldStreamType.isVirtual() && !streamTypeUnreachable) {
 			// Assert that (streamType !== oldStreamType) in case of reordering if statements!
 			throw new Error(`${this.getOwnerName()}: already have different stream type`);
 		}

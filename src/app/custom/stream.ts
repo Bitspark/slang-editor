@@ -4,12 +4,11 @@ import {Subscription} from "rxjs";
 
 export class StreamType {
 
-	private markUnreachableRequested: SlangSubjectTrigger;
-	private removeUnreachableRequested: SlangSubjectTrigger;
+	private readonly markUnreachableRequested = new SlangSubjectTrigger("mark-unreachable");
+	private readonly removeUnreachableRequested = new SlangSubjectTrigger("remove-unreachable");
+	private readonly nestingChanged = new SlangSubjectTrigger("nesting");
 	
-	constructor(private baseStreamType: StreamType | null, private sourcePort: PortModel) {
-		this.markUnreachableRequested = new SlangSubjectTrigger("mark-unreachable");
-		this.removeUnreachableRequested = new SlangSubjectTrigger("remove-unreachable");
+	constructor(private baseStreamType: StreamType | null, private sourcePort: PortModel | null) {
 		if (baseStreamType) {
 			if (baseStreamType.hasAncestor(this)) {
 				throw new Error(`stream circle detected`);
@@ -20,19 +19,28 @@ export class StreamType {
 			baseStreamType.subscribeRemoveUnreachable(() => {
 				this.removeUnreachable();
 			});
+			baseStreamType.subscribeNestingChanged(() => {
+				this.nestingChanged.next();
+			});
 		}
 	}
+	
+	public isVirtual(): boolean {
+		return !this.sourcePort;
+	}
 
-	public createSubStream(sourcePort: PortModel, virtual: boolean): StreamType {
+	public createSubStream(sourcePort: PortModel | null): StreamType {
 		return new StreamType(this, sourcePort);
 	}
 
 	public getBaseStreamType(): StreamType | null {
+		if (!this.baseStreamType && this.isVirtual()) {
+			const stream = new StreamType(null, null);
+			this.baseStreamType = stream;
+			this.nestingChanged.next();
+			return stream;
+		}
 		return this.baseStreamType;
-	}
-
-	public getSourcePort(): PortModel {
-		return this.sourcePort;
 	}
 	
 	public getRootStream(): StreamType {
@@ -60,6 +68,9 @@ export class StreamType {
 	}
 	
 	public collectGarbage(): void {
+		if (!this.sourcePort) {
+			return;
+		}
 		this.markUnreachable();
 		this.sourcePort.setSubStreamTypes(this);
 		this.removeUnreachable();
@@ -79,6 +90,10 @@ export class StreamType {
 
 	public subscribeRemoveUnreachable(cb: () => void): Subscription {
 		return this.removeUnreachableRequested.subscribe(cb);
+	}
+
+	public subscribeNestingChanged(cb: () => void): Subscription {
+		return this.nestingChanged.subscribe(cb);
 	}
 
 }

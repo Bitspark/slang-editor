@@ -4,6 +4,7 @@ import {OperatorDelegateModel} from "./delegate";
 import {BlackBox} from "../custom/nodes";
 import {Connections} from "../custom/connections";
 import {SlangBehaviorSubject} from "../custom/events";
+import {StreamType} from "../custom/stream";
 
 export type OperatorModelArgs = { name: string, blueprint: BlueprintModel, geometry: Geometry | undefined };
 
@@ -49,6 +50,7 @@ export class OperatorModel extends BlackBox {
 		port.subscribeStreamTypeChanged(streamType => {
 			this.setBaseStreamType(streamType);
 		});
+		port.setSubStreamTypes(new StreamType(null, null));
 		return port;
 	}
 
