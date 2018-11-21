@@ -134,7 +134,7 @@ export class BlueprintModel extends BlackBox {
 			if (this.getBaseStreamType()) {
 				throw new Error(`blueprint already has a base stream`);
 			}
-			this.setBaseStreamType(port.createStream());
+			this.setBaseStreamType(port.createStream(false));
 		}
 		return port;
 	}

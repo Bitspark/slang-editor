@@ -196,8 +196,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 					if (streamTypeUnreachable) {
 						sub.setSubStreamTypes(baseStreamType ? sub.getStreamType() : null);
 					} else {
-						sub.setSubStreamTypes(baseStreamType ? baseStreamType.createSubStream(sub) : null);
+						sub.setSubStreamTypes(baseStreamType ? baseStreamType.createSubStream(sub, false) : null);
 					}
+				} else {
+					sub.setSubStreamTypes(baseStreamType ? baseStreamType.createSubStream(sub, true) : null);
 				}
 			}
 		} else if (this.typeIdentifier === TypeIdentifier.Map) {
@@ -207,7 +209,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		}
 	}
 
-	public createStream(): StreamType {
+	public createStream(virtual: boolean): StreamType {
 		if (!this.isSource()) {
 			throw new Error(`can only create streams on source ports`);
 		}

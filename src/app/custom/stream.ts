@@ -23,7 +23,7 @@ export class StreamType {
 		}
 	}
 
-	public createSubStream(sourcePort: PortModel): StreamType {
+	public createSubStream(sourcePort: PortModel, virtual: boolean): StreamType {
 		return new StreamType(this, sourcePort);
 	}
 
