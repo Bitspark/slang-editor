@@ -552,6 +552,12 @@ export type PortModelArgs = { name: string, type: SlangType, direction: PortDire
 export class BlueprintPortModel extends GenericPortModel<BlueprintModel | BlueprintDelegateModel> {
 	public constructor(parent: BlueprintModel | BlueprintDelegateModel | BlueprintPortModel, args: PortModelArgs) {
 		super(parent, args, BlueprintPortModel);
+
+		if (parent instanceof BlueprintDelegateModel) {
+			parent.subscribeBaseStreamTypeChanged(streamType => {
+				this.setSubStreamTypes(streamType);
+			});
+		}
 	}
 
 	public isSource(): boolean {
