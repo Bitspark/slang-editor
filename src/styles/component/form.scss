@@ -1,30 +1,56 @@
 .sl-form {
-	@extend %bordered;
-	@extend %translucent;
+	@extend %proto-container;
 	width: 342px;
 	background: $white;
-	padding: 0;
 	margin: 0;
+	padding: 0;
+	overflow: hidden;
+
+	> .sl-inp-grp {
+		@extend %rounded;
+		> label {
+			margin: 0;
+			padding: 0;
+
+			> .sl-inp-grp {
+				padding: 12px 1px 8px 1px;
+				border-bottom: 1px solid transparentize($black, .85);
+			}
+			> .sl-inp-wrap {
+				padding: 12px 1px 8px 1px;
+				border-bottom: 1px solid transparentize($black, .85);
+			}
+
+		}
+
+		.sl-inp-grp {
+			&.map {
+
+			}
+			&.stream {
+
+			}
+		}
+	}
+
 }
 
-.sl-inp-grp {
-	display: block;
-	padding: 4px 0;
-	margin: 2px;
-	border: 1px solid $black;
-
-	&.map {
-		label {
-			display: block;
-			padding: 2px;
-			background: transparentize($gray, .9);
-		}
-		input {
-			display: block;
-		}
+.sl-inp {
+	@extend %bordered;
+	border-radius: 500px;
+	margin: 3px;
+	padding: 0;
+	background: $dim;
+	input {
+		background: transparent;
+		border: none;
+		margin: 0 12px;
+		padding: 11px 0;
+		width: 100%;
 	}
 }
 
+/*
 .sl-inp {
 	&.number {
 		background-color: transparentize($type-color-number, .7);
@@ -39,3 +65,4 @@
 		background-color: transparentize($type-color-trigger, .7);
 	}
 }
+*/

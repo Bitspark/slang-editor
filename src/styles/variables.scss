@@ -25,7 +25,6 @@ $font-size: 1rem;
 %bordered {
 	@extend %rounded;
 	box-shadow: inset 0px 0px 2px -1px $black, 0px 0px 1px -1px $black;
-	//box-shadow: 0px 0px 3px -1px $black inset;
 }
 
 %translucent {
@@ -40,9 +39,4 @@ $font-size: 1rem;
 %proto-container {
 	@extend %bordered;
 	@extend %translucent;
-}
-
-%proto-entry {
-	padding: 18px 32px 16px 32px;
-	border-bottom: 1px solid transparentize($black, .85);
 }

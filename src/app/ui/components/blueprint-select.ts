@@ -7,6 +7,7 @@ import {BlueprintView} from "../views/blueprint";
 import {Geometry} from "../../model/operator";
 import {BlackBoxComponent} from "./blackbox";
 import {AttachedComponent, Component, XY} from "./base";
+import {StringInput} from "./toolkit";
 
 export interface Attrs {
 	onSelect: (bp: BlueprintModel) => void,
@@ -37,18 +38,14 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 				}
 			},
 			[
-				m(".sl-blupr-fltr",
-					m("input.sl-blupr-input[type=text]", {
-						oncreate: (v: CVnodeDOM<any>) => {
-							if (v.attrs.autofocus) {
-								(v.dom as HTMLElement).focus();
-							}
-						},
-						oninput: m.withAttr("value", function (f: string) {
-							attrs.onFilter(f.trim());
-						}),
-						autofocus: true,
-					})),
+				m(StringInput, {
+					class: "sl-blupr-fltr",
+					label: "",
+					onInput: function (f: string) {
+						attrs.onFilter(f.trim());
+					},
+					autofocus: true,
+				}),
 				m(".sl-blupr-entries",
 					blueprints.length ? blueprints.map((blueprint: BlueprintModel) => {
 						return m(".sl-blupr-entry", {

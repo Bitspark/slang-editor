@@ -14,7 +14,8 @@ import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {Connection} from "../../custom/connections";
 import {OperatorModel} from "../../model/operator";
 import {BlueprintDelegateModel} from "../../model/delegate";
-import {SlangType, TypeIdentifier} from "../../custom/type";
+import {SlangType} from "../../custom/type";
+import {Button, TypeInput} from "./toolkit";
 
 export class WhiteBoxComponent extends Component {
 	private static readonly padding = 120;
@@ -53,7 +54,7 @@ export class WhiteBoxComponent extends Component {
 		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
 			if (!instance) {
 				this.buttons.mount({
-					view: () => m(WhiteBoxComponent.Tool.Button, {
+					view: () => m(Button, {
 						onClick: () => {
 							this.blueprint.requestDeployment();
 						},
@@ -66,7 +67,7 @@ export class WhiteBoxComponent extends Component {
 			} else {
 				this.buttons.mount({
 					view: () => m(".toolbox", [
-						m(WhiteBoxComponent.Tool.Button, {
+						m(Button, {
 							onClick: () => {
 								window.open(instance.url, "_blank");
 							},
@@ -74,7 +75,7 @@ export class WhiteBoxComponent extends Component {
 							icon: "X",
 							class: "running",
 						}),
-						m(WhiteBoxComponent.Tool.Button, {
+						m(Button, {
 							onClick: () => {
 								this.blueprint.requestShutdown();
 							},
@@ -89,7 +90,7 @@ export class WhiteBoxComponent extends Component {
 
 				if (portIn) {
 					this.input.mount({
-						view: () => m(WhiteBoxComponent.OperatorApiForm, {type: portIn.getType()})
+						view: () => m(WhiteBoxComponent.OperatorInputForm, {type: portIn.getType()})
 					});
 				}
 			}
@@ -460,203 +461,21 @@ export namespace WhiteBoxComponent {
 		}
 	}
 
-	export namespace Tool {
-		export interface Attrs {
-			onClick: () => void
-			label: string
-			icon: string
-			class: string
+	export class OperatorInputForm implements ClassComponent<OperatorInputForm.Attrs> {
+		protected type: SlangType | undefined;
+
+		oninit({attrs}: CVnode<OperatorInputForm.Attrs>) {
+			this.type = attrs.type;
 		}
 
-		export class Button implements ClassComponent<Attrs> {
-			private alreadyClicked: boolean = false;
-			private bounceInterval = 500;
-
-			oninit({attrs}: CVnode<Attrs>) {
-			}
-
-			view({attrs}: CVnode<Attrs>) {
-				return m("a.btn.sl-tool-btn", {
-						class: attrs.class,
-						onclick: () => {
-							if (!this.alreadyClicked) {
-								this.alreadyClicked = true;
-								attrs.onClick();
-								const that = this;
-								setTimeout(() => {
-									that.alreadyClicked = false;
-								}, this.bounceInterval);
-							}
-						},
-						tooltip: attrs.label,
-					},
-					attrs.icon);
-			}
+		view({attrs}: CVnode<OperatorInputForm.Attrs>): any {
+			return m("form.sl-form", m(TypeInput, {name: "", type: this.type!}));
 		}
 	}
 
-	export namespace OperatorApiForm {
+	export namespace OperatorInputForm {
 		export interface Attrs {
-			name?: string;
 			type: SlangType
-		}
-	}
-
-	export class OperatorApiForm implements ClassComponent<OperatorApiForm.Attrs> {
-		protected type: SlangType | undefined;
-
-		oninit({attrs}: CVnode<OperatorApiForm.Attrs>) {
-			this.type = attrs.type;
-		}
-
-		view({attrs}: CVnode<OperatorApiForm.Attrs>): any {
-			return m("form.sl-form", m(FormInputGroup, {type: this.type!}));
-		}
-
-	}
-
-	class FormInputGroup implements ClassComponent<OperatorApiForm.Attrs> {
-		protected name: string | undefined;
-		protected type: SlangType | undefined;
-
-		oninit({attrs}: CVnode<OperatorApiForm.Attrs>) {
-			this.type = attrs.type;
-			this.name = attrs.name;
-		}
-
-		view({attrs}: CVnode<OperatorApiForm.Attrs>): any {
-			if (!this.type) return m(".sl-inp.undef");
-			const t = this.type;
-			switch (this.type.getTypeIdentifier()) {
-				case TypeIdentifier.Map:
-					return m(MapInputField, {
-						label: this.name, entries: t.getMapSubs()
-					});
-
-				case TypeIdentifier.Stream:
-					return m(StreamInputField, {
-						label: this.name, type: t.getStreamSub()
-					});
-
-				case TypeIdentifier.Number:
-					return m(SimpleInputField, {
-						label: this.name, cssSelector: "input.sl-inp.number", inputType: "number"
-					});
-
-				case TypeIdentifier.Boolean:
-					return m(SimpleInputField, {
-						label: this.name, cssSelector: "input.sl-inp.boolean", inputType: "checkbox"
-					});
-
-				case TypeIdentifier.Trigger:
-					return m(SimpleInputField, {
-						label: this.name, cssSelector: "input.sl-inp.trigger", inputType: "button"
-					});
-
-				default:
-					return m(SimpleInputField, {
-						label: this.name, cssSelector: "input.sl-inp.string", inputType: "text"
-					});
-			}
-		}
-	}
-
-	export interface InputAttrs {
-		label?: string,
-		cssSelector: string,
-		inputType: "button" | "number" | "text" | "checkbox";
-	}
-
-	class SimpleInputField implements ClassComponent<InputAttrs> {
-		view({attrs}: CVnode<InputAttrs>) {
-			if (attrs.label) {
-				const labelName = attrs.label;
-				const labelText = `${attrs.label}:`;
-				return m("label", {
-					for: labelName
-				}, [
-					labelText,
-					m(attrs.cssSelector, {
-						name: labelName,
-						type: attrs.inputType
-					})
-				]);
-			}
-			return m(attrs.cssSelector, {type: attrs.inputType});
-		}
-	}
-
-	export interface MapInputAttrs {
-		label?: string,
-		entries: IterableIterator<[string, SlangType]>
-	}
-
-	class MapInputField implements ClassComponent<MapInputAttrs> {
-		protected populate(attrs: MapInputAttrs): any {
-			return m(".sl-inp-grp.map", Array.from(attrs.entries)
-				.map(([subName, subType]) => m(FormInputGroup, {
-						name: subName,
-						type: subType
-					})
-				)
-			);
-		}
-
-		view({attrs}: CVnode<MapInputAttrs>) {
-			if (attrs.label) {
-				const labelName = attrs.label;
-				const labelText = `${attrs.label}:`;
-				return m("label", {
-					for: labelName
-				}, [labelText, this.populate(attrs)]);
-			}
-			return this.populate(attrs);
-		}
-	}
-
-	export interface StreamInputAttrs {
-		label?: string
-		type: SlangType
-	}
-
-	class StreamInputField implements ClassComponent<StreamInputAttrs> {
-		private entries: Array<any> = [];
-
-		protected populate(attrs: StreamInputAttrs): any {
-			return m(".sl-inp-grp.stream", [
-				this.entries.map((entry: any, index: number) => {
-					return m(".entry", [
-						m(FormInputGroup, {type: attrs.type}),
-						m(Tool.Button, {
-							onClick: () => {
-								this.entries.splice(index, 1);
-							},
-							label: "-",
-							icon: "-",
-							class: ".delete",
-						})
-					]);
-				}),
-				m(".entry", m(Tool.Button, {
-					onClick: () => {
-						this.entries.push("");
-					},
-					label: "+",
-					icon: "+",
-					class: ".add",
-				}))
-			]);
-		}
-
-		view({attrs}: CVnode<StreamInputAttrs>) {
-			if (attrs.label) {
-				const labelName = attrs.label;
-				const labelText = `${attrs.label}:`;
-				return m("label", {
-					for: labelName
-				}, [labelText, this.populate(attrs)]);
-			}
-			return this.populate(attrs);
 		}
 	}
 }
