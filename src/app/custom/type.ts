@@ -157,3 +157,5 @@ export class SlangType {
 	}
 
 }
+
+export type SlangTypeValue = { [k: string]: any } | [] | string | number | boolean | null;

@@ -1,3 +1,5 @@
+import {SlangTypeValue} from "./type";
+
 export interface TypeDefApiResponse {
 	type: "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic"
 	map?: {
@@ -144,4 +146,14 @@ export class ApiService {
 			(err: any) => console.error(err)
 		);
 	}
+
+	public async pushInput(instanceUrl: string, inputData: SlangTypeValue): Promise<SlangTypeValue> {
+		return this.POST<SlangTypeValue, SlangTypeValue>(
+			instanceUrl,
+			inputData,
+			(outputData: SlangTypeValue) => outputData,
+			(err: any) => console.error(err)
+		);
+	}
+
 }

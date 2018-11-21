@@ -14,7 +14,7 @@ import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {Connection} from "../../custom/connections";
 import {OperatorModel} from "../../model/operator";
 import {BlueprintDelegateModel} from "../../model/delegate";
-import {SlangType} from "../../custom/type";
+import {SlangType, SlangTypeValue} from "../../custom/type";
 import {Button, TypeInput} from "./toolkit";
 
 export class WhiteBoxComponent extends Component {
@@ -85,7 +85,16 @@ export class WhiteBoxComponent extends Component {
 
 				if (portIn) {
 					this.input.mount({
-						view: () => m(WhiteBoxComponent.OperatorInputForm, {type: portIn.getType()})
+						view: () => m(WhiteBoxComponent.OperatorInputForm, {
+							onSubmit: (values: SlangTypeValue) => {
+								this.blueprint.pushInput(values);
+							},
+							type: portIn.getType()
+						})
+					});
+
+					this.blueprint.subscribeOutputPushed((outputData: SlangTypeValue) => {
+						console.log("OUTPUT:", outputData);
 					});
 				}
 			}
@@ -458,7 +467,7 @@ export namespace WhiteBoxComponent {
 
 	export class OperatorInputForm implements ClassComponent<OperatorInputForm.Attrs> {
 		private type: SlangType | undefined;
-		private values: any;
+		private values: SlangTypeValue = null;
 
 		oninit({attrs}: CVnode<OperatorInputForm.Attrs>) {
 			this.type = attrs.type;
@@ -480,7 +489,7 @@ export namespace WhiteBoxComponent {
 					icon: "",
 					label: "Push",
 					onClick: () => {
-						console.log(">>>", that.values)
+						attrs.onSubmit(that.values);
 					}
 				}));
 		}
@@ -489,6 +498,7 @@ export namespace WhiteBoxComponent {
 	export namespace OperatorInputForm {
 		export interface Attrs {
 			type: SlangType
+			onSubmit: (values: SlangTypeValue) => void
 		}
 	}
 }
