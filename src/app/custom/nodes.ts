@@ -1,6 +1,7 @@
 import {GenericPortModel, PortModel, PortModelArgs} from "../model/port";
 import {DelegateModel} from "../model/delegate";
 import {SlangBehaviorSubject, SlangNodeSetBehaviorSubject} from "./events";
+import {StreamType} from "./stream";
 
 type Type<T> = Function & { prototype: T };
 
@@ -179,47 +180,6 @@ export abstract class SlangNode {
 
 }
 
-export class StreamType {
-
-	constructor(private baseStreamType: StreamType | null, private sourcePort: PortModel) {
-		if (baseStreamType) {
-			if (baseStreamType.hasAncestor(this)) {
-				throw new Error(`stream circle detected`);
-			}
-		}
-	}
-
-	public createSubStream(sourcePort: PortModel): StreamType {
-		return new StreamType(this, sourcePort);
-	}
-
-	public getBaseStreamType(): StreamType | null {
-		return this.baseStreamType;
-	}
-
-	public getSourcePort(): PortModel {
-		return this.sourcePort;
-	}
-
-	public getStreamDepth(): number {
-		if (this.baseStreamType) {
-			return this.baseStreamType.getStreamDepth() + 1;
-		}
-		return 1;
-	}
-
-	private hasAncestor(stream: StreamType): boolean {
-		if (stream === this) {
-			return true;
-		}
-		if (this.baseStreamType) {
-			return this.baseStreamType.hasAncestor(stream);
-		}
-		return false;
-	}
-
-}
-
 export abstract class PortOwner extends SlangNode {
 
 	private readonly baseStreamType = new SlangBehaviorSubject<StreamType | null>("base-stream-type", null);
@@ -241,10 +201,6 @@ export abstract class PortOwner extends SlangNode {
 	public getPorts(): IterableIterator<PortModel> {
 		return this.getChildNodes(GenericPortModel);
 	}
-
-	public resetBaseStreamType(): void {}
-
-	public refreshBaseStreamType(): void {}
 	
 	protected setBaseStreamType(stream: StreamType | null): void {
 		this.baseStreamType.next(stream);
@@ -254,7 +210,7 @@ export abstract class PortOwner extends SlangNode {
 		return this.baseStreamType.getValue();
 	}
 	
-	public subscribeBaseStreamTypeChanged(cb: (streamType: StreamType) => void) {
+	public subscribeBaseStreamTypeChanged(cb: (streamType: StreamType | null) => void) {
 		this.baseStreamType.subscribe(cb);
 	}
 

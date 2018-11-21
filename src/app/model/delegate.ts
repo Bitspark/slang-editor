@@ -35,7 +35,11 @@ export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel,
 	}
 
 	public createPort(args: PortModelArgs): BlueprintPortModel {
-		return this.createChildNode(BlueprintPortModel, args);
+		const port = this.createChildNode(BlueprintPortModel, args);
+		port.subscribeStreamTypeChanged(streamType => {
+			this.setBaseStreamType(streamType);
+		});
+		return port;
 	}
 
 	public getPortIn(): BlueprintPortModel | null {
@@ -44,10 +48,6 @@ export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel,
 
 	public getPortOut(): BlueprintPortModel | null {
 		return super.getPortOut() as BlueprintPortModel;
-	}
-
-	public resetBaseStreamType(): void {
-		this.setBaseStreamType(null);
 	}
 }
 
@@ -67,13 +67,5 @@ export class OperatorDelegateModel extends GenericDelegateModel<OperatorModel, O
 			this.setBaseStreamType(port.createStream());
 		}
 		return port;
-	}
-
-	public resetBaseStreamType(): void {
-		this.getPortOut()!.setSubStreamTypes(null);
-	}
-
-	public refreshBaseStreamType(): void {
-		this.getPortOut()!.setSubStreamTypes(this.getBaseStreamType());
 	}
 }

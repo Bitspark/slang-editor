@@ -4,7 +4,7 @@ import {BlueprintDelegateModel} from "./delegate";
 import {Geometry} from "./operator";
 import {SlangParsing} from "../custom/parsing";
 import {PropertyEvaluator} from "../custom/utils";
-import {BlackBox, PortOwner} from "../custom/nodes";
+import {BlackBox} from "../custom/nodes";
 import {TypeIdentifier} from "../custom/type";
 import {PropertyAssignments, PropertyModel} from "./property";
 import {GenericSpecifications} from "./generic";
@@ -321,22 +321,6 @@ export class BlueprintModel extends BlackBox {
 
 	public shutdown() {
 		this.instance.next(null);
-	}
-	
-	public resetInternalStreamTypes(): void {
-		this.getPortIn()!.setSubStreamTypes(null);
-		this.getPortOut()!.setSubStreamTypes(null);
-		for (const portOwner of this.getDescendantNodes(PortOwner)) {
-			portOwner.resetBaseStreamType();
-		}
-	}
-	
-	public refreshInternalStreamTypes(): void {
-		this.getPortIn()!.setSubStreamTypes(this.getBaseStreamType());
-		this.getPortOut()!.setSubStreamTypes(this.getBaseStreamType());
-		for (const portOwner of this.getDescendantNodes(PortOwner)) {
-			portOwner.refreshBaseStreamType();
-		}
 	}
 
 	// Subscriptions

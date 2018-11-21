@@ -1,11 +1,12 @@
 import {BlueprintModel} from "./blueprint";
 import {OperatorModel} from "./operator";
 import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
-import {BlackBox, PortOwner, SlangNode, StreamType} from "../custom/nodes";
+import {BlackBox, PortOwner, SlangNode} from "../custom/nodes";
 import {Connection, Connections} from "../custom/connections";
 import {SlangType, TypeIdentifier} from "../custom/type";
 import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
 import {Subscription} from "rxjs";
+import {StreamType} from "../custom/stream";
 
 export enum PortDirection {
 	In, // 0
@@ -83,8 +84,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				} else {
 					console.log("not found");
 				}
-				this.getAncestorNode(BlueprintModel)!.resetInternalStreamTypes();
-				this.getAncestorNode(BlueprintModel)!.refreshInternalStreamTypes();
 			});
 		}
 
@@ -172,7 +171,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		return baseStreamType;
 	}
 
-	public setStreamType(streamType: StreamType | null): void {
+	public setStreamType(streamType: StreamType): void {
 		// Set streams *upwards*
 
 		const oldStreamType = this.getStreamType();
@@ -191,15 +190,11 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				parent.setStreamType(streamType);
 			} else if (parent.typeIdentifier === TypeIdentifier.Stream) {
 				this.streamType.next(streamType);
-				if (!streamType) {
-					parent.setStreamType(null);
-				} else {
-					const baseStreamType = streamType.getBaseStreamType();
-					if (!baseStreamType) {
-						throw new Error(`${this.getOwnerName()}: insufficient stream type depth`);
-					}
-					parent.setStreamType(baseStreamType);
+				const baseStreamType = streamType.getBaseStreamType();
+				if (!baseStreamType) {
+					throw new Error(`${this.getOwnerName()}: insufficient stream type depth`);
 				}
+				parent.setStreamType(baseStreamType);
 			} else {
 				throw new Error(`${this.getOwnerName()}: unexpected port type, cannot be a parent`);
 			}

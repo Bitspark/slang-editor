@@ -1,7 +1,7 @@
 import {BlueprintModel, BlueprintType} from "./blueprint";
 import {OperatorPortModel, PortModelArgs} from "./port";
 import {OperatorDelegateModel} from "./delegate";
-import {BlackBox, StreamType} from "../custom/nodes";
+import {BlackBox} from "../custom/nodes";
 import {Connections} from "../custom/connections";
 import {SlangBehaviorSubject} from "../custom/events";
 
@@ -50,10 +50,6 @@ export class OperatorModel extends BlackBox {
 			this.setBaseStreamType(streamType);
 		});
 		return port;
-	}
-
-	public resetBaseStreamType(): void {
-		this.setBaseStreamType(null);
 	}
 
 	public getDelegates(): IterableIterator<OperatorDelegateModel> {
