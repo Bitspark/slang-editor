@@ -261,6 +261,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 					if (!stream.isPlaceholder()) {
 						throw new Error(`cannot override stream`);
 					} else {
+						return;
 					}
 				} else {
 					//
