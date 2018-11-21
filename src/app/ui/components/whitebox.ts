@@ -37,7 +37,7 @@ export class WhiteBoxComponent extends Component {
 
 	constructor(paperView: PaperView, private readonly blueprint: BlueprintModel) {
 		super(paperView, {x: 0, y: 0});
-		this.buttons = this.createComponent({x: 0, y: 0, align: "bl"});
+		this.buttons = this.createComponent({x: 0, y: 0, align: "l"});
 		this.input = this.createComponent({x: 0, y: 0, align: "b"});
 		this.subscribe();
 
@@ -59,8 +59,7 @@ export class WhiteBoxComponent extends Component {
 							this.blueprint.requestDeployment();
 						},
 						label: "Deploy",
-						icon: "D",
-						class: "dply",
+						class: "sl-blupr-deploy",
 					})
 				});
 				this.input.unmount();
@@ -68,20 +67,16 @@ export class WhiteBoxComponent extends Component {
 				this.buttons.mount({
 					view: () => m(".toolbox", [
 						m(Button, {
-							onClick: () => {
-								window.open(instance.url, "_blank");
-							},
 							label: "Running",
-							icon: "X",
-							class: "running",
+							class: "sl-green-pulsing",
 						}),
 						m(Button, {
 							onClick: () => {
 								this.blueprint.requestShutdown();
 							},
-							label: "",
+							label: "Shutdown",
 							icon: "S",
-							class: "stop",
+							class: "sl-btn-warn",
 						}),
 					])
 				});
@@ -478,6 +473,14 @@ export namespace WhiteBoxComponent {
 					type: this.type!,
 					onInput: (v: any) => {
 						that.values = v;
+					}
+				}),
+				m(Button, {
+					class: "sl-fullwidth",
+					icon: "",
+					label: "Push",
+					onClick: () => {
+						console.log(">>>", that.values)
 					}
 				}));
 		}

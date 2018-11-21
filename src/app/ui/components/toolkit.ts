@@ -10,30 +10,30 @@ export class Button implements ClassComponent<Button.Attrs> {
 	}
 
 	view({attrs}: CVnode<Button.Attrs>) {
-		return m("a.btn.sl-tool-btn", {
-				class: attrs.class,
-				onclick: () => {
+		return m("a.sl-btn", {
+				class: attrs.class + (attrs.onClick ? " sl-btn-clickable" : ""),
+				onclick: attrs.onClick ? () => {
 					if (!this.alreadyClicked) {
 						this.alreadyClicked = true;
-						attrs.onClick();
+						attrs.onClick!();
 						const that = this;
 						setTimeout(() => {
 							that.alreadyClicked = false;
 						}, this.bounceInterval);
 					}
-				},
+				} : undefined,
 				tooltip: attrs.label,
 			},
-			attrs.icon);
+			attrs.label);
 	}
 }
 
 export namespace Button {
 	export interface Attrs {
-		onClick: () => void
+		onClick?: () => void
 		label: string
-		icon: string
-		class: string
+		icon?: string
+		class?: string
 	}
 }
 
