@@ -39,7 +39,7 @@ export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel,
 	public createPort(args: PortModelArgs): BlueprintPortModel {
 		const port = this.createChildNode(BlueprintPortModel, args);
 		port.subscribeStreamTypeChanged(streamType => {
-			// this.setBaseStream(streamType);
+			this.setBaseStream(streamType);
 		});
 		return port;
 	}

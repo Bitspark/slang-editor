@@ -252,24 +252,34 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		this.streamTypeUnreachable.next(false);
 		
 		const oldStream = this.getStreamType();
+		if (!oldStream) {
+			throw new Error(`port without stream detected`);
+		}
+		
 		if (!markedUnreachable) {
 			if (stream === oldStream) {
 				return;
 			}
-			if (!!oldStream) {
-				if (!oldStream.isPlaceholder()) {
-					if (!stream.isPlaceholder()) {
-						throw new Error(`cannot override stream`);
-					} else {
-						return;
-					}
-				} else {
-					//
+			if (!oldStream.isPlaceholder()) {
+				throw new Error(`incompatible streams`);
+			}
+
+			if (oldStream.isFluent()) {
+				// OK
+			} else if (oldStream.isPlaceholder()) {
+				if (stream.isFluent()) {
+					return;
 				}
+				// OK / ???
 			}
 		} else {
-			if (!!stream && stream !== oldStream) {
-				// throw new Error(`unexpected change of streams during garbage collection`);
+			if (oldStream.isFluent()) {
+				// OK
+			} else if (oldStream.isPlaceholder()) {
+				if (stream.isFluent()) {
+					return;
+				}
+				// OK / ???
 			}
 		}
 
