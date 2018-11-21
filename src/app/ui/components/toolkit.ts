@@ -37,14 +37,17 @@ export namespace Button {
 	}
 }
 
+interface Input<T, A extends Input.Attrs<T>> extends ClassComponent<A> {
+}
 
-class Input implements ClassComponent<Input.Attrs> {
+abstract class SimpleInput<T> implements Input<T, Input.Attrs<T>> {
 	constructor(private inputType: "button" | "number" | "text" | "checkbox") {
 	}
 
-	view({attrs}: CVnode<Input.Attrs>) {
+	view({attrs}: CVnode<Input.Attrs<T>>) {
 		const labelName = attrs.label;
 		const labelText = (labelName) ? `${attrs.label}:` : "";
+		const that = this;
 
 		return m("div.sl-inp-wrap",
 			m("label", {
@@ -56,16 +59,14 @@ class Input implements ClassComponent<Input.Attrs> {
 						},
 						m("input", {
 							name: labelName,
-							type: this.inputType,
+							type: that.inputType,
 							oncreate: (v: CVnodeDOM<any>) => {
 								if (v.attrs.autofocus) {
 									(v.dom as HTMLElement).focus();
 								}
 							},
-							oninput: m.withAttr("value", function (value: any) {
-								if (attrs.onInput) {
-									attrs.onInput(value);
-								}
+							oninput: m.withAttr("value", function (v: any) {
+								attrs.onInput(v);
 							}),
 							autofocus: attrs.autofocus,
 						})
@@ -77,104 +78,112 @@ class Input implements ClassComponent<Input.Attrs> {
 }
 
 export namespace Input {
-	export interface Attrs {
+	export interface Attrs<T> {
 		label: string,
 		class: string,
 		autofocus?: boolean,
-		onInput?: (value: any) => void,
+		onInput: (value: T) => void,
 	}
 }
 
-export class StringInput extends Input {
+export class StringInput extends SimpleInput<string> {
 	constructor() {
 		super("text");
 	}
 }
 
-export class NumberInput extends Input {
+export class NumberInput extends SimpleInput<number> {
 	constructor() {
 		super("number");
 	}
 }
 
-export class TriggerInput extends Input {
+export class TriggerInput extends SimpleInput<Boolean> {
 	constructor() {
 		super("button");
 	}
 }
 
-export class BooleanInput extends Input {
+export class BooleanInput extends SimpleInput<Boolean> {
 	constructor() {
 		super("checkbox");
 	}
 }
 
 
-export class TypeInput implements ClassComponent<TypeInput.Attrs> {
-	protected name: string = "";
-	protected type: SlangType | undefined;
+export class TypeInput implements Input<any, TypeInput.Attrs> {
+	//private name: string = "";
+	private type: SlangType | undefined;
 
 	oninit({attrs}: CVnode<TypeInput.Attrs>) {
 		this.type = attrs.type;
-		this.name = attrs.name;
 	}
 
 	view({attrs}: CVnode<TypeInput.Attrs>): any {
 		if (!this.type) return m(".sl-inp.undef");
 		const t = this.type;
+		const that = this;
 		switch (this.type.getTypeIdentifier()) {
 			case TypeIdentifier.Map:
 				return m(MapInputField, {
-					label: this.name,
+					label: attrs.label,
 					entries: t.getMapSubs(),
-					class: "sl-inp-grp stream"
+					class: attrs.class + " sl-inp-grp stream",
+					onInput: attrs.onInput,
 				});
 
 			case TypeIdentifier.Stream:
 				return m(StreamInputField, {
-					label: this.name,
+					label: attrs.label,
 					type: t.getStreamSub(),
-					class: "sl-inp-grp map"
+					class: attrs.class + " sl-inp-grp map",
+					onInput: attrs.onInput,
 				});
 
 			case TypeIdentifier.Number:
 				return m(NumberInput, {
-					label: this.name,
-					class: "number",
+					label: attrs.label,
+					class: attrs.class + " number",
+					onInput: attrs.onInput,
 				});
 
 			case TypeIdentifier.Boolean:
 				return m(BooleanInput, {
-					label: this.name,
-					class: "boolean",
+					label: attrs.label,
+					class: attrs.class + " boolean",
+					onInput: attrs.onInput,
 				});
 
 			case TypeIdentifier.Trigger:
 				return m(TriggerInput, {
-					label: this.name,
-					class: "trigger",
+					label: attrs.label,
+					class: attrs.class + " trigger",
+					onInput: attrs.onInput,
 				});
 
 			default:
 				return m(StringInput, {
-					label: this.name,
-					class: "string",
+					label: attrs.label,
+					class: attrs.class + " string",
+					onInput: attrs.onInput,
 				});
 		}
 	}
 }
 
 export namespace TypeInput {
-	export interface Attrs {
-		name: string;
+	export interface Attrs extends Input.Attrs<any> {
 		type: SlangType
 	}
 }
 
 export class MapInputField implements ClassComponent<MapInput.Attrs> {
+	private values: { [subName: string]: any } = {};
+
 	view({attrs}: CVnode<MapInput.Attrs>) {
 		const labelName = attrs.label;
 		const labelText = (labelName) ? `${attrs.label}:` : "";
+		const values = this.values;
 		return m("div", {class: attrs.class},
 			m("label", {
 				for: labelName
@@ -182,8 +191,13 @@ export class MapInputField implements ClassComponent<MapInput.Attrs> {
 				labelText,
 				Array.from(attrs.entries)
 					.map(([subName, subType]) => m(TypeInput, {
-							name: subName,
-							type: subType
+							label: subName,
+							type: subType,
+							class: "",
+							onInput: (v: any) => {
+								values[subName] = v;
+								attrs.onInput(values);
+							}
 						})
 					)
 			])
@@ -192,32 +206,39 @@ export class MapInputField implements ClassComponent<MapInput.Attrs> {
 }
 
 export namespace MapInput {
-	export interface Attrs {
-		label: string,
+	export interface Attrs extends Input.Attrs<{}> {
 		entries: IterableIterator<[string, SlangType]>
-		class: string,
 	}
 }
 
 
 export class StreamInputField implements ClassComponent<StreamInput.Attrs> {
-	private entries: Array<any> = [];
+	private values: Array<any> = [];
 
 	view({attrs}: CVnode<StreamInput.Attrs>) {
 		const labelName = attrs.label;
 		const labelText = (labelName) ? `${attrs.label}:` : "";
+		const values = this.values;
 
 		return m("div", {class: attrs.class},
 			m("label", {
 				for: labelName
 			}, [
 				labelText,
-				this.entries.map((entry: any, index: number) => {
+				this.values.map((entry: any, index: number) => {
 					return m(".entry", [
-						m(TypeInput, {name: "", type: attrs.type}),
+						m(TypeInput, {
+							label: "", class: "",
+							type: attrs.type,
+							onInput: (v: any) => {
+								values[index] = v;
+								attrs.onInput(values.filter(v => v !== null));
+							}
+						}),
 						m(Button, {
 							onClick: () => {
-								this.entries.splice(index, 1);
+								this.values.splice(index, 1);
+								attrs.onInput(values.filter(v => v !== null));
 							},
 							label: "-",
 							icon: "-",
@@ -227,7 +248,7 @@ export class StreamInputField implements ClassComponent<StreamInput.Attrs> {
 				}),
 				m(".entry", m(Button, {
 					onClick: () => {
-						this.entries.push("");
+						this.values.push(null);
 					},
 					label: "+",
 					icon: "+",
@@ -239,9 +260,7 @@ export class StreamInputField implements ClassComponent<StreamInput.Attrs> {
 }
 
 export namespace StreamInput {
-	export interface Attrs {
-		label: string
+	export interface Attrs extends Input.Attrs<{}> {
 		type: SlangType
-		class: string,
 	}
 }

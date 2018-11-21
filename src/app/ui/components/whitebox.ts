@@ -462,14 +462,24 @@ export namespace WhiteBoxComponent {
 	}
 
 	export class OperatorInputForm implements ClassComponent<OperatorInputForm.Attrs> {
-		protected type: SlangType | undefined;
+		private type: SlangType | undefined;
+		private values: any;
 
 		oninit({attrs}: CVnode<OperatorInputForm.Attrs>) {
 			this.type = attrs.type;
 		}
 
 		view({attrs}: CVnode<OperatorInputForm.Attrs>): any {
-			return m("form.sl-form", m(TypeInput, {name: "", type: this.type!}));
+			const that = this;
+			return m("form.sl-form",
+				m("div", JSON.stringify(that.values)),
+				m(TypeInput, {
+					label: "", class: "",
+					type: this.type!,
+					onInput: (v: any) => {
+						that.values = v;
+					}
+				}));
 		}
 	}
 
