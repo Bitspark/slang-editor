@@ -39,7 +39,7 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 			},
 			[
 				m(StringInput, {
-					class: "sl-blupr-fltr",
+					class: "sl-blupr-fltr sl-fullwidth",
 					label: "",
 					onInput: function (f: string) {
 						attrs.onFilter(f.trim());

@@ -1,17 +1,14 @@
 .sl-blupr-menu {
 	@extend %proto-container;
-
 	overflow-y: scroll;
 	max-height: 384px;
-	width: 342px;
 	background: $white;
-	padding: 0;
 }
 
 .sl-blupr-fltr {
 	position: fixed;
 	overflow: hidden;
-	width: 336px;
+	width: 335px;
 }
 
 .sl-blupr-entries {
@@ -23,6 +20,8 @@
 		@extend %transition;
 		transition: background-color, color;
 
+		background: $white;
+
 		&:hover {
 			background-color: $black;
 			color: $white;
@@ -30,6 +29,10 @@
 
 		&:first-child {
 			margin-top: 41px;
+		}
+
+		&:last-child {
+			border-bottom: 0;
 		}
 	}
 

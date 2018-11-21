@@ -40,4 +40,5 @@ $font-size: 1rem;
 %proto-container {
 	@extend %bordered;
 	@extend %translucent;
+	padding: 4px;
 }

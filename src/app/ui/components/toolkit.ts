@@ -75,27 +75,36 @@ abstract class SimpleInput<T> implements Input<T, Input.Attrs<T>> {
 		const labelText = (labelName) ? `${attrs.label}:` : "";
 		const that = this;
 
-		return m("div.sl-inp-wrap",
-			m("label", {
-					for: labelName
-				}, [
-					labelText,
-					m(".sl-inp", {
-							class: attrs.class
+		return m(".sl-input",
+			{
+				class: attrs.class,
+			},
+			m(".sl-input-outer",
+				[
+					labelText ? m("label",
+						{
+							for: labelName
 						},
-						m("input", {
-							name: labelName,
-							type: that.inputType,
-							oncreate: (v: CVnodeDOM<any>) => {
-								if (v.attrs.autofocus) {
-									(v.dom as HTMLElement).focus();
+						labelText,
+					) : undefined,
+					m(".sl-input-inner",
+						m(".sl-input-wrap",
+							m("input",
+								{
+									name: labelName,
+									type: that.inputType,
+									oncreate: (v: CVnodeDOM<any>) => {
+										if (v.attrs.autofocus) {
+											(v.dom as HTMLElement).focus();
+										}
+									},
+									oninput: m.withAttr("value", function (v: any) {
+										attrs.onInput(v);
+									}),
+									autofocus: attrs.autofocus,
 								}
-							},
-							oninput: m.withAttr("value", function (v: any) {
-								attrs.onInput(v);
-							}),
-							autofocus: attrs.autofocus,
-						})
+							)
+						)
 					)
 				]
 			)

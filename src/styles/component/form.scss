@@ -1,25 +1,24 @@
 .sl-form {
 	@extend %proto-container;
-	width: 342px;
 	background: $white;
-	margin: 0;
-	padding: 0;
-	overflow: hidden;
 
 	> .sl-inp-grp {
 		@extend %rounded;
 		> label {
 			margin: 0;
 			padding: 0;
+			font-size: .7rem;
 
 			> .sl-inp-grp {
 				padding: 12px 1px 8px 1px;
 				border-bottom: 1px solid transparentize($black, .85);
 			}
+			/*
 			> .sl-inp-wrap {
 				padding: 12px 1px 8px 1px;
 				border-bottom: 1px solid transparentize($black, .85);
 			}
+			*/
 
 		}
 
@@ -36,22 +35,44 @@
 }
 
 .sl-container {
+	width: 343px;
 	display: block;
 }
 
-.sl-inp {
-	@extend %bordered;
-	border-radius: 500px;
-	margin: 3px;
-	padding: 0;
-	background: $dim;
-	input {
-		background: transparent;
-		border: none;
-		margin: 0 12px;
-		padding: 11px 0;
+.sl-input {
+	.sl-input-outer {
+		position: relative;
 		width: 100%;
+
+		label {
+			display: inline-block;
+			font-size: .7rem;
+			padding: 2px 12px;
+		}
+		.sl-input-inner {
+			display: inline-block;
+			@extend %bordered;
+			border-radius: 500px;
+			background: $dim;
+
+			.sl-input-wrap {
+				margin: 5px 10px;
+				input {
+					font-size: .7rem;
+					background: transparent;
+					border: none;
+					width: 100%
+				}
+			}
+		}
 	}
+
+	&.sl-fullwidth {
+		.sl-input-inner {
+			width: 100%;
+		}
+	}
+
 }
 
 // BUTTONS
@@ -74,11 +95,10 @@ button, .sl-btn {
 	@extend %translucent;
 	@extend %transition;
 
+	font-size: .7rem;
 	text-align: center;
 	text-transform: uppercase;
-	font-size: .65rem;
-	padding: 10px 12px 8px;
-	line-height: 1px;
+	padding: 6px 12px 4px;
 	margin: 1px;
 
 	display: inline-block;
@@ -110,7 +130,7 @@ button, .sl-btn {
 	&.sl-green-pulsing {
 		@keyframes isPulsing {
 			from {
-				background-color: transparentize($green, .35);
+				background-color: transparentize($green, .6);
 			}
 
 			to {
