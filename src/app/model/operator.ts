@@ -27,6 +27,7 @@ export class OperatorModel extends BlackBox {
 		this.name = args.name;
 		this.blueprint = args.blueprint;
 		this.geometry = args.geometry;
+		this.setBaseStream(new StreamType(null, this, true, true));
 	}
 
 	public getName(): string {
@@ -48,9 +49,8 @@ export class OperatorModel extends BlackBox {
 	public createPort(args: PortModelArgs): OperatorPortModel {
 		const port = this.createChildNode(OperatorPortModel, args);
 		port.subscribeStreamTypeChanged(streamType => {
-			this.setBaseStreamType(streamType);
+			this.setBaseStream(streamType);
 		});
-		port.setSubStreamTypes(new StreamType(null, null));
 		return port;
 	}
 

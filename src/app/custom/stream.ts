@@ -1,58 +1,66 @@
-import {PortModel} from "../model/port";
 import {SlangSubjectTrigger} from "./events";
 import {Subscription} from "rxjs";
+import {PortOwner} from "./nodes";
 
 export class StreamType {
 
 	private readonly markUnreachableRequested = new SlangSubjectTrigger("mark-unreachable");
 	private readonly removeUnreachableRequested = new SlangSubjectTrigger("remove-unreachable");
 	private readonly nestingChanged = new SlangSubjectTrigger("nesting");
-	
-	constructor(private baseStreamType: StreamType | null, private sourcePort: PortModel | null) {
-		if (baseStreamType) {
-			if (baseStreamType.hasAncestor(this)) {
+
+	constructor(private baseStream: StreamType | null, private source: PortOwner | null, private placeholder: boolean, private fluent: boolean) {
+		if (fluent && !placeholder) {
+			throw new Error(`fluent streams must be placeholders`);
+		}
+		if (baseStream) {
+			if (baseStream.hasAncestor(this)) {
 				throw new Error(`stream circle detected`);
 			}
-			baseStreamType.subscribeMarkUnreachable(() => {
+			baseStream.subscribeMarkUnreachable(() => {
 				this.markUnreachable();
 			});
-			baseStreamType.subscribeRemoveUnreachable(() => {
+			baseStream.subscribeRemoveUnreachable(() => {
 				this.removeUnreachable();
 			});
-			baseStreamType.subscribeNestingChanged(() => {
+			baseStream.subscribeNestingChanged(() => {
 				this.nestingChanged.next();
 			});
 		}
 	}
-	
-	public isVirtual(): boolean {
-		return !this.sourcePort;
+
+	public isPlaceholder(): boolean {
+		return this.placeholder;
 	}
 
-	public createSubStream(sourcePort: PortModel | null): StreamType {
-		return new StreamType(this, sourcePort);
+	public isFluent(): boolean {
+		return this.fluent;
 	}
 
-	public getBaseStreamType(): StreamType | null {
-		if (!this.baseStreamType && this.isVirtual()) {
-			const stream = new StreamType(null, null);
-			this.baseStreamType = stream;
-			this.nestingChanged.next();
-			return stream;
+	public createSubStream(sourcePort: PortOwner, placeholder: boolean): StreamType {
+		if (this.placeholder && !placeholder) {
+			throw new Error(`sub streams of placeholder streams must be placeholders as well`);
 		}
-		return this.baseStreamType;
+		return new StreamType(this, sourcePort, placeholder, this.fluent);
 	}
-	
+
+	public getBaseStream(): StreamType | null {
+		if (!this.baseStream && this.fluent) {
+			this.baseStream = new StreamType(null, null, true, true);
+			this.nestingChanged.next();
+		}
+		return this.baseStream;
+	}
+
 	public getRootStream(): StreamType {
-		if (!this.baseStreamType) {
+		if (!this.baseStream) {
 			return this;
 		}
-		return this.baseStreamType.getRootStream();
+		return this.baseStream.getRootStream();
 	}
 
 	public getStreamDepth(): number {
-		if (this.baseStreamType) {
-			return this.baseStreamType.getStreamDepth() + 1;
+		if (this.baseStream) {
+			return this.baseStream.getStreamDepth() + 1;
 		}
 		return 1;
 	}
@@ -61,19 +69,28 @@ export class StreamType {
 		if (stream === this) {
 			return true;
 		}
-		if (this.baseStreamType) {
-			return this.baseStreamType.hasAncestor(stream);
+		if (this.baseStream) {
+			return this.baseStream.hasAncestor(stream);
 		}
 		return false;
 	}
-	
+
 	public collectGarbage(): void {
-		if (!this.sourcePort) {
-			return;
+		if (this.source) {
+			const source = this.source;
+			this.markUnreachable();
+			setTimeout(() => {
+				source.setBaseStream(this);
+				setTimeout(() => {
+					this.removeUnreachable();
+				}, 500);
+			}, 500);
+		} else {
+			this.markUnreachable();
+			setTimeout(() => {
+				this.removeUnreachable();
+			}, 500);
 		}
-		this.markUnreachable();
-		this.sourcePort.setSubStreamTypes(this);
-		this.removeUnreachable();
 	}
 
 	private markUnreachable(): void {
@@ -83,7 +100,7 @@ export class StreamType {
 	private removeUnreachable(): void {
 		this.removeUnreachableRequested.next();
 	}
-	
+
 	public subscribeMarkUnreachable(cb: () => void): Subscription {
 		return this.markUnreachableRequested.subscribe(cb);
 	}

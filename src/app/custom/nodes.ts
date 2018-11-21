@@ -202,7 +202,7 @@ export abstract class PortOwner extends SlangNode {
 		return this.getChildNodes(GenericPortModel);
 	}
 	
-	protected setBaseStreamType(stream: StreamType | null): void {
+	public setBaseStream(stream: StreamType | null): void {
 		this.baseStreamType.next(stream);
 	}
 

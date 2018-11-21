@@ -104,10 +104,12 @@ export class ConnectionComponent {
 		link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(sourcePort.getTypeIdentifier()));
 		link.attr(".connection/stroke-width", lines === 1 ? 2 : 1);
 		link.attr(".connection/vector-effect", Styles.Connection.Ordinary.vectorEffect);
-		if (!stream || stream.isVirtual()) {
-			link.attr(".connection/stroke-dasharray", 4);
+		if (!stream) {
+			link.attr(".connection/stroke-dasharray", 5);
 		} else {
-			if (sourcePort.isUnreachable()) {
+			if (stream.isFluent()) {
+				link.attr(".connection/stroke-dasharray", 5);
+			} else if (stream.isPlaceholder()) {
 				link.attr(".connection/stroke-dasharray", 1);
 			} else {
 				link.removeAttr(".connection/stroke-dasharray");
