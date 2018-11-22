@@ -22,6 +22,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	private collapsed = new SlangBehaviorSubject<boolean>("collapsed", false);
 	private readonly streamType: SlangBehaviorSubject<StreamType>;
 	private readonly streamTypeUnreachable: SlangBehaviorSubject<boolean> = new SlangBehaviorSubject("stream-unreachable", false);
+	private readonly streamTypeDeleted: SlangBehaviorSubject<boolean> = new SlangBehaviorSubject("stream-deleted", false);
 
 	// Properties
 	private readonly name: string;
@@ -30,7 +31,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	private genericIdentifier?: string;
 	private streamDepth: number = 0;
 	protected connectedWith: Array<PortModel> = [];
-	
+
 	private connectionSubscriptions = new Map<GenericPortModel<O>, Subscription>();
 
 	protected constructor(parent: GenericPortModel<O> | O, {type, name, direction}: PortModelArgs, P: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel) {
@@ -74,24 +75,25 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				}
 			});
 		}
-		
+
 		if (this.isDestination()) {
 			this.subscribeConnected(connection => {
 				const subscription = connection.source.subscribeStreamTypeChanged(streamType => {
 					if (!streamType) {
 						return;
 					}
+					console.log("[source->dest] connection ", connection.source.getIdentity(), ">>>", connection.destination.getIdentity(), streamType);
 					this.setStreamTypeChildToParent(streamType);
 				});
 				this.connectionSubscriptions.set(connection.source as any, subscription);
 			});
-			
+
 			this.subscribeDisconnected(connection => {
 				const subscription = this.connectionSubscriptions.get(connection.source as any);
 				if (subscription) {
 					subscription.unsubscribe();
 				}
-				
+
 				const stream = this.getStreamType();
 				if (stream) {
 					stream.getRootStream().collectGarbage();
@@ -105,11 +107,12 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 					if (!streamType) {
 						return;
 					}
+					console.log("[dest->source] connection ", connection.source.getIdentity(), "<<<", connection.destination.getIdentity(), streamType);
 					this.setStreamTypeChildToParent(streamType);
 				});
 				this.connectionSubscriptions.set(connection.source as any, subscription);
 			});
-			
+
 			this.subscribeDisconnected(connection => {
 				const subscription = this.connectionSubscriptions.get(connection.source as any);
 				if (subscription) {
@@ -117,14 +120,14 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				}
 			});
 		}
-		
+
 		this.subscribeCollectGarbage();
 	}
-	
+
 	protected subscribeCollectGarbage() {
 		let subscriptions: Array<Subscription> = [];
 		let oldStream: StreamType | null = null;
-		
+
 		this.subscribeStreamTypeChanged(stream => {
 			if (!stream || oldStream === stream) {
 				return;
@@ -134,35 +137,31 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 			subscriptions.forEach(subscription => subscription.unsubscribe());
 			subscriptions.length = 0;
-			
+
 			subscriptions.push(stream.subscribeMarkUnreachable(() => {
 				this.streamTypeUnreachable.next(true);
 			}));
 
 			subscriptions.push(stream.subscribeRemoveUnreachable(() => {
 				if (this.isMarkedUnreachable()) {
-					// const root = this.getUnreachableRoot()!;
-					this.setStreamTypeParentToChild(new StreamType(null, null, true));
+					this.streamTypeDeleted.next(true);
+				}
+			}));
+
+			subscriptions.push(stream.subscribeDeleteUnreachable(() => {
+				if (this.streamTypeDeleted.getValue()) {
+					this.setStreamTypeParentToChild(new StreamType(null, this.getOwner(), true));
 				}
 			}));
 		});
 	}
-	
-	public getUnreachableRoot(): GenericPortModel<O> | null {
-		if (!this.isMarkedUnreachable()) {
-			return null;
-		}
-		
-		const parent = this.getParentNode();
-		if (parent instanceof GenericPortModel && parent.isMarkedUnreachable()) {
-			return parent.getUnreachableRoot();
-		} else {
-			return this;
-		}
-	}
-	
+
 	public isMarkedUnreachable(): boolean {
 		return this.streamTypeUnreachable.getValue();
+	}
+
+	public isMarkedDeleted(): boolean {
+		return this.streamTypeDeleted.getValue();
 	}
 
 	public getMapSubs(): IterableIterator<GenericPortModel<O>> {
@@ -182,7 +181,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		}
 		return mapSub;
 	}
-	
+
 	public getOwner(): O {
 		const owner = this.getAncestorNode(PortOwner);
 		if (!owner) {
@@ -204,18 +203,24 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	 * This method uses the port owner's base stream and is the authority on all port streams.
 	 * It overrides existing streams.
 	 * @param stream
+	 * @param force
 	 */
 	public setStreamTypeParentToChild(stream: StreamType): void {
-		console.log("____", this.getIdentity(), PortDirection[this.getDirection()], stream);
-		
 		const markedUnreachable = this.isMarkedUnreachable();
 		if (markedUnreachable) {
 			this.streamTypeUnreachable.next(false);
 		}
 
+		const markedDeleted = this.streamTypeDeleted.getValue();
+		if (markedDeleted) {
+			this.streamTypeDeleted.next(false);
+		}
+
+		console.log("____", markedDeleted ? "deleted" : "", this.getIdentity(), markedUnreachable ? "marked" : "fixed", PortDirection[this.getDirection()], stream);
+
 		if (this.isParentStreamOrOwner()) {
 			const oldStream = this.getStreamType();
-			if (!markedUnreachable) {
+			if (!markedUnreachable && !markedDeleted) {
 				if (oldStream === stream) {
 					console.log("---> no changes");
 					return;
@@ -229,17 +234,32 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				this.streamType.next(stream);
 			}
 		}
-		
+
 		console.log("---> continue...");
-		
+
 		if (this.typeIdentifier === TypeIdentifier.Stream) {
 			const sub = this.getStreamSub();
 			if (sub) {
-				if (!markedUnreachable) {
+				if (markedDeleted) {
+					console.log("markedDeleted", stream.isPlaceholder());
 					if (this.isSource()) {
 						sub.setStreamTypeParentToChild(stream.createSubStream(this.getOwner(), stream.isPlaceholder()));
 					} else {
-						sub.setStreamTypeParentToChild(stream.createSubStream(this.getOwner(), true));
+						sub.setStreamTypeParentToChild(new StreamType(null, this.getOwner(), true));
+					}
+				} else {
+					if (!markedUnreachable) {
+						if (this.isSource()) {
+							sub.setStreamTypeParentToChild(stream.createSubStream(this.getOwner(), stream.isPlaceholder()));
+						} else {
+							sub.setStreamTypeParentToChild(stream.createSubStream(this.getOwner(), true));
+						}
+					} else {
+						const stream = sub.getStreamType();
+						if (!stream) {
+							throw new Error("port without stream detected");
+						}
+						sub.setStreamTypeParentToChild(stream);
 					}
 				}
 			}
@@ -256,19 +276,24 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	 * @param stream
 	 */
 	public setStreamTypeChildToParent(stream: StreamType): void {
-		console.log(">>>> ", this.getIdentity(), PortDirection[this.getDirection()], stream);
-		
 		const markedUnreachable = this.isMarkedUnreachable();
 		if (markedUnreachable) {
 			this.streamTypeUnreachable.next(false);
 		}
-		
+
+		const markedDeleted = this.streamTypeDeleted.getValue();
+		if (markedDeleted) {
+			this.streamTypeDeleted.next(false);
+		}
+
+		console.log(">>>> ", markedDeleted ? "deleted" : "", this.getIdentity(), markedUnreachable ? "marked" : "fixed", PortDirection[this.getDirection()], stream);
+
 		const oldStream = this.getStreamType();
 		if (!oldStream) {
 			throw new Error(`port without stream detected`);
 		}
-		
-		if (!markedUnreachable) {
+
+		if (!markedUnreachable && !markedDeleted) {
 			if (stream === oldStream) {
 				console.log("---> no changes");
 				return;
@@ -284,14 +309,14 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				}
 			} else if (!oldStream.getRootStream().isPlaceholder()) {
 				if (stream.getRootStream().isPlaceholder()) {
-					console.log("---> rejected (I am stronger)");
+					console.log("---> rejected (I am stronger):", oldStream);
 					return;
 				}
 			} else {
 				// OK, I am weaker...
 			}
 		}
-		
+
 		console.log("---> continue...");
 
 		const parent = this.getParentNode();
@@ -595,7 +620,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	public subscribeStreamTypeChanged(cb: (streamType: StreamType | null) => void): Subscription {
 		return this.streamType.subscribe(cb);
 	}
-	
+
 	public subscribeStreamUnreachableChanged(cb: (unreachable: boolean) => void): Subscription {
 		return this.streamTypeUnreachable.subscribe(cb);
 	}

@@ -126,6 +126,14 @@ export class WhiteBoxComponent extends AnchorComponent {
 								connectionComponent.refresh()
 							});
 					});
+					
+					stream.subscribeMarkUnreachable(() => {
+						this.connections
+							.filter(connectionComponent => connectionComponent.getConnection().source === port)
+							.forEach(connectionComponent => {
+								connectionComponent.refresh()
+							});
+					});
 				}
 			});
 

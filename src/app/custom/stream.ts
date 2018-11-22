@@ -6,6 +6,7 @@ export class StreamType {
 
 	private readonly markUnreachableRequested = new SlangSubjectTrigger("mark-unreachable");
 	private readonly removeUnreachableRequested = new SlangSubjectTrigger("remove-unreachable");
+	private readonly deleteUnreachableRequested = new SlangSubjectTrigger("delete-unreachable");
 	private readonly nestingChanged = new SlangSubjectTrigger("nesting");
 
 	constructor(private baseStream: StreamType | null, private source: PortOwner | null, private placeholder: boolean) {
@@ -79,13 +80,19 @@ export class StreamType {
 				source.setBaseStream(this);
 				setTimeout(() => {
 					this.removeUnreachable();
-				}, 500);
-			}, 500);
+					setTimeout(() => {
+						this.deleteUnreachable();
+					}, 2000);
+				}, 2000);
+			}, 2000);
 		} else {
 			this.markUnreachable();
 			setTimeout(() => {
 				this.removeUnreachable();
-			}, 500);
+				setTimeout(() => {
+					this.deleteUnreachable();
+				}, 2000);
+			}, 2000);
 		}
 	}
 
@@ -97,12 +104,20 @@ export class StreamType {
 		this.removeUnreachableRequested.next();
 	}
 
+	private deleteUnreachable(): void {
+		this.deleteUnreachableRequested.next();
+	}
+
 	public subscribeMarkUnreachable(cb: () => void): Subscription {
 		return this.markUnreachableRequested.subscribe(cb);
 	}
 
 	public subscribeRemoveUnreachable(cb: () => void): Subscription {
 		return this.removeUnreachableRequested.subscribe(cb);
+	}
+
+	public subscribeDeleteUnreachable(cb: () => void): Subscription {
+		return this.deleteUnreachableRequested.subscribe(cb);
 	}
 
 	public subscribeNestingChanged(cb: () => void): Subscription {
