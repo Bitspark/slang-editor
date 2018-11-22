@@ -108,5 +108,15 @@ export class StreamType {
 	public subscribeNestingChanged(cb: () => void): Subscription {
 		return this.nestingChanged.subscribe(cb);
 	}
+	
+	public toString(): string {
+		const source = this.source;
+		const me = (this.placeholder ? "PH" : "S") + "[" + ((!!source) ? source!.getScopedIdentity() : "null") + "]";
+		
+		if (!!this.baseStream) {
+			return this.baseStream.toString() + ">" + me;
+		}
+		return me;
+	}
 
 }
