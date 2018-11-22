@@ -105,8 +105,6 @@ export class ConnectionComponent {
 		link.attr(".connection/vector-effect", Styles.Connection.Ordinary.vectorEffect);
 		if (sourcePort.isMarkedUnreachable()) {
 			link.attr(".connection/stroke", "#ff00ff");
-		} else if (sourcePort.isMarkedDeleted()) {
-			link.attr(".connection/stroke", "#ff0000");
 		} else {
 			link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(sourcePort.getTypeIdentifier()));
 		}
