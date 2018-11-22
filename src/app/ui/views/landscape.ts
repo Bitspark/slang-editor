@@ -1,7 +1,7 @@
 import {dia, shapes} from "jointjs";
 import {BlueprintModel, BlueprintType} from "../../model/blueprint";
 import {LandscapeModel} from "../../model/landscape";
-import {BlueprintBoxComponent} from "../components/blackbox";
+import {BlackBoxComponent, BlueprintBoxComponent} from "../components/blackbox";
 import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";
 
@@ -204,23 +204,12 @@ export class LandscapeView extends PaperView {
 		if (!this.graph) {
 			throw `no graph`;
 		}
-
-		const rect = new shapes.standard.Rectangle();
-		rect.resize(100, 100);
-		rect.attr({
-			body: {
-				fill: "red",
-				cursor: "pointer",
-				rx: 8,
-				ry: 8,
-			},
-			label: {
-				text: "+",
-				fill: "white",
-				cursor: "pointer"
-			}
-		});
+		
+		const rect = BlackBoxComponent.Rect.Ghost.place("＋");
 		rect.attr("draggable", false);
+		rect.attr("label/cursor", "pointer");
+		rect.attr("label/font-size", "28");
+		rect.attr("body/cursor", "pointer");
 		rect.addTo(this.graph);
 
 		const that = this;
