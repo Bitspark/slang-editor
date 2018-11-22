@@ -28,7 +28,7 @@ export class BlueprintModel extends BlackBox {
 
 	// Topics::Deployment
 	private deploymentRequested = new SlangSubject<boolean>("deployment-triggered");
-	private shutdownRequested = new SlangSubject<boolean>("shutdown-triggered");
+	public shutdownRequested = new SlangSubject<boolean>("shutdown-triggered");
 	private instance = new SlangBehaviorSubject<BlueprintInstance | null>("instance", null);
 	private inputPushed = new SlangSubject<SlangTypeValue>("input-pushed");
 	private outputPushed = new SlangSubject<SlangTypeValue>("output-pushed");
@@ -364,7 +364,7 @@ export class BlueprintModel extends BlackBox {
 		this.inputPushed.subscribe(cb);
 	}
 
-	public subscribeOutputPushed(cb: (outputData: SlangTypeValue) => void): void {
-		this.outputPushed.subscribe(cb);
+	public subscribeOutputPushed(cb: (outputData: SlangTypeValue) => void, until?: SlangSubject<any>): void {
+		this.outputPushed.subscribe(cb, until);
 	}
 }

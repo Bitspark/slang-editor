@@ -1,4 +1,4 @@
-import m from "mithril";
+import m, {CVnode, Vnode} from "mithril";
 import {dia, g} from "jointjs";
 import {PaperView} from "../views/paper-view";
 import {ClassComponent} from "mithril";
@@ -20,7 +20,7 @@ export abstract class Component {
 	protected readonly graph: dia.Graph;
 	private readonly paper: dia.Paper;
 
-	protected constructor(private readonly paperView: PaperView, private xy: XY) {
+	protected constructor(protected readonly paperView: PaperView, private xy: XY) {
 		this.graph = this.paperView.getGraph();
 		this.paper = this.paperView.getPaper();
 	}
@@ -50,15 +50,13 @@ export abstract class AnchoredComponent extends Component {
 	protected readonly htmlRoot: HTMLElement;
 	protected readonly align: Alignment;
 
+
 	protected constructor(paperView: PaperView, position: Position) {
 		super(paperView, position);
 		this.align = position.align;
 		this.htmlRoot = AnchoredComponent.createRoot();
-
-		paperView.getFrame().getHTMLElement().appendChild(this.htmlRoot);
-
-		this.draw();
-		paperView.subscribePositionChanged(() => {
+		this.paperView.getFrame().getHTMLElement().appendChild(this.htmlRoot);
+		this.paperView.subscribePositionChanged(() => {
 			this.draw();
 		});
 	}
@@ -79,7 +77,15 @@ export abstract class AnchoredComponent extends Component {
 		return el;
 	}
 
+	private hasMountedElement(): boolean {
+		return !!this.htmlRoot.innerHTML;
+	}
+
 	protected draw() {
+		if (!this.hasMountedElement()) {
+			return;
+		}
+
 		const {x, y} = this.getClientXY();
 		const align = this.align;
 
@@ -120,15 +126,20 @@ export abstract class AnchoredComponent extends Component {
 		this.htmlRoot.style.left = `${left}px`;
 	}
 
-	public mount(mComp: ClassComponent) {
+	public mount(mComp: m.Component): this {
+		this.unmount();
+
 		m.mount(this.htmlRoot, {
-			view: () => m(".sl-container", m(mComp))
+			view: () => {
+				return m(".sl-container", m(mComp));
+			}
 		});
+
 		this.draw();
 		return this;
 	}
 
-	public unmount() {
+	public unmount(): this {
 		this.htmlRoot.innerHTML = "";
 		return this;
 	}

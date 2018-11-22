@@ -48,8 +48,8 @@ export class DeploymentPlugin extends SlangPlugin {
 	private pushInput(blueprint: BlueprintModel, inputData: SlangTypeValue): void {
 		const access = blueprint.getInstanceAccess();
 		if (access) {
-			this.api.pushInput(access.url, inputData).then((output: SlangTypeValue) => {
-				blueprint.pushOutput(output);
+			this.api.pushInput(access.url, inputData).then((outputData: SlangTypeValue) => {
+				blueprint.pushOutput(outputData);
 			});
 		}
 

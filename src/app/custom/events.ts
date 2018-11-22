@@ -19,8 +19,14 @@ export class SlangSubject<T> extends BaseSlangSubject<T> {
 		this.subject.next(value);
 	}
 
-	public subscribe(next: (value: T) => void): Subscription {
-		return this.subject.subscribe(next);
+	public subscribe(next: (value: T) => void, until?: SlangSubject<any> | SlangSubjectTrigger): Subscription {
+		const subscription = this.subject.subscribe(next);
+		if (until) {
+			(until as SlangSubjectTrigger).subscribe(() => {
+				subscription.unsubscribe();
+			});
+		}
+		return subscription;
 	}
 }
 

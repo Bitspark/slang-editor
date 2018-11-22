@@ -7,17 +7,13 @@ import {BlueprintView} from "../views/blueprint";
 import {Geometry} from "../../model/operator";
 import {BlackBoxComponent} from "./blackbox";
 import {AttachedComponent, Component, XY} from "./base";
-import {StringInput} from "./toolkit";
+import {MithrilMouseEvent, StringInput} from "./toolkit";
 
 export interface Attrs {
 	onSelect: (bp: BlueprintModel) => void,
 	onHover: (bp?: BlueprintModel) => void,
 	onFilter: (filter: string) => void,
 	onLoad: () => Array<BlueprintModel>
-}
-
-export interface MithrilMouseEvent extends MouseEvent {
-	redraw: boolean
 }
 
 class BlueprintMenuComponent implements ClassComponent<Attrs> {

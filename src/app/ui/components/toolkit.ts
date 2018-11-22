@@ -2,6 +2,11 @@ import m, {CVnodeDOM} from "mithril";
 import {ClassComponent, CVnode} from "mithril";
 import {SlangType, TypeIdentifier} from "../../custom/type";
 
+export interface MithrilMouseEvent extends MouseEvent {
+	redraw: boolean
+}
+
+
 export class List implements ClassComponent<List.Attrs> {
 	oninit({attrs}: CVnode<List.Attrs>) {
 	}
@@ -69,10 +74,10 @@ export class Button implements ClassComponent<Button.Attrs> {
 		return m("a.sl-btn", {
 				class: that.getClass(attrs),
 				inacitve: that.isInactive(attrs),
-				onclick: (that.isClickable(attrs)) ? () => {
+				onclick: (that.isClickable(attrs)) ? (e: MithrilMouseEvent) => {
 					if (!that.alreadyClicked) {
 						that.alreadyClicked = true;
-						attrs.onClick!();
+						attrs.onClick!(e);
 						setTimeout(() => {
 							that.alreadyClicked = false;
 						}, that.bounceInterval);
@@ -86,7 +91,7 @@ export class Button implements ClassComponent<Button.Attrs> {
 
 export namespace Button {
 	export interface Attrs {
-		onClick?: () => void
+		onClick?: (e: MithrilMouseEvent) => void
 		label: string
 		icon?: string
 		class?: string

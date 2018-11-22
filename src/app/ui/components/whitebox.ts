@@ -15,7 +15,7 @@ import {Connection} from "../../custom/connections";
 import {OperatorModel} from "../../model/operator";
 import {BlueprintDelegateModel} from "../../model/delegate";
 import {SlangType, SlangTypeValue} from "../../custom/type";
-import {Button, List, ListEntry, TypeInput} from "./toolkit";
+import {Button, List, ListEntry, MithrilMouseEvent, TypeInput} from "./toolkit";
 
 export class WhiteBoxComponent extends Component {
 	private static readonly padding = 120;
@@ -67,6 +67,7 @@ export class WhiteBoxComponent extends Component {
 				});
 				this.input.unmount();
 				this.output.unmount();
+
 			} else {
 				this.buttons.mount({
 					view: () => m(".toolbox", [
@@ -101,17 +102,16 @@ export class WhiteBoxComponent extends Component {
 				const portOut = this.blueprint.getPortOut();
 
 				if (portOut) {
+					const that = this;
 					this.output.mount({
-						view: () => m(List, this.outputBuffer.map((outputData) => {
-							return m(ListEntry, JSON.stringify(outputData))
-
-						}))
+						view: () => m(WhiteBoxComponent.DataOutputDisplay, {
+							buffer: that.outputBuffer
+						})
 					});
-
 					this.blueprint.subscribeOutputPushed((outputData: SlangTypeValue) => {
 						this.outputBuffer.unshift(outputData);
-
-					});
+						m.redraw();
+					}, this.blueprint.shutdownRequested);
 				}
 			}
 		});
@@ -496,10 +496,12 @@ export namespace WhiteBoxComponent {
 
 		view({attrs}: CVnode<DataInputForm.Attrs>): any {
 			const that = this;
-			return m("form.sl-form",
+			return m("form.sl-form", {
+					class: (that.isValid() ? "sl-invalid" : "")
+				},
 				m(TypeInput, {
 					label: "", class: "",
-					type: this.type!,
+					type: that.type!,
 					onInput: (v: any) => {
 						that.values = v;
 					}
@@ -508,10 +510,11 @@ export namespace WhiteBoxComponent {
 					full: true,
 					notAllowed: !that.isValid(),
 					label: "Push",
-					onClick: () => {
-						attrs.onSubmit(that.values);
-					}
-				}));
+					onClick: that.isValid ? (e: MithrilMouseEvent) => {
+						attrs.onSubmit(that.values!);
+					} : undefined
+				})
+			);
 		}
 	}
 
@@ -519,6 +522,26 @@ export namespace WhiteBoxComponent {
 		export interface Attrs {
 			type: SlangType
 			onSubmit: (values: SlangTypeValue) => void
+		}
+	}
+
+	export class DataOutputDisplay implements ClassComponent<DataOutputDisplay.Attrs> {
+		private buffer: Array<SlangTypeValue> = [];
+
+		oninit({attrs}: CVnode<DataOutputDisplay.Attrs>) {
+			this.buffer = attrs.buffer;
+		}
+
+		view({attrs}: CVnode<DataOutputDisplay.Attrs>): any {
+			return m(List, this.buffer.map((outputData) => {
+				return m(ListEntry, JSON.stringify(outputData));
+			}));
+		}
+	}
+
+	export namespace DataOutputDisplay {
+		export interface Attrs {
+			buffer: Array<SlangTypeValue>;
 		}
 	}
 }
