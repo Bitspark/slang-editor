@@ -123,7 +123,7 @@ export class WhiteBoxComponent extends AnchorComponent {
 						this.connections
 							.filter(connectionComponent => connectionComponent.getConnection().source === port)
 							.forEach(connectionComponent => {
-								connectionComponent.refresh()
+								connectionComponent.refresh();
 							});
 					});
 					
@@ -131,16 +131,10 @@ export class WhiteBoxComponent extends AnchorComponent {
 						this.connections
 							.filter(connectionComponent => connectionComponent.getConnection().source === port)
 							.forEach(connectionComponent => {
-								connectionComponent.refresh()
+								connectionComponent.refresh();
 							});
 					});
 				}
-			});
-
-			port.subscribeStreamUnreachableChanged(unreachable => {
-				this.connections
-					.filter(connectionComponent => connectionComponent.getConnection().source === port)
-					.forEach(connectionComponent => connectionComponent.refresh());
 			});
 		});
 
