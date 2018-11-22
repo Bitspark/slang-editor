@@ -71,24 +71,6 @@ export class StreamType {
 		return false;
 	}
 
-	public collectGarbage(): void {
-		if (this.source) {
-			const source = this.source;
-			this.markUnreachable();
-			setTimeout(() => {
-				source.setBaseStream(this);
-				setTimeout(() => {
-					this.removeUnreachable();
-				}, 2000);
-			}, 2000);
-		} else {
-			this.markUnreachable();
-			setTimeout(() => {
-				this.removeUnreachable();
-			}, 2000);
-		}
-	}
-
 	private markUnreachable(): void {
 		this.markUnreachableRequested.next();
 	}

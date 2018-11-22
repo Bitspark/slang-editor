@@ -92,11 +92,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				if (subscription) {
 					subscription.unsubscribe();
 				}
-
-				const stream = this.getStreamType();
-				if (stream) {
-					stream.getRootStream().collectGarbage();
-				}
 			});
 		}
 
@@ -119,28 +114,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				}
 			});
 		}
-
-		this.subscribeCollectGarbage();
-	}
-
-	protected subscribeCollectGarbage() {
-		let subscriptions: Array<Subscription> = [];
-		let oldStream: StreamType | null = null;
-
-		this.subscribeStreamTypeChanged(stream => {
-			if (!stream || oldStream === stream) {
-				return;
-			}
-
-			oldStream = stream;
-
-			subscriptions.forEach(subscription => subscription.unsubscribe());
-			subscriptions.length = 0;
-
-			subscriptions.push(stream.subscribeMarkUnreachable(() => {
-				this.streamTypeUnreachable.next(true);
-			}));
-		});
 	}
 
 	public isMarkedUnreachable(): boolean {

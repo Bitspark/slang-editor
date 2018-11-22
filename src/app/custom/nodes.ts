@@ -184,37 +184,9 @@ export abstract class SlangNode {
 export abstract class PortOwner extends SlangNode {
 
 	private readonly baseStreamType = new SlangBehaviorSubject<StreamType | null>("base-stream-type", null);
-	private readonly streamTypeUnreachable: SlangBehaviorSubject<boolean> = new SlangBehaviorSubject("stream-unreachable", false);
 
 	protected constructor(parent: SlangNode) {
 		super(parent);
-	}
-
-	protected subscribeCollectGarbage() {
-		let subscriptions: Array<Subscription> = [];
-		let oldStream: StreamType | null = null;
-
-		this.subscribeBaseStreamTypeChanged(stream => {
-			if (!stream || oldStream === stream) {
-				return;
-			}
-
-			oldStream = stream;
-
-			subscriptions.forEach(subscription => subscription.unsubscribe());
-			subscriptions.length = 0;
-
-			subscriptions.push(stream.subscribeMarkUnreachable(() => {
-				this.streamTypeUnreachable.next(true);
-			}));
-
-			subscriptions.push(stream.subscribeRemoveUnreachable(() => {
-				if (this.streamTypeUnreachable.getValue()) {
-					this.streamTypeUnreachable.next(false);
-					this.setBaseStream(new StreamType(null, this, true));
-				}
-			}));
-		});
 	}
 
 	protected abstract createPort(args: PortModelArgs): PortModel;
