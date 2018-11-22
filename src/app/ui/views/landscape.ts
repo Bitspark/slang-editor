@@ -185,7 +185,7 @@ export class LandscapeView extends PaperView {
 				}
 
 				const posX = (col - columns / 2 + 0.5) * 200;
-				const posY = -height / 2 + 100 + (row + 1) * 200;
+				const posY = -height / 2 + 100 + (row + 1) * 140 + 100;
 
 				rect.position(posX - rect.getBBox().width / 2, posY - rect.getBBox().height / 2);
 
