@@ -213,7 +213,7 @@ export class LandscapeView extends PaperView {
 		rect.addTo(this.graph);
 
 		const that = this;
-		rect.on("pointerclick pointerup", function (evt: Event, x: number, y: number) {
+		rect.on("pointerup", function (evt: Event, x: number, y: number) {
 			that.landscape.createBlueprint({
 				fullName: `Unnamed${new Date().getTime()}`,
 				type: BlueprintType.Local
@@ -257,7 +257,7 @@ export class LandscapeView extends PaperView {
 		this.blueprintRects.set(blueprint.getFullName(), blueprintBox.getRectangle());
 
 		// JointJS -> Model
-		blueprintBox.on("pointerclick pointerup", function (evt: Event, x: number, y: number) {
+		blueprintBox.on("pointerup", function (evt: Event, x: number, y: number) {
 			blueprint.open();
 		});
 	}
