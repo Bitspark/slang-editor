@@ -1,4 +1,4 @@
-import {SlangSubjectTrigger} from "./events";
+import {SlangSubject, SlangSubjectTrigger} from "./events";
 import {Subscription} from "rxjs";
 import {PortOwner} from "./nodes";
 
@@ -7,7 +7,7 @@ export class StreamType {
 	private readonly nestingChanged = new SlangSubjectTrigger("nesting");
 
 	private readonly markUnreachableRequested = new SlangSubjectTrigger("mark-unreachable");
-	private readonly resetUnreachableRequested = new SlangSubjectTrigger("remove-unreachable");
+	private readonly resetUnreachableRequested = new SlangSubject<{mark: SlangSubjectTrigger, repropagate: SlangSubjectTrigger}>("remove-unreachable");
 
 	constructor(private baseStream: StreamType | null, private source: PortOwner, private placeholder: boolean) {
 		if (baseStream) {
@@ -22,8 +22,8 @@ export class StreamType {
 			baseStream.subscribeMarkUnreachable(() => {
 				this.markUnreachable();
 			});
-			baseStream.subscribeResetUnreachable(() => {
-				this.removeUnreachable();
+			baseStream.subscribeResetUnreachable(({mark, repropagate}) => {
+				this.resetUnreachable(mark, repropagate);
 			});
 		}
 	}
@@ -54,8 +54,8 @@ export class StreamType {
 			this.baseStream.subscribeMarkUnreachable(() => {
 				this.markUnreachable();
 			});
-			this.baseStream.subscribeResetUnreachable(() => {
-				this.removeUnreachable();
+			this.baseStream.subscribeResetUnreachable(({mark, repropagate}) => {
+				this.resetUnreachable(mark, repropagate);
 			});
 			
 			this.nestingChanged.next();
@@ -93,27 +93,27 @@ export class StreamType {
 	
 	private startGarbageCollectionRoot() {
 		this.markUnreachable();
-		this.source.markReachable(true);
-		this.resetUnreachable();
+		this.source.markReachable(true, true);
+		const mark = new SlangSubjectTrigger("mark");
+		const repropagate = new SlangSubjectTrigger("repropagate");
+		this.resetUnreachable(mark, repropagate);
+		mark.next();
+		repropagate.next();
 	}
 
 	private markUnreachable(): void {
 		this.markUnreachableRequested.next();
 	}
-
-	private removeUnreachable(): void {
-		this.resetUnreachableRequested.next();
-	}
 	
-	private resetUnreachable(): void {
-		this.resetUnreachableRequested.next();
+	private resetUnreachable(mark: SlangSubjectTrigger, repropagate: SlangSubjectTrigger): void {
+		this.resetUnreachableRequested.next({mark, repropagate});
 	}
 
 	public subscribeMarkUnreachable(cb: () => void): Subscription {
 		return this.markUnreachableRequested.subscribe(cb);
 	}
 
-	public subscribeResetUnreachable(cb: () => void): Subscription {
+	public subscribeResetUnreachable(cb: (value: {mark: SlangSubjectTrigger, repropagate: SlangSubjectTrigger}) => void): Subscription {
 		return this.resetUnreachableRequested.subscribe(cb);
 	}
 

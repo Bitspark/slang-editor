@@ -73,11 +73,11 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				}
 			});
 		}
-		
-		this.getOwner().subscribeMarkedUnreachableChanged(unreachable => {
-			if (!unreachable) {
+
+		this.getOwner().subscribeMarkedUnreachableChanged(mark => {
+			if (mark.propagate) {
 				this.connectedWith.forEach(port => {
-					port.getOwner().markReachable(false);
+					port.getOwner().markReachable(mark.unreachable, mark.propagate);
 				});
 			}
 		});
@@ -98,7 +98,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				if (subscription) {
 					subscription.unsubscribe();
 				}
-				
+
 				const stream = this.getStreamType();
 				if (stream) {
 					stream.startGarbageCollection();
@@ -160,7 +160,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		const parent = this.getParentNode();
 		return !(parent instanceof GenericPortModel) || parent.typeIdentifier === TypeIdentifier.Stream;
 	}
-	
+
 	public toString(): string {
 		return this.getIdentity() + "_" + PortDirection[this.getDirection()];
 	}
@@ -183,7 +183,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			}
 			this.streamType.next(stream);
 		}
-		
+
 		if (this.typeIdentifier === TypeIdentifier.Stream) {
 			const sub = this.getStreamSub();
 			if (sub) {

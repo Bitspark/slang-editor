@@ -184,7 +184,10 @@ export abstract class SlangNode {
 export abstract class PortOwner extends SlangNode {
 
 	private readonly baseStreamType = new SlangBehaviorSubject<StreamType | null>("base-stream-type", null);
-	private readonly markedUnreachable = new SlangBehaviorSubject<boolean>("marked-unreachable", false);
+	private readonly markedUnreachable = new SlangBehaviorSubject<{ unreachable: boolean, propagate: boolean, }>("marked-unreachable", {
+		unreachable: false,
+		propagate: false,
+	});
 	private baseStreamTypeSubscription: Subscription | null = null;
 
 	protected constructor(parent: SlangNode) {
@@ -204,51 +207,63 @@ export abstract class PortOwner extends SlangNode {
 	public getPorts(): IterableIterator<PortModel> {
 		return this.getChildNodes(GenericPortModel);
 	}
-	
+
 	public setBaseStream(stream: StreamType | null): void {
-		if (stream && stream !== this.baseStreamType.getValue()) {
+		if (stream !== this.baseStreamType.getValue()) {
 			if (this.baseStreamTypeSubscription) {
 				this.baseStreamTypeSubscription.unsubscribe();
+				this.baseStreamTypeSubscription = null;
 			}
 
-			this.baseStreamTypeSubscription = new Subscription();
-			
-			this.baseStreamTypeSubscription.add(stream.subscribeMarkUnreachable(() => {
-				if (stream.getSource() !== this) {
-					this.markedUnreachable.next(true);
-				}
-			}));
+			if (stream) {
+				this.baseStreamTypeSubscription = new Subscription();
 
-			this.baseStreamTypeSubscription.add(stream.subscribeResetUnreachable(() => {
-				if (!this.markedUnreachable.getValue()) {
-					return;
-				}
-				this.setBaseStream(new StreamType(null, this, true));
-			}));
+				this.baseStreamTypeSubscription.add(stream.subscribeMarkUnreachable(() => {
+					if (stream.getSource() !== this) {
+						this.markedUnreachable.next({unreachable: true, propagate: false});
+					}
+				}));
+
+				this.baseStreamTypeSubscription.add(stream.subscribeResetUnreachable(({mark, repropagate}) => {
+					if (!this.markedUnreachable.getValue().unreachable) {
+						return;
+					}
+
+					this.baseStreamType.next(new StreamType(null, this, true));
+
+					mark.subscribe(() => {
+						this.markReachable(true, false);
+					});
+
+					repropagate.subscribe(() => {
+						this.baseStreamType.next(new StreamType(null, this, true));
+					});
+				}));
+			}
 		}
-		
+
 		this.baseStreamType.next(stream);
 	}
-	
-	public markReachable(start: boolean) {
+
+	public markReachable(start: boolean, propagate: boolean) {
 		if (this.isMarkedUnreachable() || start) {
-			this.markedUnreachable.next(false);
+			this.markedUnreachable.next({unreachable: false, propagate});
 		}
 	}
-	
+
 	public isMarkedUnreachable(): boolean {
-		return this.markedUnreachable.getValue();
+		return this.markedUnreachable.getValue().unreachable;
 	}
 
 	protected getBaseStreamType(): StreamType | null {
 		return this.baseStreamType.getValue();
 	}
-	
+
 	public subscribeBaseStreamTypeChanged(cb: (streamType: StreamType | null) => void) {
 		this.baseStreamType.subscribe(cb);
 	}
-	
-	public subscribeMarkedUnreachableChanged(cb: (unreachable: boolean) => void) {
+
+	public subscribeMarkedUnreachableChanged(cb: (mark: { unreachable: boolean, propagate: boolean }) => void) {
 		this.markedUnreachable.subscribe(cb);
 	}
 
