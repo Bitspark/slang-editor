@@ -13,14 +13,16 @@ export class StreamType {
 			if (baseStream.hasAncestor(this)) {
 				throw new Error(`stream circle detected`);
 			}
+			
+			baseStream.subscribeNestingChanged(() => {
+				this.nestingChanged.next();
+			});
+			
 			baseStream.subscribeMarkUnreachable(() => {
 				this.markUnreachable();
 			});
 			baseStream.subscribeRemoveUnreachable(() => {
 				this.removeUnreachable();
-			});
-			baseStream.subscribeNestingChanged(() => {
-				this.nestingChanged.next();
 			});
 		}
 	}
@@ -43,9 +45,18 @@ export class StreamType {
 	public getBaseStream(): StreamType | null {
 		if (!this.baseStream && this.placeholder) {
 			this.baseStream = new StreamType(null, null, true);
+			
 			this.baseStream.subscribeNestingChanged(() => {
 				this.nestingChanged.next();
 			});
+
+			this.baseStream.subscribeMarkUnreachable(() => {
+				this.markUnreachable();
+			});
+			this.baseStream.subscribeRemoveUnreachable(() => {
+				this.removeUnreachable();
+			});
+			
 			this.nestingChanged.next();
 		}
 		return this.baseStream;

@@ -129,7 +129,7 @@ export namespace BlackBoxComponent {
 			position: pos,
 			attrs: {
 				root: {
-					class: "joint-cell joint-element sl-blackbox ${cssClass}",
+					class: "joint-cell joint-element sl-blackbox",
 				},
 				label: {
 					text: attrs.label,
@@ -154,7 +154,6 @@ export namespace BlackBoxComponent {
 			}
 			return bbRect;
 		}
-
 
 		constructor(blackBox: BlackBox, portGroups: Array<PortGroupComponent>, position?: g.PlainPoint) {
 			super(constructRectAttrs({

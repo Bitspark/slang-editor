@@ -433,7 +433,7 @@ export namespace WhiteBoxComponent {
 			z: -2,
 			attrs: {
 				root: {
-					class: "joint-cell joint-element sl-blackbox ${cssClass}",
+					class: "joint-cell joint-element sl-blackbox",
 				},
 			},
 		};
