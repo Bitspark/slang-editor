@@ -237,7 +237,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				parent.setStreamTypeChildToParent(stream);
 			} else if (parent.typeIdentifier === TypeIdentifier.Stream) {
 				this.streamType.next(stream);
-				const baseStreamType = stream.getBaseStream();
+				const baseStreamType = stream.getBaseStream(this.getOwner());
 				if (!baseStreamType) {
 					throw new Error(`${this.getOwnerName()}: insufficient stream type depth`);
 				}
