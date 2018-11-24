@@ -9,7 +9,7 @@ export class StreamType {
 	private readonly markUnreachableRequested = new SlangSubjectTrigger("mark-unreachable");
 	private readonly resetUnreachableRequested = new SlangSubject<{mark: SlangSubjectTrigger, repropagate: SlangSubjectTrigger}>("remove-unreachable");
 
-	constructor(private baseStream: StreamType | null, private source: PortOwner, private placeholder: boolean) {
+	constructor(private baseStream: StreamType | null, private source: PortOwner | null, private placeholder: boolean) {
 		if (baseStream) {
 			if (baseStream.hasAncestor(this)) {
 				throw new Error(`stream circle detected`);
@@ -36,16 +36,16 @@ export class StreamType {
 		return this.placeholder;
 	}
 
-	public createSubStream(sourcePort: PortOwner, placeholder: boolean): StreamType {
+	public createSubStream(source: PortOwner | null, placeholder: boolean): StreamType {
 		if (this.placeholder && !placeholder) {
 			throw new Error(`sub streams of placeholder streams must be placeholders as well`);
 		}
-		return new StreamType(this, sourcePort, placeholder);
+		return new StreamType(this, source, placeholder);
 	}
 
-	public getBaseStream(source: PortOwner): StreamType | null {
+	public getBaseStream(): StreamType | null {
 		if (!this.baseStream && this.placeholder) {
-			this.baseStream = new StreamType(null, source, true);
+			this.baseStream = new StreamType(null, null, true);
 			
 			this.baseStream.subscribeNestingChanged(() => {
 				this.nestingChanged.next();
@@ -93,12 +93,15 @@ export class StreamType {
 	
 	private startGarbageCollectionRoot() {
 		this.markUnreachable();
-		this.source.markReachable(true, true);
 		const mark = new SlangSubjectTrigger("mark");
 		const repropagate = new SlangSubjectTrigger("repropagate");
 		this.resetUnreachable(mark, repropagate);
 		mark.next();
 		repropagate.next();
+		
+		if (this.source) {
+			this.source.setBaseStream(this.source.getBaseStreamType());
+		}
 	}
 
 	private markUnreachable(): void {

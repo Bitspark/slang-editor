@@ -207,9 +207,13 @@ export abstract class PortOwner extends SlangNode {
 	public getPorts(): IterableIterator<PortModel> {
 		return this.getChildNodes(GenericPortModel);
 	}
+	
+	protected isStreamSource(): boolean {
+		return false;
+	}
 
 	public setBaseStream(stream: StreamType | null): void {
-		if (stream !== this.baseStreamType.getValue()) {
+		if (stream !== this.baseStreamType.getValue() && !this.isStreamSource()) {
 			if (this.baseStreamTypeSubscription) {
 				this.baseStreamTypeSubscription.unsubscribe();
 				this.baseStreamTypeSubscription = null;
@@ -219,9 +223,7 @@ export abstract class PortOwner extends SlangNode {
 				this.baseStreamTypeSubscription = new Subscription();
 
 				this.baseStreamTypeSubscription.add(stream.subscribeMarkUnreachable(() => {
-					if (stream.getSource() !== this) {
-						this.markedUnreachable.next({unreachable: true, propagate: false});
-					}
+					this.markedUnreachable.next({unreachable: true, propagate: false});
 				}));
 
 				this.baseStreamTypeSubscription.add(stream.subscribeResetUnreachable(({mark, repropagate}) => {
@@ -244,7 +246,7 @@ export abstract class PortOwner extends SlangNode {
 
 		this.baseStreamType.next(stream);
 	}
-
+	
 	public markReachable(start: boolean, propagate: boolean) {
 		if (this.isMarkedUnreachable() || start) {
 			this.markedUnreachable.next({unreachable: false, propagate});
@@ -255,7 +257,7 @@ export abstract class PortOwner extends SlangNode {
 		return this.markedUnreachable.getValue().unreachable;
 	}
 
-	protected getBaseStreamType(): StreamType | null {
+	public getBaseStreamType(): StreamType | null {
 		return this.baseStreamType.getValue();
 	}
 

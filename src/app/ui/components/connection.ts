@@ -67,6 +67,7 @@ export class ConnectionComponent {
 
 		[connection.source, connection.destination].forEach(port => {
 			port.subscribeStreamTypeChanged(stream => {
+				console.log(stream);
 				this.refresh();
 				if (stream) {
 					stream.subscribeNestingChanged(() => {
