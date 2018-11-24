@@ -221,6 +221,12 @@ export abstract class PortOwner extends SlangNode {
 		this.baseStreamType.next(stream);
 	}
 	
+	public markReachable(start: boolean) {
+		if (this.isMarkedUnreachable() || start) {
+			this.markedUnreachable.next(false);
+		}
+	}
+	
 	public isMarkedUnreachable(): boolean {
 		return this.markedUnreachable.getValue();
 	}
@@ -231,6 +237,10 @@ export abstract class PortOwner extends SlangNode {
 	
 	public subscribeBaseStreamTypeChanged(cb: (streamType: StreamType | null) => void) {
 		this.baseStreamType.subscribe(cb);
+	}
+	
+	public subscribeMarkedUnreachableChanged(cb: (unreachable: boolean) => void) {
+		this.markedUnreachable.subscribe(cb);
 	}
 
 }

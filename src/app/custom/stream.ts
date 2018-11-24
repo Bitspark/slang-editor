@@ -87,8 +87,17 @@ export class StreamType {
 	}
 	
 	public startGarbageCollection() {
-		// First, mark all port owners unreachable
-		this.getRootStream().markUnreachable();
+		this.getRootStream().startGarbageCollectionRoot();
+	}
+	
+	private startGarbageCollectionRoot() {
+		this.markUnreachable();
+		
+		if (this.source) {
+			this.source.markReachable(true);
+		} else {
+			console.log("no source");
+		}
 	}
 
 	private markUnreachable(): void {
