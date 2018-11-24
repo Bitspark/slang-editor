@@ -24,6 +24,10 @@ export class StreamType {
 			});
 		}
 	}
+	
+	public getSource(): PortOwner | null {
+		return this.source;
+	}
 
 	public isPlaceholder(): boolean {
 		return this.placeholder;
@@ -69,6 +73,11 @@ export class StreamType {
 			return this.baseStream.hasAncestor(stream);
 		}
 		return false;
+	}
+	
+	public startGarbageCollection() {
+		// First, mark all port owners unreachable
+		this.getRootStream().markUnreachable();
 	}
 
 	private markUnreachable(): void {

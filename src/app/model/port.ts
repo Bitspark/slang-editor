@@ -90,6 +90,11 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				if (subscription) {
 					subscription.unsubscribe();
 				}
+				
+				const stream = this.getStreamType();
+				if (stream) {
+					stream.startGarbageCollection();
+				}
 			});
 		}
 

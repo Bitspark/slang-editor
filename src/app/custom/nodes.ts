@@ -184,6 +184,8 @@ export abstract class SlangNode {
 export abstract class PortOwner extends SlangNode {
 
 	private readonly baseStreamType = new SlangBehaviorSubject<StreamType | null>("base-stream-type", null);
+	private readonly markedUnreachable = new SlangBehaviorSubject<boolean>("marked-unreachable", false);
+	private baseStreamTypeSubscription: Subscription | null = null;
 
 	protected constructor(parent: SlangNode) {
 		super(parent);
@@ -204,7 +206,23 @@ export abstract class PortOwner extends SlangNode {
 	}
 	
 	public setBaseStream(stream: StreamType | null): void {
+		if (stream && stream !== this.baseStreamType.getValue()) {
+			if (this.baseStreamTypeSubscription) {
+				this.baseStreamTypeSubscription.unsubscribe();
+			}
+
+			this.baseStreamTypeSubscription = stream.subscribeMarkUnreachable(() => {
+				if (stream.getSource() !== this) {
+					this.markedUnreachable.next(true);
+				}
+			});
+		}
+		
 		this.baseStreamType.next(stream);
+	}
+	
+	public isMarkedUnreachable(): boolean {
+		return this.markedUnreachable.getValue();
 	}
 
 	protected getBaseStreamType(): StreamType | null {

@@ -64,6 +64,20 @@ export class ConnectionComponent {
 		});
 		this.refresh();
 		this.link.addTo(graph);
+
+		connection.source.subscribeStreamTypeChanged(stream => {
+			this.refresh();
+
+			if (stream) {
+				stream.subscribeNestingChanged(() => {
+					this.refresh();
+				});
+
+				stream.subscribeMarkUnreachable(() => {
+					this.refresh();
+				});
+			}
+		});
 	}
 
 	public refresh(): void {
@@ -101,9 +115,15 @@ export class ConnectionComponent {
 		const lines = stream ? stream.getStreamDepth() : 1;
 
 		link.connector(slangConnector(sourcePort, destinationPort, lines));
-		link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(sourcePort.getTypeIdentifier()));
 		link.attr(".connection/stroke-width", lines === 1 ? 2 : 1);
 		link.attr(".connection/vector-effect", Styles.Connection.Ordinary.vectorEffect);
+
+		if (sourcePort.getOwner().isMarkedUnreachable() && (!destinationPort || destinationPort.getOwner().isMarkedUnreachable())) {
+			link.attr(".connection/stroke", "#ff00ff");
+		} else {
+			link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(sourcePort.getTypeIdentifier()));
+		}
+		
 		if (!stream) {
 			link.attr(".connection/stroke-dasharray", 5);
 		} else {
