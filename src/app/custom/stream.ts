@@ -99,8 +99,8 @@ export class StreamType {
 		mark.next();
 		repropagate.next();
 		
-		if (this.source) {
-			this.source.setBaseStream(this.source.getBaseStreamType());
+		if (this.source && this.source.isStreamSource()) {
+			this.source.setBaseStream(new StreamType(null, this.source, false));
 		}
 	}
 

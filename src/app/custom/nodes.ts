@@ -208,7 +208,7 @@ export abstract class PortOwner extends SlangNode {
 		return this.getChildNodes(GenericPortModel);
 	}
 	
-	protected isStreamSource(): boolean {
+	public isStreamSource(): boolean {
 		return false;
 	}
 

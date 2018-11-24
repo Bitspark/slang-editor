@@ -74,14 +74,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			});
 		}
 
-		this.getOwner().subscribeMarkedUnreachableChanged(mark => {
-			if (mark.propagate) {
-				this.connectedWith.forEach(port => {
-					port.getOwner().markReachable(mark.unreachable, mark.propagate);
-				});
-			}
-		});
-
 		if (this.isDestination()) {
 			this.subscribeConnected(connection => {
 				const subscription = connection.source.subscribeStreamTypeChanged(streamType => {

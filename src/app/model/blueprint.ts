@@ -283,7 +283,7 @@ export class BlueprintModel extends BlackBox {
 		return this.instance.getValue();
 	}
 	
-	protected isStreamSource(): boolean {
+	public isStreamSource(): boolean {
 		return true;
 	}
 
