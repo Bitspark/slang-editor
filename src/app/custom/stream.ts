@@ -3,10 +3,11 @@ import {Subscription} from "rxjs";
 import {PortOwner} from "./nodes";
 
 export class StreamType {
+	
+	private readonly nestingChanged = new SlangSubjectTrigger("nesting");
 
 	private readonly markUnreachableRequested = new SlangSubjectTrigger("mark-unreachable");
-	private readonly removeUnreachableRequested = new SlangSubjectTrigger("remove-unreachable");
-	private readonly nestingChanged = new SlangSubjectTrigger("nesting");
+	private readonly resetUnreachableRequested = new SlangSubjectTrigger("remove-unreachable");
 
 	constructor(private baseStream: StreamType | null, private source: PortOwner, private placeholder: boolean) {
 		if (baseStream) {
@@ -21,7 +22,7 @@ export class StreamType {
 			baseStream.subscribeMarkUnreachable(() => {
 				this.markUnreachable();
 			});
-			baseStream.subscribeRemoveUnreachable(() => {
+			baseStream.subscribeResetUnreachable(() => {
 				this.removeUnreachable();
 			});
 		}
@@ -53,7 +54,7 @@ export class StreamType {
 			this.baseStream.subscribeMarkUnreachable(() => {
 				this.markUnreachable();
 			});
-			this.baseStream.subscribeRemoveUnreachable(() => {
+			this.baseStream.subscribeResetUnreachable(() => {
 				this.removeUnreachable();
 			});
 			
@@ -93,6 +94,7 @@ export class StreamType {
 	private startGarbageCollectionRoot() {
 		this.markUnreachable();
 		this.source.markReachable(true);
+		this.resetUnreachable();
 	}
 
 	private markUnreachable(): void {
@@ -100,15 +102,19 @@ export class StreamType {
 	}
 
 	private removeUnreachable(): void {
-		this.removeUnreachableRequested.next();
+		this.resetUnreachableRequested.next();
+	}
+	
+	private resetUnreachable(): void {
+		this.resetUnreachableRequested.next();
 	}
 
 	public subscribeMarkUnreachable(cb: () => void): Subscription {
 		return this.markUnreachableRequested.subscribe(cb);
 	}
 
-	public subscribeRemoveUnreachable(cb: () => void): Subscription {
-		return this.removeUnreachableRequested.subscribe(cb);
+	public subscribeResetUnreachable(cb: () => void): Subscription {
+		return this.resetUnreachableRequested.subscribe(cb);
 	}
 
 	public subscribeNestingChanged(cb: () => void): Subscription {
