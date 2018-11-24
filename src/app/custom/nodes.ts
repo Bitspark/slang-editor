@@ -220,7 +220,7 @@ export abstract class PortOwner extends SlangNode {
 			}));
 
 			this.baseStreamTypeSubscription.add(stream.subscribeResetUnreachable(() => {
-				if (!this.markedUnreachable) {
+				if (!this.markedUnreachable.getValue()) {
 					return;
 				}
 				this.setBaseStream(new StreamType(null, this, true));
