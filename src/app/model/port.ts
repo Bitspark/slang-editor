@@ -354,9 +354,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				break;
 			default:
 				const connection = {source: this, destination: destination};
-				// destination.connectedWith.push(this);
 				destination.connected.next(connection);
-				// this.connectedWith.push(destination);
 				this.connected.next(connection);
 				break;
 		}
