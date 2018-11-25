@@ -48,7 +48,7 @@ export class OperatorModel extends BlackBox {
 
 	public createPort(args: PortModelArgs): OperatorPortModel {
 		const port = this.createChildNode(OperatorPortModel, args);
-		port._subscribeStreamTypeChanged(streamType => {
+		port.getStreamPort().subscribeStreamTypeChanged(streamType => {
 			this.setBaseStream(streamType);
 		});
 		return port;

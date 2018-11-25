@@ -1,7 +1,9 @@
-import {SlangSubject, SlangSubjectTrigger} from "./events";
+import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "./events";
 import {Subscription} from "rxjs";
 import {PortOwner} from "./nodes";
 import {ConnectionComponent} from "../ui/components/connection";
+import {GenericPortModel, PortModel} from "../model/port";
+import {TypeIdentifier} from "./type";
 
 export class StreamType {
 
@@ -147,4 +149,216 @@ export class StreamType {
 		return me;
 	}
 
+}
+
+export class StreamPort {
+
+	private readonly streamType: SlangBehaviorSubject<StreamType>;
+	private readonly streamTypeRefreshRequested = new SlangSubject<StreamType>("stream-type-changed");
+
+	private connectionSubscriptions = new Map<GenericPortModel<PortOwner>, Subscription>();
+	
+	constructor(private readonly port: PortModel) {
+		this.streamType = this.buildStreamType();
+	}
+	
+	public initialize(): void {
+		this.subscribeStreams();
+	}
+
+	private buildStreamType(): SlangBehaviorSubject<StreamType> {
+		const parent = this.port.getParentNode();
+		if (parent instanceof GenericPortModel) {
+			if (parent.getTypeIdentifier() === TypeIdentifier.Map) {
+				return parent.getStreamPort().streamType;
+			} else if (parent.getTypeIdentifier() === TypeIdentifier.Stream) {
+				// TODO: This streamType always has to have the parent's streamType as baseStream, ensure that
+				return new SlangBehaviorSubject("streamType", new StreamType(null, this.port.getOwner(), true));
+			} else {
+				throw new Error(`port parents must be either map or stream`);
+			}
+		} else {
+			return new SlangBehaviorSubject("streamType", new StreamType(null, this.port.getOwner(), true));
+		}
+	}
+
+	private subscribeStreams(): void {
+		const parent = this.port.getParentNode();
+		if (parent instanceof PortOwner) {
+			parent.subscribeBaseStreamTypeChanged(streamType => {
+				if (streamType) {
+					this.setStreamTypeParentToChild(streamType, this.port.getOwner().isMarkedForReset());
+				}
+			});
+		}
+
+		this.port.getOwner().subscribePropagateStreamType(() => {
+			this.streamType.next(this.streamType.getValue());
+		});
+
+		this.port.getOwner().subscribeRefreshStreamType(() => {
+			const stream = this.getStreamType();
+			if (stream) {
+				this.streamTypeRefreshRequested.next(stream);
+			}
+		});
+
+		if (this.port.isDestination()) {
+			this.port.subscribeConnected(connection => {
+				setTimeout(() => {
+					const subscription = connection.source.getStreamPort().subscribeStreamTypeChanged(streamType => {
+						if (!streamType || this.port.getOwner().isMarkedForReset()) {
+							return;
+						}
+						this.setStreamTypeChildToParent(streamType);
+					});
+					this.connectionSubscriptions.set(connection.source as any, subscription);
+				}, 100);
+			});
+
+			this.port.subscribeDisconnected(connection => {
+				const subscription = this.connectionSubscriptions.get(connection.source as any);
+				if (subscription) {
+					subscription.unsubscribe();
+				} else {
+					console.log("no subscription found");
+				}
+
+				const stream = this.getStreamType();
+				if (stream) {
+					setTimeout(() => {
+						stream.resetStreamType();
+					}, 100);
+				}
+			});
+		}
+
+		if (this.port.isSource()) {
+			this.port.subscribeConnected(connection => {
+				setTimeout(() => {
+					const subscription = connection.destination.getStreamPort().subscribeStreamTypeChanged(streamType => {
+						if (!streamType || this.port.getOwner().isMarkedForReset()) {
+							return;
+						}
+						this.setStreamTypeChildToParent(streamType);
+					});
+					this.connectionSubscriptions.set(connection.destination as any, subscription);
+				}, 100);
+			});
+
+			this.port.subscribeDisconnected(connection => {
+				const subscription = this.port.getStreamPort().connectionSubscriptions.get(connection.destination as any);
+				if (subscription) {
+					subscription.unsubscribe();
+				} else {
+					console.log("no subscription found");
+				}
+			});
+		}
+
+		this.subscribeStreamTypeChanged(streamType => {
+			if (streamType) {
+				this.streamTypeRefreshRequested.next(streamType);
+			}
+		});
+	}
+
+	/**
+	 * This method uses the port owner's base stream and is the authority on all port streams.
+	 * It overrides existing streams.
+	 * @param stream
+	 * @param override
+	 */
+	public setStreamTypeParentToChild(stream: StreamType, override: boolean = true): void {
+		if (this.port.isParentStreamOrOwner()) {
+			const oldStream = this.getStreamType();
+			if (oldStream === stream) {
+				return;
+			}
+			if (!override && !!oldStream && stream.isPlaceholder() && !oldStream.isPlaceholder()) {
+				return;
+			}
+			this.streamType.next(stream);
+		}
+
+		if (this.port.getTypeIdentifier() === TypeIdentifier.Stream) {
+			const sub = this.port.getStreamSub();
+			if (sub) {
+				if (this.port.isSource()) {
+					sub.getStreamPort().setStreamTypeParentToChild(stream.createSubStream(this.port.getOwner(), stream.isPlaceholder()), override);
+				} else {
+					sub.getStreamPort().setStreamTypeParentToChild(stream.createSubStream(null, true), override);
+				}
+			}
+		} else if (this.port.getTypeIdentifier() === TypeIdentifier.Map) {
+			for (const sub of this.port.getMapSubs()) {
+				sub.getStreamPort().setStreamTypeParentToChild(stream, override);
+			}
+		}
+	}
+
+	/**
+	 * This method is the entrance to the port owner.
+	 * All checks if streams can be connected should be made here.
+	 * @param stream
+	 */
+	public setStreamTypeChildToParent(stream: StreamType): void {
+		const oldStream = this.getStreamType();
+		if (!oldStream) {
+			throw new Error(`port without stream detected`);
+		}
+
+		if (stream === oldStream) {
+			return;
+		}
+		if (!oldStream.isPlaceholder()) {
+			if (stream.isPlaceholder()) {
+				return;
+			} else {
+				console.log(this, stream, oldStream);
+				throw new Error(`incompatible streams`);
+			}
+		} else if (!oldStream.getRootStream().isPlaceholder() && stream.getRootStream().isPlaceholder()) {
+			return;
+		}
+
+		const parent = this.port.getParentNode();
+		if (parent instanceof GenericPortModel) {
+			if (parent.getTypeIdentifier() === TypeIdentifier.Map) {
+				parent.getStreamPort().setStreamTypeChildToParent(stream);
+			} else if (parent.getTypeIdentifier() === TypeIdentifier.Stream) {
+				this.streamType.next(stream);
+				const baseStreamType = stream.getBaseStream();
+				if (!baseStreamType) {
+					throw new Error(`${this.port.getOwnerName()}: insufficient stream type depth`);
+				}
+				parent.getStreamPort().setStreamTypeChildToParent(baseStreamType);
+			} else {
+				throw new Error(`${this.port.getOwnerName()}: unexpected port type, cannot be a parent`);
+			}
+		} else {
+			this.setStreamTypeParentToChild(stream, false);
+		}
+	}
+
+	public getStreamType(): StreamType | null {
+		return this.streamType.getValue();
+	}
+
+	public subscribeStreamTypeChanged(cb: (streamType: StreamType | null) => void): Subscription {
+		return this.streamType.subscribe(cb);
+	}
+
+	public subscribeRefreshStreamType(cb: (streamType: StreamType | null) => void): Subscription {
+		return this.streamTypeRefreshRequested.subscribe(cb);
+	}
+	
+}
+
+export class StreamPortOwner {
+	
+	constructor (private portOwner: PortOwner) {
+		
+	}
+	
 }

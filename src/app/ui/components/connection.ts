@@ -69,7 +69,7 @@ export class ConnectionComponent {
 		this.link.addTo(graph);
 
 		[connection.source, connection.destination].forEach(port => {
-			port.subscribeStreamTypeChanged(stream => {
+			port.getStreamPort().subscribeRefreshStreamType(stream => {
 				if (ConnectionComponent.refreshActive) {
 					this.refresh();
 					if (stream) {
@@ -113,7 +113,7 @@ export class ConnectionComponent {
 	}
 
 	private static refresh(sourcePort: PortModel, destinationPort: PortModel | null, link: dia.Link) {		
-		const stream = sourcePort.getStreamType();
+		const stream = sourcePort.getStreamPort().getStreamType();
 		const lines = stream ? stream.getStreamDepth() : 1;
 		
 		ConnectionComponent.refreshes++;
