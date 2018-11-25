@@ -1,8 +1,7 @@
 import {GenericPortModel, PortModel, PortModelArgs} from "../model/port";
 import {DelegateModel} from "../model/delegate";
-import {SlangBehaviorSubject, SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "./events";
-import {StreamType} from "./stream";
-import {Subscription} from "rxjs";
+import {SlangNodeSetBehaviorSubject} from "./events";
+import {StreamPortOwner} from "./stream";
 
 type Type<T> = Function & { prototype: T };
 
@@ -182,15 +181,13 @@ export abstract class SlangNode {
 }
 
 export abstract class PortOwner extends SlangNode {
-
-	private readonly baseStreamType = new SlangBehaviorSubject<StreamType | null>("base-stream-type", null);
-	private readonly propagateStreamTypeRequested = new SlangSubjectTrigger("base-stream-propagate");
-	private readonly refreshStreamTypeRequested = new SlangSubjectTrigger("base-stream-propagate");
-	private markedForReset: boolean = false;
-	private baseStreamTypeSubscription: Subscription | null = null;
-
-	protected constructor(parent: SlangNode) {
+	
+	private readonly streamPortOwner: StreamPortOwner;
+	
+	protected constructor(parent: SlangNode, streamSource: boolean) {
 		super(parent);
+		this.streamPortOwner = new StreamPortOwner(this, streamSource);
+		this.streamPortOwner.initialize();
 	}
 
 	protected abstract createPort(args: PortModelArgs): PortModel;
@@ -207,75 +204,8 @@ export abstract class PortOwner extends SlangNode {
 		return this.getChildNodes(GenericPortModel);
 	}
 	
-	public isStreamSource(): boolean {
-		return false;
-	}
-
-	public setBaseStream(stream: StreamType | null): void {
-		if (stream !== this.baseStreamType.getValue() && !this.isStreamSource()) {
-			if (this.baseStreamTypeSubscription) {
-				this.baseStreamTypeSubscription.unsubscribe();
-				this.baseStreamTypeSubscription = null;
-			}
-
-			if (stream) {
-				this.baseStreamTypeSubscription = new Subscription();
-
-				this.baseStreamTypeSubscription.add(stream.subscribeStartResetStreamType(() => {
-					this.setMarkedForReset(true);
-				}));
-
-				this.baseStreamTypeSubscription.add(stream.subscribeFinishResetStreamType(({mark, repropagate, refresh}) => {
-					this.baseStreamType.next(new StreamType(null, this, true));
-
-					mark.subscribe(() => {
-						this.setMarkedForReset(false);
-					});
-
-					repropagate.subscribe(() => {
-						this.propagateStreamType();
-					});
-
-					refresh.subscribe(() => {
-						this.refreshStreamType();
-					});
-				}));
-			}
-		}
-
-		this.baseStreamType.next(stream);
-	}
-
-	public setMarkedForReset(mark: boolean): void {
-		this.markedForReset = mark;
-	}
-
-	public isMarkedForReset(): boolean {
-		return this.markedForReset;
-	}
-
-	public refreshStreamType(): void {
-		this.refreshStreamTypeRequested.next();
-	}
-
-	public subscribeRefreshStreamType(cb: () => void) {
-		this.refreshStreamTypeRequested.subscribe(cb);
-	}
-
-	public getBaseStreamType(): StreamType | null {
-		return this.baseStreamType.getValue();
-	}
-
-	public subscribeBaseStreamTypeChanged(cb: (streamType: StreamType | null) => void) {
-		this.baseStreamType.subscribe(cb);
-	}
-	
-	public propagateStreamType() {
-		this.propagateStreamTypeRequested.next();
-	}
-
-	public subscribePropagateStreamType(cb: () => void) {
-		this.propagateStreamTypeRequested.subscribe(cb);
+	public getStreamPortOwner(): StreamPortOwner {
+		return this.streamPortOwner;
 	}
 
 }

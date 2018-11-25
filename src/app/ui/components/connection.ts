@@ -36,7 +36,6 @@ export class ConnectionComponent {
 	private readonly link: dia.Link;
 	private readonly id: string;
 	
-	public static refreshes: number = 0;
 	public static refreshActive: boolean = true;
 
 	constructor(private graph: dia.Graph, private connection: Connection) {
@@ -115,8 +114,6 @@ export class ConnectionComponent {
 	private static refresh(sourcePort: PortModel, destinationPort: PortModel | null, link: dia.Link) {		
 		const stream = sourcePort.getStreamPort().getStreamType();
 		const lines = stream ? stream.getStreamDepth() : 1;
-		
-		ConnectionComponent.refreshes++;
 
 		link.connector(slangConnector(sourcePort, destinationPort, lines));
 		link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(sourcePort.getTypeIdentifier()));

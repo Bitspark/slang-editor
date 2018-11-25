@@ -92,10 +92,9 @@ export class StreamType {
 
 	private resetStreamTypeRoot() {
 		ConnectionComponent.refreshActive = false;
-		ConnectionComponent.refreshes = 0;
 		
-		if (this.source && this.source.isStreamSource()) {
-			this.source.setMarkedForReset(true);
+		if (this.source && this.source.getStreamPortOwner().isStreamSource()) {
+			this.source.getStreamPortOwner().setMarkedForReset(true);
 		}
 		this.startResetStreamType();
 		const mark = new SlangSubjectTrigger("mark");
@@ -104,19 +103,17 @@ export class StreamType {
 		this.finishResetStreamType(mark, repropagate, refresh);
 		mark.next();
 		repropagate.next();
-		if (this.source && this.source.isStreamSource()) {
-			this.source.setBaseStream(new StreamType(null, this.source, false));
-			this.source.setMarkedForReset(false);
-			this.source.propagateStreamType();
-			this.source.refreshStreamType();
+		if (this.source && this.source.getStreamPortOwner().isStreamSource()) {
+			this.source.getStreamPortOwner().setBaseStream(new StreamType(null, this.source, false));
+			this.source.getStreamPortOwner().setMarkedForReset(false);
+			this.source.getStreamPortOwner().propagateStreamType();
+			this.source.getStreamPortOwner().refreshStreamType();
 		}
 		ConnectionComponent.refreshActive = true;
-		if (this.source && this.source.isStreamSource()) {
-			this.source.refreshStreamType();
+		if (this.source && this.source.getStreamPortOwner().isStreamSource()) {
+			this.source.getStreamPortOwner().refreshStreamType();
 		}
 		refresh.next();
-		
-		console.log(ConnectionComponent.refreshes);
 	}
 
 	private startResetStreamType(): void {
@@ -185,18 +182,18 @@ export class StreamPort {
 	private subscribeStreams(): void {
 		const parent = this.port.getParentNode();
 		if (parent instanceof PortOwner) {
-			parent.subscribeBaseStreamTypeChanged(streamType => {
+			parent.getStreamPortOwner().subscribeBaseStreamTypeChanged(streamType => {
 				if (streamType) {
-					this.setStreamTypeParentToChild(streamType, this.port.getOwner().isMarkedForReset());
+					this.setStreamTypeParentToChild(streamType, this.port.getOwner().getStreamPortOwner().isMarkedForReset());
 				}
 			});
 		}
 
-		this.port.getOwner().subscribePropagateStreamType(() => {
+		this.port.getOwner().getStreamPortOwner().subscribePropagateStreamType(() => {
 			this.streamType.next(this.streamType.getValue());
 		});
 
-		this.port.getOwner().subscribeRefreshStreamType(() => {
+		this.port.getOwner().getStreamPortOwner().subscribeRefreshStreamType(() => {
 			const stream = this.getStreamType();
 			if (stream) {
 				this.streamTypeRefreshRequested.next(stream);
@@ -207,7 +204,7 @@ export class StreamPort {
 			this.port.subscribeConnected(connection => {
 				setTimeout(() => {
 					const subscription = connection.source.getStreamPort().subscribeStreamTypeChanged(streamType => {
-						if (!streamType || this.port.getOwner().isMarkedForReset()) {
+						if (!streamType || this.port.getOwner().getStreamPortOwner().isMarkedForReset()) {
 							return;
 						}
 						this.setStreamTypeChildToParent(streamType);
@@ -237,7 +234,7 @@ export class StreamPort {
 			this.port.subscribeConnected(connection => {
 				setTimeout(() => {
 					const subscription = connection.destination.getStreamPort().subscribeStreamTypeChanged(streamType => {
-						if (!streamType || this.port.getOwner().isMarkedForReset()) {
+						if (!streamType || this.port.getOwner().getStreamPortOwner().isMarkedForReset()) {
 							return;
 						}
 						this.setStreamTypeChildToParent(streamType);
@@ -245,7 +242,7 @@ export class StreamPort {
 					this.connectionSubscriptions.set(connection.destination as any, subscription);
 				}, 100);
 			});
-
+			
 			this.port.subscribeDisconnected(connection => {
 				const subscription = this.port.getStreamPort().connectionSubscriptions.get(connection.destination as any);
 				if (subscription) {
@@ -315,7 +312,6 @@ export class StreamPort {
 			if (stream.isPlaceholder()) {
 				return;
 			} else {
-				console.log(this, stream, oldStream);
 				throw new Error(`incompatible streams`);
 			}
 		} else if (!oldStream.getRootStream().isPlaceholder() && stream.getRootStream().isPlaceholder()) {
@@ -357,8 +353,95 @@ export class StreamPort {
 
 export class StreamPortOwner {
 	
-	constructor (private portOwner: PortOwner) {
-		
+	private readonly baseStreamType = new SlangBehaviorSubject<StreamType | null>("base-stream-type", null);
+	private readonly propagateStreamTypeRequested = new SlangSubjectTrigger("base-stream-propagate");
+	private readonly refreshStreamTypeRequested = new SlangSubjectTrigger("base-stream-propagate");
+	private markedForReset: boolean = false;
+	private baseStreamTypeSubscription: Subscription | null = null;
+	
+	constructor (private readonly portOwner: PortOwner, private readonly streamSource: boolean) {
+		portOwner.subscribeChildCreated(GenericPortModel, port => {
+			if (!this.isStreamSource()) {
+				port.getStreamPort().subscribeStreamTypeChanged(streamType => {
+					this.portOwner.getStreamPortOwner().setBaseStream(streamType);
+				})
+			}
+		});
+	}
+	
+	public initialize(): void {
+		this.setBaseStream(new StreamType(null, this.portOwner, !this.isStreamSource()));
+	}
+	
+	public isStreamSource(): boolean {
+		return this.streamSource;
+	}
+
+	public setBaseStream(stream: StreamType | null): void {
+		if (stream !== this.baseStreamType.getValue() && !this.isStreamSource()) {
+			if (this.baseStreamTypeSubscription) {
+				this.baseStreamTypeSubscription.unsubscribe();
+				this.baseStreamTypeSubscription = null;
+			}
+
+			if (stream) {
+				this.baseStreamTypeSubscription = new Subscription();
+
+				this.baseStreamTypeSubscription.add(stream.subscribeStartResetStreamType(() => {
+					this.setMarkedForReset(true);
+				}));
+
+				this.baseStreamTypeSubscription.add(stream.subscribeFinishResetStreamType(({mark, repropagate, refresh}) => {
+					this.baseStreamType.next(new StreamType(null, this.portOwner, true));
+
+					mark.subscribe(() => {
+						this.setMarkedForReset(false);
+					});
+
+					repropagate.subscribe(() => {
+						this.propagateStreamType();
+					});
+
+					refresh.subscribe(() => {
+						this.refreshStreamType();
+					});
+				}));
+			}
+		}
+
+		this.baseStreamType.next(stream);
+	}
+
+	public setMarkedForReset(mark: boolean): void {
+		this.markedForReset = mark;
+	}
+
+	public isMarkedForReset(): boolean {
+		return this.markedForReset;
+	}
+
+	public refreshStreamType(): void {
+		this.refreshStreamTypeRequested.next();
+	}
+
+	public subscribeRefreshStreamType(cb: () => void) {
+		this.refreshStreamTypeRequested.subscribe(cb);
+	}
+
+	public getBaseStreamType(): StreamType | null {
+		return this.baseStreamType.getValue();
+	}
+
+	public subscribeBaseStreamTypeChanged(cb: (streamType: StreamType | null) => void) {
+		this.baseStreamType.subscribe(cb);
+	}
+
+	public propagateStreamType() {
+		this.propagateStreamTypeRequested.next();
+	}
+
+	public subscribePropagateStreamType(cb: () => void) {
+		this.propagateStreamTypeRequested.subscribe(cb);
 	}
 	
 }

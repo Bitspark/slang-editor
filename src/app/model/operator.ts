@@ -4,7 +4,6 @@ import {OperatorDelegateModel} from "./delegate";
 import {BlackBox} from "../custom/nodes";
 import {Connections} from "../custom/connections";
 import {SlangBehaviorSubject} from "../custom/events";
-import {StreamType} from "../custom/stream";
 
 export type OperatorModelArgs = { name: string, blueprint: BlueprintModel, geometry: Geometry | undefined };
 
@@ -23,11 +22,10 @@ export class OperatorModel extends BlackBox {
 	private readonly geometry: Geometry | undefined;
 
 	constructor(parent: BlueprintModel, args: OperatorModelArgs) {
-		super(parent);
+		super(parent, false);
 		this.name = args.name;
 		this.blueprint = args.blueprint;
 		this.geometry = args.geometry;
-		this.setBaseStream(new StreamType(null, this, true));
 	}
 
 	public getName(): string {
@@ -47,11 +45,7 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public createPort(args: PortModelArgs): OperatorPortModel {
-		const port = this.createChildNode(OperatorPortModel, args);
-		port.getStreamPort().subscribeStreamTypeChanged(streamType => {
-			this.setBaseStream(streamType);
-		});
-		return port;
+		return this.createChildNode(OperatorPortModel, args);
 	}
 
 	public getDelegates(): IterableIterator<OperatorDelegateModel> {

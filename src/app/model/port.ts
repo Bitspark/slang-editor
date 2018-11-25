@@ -5,7 +5,6 @@ import {BlackBox, PortOwner, SlangNode} from "../custom/nodes";
 import {Connection, Connections} from "../custom/connections";
 import {SlangType, TypeIdentifier} from "../custom/type";
 import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
-import {Subscription} from "rxjs";
 import {StreamPort} from "../custom/stream";
 
 export enum PortDirection {

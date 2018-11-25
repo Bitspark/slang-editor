@@ -10,7 +10,6 @@ import {PropertyAssignments, PropertyModel} from "./property";
 import {GenericSpecifications} from "./generic";
 import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
 import {LandscapeModel} from "./landscape";
-import {StreamType} from "../custom/stream";
 
 export enum BlueprintType {
 	Local,
@@ -42,12 +41,11 @@ export class BlueprintModel extends BlackBox {
 	private genericIdentifiers: Set<string>;
 
 	constructor(parent: LandscapeModel, {fullName, type}: BlueprintModelArgs) {
-		super(parent);
+		super(parent, true);
 		this.fullName = fullName;
 		this.type = type;
 		this.hierarchy = fullName.split(".");
 		this.genericIdentifiers = new Set<string>();
-		this.setBaseStream(new StreamType(null, this, false));
 	}
 
 	private static revealGenericIdentifiers(port: PortModel): Set<string> {
