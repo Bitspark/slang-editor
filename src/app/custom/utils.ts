@@ -39,7 +39,7 @@ export class PropertyEvaluator {
 
 		const propValue: any = propAssign.getValue();
 
-		if (propAssign.isStreamType()) {
+		if (propAssign.isStream()) {
 			if (typeof propValue === "string" && (propValue as string).startsWith("$")) {
 				vals.push(`{${propValue.substr(1)}}`);
 			}
