@@ -61,6 +61,10 @@ export class OperatorDelegateModel extends GenericDelegateModel<OperatorModel, O
 		this.setBaseStream(new StreamType(null, this, false));
 	}
 
+	public isStreamSource(): boolean {
+		return true;
+	}
+
 	public createPort(args: PortModelArgs): OperatorPortModel {
 		return this.createChildNode(OperatorPortModel, args);
 	}

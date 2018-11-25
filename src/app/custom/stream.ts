@@ -1,35 +1,32 @@
 import {SlangSubject, SlangSubjectTrigger} from "./events";
 import {Subscription} from "rxjs";
 import {PortOwner} from "./nodes";
+import {ConnectionComponent} from "../ui/components/connection";
 
 export class StreamType {
-	
+
 	private readonly nestingChanged = new SlangSubjectTrigger("nesting");
 
-	private readonly markUnreachableRequested = new SlangSubjectTrigger("mark-unreachable");
-	private readonly resetUnreachableRequested = new SlangSubject<{mark: SlangSubjectTrigger, repropagate: SlangSubjectTrigger}>("remove-unreachable");
+	private readonly startResetStreamTypeRequested = new SlangSubjectTrigger("mark-unreachable");
+	private readonly finishResetStreamTypeRequested = new SlangSubject<{ mark: SlangSubjectTrigger, repropagate: SlangSubjectTrigger }>("remove-unreachable");
 
 	constructor(private baseStream: StreamType | null, private source: PortOwner | null, private placeholder: boolean) {
 		if (baseStream) {
 			if (baseStream.hasAncestor(this)) {
 				throw new Error(`stream circle detected`);
 			}
-			
+
 			baseStream.subscribeNestingChanged(() => {
 				this.nestingChanged.next();
 			});
-			
-			baseStream.subscribeMarkUnreachable(() => {
-				this.markUnreachable();
+
+			baseStream.subscribeStartResetStreamType(() => {
+				this.startResetStreamType();
 			});
-			baseStream.subscribeResetUnreachable(({mark, repropagate}) => {
-				this.resetUnreachable(mark, repropagate);
+			baseStream.subscribeFinishResetStreamType(({mark, repropagate}) => {
+				this.finishResetStreamType(mark, repropagate);
 			});
 		}
-	}
-	
-	public getSource(): PortOwner | null {
-		return this.source;
 	}
 
 	public isPlaceholder(): boolean {
@@ -46,18 +43,18 @@ export class StreamType {
 	public getBaseStream(): StreamType | null {
 		if (!this.baseStream && this.placeholder) {
 			this.baseStream = new StreamType(null, null, true);
-			
+
 			this.baseStream.subscribeNestingChanged(() => {
 				this.nestingChanged.next();
 			});
 
-			this.baseStream.subscribeMarkUnreachable(() => {
-				this.markUnreachable();
+			this.baseStream.subscribeStartResetStreamType(() => {
+				this.startResetStreamType();
 			});
-			this.baseStream.subscribeResetUnreachable(({mark, repropagate}) => {
-				this.resetUnreachable(mark, repropagate);
+			this.baseStream.subscribeFinishResetStreamType(({mark, repropagate}) => {
+				this.finishResetStreamType(mark, repropagate);
 			});
-			
+
 			this.nestingChanged.next();
 		}
 		return this.baseStream;
@@ -86,48 +83,56 @@ export class StreamType {
 		}
 		return false;
 	}
-	
-	public startGarbageCollection() {
-		this.getRootStream().startGarbageCollectionRoot();
+
+	public resetStreamType() {
+		this.getRootStream().resetStreamTypeRoot();
 	}
-	
-	private startGarbageCollectionRoot() {
-		this.markUnreachable();
-		const mark = new SlangSubjectTrigger("mark");
-		const repropagate = new SlangSubjectTrigger("repropagate");
-		this.resetUnreachable(mark, repropagate);
-		mark.next();
-		repropagate.next();
+
+	private resetStreamTypeRoot() {
+		ConnectionComponent.refreshes = 0;
 		
 		if (this.source && this.source.isStreamSource()) {
-			this.source.setBaseStream(new StreamType(null, this.source, false));
+			this.source.setMarkedForReset(true);
 		}
+		this.startResetStreamType();
+		const mark = new SlangSubjectTrigger("mark");
+		const repropagate = new SlangSubjectTrigger("repropagate");
+		this.finishResetStreamType(mark, repropagate);
+		mark.next();
+		repropagate.next();
+		if (this.source && this.source.isStreamSource()) {
+			this.source.setBaseStream(new StreamType(null, this.source, false));
+			this.source.setMarkedForReset(false);
+			this.source.propagateStreamType();
+		}
+		
+		console.log(ConnectionComponent.refreshes);
 	}
 
-	private markUnreachable(): void {
-		this.markUnreachableRequested.next();
-	}
-	
-	private resetUnreachable(mark: SlangSubjectTrigger, repropagate: SlangSubjectTrigger): void {
-		this.resetUnreachableRequested.next({mark, repropagate});
+	private startResetStreamType(): void {
+		this.startResetStreamTypeRequested.next();
 	}
 
-	public subscribeMarkUnreachable(cb: () => void): Subscription {
-		return this.markUnreachableRequested.subscribe(cb);
+	private finishResetStreamType(mark: SlangSubjectTrigger, repropagate: SlangSubjectTrigger): void {
+		this.finishResetStreamTypeRequested.next({mark, repropagate});
 	}
 
-	public subscribeResetUnreachable(cb: (value: {mark: SlangSubjectTrigger, repropagate: SlangSubjectTrigger}) => void): Subscription {
-		return this.resetUnreachableRequested.subscribe(cb);
+	public subscribeStartResetStreamType(cb: () => void): Subscription {
+		return this.startResetStreamTypeRequested.subscribe(cb);
+	}
+
+	public subscribeFinishResetStreamType(cb: (value: { mark: SlangSubjectTrigger, repropagate: SlangSubjectTrigger }) => void): Subscription {
+		return this.finishResetStreamTypeRequested.subscribe(cb);
 	}
 
 	public subscribeNestingChanged(cb: () => void): Subscription {
 		return this.nestingChanged.subscribe(cb);
 	}
-	
+
 	public toString(): string {
 		const source = this.source;
 		const me = (this.placeholder ? "PH" : "S") + "[" + ((!!source) ? source!.getScopedIdentity() : "null") + "]";
-		
+
 		if (!!this.baseStream) {
 			return this.baseStream.toString() + ">" + me;
 		}

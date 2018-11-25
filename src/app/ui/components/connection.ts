@@ -35,6 +35,8 @@ export class ConnectionComponent {
 
 	private readonly link: dia.Link;
 	private readonly id: string;
+	
+	public static refreshes: number = 0;
 
 	constructor(private graph: dia.Graph, private connection: Connection) {
 		const ownerIds = ConnectionComponent.getBoxOwnerIds(connection);
@@ -67,7 +69,6 @@ export class ConnectionComponent {
 
 		[connection.source, connection.destination].forEach(port => {
 			port.subscribeStreamTypeChanged(stream => {
-				console.log(stream);
 				this.refresh();
 				if (stream) {
 					stream.subscribeNestingChanged(() => {
@@ -111,6 +112,8 @@ export class ConnectionComponent {
 	private static refresh(sourcePort: PortModel, destinationPort: PortModel | null, link: dia.Link) {		
 		const stream = sourcePort.getStreamType();
 		const lines = stream ? stream.getStreamDepth() : 1;
+		
+		ConnectionComponent.refreshes++;
 
 		link.connector(slangConnector(sourcePort, destinationPort, lines));
 		link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(sourcePort.getTypeIdentifier()));

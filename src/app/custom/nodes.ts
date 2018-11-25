@@ -184,10 +184,8 @@ export abstract class SlangNode {
 export abstract class PortOwner extends SlangNode {
 
 	private readonly baseStreamType = new SlangBehaviorSubject<StreamType | null>("base-stream-type", null);
-	private readonly markedUnreachable = new SlangBehaviorSubject<{ unreachable: boolean, propagate: boolean, }>("marked-unreachable", {
-		unreachable: false,
-		propagate: false,
-	});
+	private readonly propagateStreamTypeRequested = new SlangSubjectTrigger("base-stream-propagate");
+	private markedForReset: boolean = false;
 	private baseStreamTypeSubscription: Subscription | null = null;
 
 	protected constructor(parent: SlangNode) {
@@ -222,23 +220,19 @@ export abstract class PortOwner extends SlangNode {
 			if (stream) {
 				this.baseStreamTypeSubscription = new Subscription();
 
-				this.baseStreamTypeSubscription.add(stream.subscribeMarkUnreachable(() => {
-					this.markedUnreachable.next({unreachable: true, propagate: false});
+				this.baseStreamTypeSubscription.add(stream.subscribeStartResetStreamType(() => {
+					this.setMarkedForReset(true);
 				}));
 
-				this.baseStreamTypeSubscription.add(stream.subscribeResetUnreachable(({mark, repropagate}) => {
-					if (!this.markedUnreachable.getValue().unreachable) {
-						return;
-					}
-
+				this.baseStreamTypeSubscription.add(stream.subscribeFinishResetStreamType(({mark, repropagate}) => {
 					this.baseStreamType.next(new StreamType(null, this, true));
 
 					mark.subscribe(() => {
-						this.markReachable(true, false);
+						this.setMarkedForReset(false);
 					});
 
 					repropagate.subscribe(() => {
-						this.baseStreamType.next(new StreamType(null, this, true));
+						this.propagateStreamType();
 					});
 				}));
 			}
@@ -246,15 +240,13 @@ export abstract class PortOwner extends SlangNode {
 
 		this.baseStreamType.next(stream);
 	}
-	
-	public markReachable(start: boolean, propagate: boolean) {
-		if (this.isMarkedUnreachable() || start) {
-			this.markedUnreachable.next({unreachable: false, propagate});
-		}
+
+	public setMarkedForReset(mark: boolean): void {
+		this.markedForReset = mark;
 	}
 
-	public isMarkedUnreachable(): boolean {
-		return this.markedUnreachable.getValue().unreachable;
+	public isMarkedForReset(): boolean {
+		return this.markedForReset;
 	}
 
 	public getBaseStreamType(): StreamType | null {
@@ -264,9 +256,13 @@ export abstract class PortOwner extends SlangNode {
 	public subscribeBaseStreamTypeChanged(cb: (streamType: StreamType | null) => void) {
 		this.baseStreamType.subscribe(cb);
 	}
+	
+	public propagateStreamType() {
+		this.propagateStreamTypeRequested.next();
+	}
 
-	public subscribeMarkedUnreachableChanged(cb: (mark: { unreachable: boolean, propagate: boolean }) => void) {
-		this.markedUnreachable.subscribe(cb);
+	public subscribePropagateStreamType(cb: () => void) {
+		this.propagateStreamTypeRequested.subscribe(cb);
 	}
 
 }
