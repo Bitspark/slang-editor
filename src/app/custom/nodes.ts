@@ -185,6 +185,7 @@ export abstract class PortOwner extends SlangNode {
 
 	private readonly baseStreamType = new SlangBehaviorSubject<StreamType | null>("base-stream-type", null);
 	private readonly propagateStreamTypeRequested = new SlangSubjectTrigger("base-stream-propagate");
+	private readonly refreshStreamTypeRequested = new SlangSubjectTrigger("base-stream-propagate");
 	private markedForReset: boolean = false;
 	private baseStreamTypeSubscription: Subscription | null = null;
 
@@ -224,7 +225,7 @@ export abstract class PortOwner extends SlangNode {
 					this.setMarkedForReset(true);
 				}));
 
-				this.baseStreamTypeSubscription.add(stream.subscribeFinishResetStreamType(({mark, repropagate}) => {
+				this.baseStreamTypeSubscription.add(stream.subscribeFinishResetStreamType(({mark, repropagate, refresh}) => {
 					this.baseStreamType.next(new StreamType(null, this, true));
 
 					mark.subscribe(() => {
@@ -233,6 +234,10 @@ export abstract class PortOwner extends SlangNode {
 
 					repropagate.subscribe(() => {
 						this.propagateStreamType();
+					});
+
+					refresh.subscribe(() => {
+						this.refreshStreamType();
 					});
 				}));
 			}
@@ -247,6 +252,14 @@ export abstract class PortOwner extends SlangNode {
 
 	public isMarkedForReset(): boolean {
 		return this.markedForReset;
+	}
+
+	public refreshStreamType(): void {
+		this.refreshStreamTypeRequested.next();
+	}
+
+	public subscribeRefreshStreamType(cb: () => void) {
+		this.refreshStreamTypeRequested.subscribe(cb);
 	}
 
 	public getBaseStreamType(): StreamType | null {

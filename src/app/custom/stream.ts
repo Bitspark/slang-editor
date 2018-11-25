@@ -8,7 +8,7 @@ export class StreamType {
 	private readonly nestingChanged = new SlangSubjectTrigger("nesting");
 
 	private readonly startResetStreamTypeRequested = new SlangSubjectTrigger("mark-unreachable");
-	private readonly finishResetStreamTypeRequested = new SlangSubject<{ mark: SlangSubjectTrigger, repropagate: SlangSubjectTrigger }>("remove-unreachable");
+	private readonly finishResetStreamTypeRequested = new SlangSubject<{ mark: SlangSubjectTrigger, repropagate: SlangSubjectTrigger, refresh: SlangSubjectTrigger }>("remove-unreachable");
 
 	constructor(private baseStream: StreamType | null, private source: PortOwner | null, private placeholder: boolean) {
 		if (baseStream) {
@@ -23,8 +23,8 @@ export class StreamType {
 			baseStream.subscribeStartResetStreamType(() => {
 				this.startResetStreamType();
 			});
-			baseStream.subscribeFinishResetStreamType(({mark, repropagate}) => {
-				this.finishResetStreamType(mark, repropagate);
+			baseStream.subscribeFinishResetStreamType(({mark, repropagate, refresh}) => {
+				this.finishResetStreamType(mark, repropagate, refresh);
 			});
 		}
 	}
@@ -51,8 +51,8 @@ export class StreamType {
 			this.baseStream.subscribeStartResetStreamType(() => {
 				this.startResetStreamType();
 			});
-			this.baseStream.subscribeFinishResetStreamType(({mark, repropagate}) => {
-				this.finishResetStreamType(mark, repropagate);
+			this.baseStream.subscribeFinishResetStreamType(({mark, repropagate, refresh}) => {
+				this.finishResetStreamType(mark, repropagate, refresh);
 			});
 
 			this.nestingChanged.next();
@@ -89,6 +89,7 @@ export class StreamType {
 	}
 
 	private resetStreamTypeRoot() {
+		ConnectionComponent.refreshActive = false;
 		ConnectionComponent.refreshes = 0;
 		
 		if (this.source && this.source.isStreamSource()) {
@@ -97,14 +98,21 @@ export class StreamType {
 		this.startResetStreamType();
 		const mark = new SlangSubjectTrigger("mark");
 		const repropagate = new SlangSubjectTrigger("repropagate");
-		this.finishResetStreamType(mark, repropagate);
+		const refresh = new SlangSubjectTrigger("repropagate");
+		this.finishResetStreamType(mark, repropagate, refresh);
 		mark.next();
 		repropagate.next();
 		if (this.source && this.source.isStreamSource()) {
 			this.source.setBaseStream(new StreamType(null, this.source, false));
 			this.source.setMarkedForReset(false);
 			this.source.propagateStreamType();
+			this.source.refreshStreamType();
 		}
+		ConnectionComponent.refreshActive = true;
+		if (this.source && this.source.isStreamSource()) {
+			this.source.refreshStreamType();
+		}
+		refresh.next();
 		
 		console.log(ConnectionComponent.refreshes);
 	}
@@ -113,15 +121,15 @@ export class StreamType {
 		this.startResetStreamTypeRequested.next();
 	}
 
-	private finishResetStreamType(mark: SlangSubjectTrigger, repropagate: SlangSubjectTrigger): void {
-		this.finishResetStreamTypeRequested.next({mark, repropagate});
+	private finishResetStreamType(mark: SlangSubjectTrigger, repropagate: SlangSubjectTrigger, refresh: SlangSubjectTrigger): void {
+		this.finishResetStreamTypeRequested.next({mark, repropagate, refresh});
 	}
 
 	public subscribeStartResetStreamType(cb: () => void): Subscription {
 		return this.startResetStreamTypeRequested.subscribe(cb);
 	}
 
-	public subscribeFinishResetStreamType(cb: (value: { mark: SlangSubjectTrigger, repropagate: SlangSubjectTrigger }) => void): Subscription {
+	public subscribeFinishResetStreamType(cb: (value: { mark: SlangSubjectTrigger, repropagate: SlangSubjectTrigger, refresh: SlangSubjectTrigger }) => void): Subscription {
 		return this.finishResetStreamTypeRequested.subscribe(cb);
 	}
 

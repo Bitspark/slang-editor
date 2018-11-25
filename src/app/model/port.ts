@@ -21,6 +21,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	private disconnected = new SlangSubject<Connection>("disconnected");
 	private collapsed = new SlangBehaviorSubject<boolean>("collapsed", false);
 	private readonly streamType: SlangBehaviorSubject<StreamType>;
+	private readonly streamTypeChanged = new SlangSubject<StreamType>("stream-type-changed");
 
 	// Properties
 	private readonly name: string;
@@ -72,15 +73,22 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 					this.setStreamTypeParentToChild(streamType, this.getOwner().isMarkedForReset());
 				}
 			});
-			
-			this.getOwner().subscribePropagateStreamType(() => {
-				this.streamType.next(this.streamType.getValue());
-			});
 		}
+
+		this.getOwner().subscribePropagateStreamType(() => {
+			this.streamType.next(this.streamType.getValue());
+		});
+		
+		this.getOwner().subscribeRefreshStreamType(() => {
+			const stream = this.getStreamType();
+			if (stream) {
+				this.streamTypeChanged.next(stream);
+			}
+		});
 
 		if (this.isDestination()) {
 			this.subscribeConnected(connection => {
-				const subscription = connection.source.subscribeStreamTypeChanged(streamType => {
+				const subscription = connection.source._subscribeStreamTypeChanged(streamType => {
 					if (!streamType || this.getOwner().isMarkedForReset()) {
 						return;
 					}
@@ -106,7 +114,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 		if (this.isSource()) {
 			this.subscribeConnected(connection => {
-				const subscription = connection.destination.subscribeStreamTypeChanged(streamType => {
+				const subscription = connection.destination._subscribeStreamTypeChanged(streamType => {
 					if (!streamType || this.getOwner().isMarkedForReset()) {
 						return;
 					}
@@ -124,6 +132,12 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				}
 			});
 		}
+		
+		this._subscribeStreamTypeChanged(streamType => {
+			if (streamType) {
+				this.streamTypeChanged.next(streamType);
+			}
+		})
 	}
 
 	public getMapSubs(): IterableIterator<GenericPortModel<O>> {
@@ -522,8 +536,12 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		this.disconnected.subscribe(cb);
 	}
 
-	public subscribeStreamTypeChanged(cb: (streamType: StreamType | null) => void): Subscription {
+	public _subscribeStreamTypeChanged(cb: (streamType: StreamType | null) => void): Subscription {
 		return this.streamType.subscribe(cb);
+	}
+
+	public subscribeStreamTypeChanged(cb: (streamType: StreamType | null) => void): Subscription {
+		return this.streamTypeChanged.subscribe(cb);
 	}
 }
 

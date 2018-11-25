@@ -37,6 +37,7 @@ export class ConnectionComponent {
 	private readonly id: string;
 	
 	public static refreshes: number = 0;
+	public static refreshActive: boolean = true;
 
 	constructor(private graph: dia.Graph, private connection: Connection) {
 		const ownerIds = ConnectionComponent.getBoxOwnerIds(connection);
@@ -69,11 +70,13 @@ export class ConnectionComponent {
 
 		[connection.source, connection.destination].forEach(port => {
 			port.subscribeStreamTypeChanged(stream => {
-				this.refresh();
-				if (stream) {
-					stream.subscribeNestingChanged(() => {
-						this.refresh();
-					});
+				if (ConnectionComponent.refreshActive) {
+					this.refresh();
+					if (stream) {
+						stream.subscribeNestingChanged(() => {
+							this.refresh();
+						});
+					}
 				}
 			});
 		});
