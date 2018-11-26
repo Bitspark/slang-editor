@@ -57,7 +57,7 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public getDisplayName(): string {
-		return this.getIdentity();
+		return this.getBlueprint().getShortName();
 	}
 
 	public getConnectionsTo(): Connections {
