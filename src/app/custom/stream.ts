@@ -337,7 +337,7 @@ export class StreamPort {
 		}
 	}
 
-	public getStreamType(): StreamType | null {
+	public getStreamType(): StreamType {
 		return this.streamType.getValue();
 	}
 

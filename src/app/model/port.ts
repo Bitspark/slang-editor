@@ -6,6 +6,7 @@ import {Connection, Connections} from "../custom/connections";
 import {SlangType, TypeIdentifier} from "../custom/type";
 import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
 import {StreamPort} from "../custom/stream";
+import {canConnectTo} from "../custom/compatibility";
 
 export enum PortDirection {
 	In, // 0
@@ -194,6 +195,22 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	public getStreamDepth(): number {
 		return this.streamDepth;
 	}
+	
+	public getDescendantPorts(): Array<GenericPortModel<O>> {
+		const ports: Array<GenericPortModel<O>> = [this];
+		if (this.typeIdentifier == TypeIdentifier.Map) {
+			const subs = this.getMapSubs();
+			for (const sub of subs) {
+				ports.push.apply(ports, sub.getDescendantPorts());
+			}
+		} else if (this.typeIdentifier == TypeIdentifier.Stream) {
+			const sub = this.getStreamSub();
+			if (sub) {
+				ports.push.apply(ports, sub.getDescendantPorts());
+			}
+		}
+		return ports;
+	}		
 
 	private getDirectConnectionsTo(): Connections {
 		const connections = new Connections();
@@ -297,27 +314,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		return this.collapsed.getValue();
 	}
 
-	/**
-	 * Checks if a connection from this port is possible to the destination port.
-	 * This has to be a source port and destination a destination port (will be checked inside function).
-	 * @param destination port
-	 */
-	private canConnectTo(destination: PortModel): boolean {
-		if (!this.isSource() || !destination.isDestination()) {
-			return false;
-		}
-		if (destination.connectedWith.length !== 0) {
-			return false;
-		}
-		if (this.connectedWith.indexOf(destination) !== -1) {
-			return false;
-		}
-		if (destination.connectedWith.indexOf(this) !== -1) {
-			throw new Error(`${this.getIdentity()}: asymmetric connection found`);
-		}
-		return this.getType().compatibleTo(destination.getType());
-	}
-
 	public abstract isSource(): boolean;
 
 	public isDestination(): boolean {
@@ -340,7 +336,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	 * @param destination
 	 */
 	private connectTo(destination: PortModel) {
-		if (!this.canConnectTo(destination)) {
+		if (!canConnectTo(this, destination)) {
 			throw new Error(`cannot connect: ${this.getIdentity()} --> ${destination.getIdentity()}`);
 		}
 		switch (this.typeIdentifier) {
@@ -362,9 +358,9 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 	public canConnect(other: PortModel): boolean {
 		if (this.isSource()) {
-			return this.canConnectTo(other);
+			return canConnectTo(this, other);
 		} else {
-			return other.canConnectTo(this);
+			return canConnectTo(other, this);
 		}
 	}
 
