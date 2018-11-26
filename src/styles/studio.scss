@@ -18,48 +18,6 @@ $blackbox-color-fill: $white;
 $blackbox-color-stroke: $black;
 $blackbox-color-label: $black;
 
-// BUTTONS
-
-@keyframes isRunning {
-	from {
-		transform: rotate(0deg)
-	}
-	to {
-		transform: rotate(360deg)
-	}
-}
-
-.sl-tool-btn {
-	@extend %bordered;
-	@extend %translucent;
-	display: inline-block;
-	cursor: pointer;
-
-	transition: 450ms background-color, color;
-
-	padding: 8px 5px;
-	margin: 1px;
-	font-size: 10px;
-	text-align: center;
-
-	color: $black;
-	background: $white;
-
-	&:hover {
-		color: $white;
-		background: $black;
-	}
-
-	&.running {
-		color: $green;
-		background-color: $green;
-		animation: isRunning;
-		animation-timing-function: linear;
-		animation-duration: 1000ms;
-		animation-iteration-count: infinite;
-	}
-}
-
 // BLACKBOX
 
 .sl-blackbox, .sl-blackbox-ghost {
@@ -98,8 +56,10 @@ $blackbox-color-label: $black;
 // PORT
 
 .sl-port {
+	@extend %transition;
 	stroke-width: 0;
-	transition: stroke-width 1s;
+	stroke-opacity: .6;
+	transition-property: stroke-width;
 
 	&.sl-stripe {
 		stroke: white;
@@ -139,14 +99,11 @@ $blackbox-color-label: $black;
 // JOINT
 
 @keyframes port-pulse {
-	0% {
+	from {
 		stroke-width: 0;
 	}
-	50% {
-		stroke-width: 4px;
-	}
-	100% {
-		stroke-width: 0;
+	to {
+		stroke-width: 8px;
 	}
 }
 
@@ -162,13 +119,13 @@ $blackbox-color-label: $black;
 
 .available-magnet {
 	path {
-		stroke-width: 4px;
-
 		animation-name: port-pulse;
-		animation-duration: 1.2s;
+		animation-duration: 500ms;
 		animation-iteration-count: infinite;
-		animation-timing-function: linear;
+		animation-direction: alternate;
+		animation-timing-function: ease-in;
 	}
 }
 
 @import "component/blueprint-select";
+@import "component/form";

@@ -1,5 +1,5 @@
 import m from "mithril";
-import {AnchorComponent} from "./anchor";
+import {AttachedComponent, Component} from "./base";
 import {Styles} from "../../../styles/studio";
 import {BlackBox} from "../../custom/nodes";
 import {dia, g, layout, shapes} from "jointjs";
@@ -14,12 +14,19 @@ import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {Connection} from "../../custom/connections";
 import {OperatorModel} from "../../model/operator";
 import {BlueprintDelegateModel} from "../../model/delegate";
+import {SlangType, SlangTypeValue} from "../../custom/type";
+import {Button, List, ListEntry, MithrilMouseEvent, TypeInput} from "./toolkit";
 
-export class WhiteBoxComponent extends AnchorComponent {
+export class WhiteBoxComponent extends Component {
 	private static readonly padding = 120;
 	private static readonly minimumSpace = 10;
 
 	private readonly shape: WhiteBoxComponent.Shape;
+	private readonly buttons: AttachedComponent;
+	private readonly input: AttachedComponent;
+	private readonly output: AttachedComponent;
+	private outputBuffer: Array<SlangTypeValue> = [];
+
 
 	private readonly operators: Array<BlackBoxComponent> = [];
 	private readonly connections: Array<ConnectionComponent> = [];
@@ -31,8 +38,10 @@ export class WhiteBoxComponent extends AnchorComponent {
 	};
 
 	constructor(paperView: PaperView, private readonly blueprint: BlueprintModel) {
-		super(paperView, {x: 0, y: 0,});
-
+		super(paperView, {x: 0, y: 0});
+		this.buttons = this.createComponent({x: 0, y: 0, align: "l"});
+		this.input = this.createComponent({x: 0, y: 0, align: "b"});
+		this.output = this.createComponent({x: 0, y: 0, align: "t"});
 		this.subscribe();
 
 		const size = {
@@ -41,51 +50,69 @@ export class WhiteBoxComponent extends AnchorComponent {
 		};
 		this.shape = new WhiteBoxComponent.Shape(this.blueprint, size);
 		this.shape.addTo(this.graph);
-		const updateButtonPosition = () => {
-			const {x, y} = this.shape.position();
-			const {width} = this.shape.size();
-			this.updatePosition({x: x + width, y: y - 17,});
-		};
-		updateButtonPosition();
-		this.shape.on("change:position change:size", updateButtonPosition);
-		
 		this.autoLayout();
 	}
 
 	private subscribe() {
 		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
 			if (!instance) {
-				m.mount(this.htmlRoot, {
-					view: () => m(WhiteBoxComponent.Tool.Button, {
+				this.buttons.mount({
+					view: () => m(Button, {
 						onClick: () => {
 							this.blueprint.requestDeployment();
 						},
 						label: "Deploy",
-						icon: "D",
-						class: "dply",
+						class: "sl-blupr-deploy",
 					})
 				});
+				this.input.unmount();
+				this.output.unmount();
+
 			} else {
-				m.mount(this.htmlRoot, {
+				this.buttons.mount({
 					view: () => m(".toolbox", [
-						m(WhiteBoxComponent.Tool.Button, {
-							onClick: () => {
-								window.open(instance.url, "_blank");
-							},
+						m(Button, {
 							label: "Running",
-							icon: "X",
-							class: "running",
+							class: "sl-green-pulsing",
 						}),
-						m(WhiteBoxComponent.Tool.Button, {
+						m(Button, {
 							onClick: () => {
 								this.blueprint.requestShutdown();
 							},
-							label: "",
+							label: "Shutdown",
 							icon: "S",
-							class: "stop",
+							class: "sl-btn-warn",
 						}),
 					])
 				});
+
+				const portIn = this.blueprint.getPortIn();
+
+				if (portIn) {
+					this.input.mount({
+						view: () => m(WhiteBoxComponent.DataInputForm, {
+							onSubmit: (values: SlangTypeValue) => {
+								this.blueprint.pushInput(values);
+							},
+							type: portIn.getType()
+						})
+					});
+				}
+
+				const portOut = this.blueprint.getPortOut();
+
+				if (portOut) {
+					const that = this;
+					this.output.mount({
+						view: () => m(WhiteBoxComponent.DataOutputDisplay, {
+							buffer: that.outputBuffer
+						})
+					});
+					this.blueprint.subscribeOutputPushed((outputData: SlangTypeValue) => {
+						this.outputBuffer.unshift(outputData);
+						m.redraw();
+					}, this.blueprint.shutdownRequested);
+				}
 			}
 		});
 
@@ -96,9 +123,12 @@ export class WhiteBoxComponent extends AnchorComponent {
 
 		this.blueprint.subscribeChildCreated(BlueprintPortModel, port => {
 			if (port.isDirectionIn()) {
-				this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
+				const p = this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
+				this.buttons.attachTo(p.getElement(), "br");
+				this.input.attachTo(p.getElement(), "c");
 			} else {
-				this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
+				const p = this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
+				this.output.attachTo(p.getElement(), "c");
 			}
 		});
 
@@ -124,11 +154,11 @@ export class WhiteBoxComponent extends AnchorComponent {
 			});
 		});
 	}
-	
+
 	public autoLayout() {
 		const operatorRectangles = this.operators.map(operatorComponent => operatorComponent.getRectangle());
 		const connectionLinks = this.connections.map(connectionComponent => connectionComponent.getLink());
-		
+
 		layout.DirectedGraph.layout(
 			[...operatorRectangles, ...connectionLinks, ...this.ports.top, ...this.ports.bottom, ...this.ports.left, ...this.ports.right,], {
 				nodeSep: 120,
@@ -183,15 +213,15 @@ export class WhiteBoxComponent extends AnchorComponent {
 				}
 			});
 		});
-		
+
 		this.fitOuter(false);
 	}
 
-	public fitOuter(animation: boolean) {	
+	public fitOuter(animation: boolean) {
 		if (!this.shape) {
 			return;
 		}
-		
+
 		const padding = WhiteBoxComponent.padding;
 		const currentPosition = this.shape.get("position");
 		const currentSize = this.shape.get("size");
@@ -200,7 +230,7 @@ export class WhiteBoxComponent extends AnchorComponent {
 		let newY: number = currentPosition.y + padding;
 		let newCornerX: number = currentPosition.x + currentSize.width - 2 * padding;
 		let newCornerY: number = currentPosition.y + currentSize.height - 2 * padding;
-		
+
 		this.operators.forEach(operator => {
 			const childBBox = operator.getBBox();
 			if (childBBox.x < newX) {
@@ -316,7 +346,7 @@ export class WhiteBoxComponent extends AnchorComponent {
 		}
 	}
 
-	private createIsolatedPort(port: BlueprintPortModel, id: string, name: string, position: PortGroupPosition): void {
+	private createIsolatedPort(port: BlueprintPortModel, id: string, name: string, position: PortGroupPosition): IsolatedBlueprintPortComponent {
 		const invertedPosition: { [key in PortGroupPosition]: PortGroupPosition } = {
 			top: "bottom",
 			bottom: "top",
@@ -380,6 +410,8 @@ export class WhiteBoxComponent extends AnchorComponent {
 			const outerSize = that.shape.get("size") as g.PlainRect;
 			return calculateRestrictedRect(outerPosition, outerSize);
 		});
+
+		return portComponent;
 	}
 
 	private addConnection(connection: Connection) {
@@ -450,38 +482,66 @@ export namespace WhiteBoxComponent {
 		}
 	}
 
-	export namespace Tool {
-		export interface Attrs {
-			onClick: () => void
-			label: string
-			icon: string
-			class: string
+	export class DataInputForm implements ClassComponent<DataInputForm.Attrs> {
+		private type: SlangType | undefined;
+		private values: SlangTypeValue | undefined;
+
+		oninit({attrs}: CVnode<DataInputForm.Attrs>) {
+			this.type = attrs.type;
 		}
 
-		export class Button implements ClassComponent<Attrs> {
-			private alreadyClicked: boolean = false;
-			private bounceInterval = 500;
+		private isValid(): boolean {
+			return this.values !== undefined;
+		}
 
-			oninit({attrs}: CVnode<Attrs>) {
-			}
+		view({attrs}: CVnode<DataInputForm.Attrs>): any {
+			const that = this;
+			return m("form.sl-form", {
+					class: (that.isValid() ? "sl-invalid" : "")
+				},
+				m(TypeInput, {
+					label: "", class: "",
+					type: that.type!,
+					onInput: (v: any) => {
+						that.values = v;
+					}
+				}),
+				m(Button, {
+					full: true,
+					notAllowed: !that.isValid(),
+					label: "Push",
+					onClick: that.isValid ? (e: MithrilMouseEvent) => {
+						attrs.onSubmit(that.values!);
+					} : undefined
+				})
+			);
+		}
+	}
 
-			view({attrs}: CVnode<Attrs>) {
-				return m("a.btn.sl-tool-btn", {
-						class: attrs.class,
-						onclick: () => {
-							if (!this.alreadyClicked) {
-								this.alreadyClicked = true;
-								attrs.onClick();
-								const that = this;
-								setTimeout(() => {
-									that.alreadyClicked = false;
-								}, this.bounceInterval);
-							}
-						},
-						tooltip: attrs.label,
-					},
-					attrs.icon);
-			}
+	export namespace DataInputForm {
+		export interface Attrs {
+			type: SlangType
+			onSubmit: (values: SlangTypeValue) => void
+		}
+	}
+
+	export class DataOutputDisplay implements ClassComponent<DataOutputDisplay.Attrs> {
+		private buffer: Array<SlangTypeValue> = [];
+
+		oninit({attrs}: CVnode<DataOutputDisplay.Attrs>) {
+			this.buffer = attrs.buffer;
+		}
+
+		view({attrs}: CVnode<DataOutputDisplay.Attrs>): any {
+			return m(List, this.buffer.map((outputData) => {
+				return m(ListEntry, JSON.stringify(outputData));
+			}));
+		}
+	}
+
+	export namespace DataOutputDisplay {
+		export interface Attrs {
+			buffer: Array<SlangTypeValue>;
 		}
 	}
 }

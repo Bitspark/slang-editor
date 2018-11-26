@@ -5,7 +5,7 @@ import {Geometry} from "./operator";
 import {SlangParsing} from "../custom/parsing";
 import {PropertyEvaluator} from "../custom/utils";
 import {BlackBox} from "../custom/nodes";
-import {TypeIdentifier} from "../custom/type";
+import {SlangTypeValue, TypeIdentifier} from "../custom/type";
 import {PropertyAssignments, PropertyModel} from "./property";
 import {GenericSpecifications} from "./generic";
 import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
@@ -28,8 +28,10 @@ export class BlueprintModel extends BlackBox {
 
 	// Topics::Deployment
 	private deploymentRequested = new SlangSubject<boolean>("deployment-triggered");
-	private shutdownRequested = new SlangSubject<boolean>("requestShutdown-triggered");
+	public shutdownRequested = new SlangSubject<boolean>("shutdown-triggered");
 	private instance = new SlangBehaviorSubject<BlueprintInstance | null>("instance", null);
+	private inputPushed = new SlangSubject<SlangTypeValue>("input-pushed");
+	private outputPushed = new SlangSubject<SlangTypeValue>("output-pushed");
 
 	// Properties
 	private readonly fullName: string;
@@ -150,6 +152,10 @@ export class BlueprintModel extends BlackBox {
 
 	public isSelected(): boolean {
 		return this.selected.getValue();
+	}
+
+	public isDeployed(): boolean {
+		return this.instance.getValue() !== null;
 	}
 
 	public getType(): BlueprintType {
@@ -280,7 +286,7 @@ export class BlueprintModel extends BlackBox {
 	public getInstanceAccess(): BlueprintInstance | null {
 		return this.instance.getValue();
 	}
-	
+
 	public isStreamSource(): boolean {
 		return true;
 	}
@@ -300,14 +306,26 @@ export class BlueprintModel extends BlackBox {
 		this.opened.next(false);
 	}
 
+	public pushInput(inputData: SlangTypeValue) {
+		if (this.isDeployed()) {
+			this.inputPushed.next(inputData);
+		}
+	}
+
+	public pushOutput(outputData: SlangTypeValue) {
+		if (this.isDeployed()) {
+			this.outputPushed.next(outputData);
+		}
+	}
+
 	public requestDeployment() {
-		if (!this.instance.getValue()) {
+		if (!this.isDeployed()) {
 			this.deploymentRequested.next(true);
 		}
 	}
 
 	public requestShutdown() {
-		if (this.instance.getValue()) {
+		if (this.isDeployed()) {
 			this.shutdownRequested.next(true);
 		}
 	}
@@ -341,5 +359,12 @@ export class BlueprintModel extends BlackBox {
 	public subscribeShutdownRequested(cb: (opened: boolean) => void): void {
 		this.shutdownRequested.subscribe(cb);
 	}
-	
+
+	public subscribeInputPushed(cb: (inputData: SlangTypeValue) => void): void {
+		this.inputPushed.subscribe(cb);
+	}
+
+	public subscribeOutputPushed(cb: (outputData: SlangTypeValue) => void, until?: SlangSubject<any>): void {
+		this.outputPushed.subscribe(cb, until);
+	}
 }

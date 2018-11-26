@@ -1,32 +1,16 @@
 .sl-blupr-menu {
-	@extend %bordered;
-	@extend %translucent;
-
-	position: absolute;
+	@extend %proto-container;
 	overflow-y: scroll;
+	width: $container-width;
 	max-height: 384px;
-	width: 342px;
 	background: $white;
-	padding: 0;
-
-	transition: 450ms opacity;
 }
 
 .sl-blupr-fltr {
-	@extend %bordered;
-
 	position: fixed;
-	margin: 3px;
-	padding: 0;
-	overflow: hidden;
-	width: 336px;
-	background: $white;
-	.sl-blupr-input {
-		background: transparent;
-		border: none;
-		margin: 0 12px;
-		padding: 11px 0;
-		width: 100%;
+	padding: 4px;
+	.sl-input {
+		width: 332px;
 	}
 }
 
@@ -36,7 +20,10 @@
 		border-bottom: 1px solid transparentize($black, .85);
 
 		cursor: pointer;
-		transition: 450ms background-color, color;
+		@extend %transition;
+		transition: background-color, color;
+
+		background: $white;
 
 		&:hover {
 			background-color: $black;
@@ -44,7 +31,11 @@
 		}
 
 		&:first-child {
-			margin-top: 41px;
+			margin-top: 27px;
+		}
+
+		&:last-child {
+			border-bottom: 0;
 		}
 	}
 

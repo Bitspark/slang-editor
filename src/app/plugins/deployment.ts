@@ -2,6 +2,7 @@ import {ApiService} from "../custom/api";
 import {AppModel} from "../model/app";
 import {SlangPlugin} from "./plugin";
 import {BlueprintInstance, BlueprintModel} from "../model/blueprint";
+import {SlangTypeValue} from "../custom/type";
 
 export class DeploymentPlugin extends SlangPlugin {
 	private api: ApiService;
@@ -21,6 +22,9 @@ export class DeploymentPlugin extends SlangPlugin {
 				blueprint.subscribeShutdownRequested(() => {
 					this.shutdown(blueprint);
 				});
+				blueprint.subscribeInputPushed((inputData: SlangTypeValue) => {
+					this.pushInput(blueprint, inputData);
+				});
 			}
 		});
 	}
@@ -36,6 +40,16 @@ export class DeploymentPlugin extends SlangPlugin {
 		if (access) {
 			this.api.shutdownBlueprintInstance(access.handle).then(() => {
 				blueprint.shutdown();
+			});
+		}
+
+	}
+
+	private pushInput(blueprint: BlueprintModel, inputData: SlangTypeValue): void {
+		const access = blueprint.getInstanceAccess();
+		if (access) {
+			this.api.pushInput(access.url, inputData).then((outputData: SlangTypeValue) => {
+				blueprint.pushOutput(outputData);
 			});
 		}
 
