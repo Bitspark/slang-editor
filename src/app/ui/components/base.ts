@@ -123,19 +123,23 @@ export abstract class AnchoredComponent extends Component {
 
 		if (wrapped === "[]") {
 			m.mount(this.htmlRoot, {
+				onupdate: () => {
+					this.draw();
+				},
 				view: () => {
 					return m(Container, m(Box, m(component)));
 				}
 			});
 		} else {
 			m.mount(this.htmlRoot, {
+				onupdate: () => {
+					this.draw();
+				},
 				view: () => {
 					return m(Container, m(component));
 				}
 			});
 		}
-
-		this.draw();
 		return this;
 	}
 
