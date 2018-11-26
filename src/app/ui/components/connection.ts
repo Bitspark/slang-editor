@@ -6,6 +6,7 @@ import {slangRouter} from "../link/router";
 import {slangConnector} from "../link/connector";
 import {Styles} from "../../../styles/studio";
 import {PortModel} from "../../model/port";
+import {StreamType} from "../../custom/stream";
 
 const ConnectionLink = dia.Link.define("Connection", {
 	router: slangRouter,
@@ -108,6 +109,9 @@ export class ConnectionComponent {
 			},
 		} as any);
 		ConnectionComponent.refresh(sourcePort, null, link);
+		
+		console.log(sourcePort.getStreamPort().getStreamType().toString());
+		
 		return link;
 	}
 
@@ -120,13 +124,19 @@ export class ConnectionComponent {
 		link.attr(".connection/stroke-width", lines === 1 ? 2 : 1);
 		link.attr(".connection/vector-effect", Styles.Connection.Ordinary.vectorEffect);
 		
-		if (!stream) {
-			link.attr(".connection/stroke-dasharray", 5);
-		} else {
-			if (stream.getRootStream().isPlaceholder()) {
-				link.attr(".connection/stroke-dasharray", 5);
-			} else if (stream.isPlaceholder()) {
-				link.attr(".connection/stroke-dasharray", 1);
+		if (stream) {
+			if (stream.hasPlaceholderRoot()) {
+				if (stream.isPlaceholder()) {
+					link.attr(".connection/stroke-dasharray", 15);
+				} else {
+					link.attr(".connection/stroke-dasharray", 5);
+				}
+			} else if (stream.hasPlaceholderAncestor()) {
+				if (stream.isPlaceholder()) {
+					link.attr(".connection/stroke-dasharray", 2);
+				} else {
+					link.attr(".connection/stroke-dasharray", 1);
+				}
 			} else {
 				link.removeAttr(".connection/stroke-dasharray");
 			}
