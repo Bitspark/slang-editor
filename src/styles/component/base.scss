@@ -1,0 +1,12 @@
+.sl-container {
+	@extend %translucent;
+	display: block;
+
+	> .sl-box {
+		@extend %hovering;
+		padding: 4px;
+	}
+}
+
+@import "form";
+@import "blueprint-select";

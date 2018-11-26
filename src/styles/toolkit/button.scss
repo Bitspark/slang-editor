@@ -1,0 +1,65 @@
+button, .sl-btn {
+	@extend %bordered;
+	@extend %transition;
+
+	font-size: .7rem;
+	text-align: center;
+	text-transform: uppercase;
+	padding: 6px 12px 4px;
+
+	display: inline-block;
+
+	user-select: none;
+
+	&.sl-fullwidth {
+		display: block;
+	}
+
+	color: $black;
+	background: $white;
+
+	cursor: default;
+
+	&.sl-not-allowed {
+		cursor: not-allowed;
+	}
+
+	&.sl-clickable {
+		cursor: pointer;
+		transition-property: background-color, color;
+
+		&:hover {
+			color: $white;
+			background: $black;
+		}
+	}
+
+	&.sl-warn {
+		background: $yellow;
+	}
+
+	&.sl-green {
+		background: $green;
+	}
+
+	&.sl-green-pulsing {
+		cursor: progress;
+		@keyframes isPulsing {
+			from {
+				background-color: transparentize($green, .6);
+			}
+
+			to {
+				background-color: transparentize($green, .05);
+			}
+		}
+
+		background: $green;
+		color: $white;
+		animation: isPulsing;
+		animation-timing-function: ease-out;
+		animation-duration: 600ms;
+		animation-direction: alternate;
+		animation-iteration-count: infinite;
+	}
+}

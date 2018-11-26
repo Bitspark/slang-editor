@@ -1,11 +1,10 @@
 .sl-blupr-menu {
-	@extend %proto-container;
 	overflow-y: scroll;
 	width: $container-width;
 	max-height: 384px;
 	background: $white;
 
-	@import "list";
+	@import "../toolkit/list";
 
 	.sl-list-item {
 		cursor: pointer;
@@ -27,4 +26,3 @@
 	}
 
 }
-

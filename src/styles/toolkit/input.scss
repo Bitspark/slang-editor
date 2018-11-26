@@ -1,0 +1,36 @@
+.sl-input {
+	.sl-input-outer {
+		position: relative;
+		width: 100%;
+
+		label {
+			display: inline-block;
+			font-size: .7rem;
+			margin-right: 8px;
+		}
+
+		.sl-input-inner {
+			display: inline-block;
+			@extend %bordered;
+			border-radius: 500px;
+			background: $dim;
+
+			.sl-input-wrap {
+				margin: 2px 12px;
+
+				input {
+					font-size: .7rem;
+					background: transparent;
+					border: none;
+					width: 100%
+				}
+			}
+		}
+	}
+
+	&.sl-fullwidth {
+		.sl-input-inner {
+			width: 100%;
+		}
+	}
+}
