@@ -1,6 +1,5 @@
-import m, {CVnodeDOM} from "mithril";
-import {ClassComponent, CVnode} from "mithril";
-import {SlangType, TypeIdentifier} from "../../custom/type";
+import m, {ClassComponent, CVnode, CVnodeDOM} from "mithril";
+import {SlangType, SlangTypeDef, TypeIdentifier} from "../../custom/type";
 
 export interface MithrilMouseEvent extends MouseEvent {
 	redraw: boolean
@@ -183,11 +182,12 @@ export namespace Button {
 	}
 }
 
+
 interface Input<T, A extends Input.Attrs<T>> extends ClassComponent<A> {
 }
 
 abstract class SimpleInput<T> implements Input<T, Input.Attrs<T>> {
-	constructor(private inputType: "button" | "number" | "text" | "checkbox") {
+	constructor(private inputType: "button" | "number" | "text" | "checkbox" | "file", private className: string) {
 	}
 
 	view({attrs}: CVnode<Input.Attrs<T>>) {
@@ -195,7 +195,7 @@ abstract class SimpleInput<T> implements Input<T, Input.Attrs<T>> {
 		const labelText = (labelName) ? `${attrs.label}:` : "";
 		const that = this;
 
-		return m(".sl-input",
+		return m(`.sl-input.${this.className}`,
 			{
 				class: attrs.class,
 			},
@@ -243,76 +243,89 @@ export namespace Input {
 
 export class StringInput extends SimpleInput<string> {
 	constructor() {
-		super("text");
+		super("text", "string");
 	}
 }
 
 export class NumberInput extends SimpleInput<number> {
 	constructor() {
-		super("number");
+		super("number", "number");
 	}
 }
 
-export class BooleanInput extends SimpleInput<Boolean> {
+export class BooleanInput extends SimpleInput<boolean> {
 	constructor() {
-		super("checkbox");
+		super("checkbox", "boolean");
 	}
 }
 
+export class FileInput extends SimpleInput<string> {
+	constructor() {
+		super("file", "file");
+	}
+
+}
 
 export class TypeInput implements Input<any, TypeInput.Attrs> {
 	//private name: string = "";
 	private type: SlangType | undefined;
+	private static SpecialInput: Array<[m.ComponentTypes<Input.Attrs<any>, Input<any, Input.Attrs<any>>>, SlangTypeDef]> = [
+		[FileInput, {
+			type: TypeIdentifier.Map,
+			map: {
+				file: {type: TypeIdentifier.Binary},
+				name: {type: TypeIdentifier.String},
+			}
+		}],
+	];
 
 	oninit({attrs}: CVnode<TypeInput.Attrs>) {
 		this.type = attrs.type;
 	}
 
-	view({attrs}: CVnode<TypeInput.Attrs>): any {
-		if (!this.type) return m(".sl-inp.undef");
+	private getInputComponent(attrs: TypeInput.Attrs): any {
 		const t = this.type;
-		switch (this.type.getTypeIdentifier()) {
+
+		if (!t) {
+			return;
+		}
+
+		switch (t.getTypeIdentifier()) {
 			case TypeIdentifier.Map:
-				return m(MapInputField, {
-					label: attrs.label,
+				const typeDef = t.toSlangTypeDef();
+				const foundInpComps = TypeInput.SpecialInput
+					.filter(([inp, tyDef]) => Object.is(tyDef, typeDef))
+					.map(([inp, _]) => inp);
+
+				if (foundInpComps.length) {
+					return m(foundInpComps[0], attrs);
+				}
+				return m(MapInputField, Object.assign(attrs, {
 					entries: t.getMapSubs(),
-					class: attrs.class + " sl-inp-grp map",
-					onInput: attrs.onInput,
-				});
+				}));
 
 			case TypeIdentifier.Stream:
-				return m(StreamInputField, {
-					label: attrs.label,
+				return m(StreamInputField, Object.assign(attrs, {
 					type: t.getStreamSub(),
-					class: attrs.class + " sl-inp-grp stream",
-					onInput: attrs.onInput,
-				});
+				}));
 
 			case TypeIdentifier.Number:
-				return m(NumberInput, {
-					label: attrs.label,
-					class: attrs.class + " number",
-					onInput: attrs.onInput,
-				});
+				return m(NumberInput, attrs);
 
 			case TypeIdentifier.Boolean:
-				return m(BooleanInput, {
-					label: attrs.label,
-					class: attrs.class + " boolean",
-					onInput: attrs.onInput,
-				});
+				return m(BooleanInput, attrs);
 
 			case TypeIdentifier.Trigger:
 				attrs.onInput(null);
 				return;
 
 			default:
-				return m(StringInput, {
-					label: attrs.label,
-					class: attrs.class + " string",
-					onInput: attrs.onInput,
-				});
+				return m(StringInput, attrs);
 		}
+	}
+
+	view({attrs}: CVnode<TypeInput.Attrs>): any {
+		return this.getInputComponent(attrs);
 	}
 }
 
@@ -329,7 +342,7 @@ export class MapInputField implements ClassComponent<MapInput.Attrs> {
 		const labelName = attrs.label;
 		const labelText = (labelName) ? `${attrs.label}:` : "";
 		const values = this.values;
-		return m("div", {class: attrs.class},
+		return m(".sl-inp-grp.map", {class: attrs.class},
 			m("label", {
 				for: labelName
 			}, [
@@ -369,7 +382,7 @@ export class StreamInputField implements ClassComponent<StreamInput.Attrs> {
 		const labelText = (labelName) ? `${attrs.label}:` : "";
 		const that = this;
 
-		return m("div", {class: attrs.class},
+		return m(".sl-inp-grp.stream", {class: attrs.class},
 			m("label", {
 				for: labelName
 			}, [
