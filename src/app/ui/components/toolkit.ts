@@ -16,6 +16,34 @@ export enum Keypress {
 	Down,
 }
 
+export class JSONObj implements ClassComponent<{ value: any }> {
+
+	private getChildren(value: any): any {
+		if (value instanceof Object) {
+			return Object.keys(value).map((key: string) => [
+					m(".sl-json-pair",
+						m(".sl-json-key", key),
+						m(".sl-json-val", this.getChildren(value[key])),
+					)
+				]
+			);
+		} else if (value instanceof Array) {
+			return value.map((val: any, i: number) => [
+				m(".sl-json-pair",
+					m(".sl-json-key", i),
+					m(".sl-json-val", this.getChildren(val))
+				)
+			]);
+		} else {
+			return JSON.stringify(value);
+		}
+	}
+
+	view({attrs}: CVnode<{ value: any }>) {
+		return m(".sl-json", this.getChildren(attrs.value));
+	}
+}
+
 export class Container implements ClassComponent<{}> {
 	view({children}: CVnode<{}>) {
 		return m(".sl-container", children);
@@ -386,3 +414,4 @@ export namespace StreamInput {
 		type: SlangType
 	}
 }
+

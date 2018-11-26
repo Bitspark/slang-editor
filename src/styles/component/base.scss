@@ -6,6 +6,7 @@
 		@extend %rounded;
 		@extend %hovering;
 		padding: 2px;
+		overflow: hidden;
 
 		> * {
 			@extend %rounded;

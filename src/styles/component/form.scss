@@ -73,3 +73,13 @@
 	}
 }
 
+
+.sl-op-output {
+	background: $white;
+	min-width: 120px;
+	max-width: $container-width;
+	max-height: 600px;
+	background: $white;
+	overflow-y: scroll;
+	padding: 4px;
+}

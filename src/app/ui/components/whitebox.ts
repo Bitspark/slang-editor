@@ -15,7 +15,7 @@ import {Connection} from "../../custom/connections";
 import {OperatorModel} from "../../model/operator";
 import {BlueprintDelegateModel} from "../../model/delegate";
 import {SlangType, SlangTypeValue} from "../../custom/type";
-import {Button, List, ListItem, MithrilMouseEvent, TypeInput} from "./toolkit";
+import {Button, JSONObj, List, ListItem, MithrilMouseEvent, TypeInput} from "./toolkit";
 
 export class WhiteBoxComponent extends Component {
 	private static readonly padding = 120;
@@ -533,9 +533,11 @@ export namespace WhiteBoxComponent {
 		}
 
 		view({attrs}: CVnode<DataOutputDisplay.Attrs>): any {
-			return m(List, this.buffer.map((outputData) => {
-				return m(ListItem, JSON.stringify(outputData));
-			}));
+			return m(List, {"class": "sl-op-output"},
+				this.buffer.map((outputData) => {
+					return m(ListItem, m(JSONObj, {value: outputData}));
+				})
+			);
 		}
 	}
 
