@@ -1,0 +1,28 @@
+.sl-list {
+	position: relative;
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+.sl-list-item, .sl-list-head {
+	@extend %transition;
+	padding: 18px 32px 16px 32px;
+	border-bottom: 1px solid transparentize($black, .85);
+	transition: background-color, color;
+	background: $white;
+	cursor: default;
+}
+
+.sl-list-head {
+	position: sticky;
+	top: 0;
+	left: 0;
+	right: 0;
+}
+
+.sl-list-item {
+	&:last-child {
+		border-bottom: 0;
+	}
+}

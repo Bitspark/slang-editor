@@ -6,6 +6,16 @@ export interface MithrilMouseEvent extends MouseEvent {
 	redraw: boolean
 }
 
+export interface MithrilKeyboardEvent extends KeyboardEvent {
+	redraw: boolean
+}
+
+export enum Keypress {
+	Enter,
+	Up,
+	Down,
+}
+
 
 export class List implements ClassComponent<List.Attrs> {
 	oninit({attrs}: CVnode<List.Attrs>) {
@@ -21,15 +31,48 @@ export class List implements ClassComponent<List.Attrs> {
 export namespace List {
 	export interface Attrs {
 		class?: string
+		onMouseEnter?: (e: MithrilMouseEvent) => void
+		onMouseLeave?: (e: MithrilMouseEvent) => void
+		onKey?: {
+			[keyevent in keyof Keypress]: (e: MithrilKeyboardEvent) => void
+		}
 	}
 }
 
-export class ListEntry implements ClassComponent<{}> {
-	oninit({attrs}: CVnode<{}>) {
+export class ListItem implements ClassComponent<ListItem.Attrs> {
+	oninit({attrs}: CVnode<ListItem.Attrs>) {
 	}
 
-	view({children, attrs}: CVnode<{}>) {
-		return m("li.sl-list-enrty", children);
+	view({children, attrs}: CVnode<ListItem.Attrs>) {
+		return m("li.sl-list-item", {
+			class: attrs.class,
+			onmouseenter: attrs.onMouseEnter,
+			onmouseleave: attrs.onMouseLeave,
+			onclick: attrs.onClick,
+		}, children);
+	}
+}
+
+export class ListHead extends ListItem {
+	oninit({attrs}: CVnode<ListItem.Attrs>) {
+	}
+
+	view({children, attrs}: CVnode<ListItem.Attrs>) {
+		return m("li.sl-list-head", {
+			class: attrs.class,
+			onmouseenter: attrs.onMouseEnter,
+			onmouseleave: attrs.onMouseLeave,
+			onclick: attrs.onClick,
+		}, children);
+	}
+}
+
+export namespace ListItem {
+	export interface Attrs {
+		class?: string
+		onMouseEnter?: (e: MithrilMouseEvent) => void
+		onMouseLeave?: (e: MithrilMouseEvent) => void
+		onClick?: (e: MithrilMouseEvent) => void
 	}
 }
 

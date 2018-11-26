@@ -55,6 +55,7 @@
 						bottom: 0;
 						color: transparentize($red, .3);
 						background: $white;
+
 						&:hover {
 							color: $white;
 							background: transparentize($red, .3);
@@ -85,6 +86,7 @@
 			font-size: .7rem;
 			margin-right: 8px;
 		}
+
 		.sl-input-inner {
 			display: inline-block;
 			@extend %bordered;
@@ -93,6 +95,7 @@
 
 			.sl-input-wrap {
 				margin: 2px 12px;
+
 				input {
 					font-size: .7rem;
 					background: transparent;
@@ -147,12 +150,15 @@ button, .sl-btn {
 	background: $white;
 
 	cursor: default;
+
 	&.sl-not-allowed {
 		cursor: not-allowed;
 	}
+
 	&.sl-clickable {
 		cursor: pointer;
 		transition-property: background-color, color;
+
 		&:hover {
 			color: $white;
 			background: $black;

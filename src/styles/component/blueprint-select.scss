@@ -4,43 +4,27 @@
 	width: $container-width;
 	max-height: 384px;
 	background: $white;
-}
 
-.sl-blupr-fltr {
-	position: fixed;
-	padding: 4px;
-	.sl-input {
-		width: 332px;
-	}
-}
+	@import "list";
 
-.sl-blupr-entries {
-	> * {
-		padding: 18px 32px 16px 32px;
-		border-bottom: 1px solid transparentize($black, .85);
-
+	.sl-list-item {
 		cursor: pointer;
-		@extend %transition;
-		transition: background-color, color;
-
 		background: $white;
 
 		&:hover {
 			background-color: $black;
 			color: $white;
 		}
-
-		&:first-child {
-			margin-top: 27px;
-		}
-
-		&:last-child {
-			border-bottom: 0;
-		}
 	}
 
-	.sl-blupr-entry-none {
-		padding: 0;
-		border-bottom: 0;
+	.sl-list-head {
+		position: sticky;
+		top: 0;
+		left: 0;
+		right: 0;
+		padding: 4px;
+		border: 0;
 	}
+
 }
+
