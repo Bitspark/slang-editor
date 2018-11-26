@@ -3,6 +3,22 @@ import {SlangType, TypeIdentifier} from "./type";
 import {StreamType} from "./stream";
 import {PortOwner} from "./nodes";
 
+function streamTypesCompatible(streamTypeA: SlangType, streamTypeB: SlangType): boolean {
+	const subA = streamTypeA.getStreamSub();
+	const subB = streamTypeB.getStreamSub();
+	return typesCompatibleTo(subA, subB);
+}
+
+function mapTypesCompatibleTo(mapTypeA: SlangType, mapTypeB: SlangType): boolean {
+	for (const subA of mapTypeA.getMapSubs()) {
+		const subB = Array.from(mapTypeB.getMapSubs()).find(subB => subB[0] === subA[0]);
+		if (!subB || !typesCompatibleTo(subA[1], subB[1])) {
+			return false;
+		}
+	}
+	return true;
+}
+
 function typesCompatibleTo(sourceType: SlangType, destinationType: SlangType): boolean {
 	if (destinationType.getTypeIdentifier() === TypeIdentifier.Trigger) {
 		return true;
@@ -13,20 +29,32 @@ function typesCompatibleTo(sourceType: SlangType, destinationType: SlangType): b
 	if (sourceType.getTypeIdentifier() === TypeIdentifier.Primitive && destinationType.isPrimitive()) {
 		return true;
 	}
-	if (sourceType.getTypeIdentifier() === TypeIdentifier.Map) {
-		// TODO: Implement once we have collapsible ports
-		return false;
+	if (sourceType.getTypeIdentifier() === TypeIdentifier.Map && 
+		destinationType.getTypeIdentifier() === TypeIdentifier.Map) {
+		return mapTypesCompatibleTo(sourceType, destinationType);
 	}
-	if (sourceType.getTypeIdentifier() === TypeIdentifier.Stream) {
-		// TODO: Implement once we have collapsible ports
-		return false;
+	if (sourceType.getTypeIdentifier() === TypeIdentifier.Stream && 
+		destinationType.getTypeIdentifier() === TypeIdentifier.Stream) {
+		return streamTypesCompatible(sourceType, destinationType);
 	}
 	return sourceType.getTypeIdentifier() === destinationType.getTypeIdentifier();
 }
 
+function commonStreamType(searchStream: StreamType, stream: StreamType): boolean {
+	let baseStream: StreamType | null = searchStream;
+	while (baseStream !== null) {
+		const streamIndex = stream.findStreamType(baseStream);
+		if (streamIndex !== -1) {
+			return true;
+		}
+		baseStream = baseStream.getBaseStreamOrNull();
+	}
+	return false;
+}
+
 function fluentStreamCompatibleTo(fluentStream: StreamType, stream: StreamType): boolean {
 	if (stream.getRootStream().isPlaceholder()) {
-		return true;
+		return !commonStreamType(fluentStream, stream) && !commonStreamType(stream, fluentStream);
 	} else {
 		// Non-fluent stream must have at least the depth of the fluent stream
 		return stream.getStreamDepth() >= fluentStream.getStreamDepth();
@@ -35,7 +63,7 @@ function fluentStreamCompatibleTo(fluentStream: StreamType, stream: StreamType):
 
 function streamsCompatibleTo(streamA: StreamType | null, streamB: StreamType | null): boolean {
 	if (!streamA || !streamB) {
-		return false;
+		return !streamA && !streamB;
 	}
 	
 	if (streamA === streamB) {
@@ -56,12 +84,16 @@ function streamsCompatibleTo(streamA: StreamType | null, streamB: StreamType | n
 		return fluentStreamCompatibleTo(streamB, streamA);
 	}
 	
-	return streamsCompatibleTo(streamA.getBaseStream(), streamB.getBaseStream());
+	return streamsCompatibleTo(streamA.getBaseStreamOrNull(), streamB.getBaseStreamOrNull());
 }
 
 function collectAncestorOwners(port: PortModel, owners: Set<PortOwner>) {
 	const owner = port.getOwner();
 	if (owners.has(owner)) {
+		return;
+	}
+
+	if (port.getOwner().getStreamPortOwner().isStreamSource()) {
 		return;
 	}
 	
@@ -78,14 +110,7 @@ function collectAncestorOwners(port: PortModel, owners: Set<PortOwner>) {
 	}
 }
 
-function cycleCompatibleTo(source: PortModel, destination: PortModel): boolean {
-	if (source.getOwner().getStreamPortOwner().isStreamSource()) {
-		return true;
-	}
-	if (destination.getOwner().getStreamPortOwner().isStreamSource()) {
-		return true;
-	}
-	
+function cycleCompatibleTo(source: PortModel, destination: PortModel): boolean {	
 	const ancestorOwners = new Set<PortOwner>();
 	collectAncestorOwners(source, ancestorOwners);
 	return !ancestorOwners.has(destination.getOwner());

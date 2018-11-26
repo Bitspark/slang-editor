@@ -61,6 +61,10 @@ export class StreamType {
 		}
 		return this.baseStream;
 	}
+	
+	public getBaseStreamOrNull(): StreamType | null {
+		return this.baseStream;
+	}
 
 	public getRootStream(): StreamType {
 		if (!this.baseStream) {
