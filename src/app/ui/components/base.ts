@@ -1,4 +1,4 @@
-import m  from "mithril";
+import m from "mithril";
 import {dia, g} from "jointjs";
 import {PaperView} from "../views/paper-view";
 import {Box, Container} from "./toolkit";
@@ -77,15 +77,7 @@ export abstract class AnchoredComponent extends Component {
 		return el;
 	}
 
-	private hasMountedElement(): boolean {
-		return !!this.htmlRoot.innerHTML;
-	}
-
 	protected draw() {
-		if (!this.hasMountedElement()) {
-			return;
-		}
-
 		const {x, y} = this.getClientXY();
 		const align = this.align;
 
