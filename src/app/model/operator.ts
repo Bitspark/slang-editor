@@ -1,7 +1,7 @@
 import {BlueprintModel, BlueprintType} from "./blueprint";
 import {OperatorPortModel, PortModelArgs} from "./port";
 import {OperatorDelegateModel} from "./delegate";
-import {BlackBox, StreamType} from "../custom/nodes";
+import {BlackBox} from "../custom/nodes";
 import {Connections} from "../custom/connections";
 import {SlangBehaviorSubject} from "../custom/events";
 
@@ -22,7 +22,7 @@ export class OperatorModel extends BlackBox {
 	private readonly geometry: Geometry | undefined;
 
 	constructor(parent: BlueprintModel, args: OperatorModelArgs) {
-		super(parent);
+		super(parent, false);
 		this.name = args.name;
 		this.blueprint = args.blueprint;
 		this.geometry = args.geometry;
@@ -45,13 +45,7 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public createPort(args: PortModelArgs): OperatorPortModel {
-		const port = this.createChildNode(OperatorPortModel, args);
-		if (port.isDestination()) {
-			port.subscribeStreamTypeChanged(streamType => {
-				this.setBaseStreamType(streamType);
-			});
-		}
-		return port;
+		return this.createChildNode(OperatorPortModel, args);
 	}
 
 	public getDelegates(): IterableIterator<OperatorDelegateModel> {
@@ -63,7 +57,7 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public getDisplayName(): string {
-		return this.blueprint.getShortName();
+		return this.getBlueprint().getShortName();
 	}
 
 	public getConnectionsTo(): Connections {
@@ -86,14 +80,6 @@ export class OperatorModel extends BlackBox {
 	public get position(): { x: number, y: number } | undefined {
 		if (this.geometry) {
 			return {x: this.geometry.position[0], y: this.geometry.position[1]};
-		}
-	}
-
-	protected setBaseStreamType(baseStreamType: StreamType | null): void {
-		super.setBaseStreamType(baseStreamType);
-		const portOut = this.getPortOut();
-		if (portOut) {
-			portOut.setSubStreamTypes(baseStreamType);
 		}
 	}
 

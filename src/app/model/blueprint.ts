@@ -41,7 +41,7 @@ export class BlueprintModel extends BlackBox {
 	private genericIdentifiers: Set<string>;
 
 	constructor(parent: LandscapeModel, {fullName, type}: BlueprintModelArgs) {
-		super(parent);
+		super(parent, true);
 		this.fullName = fullName;
 		this.type = type;
 		this.hierarchy = fullName.split(".");
@@ -129,14 +129,7 @@ export class BlueprintModel extends BlackBox {
 	}
 
 	public createPort(args: PortModelArgs): BlueprintPortModel {
-		const port = this.createChildNode(BlueprintPortModel, args);
-		if (port.isSource()) {
-			if (this.getBaseStreamType()) {
-				throw new Error(`blueprint already has a base stream`);
-			}
-			this.setBaseStreamType(port.createStream());
-		}
-		return port;
+		return this.createChildNode(BlueprintPortModel, args);
 	}
 
 	public getFullName(): string {
@@ -287,6 +280,10 @@ export class BlueprintModel extends BlackBox {
 	public getInstanceAccess(): BlueprintInstance | null {
 		return this.instance.getValue();
 	}
+	
+	public isStreamSource(): boolean {
+		return true;
+	}
 
 	// Actions
 
@@ -344,4 +341,5 @@ export class BlueprintModel extends BlackBox {
 	public subscribeShutdownRequested(cb: (opened: boolean) => void): void {
 		this.shutdownRequested.subscribe(cb);
 	}
+	
 }

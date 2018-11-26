@@ -113,14 +113,6 @@ export class WhiteBoxComponent extends AnchorComponent {
 		});
 
 		this.blueprint.subscribeDescendantCreated(GenericPortModel, port => {
-			port.subscribeStreamTypeChanged(() => {
-				this.connections
-					.filter(connectionComponent => connectionComponent.getConnection().source === port)
-					.forEach(connectionComponent => connectionComponent.refresh());
-			});
-		});
-
-		this.blueprint.subscribeDescendantCreated(GenericPortModel, port => {
 			if (!port.isSource()) {
 				return;
 			}
@@ -441,7 +433,7 @@ export namespace WhiteBoxComponent {
 			z: -2,
 			attrs: {
 				root: {
-					class: "joint-cell joint-element sl-blackbox ${cssClass}",
+					class: "joint-cell joint-element sl-blackbox",
 				},
 			},
 		};

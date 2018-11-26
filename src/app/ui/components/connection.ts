@@ -35,6 +35,8 @@ export class ConnectionComponent {
 
 	private readonly link: dia.Link;
 	private readonly id: string;
+	
+	public static refreshActive: boolean = true;
 
 	constructor(private graph: dia.Graph, private connection: Connection) {
 		const ownerIds = ConnectionComponent.getBoxOwnerIds(connection);
@@ -64,6 +66,19 @@ export class ConnectionComponent {
 		});
 		this.refresh();
 		this.link.addTo(graph);
+
+		[connection.source, connection.destination].forEach(port => {
+			port.getStreamPort().subscribeRefreshStreamType(stream => {
+				if (ConnectionComponent.refreshActive) {
+					this.refresh();
+					if (stream) {
+						stream.subscribeNestingChanged(() => {
+							this.refresh();
+						});
+					}
+				}
+			});
+		});
 	}
 
 	public refresh(): void {
@@ -96,18 +111,25 @@ export class ConnectionComponent {
 		return link;
 	}
 
-	private static refresh(sourcePort: PortModel, destinationPort: PortModel | null, link: dia.Link) {
-		const stream = sourcePort.getStreamType();
+	private static refresh(sourcePort: PortModel, destinationPort: PortModel | null, link: dia.Link) {		
+		const stream = sourcePort.getStreamPort().getStreamType();
 		const lines = stream ? stream.getStreamDepth() : 1;
 
 		link.connector(slangConnector(sourcePort, destinationPort, lines));
 		link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(sourcePort.getTypeIdentifier()));
 		link.attr(".connection/stroke-width", lines === 1 ? 2 : 1);
 		link.attr(".connection/vector-effect", Styles.Connection.Ordinary.vectorEffect);
+		
 		if (!stream) {
-			link.attr(".connection/stroke-dasharray", 4);
+			link.attr(".connection/stroke-dasharray", 5);
 		} else {
-			link.removeAttr(".connection/stroke-dasharray");
+			if (stream.getRootStream().isPlaceholder()) {
+				link.attr(".connection/stroke-dasharray", 5);
+			} else if (stream.isPlaceholder()) {
+				link.attr(".connection/stroke-dasharray", 1);
+			} else {
+				link.removeAttr(".connection/stroke-dasharray");
+			}
 		}
 	}
 

@@ -25,7 +25,7 @@ export class PropertyAssignment {
 		return this.value;
 	}
 
-	public isStreamType(): boolean {
+	public isStream(): boolean {
 		return this.property.getTypeIdentifier() === TypeIdentifier.Stream;
 	}
 }

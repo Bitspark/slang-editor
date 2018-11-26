@@ -5,8 +5,8 @@ import {BlackBox, PortOwner} from "../custom/nodes";
 import {Connections} from "../custom/connections";
 
 export abstract class GenericDelegateModel<B extends BlackBox, P extends PortModel> extends PortOwner {
-	protected constructor(parent: B, private name: string) {
-		super(parent);
+	protected constructor(parent: B, private name: string, streamSource: boolean) {
+		super(parent, streamSource);
 	}
 
 	public getName(): string {
@@ -31,7 +31,7 @@ export type BlueprintDelegateModelArgs = { name: string };
 
 export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel, BlueprintPortModel> {
 	constructor(owner: BlueprintModel, {name}: BlueprintDelegateModelArgs) {
-		super(owner, name);
+		super(owner, name, false);
 	}
 
 	public createPort(args: PortModelArgs): BlueprintPortModel {
@@ -51,17 +51,14 @@ export type OperatorDelegateModelArgs = { name: string };
 
 export class OperatorDelegateModel extends GenericDelegateModel<OperatorModel, OperatorPortModel> {
 	constructor(owner: OperatorModel, {name}: OperatorDelegateModelArgs) {
-		super(owner, name);
+		super(owner, name, true);
+	}
+
+	public isStreamSource(): boolean {
+		return true;
 	}
 
 	public createPort(args: PortModelArgs): OperatorPortModel {
-		const port = this.createChildNode(OperatorPortModel, args);
-		if (port.isSource()) {
-			if (this.getBaseStreamType()) {
-				throw new Error(`operator delegate already has a base stream`);
-			}
-			this.setBaseStreamType(port.createStream());
-		}
-		return port;
+		return this.createChildNode(OperatorPortModel, args);
 	}
 }
