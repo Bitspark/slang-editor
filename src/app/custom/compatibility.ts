@@ -24,25 +24,39 @@ function typesCompatibleTo(sourceType: SlangType, destinationType: SlangType): b
 	return sourceType.getTypeIdentifier() === destinationType.getTypeIdentifier();
 }
 
-function streamsCompatibleTo(sourceStream: StreamType | null, destinationStream: StreamType | null): boolean {
-	if (!sourceStream || !destinationStream) {
+function fluentStreamCompatibleTo(fluentStream: StreamType, stream: StreamType): boolean {
+	if (stream.getRootStream().isPlaceholder()) {
+		return true;
+	} else {
+		// Non-fluent stream must have at least the depth of the fluent stream
+		return stream.getStreamDepth() >= fluentStream.getStreamDepth();
+	}
+}
+
+function streamsCompatibleTo(streamA: StreamType | null, streamB: StreamType | null): boolean {
+	if (!streamA || !streamB) {
 		return false;
 	}
 	
-	if (sourceStream === destinationStream) {
+	if (streamA === streamB) {
+		// Identical stream types
 		return true;
 	}
 	
-	if (!sourceStream.isPlaceholder() && !destinationStream.isPlaceholder()) {
+	if (!streamA.isPlaceholder() && !streamB.isPlaceholder()) {
+		// Incompatible stream types
 		return false;
 	}
 
-	if (sourceStream.getRootStream().isPlaceholder() || destinationStream.getRootStream().isPlaceholder()) {
-		// TODO: This does not always work! Consider depth
-		return true;
+	if (streamA.getRootStream().isPlaceholder()) {
+		return fluentStreamCompatibleTo(streamA, streamB);
 	}
 	
-	return streamsCompatibleTo(sourceStream.getBaseStream(), destinationStream.getBaseStream());
+	if (streamB.getRootStream().isPlaceholder()) {
+		return fluentStreamCompatibleTo(streamB, streamA);
+	}
+	
+	return streamsCompatibleTo(streamA.getBaseStream(), streamB.getBaseStream());
 }
 
 function collectAncestorOwners(port: PortModel, owners: Set<PortOwner>) {
@@ -65,6 +79,13 @@ function collectAncestorOwners(port: PortModel, owners: Set<PortOwner>) {
 }
 
 function cycleCompatibleTo(source: PortModel, destination: PortModel): boolean {
+	if (source.getOwner().getStreamPortOwner().isStreamSource()) {
+		return true;
+	}
+	if (destination.getOwner().getStreamPortOwner().isStreamSource()) {
+		return true;
+	}
+	
 	const ancestorOwners = new Set<PortOwner>();
 	collectAncestorOwners(source, ancestorOwners);
 	return !ancestorOwners.has(destination.getOwner());

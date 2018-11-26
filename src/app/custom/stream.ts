@@ -146,6 +146,23 @@ export class StreamType {
 		return me;
 	}
 
+	public findStreamType(stream: StreamType): number {
+		if (this === stream) {
+			return 0;
+		}
+		
+		if (this.baseStream) {
+			const baseIndex = this.baseStream.findStreamType(stream);
+			if (baseIndex === -1) {
+				return baseIndex;
+			} else {
+				return baseIndex + 1;
+			}
+		}
+		
+		return -1;
+	}
+	
 }
 
 export class StreamPort {
