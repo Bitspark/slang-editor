@@ -82,7 +82,7 @@ export class BlueprintSelectComponent extends Component {
 		this.ghostRect = this.placeGhostRect({x, y});
 		this.menu = this.createComponent({x: 0, y: 0, align: "tl"})
 			.attachTo(this.ghostRect, "c")
-			.mount({
+			.mount("[]", {
 				view: () => m(BlueprintMenuComponent, {
 					onLoad: () => this.getBlueprints(),
 					onFilter: (fltrExpr: string) => {

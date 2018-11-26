@@ -16,6 +16,17 @@ export enum Keypress {
 	Down,
 }
 
+export class Container implements ClassComponent<{}> {
+	view({children}: CVnode<{}>) {
+		return m(".sl-container", children);
+	}
+}
+
+export class Box implements ClassComponent<{}> {
+	view({children}: CVnode<{}>) {
+		return m(".sl-box", children);
+	}
+}
 
 export class List implements ClassComponent<List.Attrs> {
 	oninit({attrs}: CVnode<List.Attrs>) {

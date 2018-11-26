@@ -1,7 +1,7 @@
-import m, {CVnode, Vnode} from "mithril";
+import m  from "mithril";
 import {dia, g} from "jointjs";
 import {PaperView} from "../views/paper-view";
-import {ClassComponent} from "mithril";
+import {Box, Container} from "./toolkit";
 
 
 export type Alignment =
@@ -126,14 +126,22 @@ export abstract class AnchoredComponent extends Component {
 		this.htmlRoot.style.left = `${left}px`;
 	}
 
-	public mount(mComp: m.Component): this {
+	public mount(wrapped: "[]" | " ", component: m.Component): this {
 		this.unmount();
 
-		m.mount(this.htmlRoot, {
-			view: () => {
-				return m(".sl-container", m(mComp));
-			}
-		});
+		if (wrapped === "[]") {
+			m.mount(this.htmlRoot, {
+				view: () => {
+					return m(Container, m(Box, m(component)));
+				}
+			});
+		} else {
+			m.mount(this.htmlRoot, {
+				view: () => {
+					return m(Container, m(component));
+				}
+			});
+		}
 
 		this.draw();
 		return this;

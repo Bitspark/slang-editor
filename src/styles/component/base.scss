@@ -3,8 +3,13 @@
 	display: block;
 
 	> .sl-box {
+		@extend %rounded;
 		@extend %hovering;
-		padding: 4px;
+		padding: 2px;
+
+		> * {
+			@extend %rounded;
+		}
 	}
 }
 
