@@ -6,18 +6,18 @@ import {GenericPortModel, PortDirection, PortModel} from "../model/port";
 import {TypeIdentifier} from "./type";
 
 export class StreamType {
-	
+
 	private static id = 0;
-	
+
 	private readonly id = StreamType.id++;
-	
+
 	private baseStream: StreamType | null = null;
-	
+
 	private readonly nestingChanged = new SlangSubjectTrigger("nesting");
 
 	private readonly startResetStreamTypeRequested = new SlangSubjectTrigger("mark-unreachable");
 	private readonly finishResetStreamTypeRequested = new SlangSubject<{ mark: SlangSubjectTrigger, repropagate: SlangSubjectTrigger, refresh: SlangSubjectTrigger }>("remove-unreachable");
-	
+
 	constructor(baseStream: StreamType | null, private source: PortModel | null) {
 		this.setBaseStream(baseStream);
 	}
@@ -31,11 +31,11 @@ export class StreamType {
 		}
 		return this.baseStream.hasPlaceholderAncestor();
 	}
-	
+
 	public hasPlaceholderRoot(): boolean {
 		return this.getRootStream().isPlaceholder();
 	}
-	
+
 	public isPlaceholder(): boolean {
 		return !this.source;
 	}
@@ -43,7 +43,7 @@ export class StreamType {
 	public createSubStream(source: PortModel | null): StreamType {
 		return new StreamType(this, source);
 	}
-	
+
 	public subscribeBaseStream(baseStream: StreamType): void {
 		baseStream.subscribeNestingChanged(() => {
 			this.nestingChanged.next();
@@ -56,7 +56,7 @@ export class StreamType {
 			this.finishResetStreamType(mark, repropagate, refresh);
 		});
 	}
-	
+
 	public setBaseStream(baseStream: StreamType | null): void {
 		if (baseStream) {
 			if (baseStream.hasAncestor(this)) {
@@ -65,7 +65,7 @@ export class StreamType {
 
 			this.subscribeBaseStream(baseStream);
 		}
-		
+
 		this.baseStream = baseStream;
 	}
 
@@ -76,24 +76,24 @@ export class StreamType {
 		}
 		return this.baseStream;
 	}
-	
+
 	public getBaseStreamOrNull(): StreamType | null {
 		return this.baseStream;
 	}
-	
+
 	public getSource(): PortModel | null {
 		return this.source;
 	}
-	
+
 	public fixedDepth(sum = 0, current = 0): number {
 		if (!this.isPlaceholder()) {
 			sum += 1 << current;
 		}
-		
+
 		if (!this.baseStream) {
 			return sum;
 		}
-		
+
 		return this.baseStream.fixedDepth(sum, current + 1);
 	}
 
@@ -110,7 +110,7 @@ export class StreamType {
 		}
 		return 1;
 	}
-	
+
 	private hasAncestor(stream: StreamType): boolean {
 		if (stream === this) {
 			return true;
@@ -124,7 +124,7 @@ export class StreamType {
 	public resetStreamType() {
 		this.getRootStream().resetStreamTypeRoot();
 	}
-	
+
 	private getStreamPortOwner(): StreamPortOwner | null {
 		if (!this.source) {
 			return null;
@@ -136,7 +136,7 @@ export class StreamType {
 		ConnectionComponent.refreshActive = false;
 		
 		const streamPortOwner = this.getStreamPortOwner();
-		
+
 		if (streamPortOwner && streamPortOwner.isStreamSource()) {
 			streamPortOwner.setMarkedForReset(true);
 		}
@@ -194,7 +194,7 @@ export class StreamType {
 		if (this === stream) {
 			return 0;
 		}
-		
+
 		if (this.baseStream) {
 			const baseIndex = this.baseStream.findStreamType(stream);
 			if (baseIndex === -1) {
@@ -203,7 +203,7 @@ export class StreamType {
 				return baseIndex + 1;
 			}
 		}
-		
+
 		return -1;
 	}
 }
@@ -218,7 +218,7 @@ function merge(oldStream: StreamType | null, newStream: StreamType | null): Stre
 	if (!newStream) {
 		return oldStream;
 	}
-	
+
 	if (newStream.getStreamDepth() > oldStream.getStreamDepth() || newStream.getStreamDepth() == oldStream.getStreamDepth() && newStream.fixedDepth() >= oldStream.fixedDepth()) {
 		return newStream;
 	} else {
@@ -407,7 +407,7 @@ export class StreamPort {
 		if (!newStream) {
 			return;
 		}
-		
+
 		const parent = this.port.getParentNode();
 		if (parent instanceof GenericPortModel) {
 			if (parent.getTypeIdentifier() === TypeIdentifier.Map) {
@@ -506,7 +506,7 @@ export class StreamPortOwner {
 				}));
 			}
 		}
-		
+
 		this.baseStreamType.next(stream);
 	}
 
