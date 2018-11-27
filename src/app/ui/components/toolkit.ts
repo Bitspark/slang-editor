@@ -362,9 +362,7 @@ export interface TypeInputAttrs extends InputAttrs<any> {
 }
 
 export class TypeInput implements ClassComponent<TypeInputAttrs> {
-	//private name: string = "";
 	private type: SlangType | undefined;
-	//private static CompositeInputs: Array<m.ComponentTypes<InputAttrs<any>>> = [
 	private static CompositeInputs: Array<CompositeInputType> = [
 		FileUploadInput,
 		ImageUploadInput
