@@ -1,17 +1,18 @@
-import {GenericSpecifications} from "../model/generic";
+import {GenericSpecifications} from "./generics";
 import {PropertyAssignments} from "../model/property";
 import {PropertyEvaluator} from "./utils";
 
 export enum TypeIdentifier {
-	Number, // 0
-	Binary, // 1
-	Boolean, // 2
-	String, // 3
-	Trigger, // 4
-	Primitive, // 5
-	Generic, // 6
-	Stream, // 7
-	Map, // 8
+	Unspecified, // 0
+	Number, // 1
+	Binary, // 2
+	Boolean, // 3
+	String, // 4
+	Trigger, // 5
+	Primitive, // 6
+	Generic, // 7
+	Stream, // 8
+	Map, // 9
 }
 
 export class SlangType {
@@ -142,6 +143,9 @@ export class SlangType {
 		return primitiveTypes.indexOf(this.getTypeIdentifier()) !== -1;
 	}
 
+	public isGeneric(): boolean {
+		return this.getTypeIdentifier() === TypeIdentifier.Generic;
+	}
 }
 
 export type SlangTypeValue = { [k: string]: any } | [] | string | number | boolean | null;

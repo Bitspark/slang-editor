@@ -22,6 +22,10 @@ function typesMapCompatibleTo(mapTypeA: SlangType, mapTypeB: SlangType): boolean
 }
 
 function typesCompatibleTo(sourceType: SlangType, destinationType: SlangType): boolean {
+	if (destinationType.getTypeIdentifier() === TypeIdentifier.Unspecified || 
+		sourceType.getTypeIdentifier() === TypeIdentifier.Unspecified) {
+		return true;
+	}
 	if (destinationType.getTypeIdentifier() === TypeIdentifier.Trigger) {
 		return true;
 	}

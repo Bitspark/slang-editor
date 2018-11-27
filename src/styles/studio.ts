@@ -3,6 +3,7 @@ import {TypeIdentifier} from "../app/custom/type";
 export namespace Styles {
 
 	const TypeColors: { [key in TypeIdentifier]: string } = {
+		[TypeIdentifier.Unspecified]: "#ffeff2",
 		[TypeIdentifier.Number]: "#2e49b3",
 		[TypeIdentifier.String]: "#a52e2e",
 		[TypeIdentifier.Boolean]: "#cb8000",

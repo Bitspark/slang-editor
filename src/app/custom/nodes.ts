@@ -2,6 +2,8 @@ import {GenericPortModel, PortModel, PortModelArgs} from "../model/port";
 import {DelegateModel} from "../model/delegate";
 import {SlangNodeSetBehaviorSubject} from "./events";
 import {StreamPortOwner} from "./stream";
+import {SlangType} from "./type";
+import {GenericSpecifications} from "./generics";
 
 type Type<T> = Function & { prototype: T };
 
@@ -184,7 +186,7 @@ export abstract class PortOwner extends SlangNode {
 	
 	private readonly streamPortOwner: StreamPortOwner;
 	
-	protected constructor(parent: SlangNode, streamSource: boolean) {
+	protected constructor(parent: SlangNode, streamSource: boolean, private generics: GenericSpecifications) {
 		super(parent);
 		this.streamPortOwner = new StreamPortOwner(this, streamSource);
 		this.streamPortOwner.initialize();
@@ -206,6 +208,10 @@ export abstract class PortOwner extends SlangNode {
 	
 	public getStreamPortOwner(): StreamPortOwner {
 		return this.streamPortOwner;
+	}
+	
+	public updateGeneric(genericIdentifier: string, specification: SlangType) {
+		
 	}
 
 }

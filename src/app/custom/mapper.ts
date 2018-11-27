@@ -13,7 +13,7 @@ import {BlueprintDelegateModel} from "../model/delegate";
 import {BlueprintPortModel, PortDirection} from "../model/port";
 import {PropertyAssignments, PropertyModel} from "../model/property";
 import {TypeIdentifier, SlangType} from "./type";
-import {GenericSpecifications} from "../model/generic";
+import {GenericSpecifications} from "./generics";
 
 function toTypeIdentifier(typeName: string): TypeIdentifier {
 	const type = ({
@@ -35,17 +35,17 @@ function toTypeIdentifier(typeName: string): TypeIdentifier {
 	return type;
 }
 
-function setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupApiResponse) {
+function setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupApiResponse, generics: GenericSpecifications) {
 	Object.keys(delegates).forEach((delegateName: string) => {
-		blueprint.createDelegate(delegateName, delegate => {
-			createPort(delegates[delegateName].in, delegate, PortDirection.In);
-			createPort(delegates[delegateName].out, delegate, PortDirection.Out);
+		blueprint.createDelegate({name: delegateName, generics}, delegate => {
+			createPort(delegates[delegateName].in, delegate, PortDirection.In, generics);
+			createPort(delegates[delegateName].out, delegate, PortDirection.Out, generics);
 		});
 	});
 }
 
-function createPort(typeDef: TypeDefApiResponse, owner: BlueprintModel | BlueprintDelegateModel, direction: PortDirection): BlueprintPortModel {
-	return owner.createPort({name: "", type: createTypeModel(typeDef), direction});
+function createPort(typeDef: TypeDefApiResponse, owner: BlueprintModel | BlueprintDelegateModel, direction: PortDirection, generics: GenericSpecifications): BlueprintPortModel {
+	return owner.createPort({name: "", type: createTypeModel(typeDef), direction, generics});
 }
 
 function createTypeModel(typeDef: TypeDefApiResponse): SlangType {
@@ -66,11 +66,11 @@ function createTypeModel(typeDef: TypeDefApiResponse): SlangType {
 	return type;
 }
 
-function setBlueprintServices(blueprint: BlueprintModel, services: PortGroupApiResponse) {
+function setBlueprintServices(blueprint: BlueprintModel, services: PortGroupApiResponse, generics: GenericSpecifications) {
 	const portInDef: TypeDefApiResponse = services["main"].in;
 	const portOutDef: TypeDefApiResponse = services["main"].out;
-	createPort(portInDef, blueprint, PortDirection.In);
-	createPort(portOutDef, blueprint, PortDirection.Out);
+	createPort(portInDef, blueprint, PortDirection.In, generics);
+	createPort(portOutDef, blueprint, PortDirection.Out, generics);
 }
 
 function setBlueprintProperties(blueprint: BlueprintModel, properties: PropertyApiResponse) {
@@ -113,12 +113,14 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
 			throw `unknown blueprint type '${bpData.type}'`;
 		}
 
-		const blueprint = landscape.createBlueprint({fullName: bpData.name, type});
+		const generics = new GenericSpecifications([]);
+		
+		const blueprint = landscape.createBlueprint({fullName: bpData.name, type, generics});
 		if (bpData.def.services) {
-			setBlueprintServices(blueprint, bpData.def.services);
+			setBlueprintServices(blueprint, bpData.def.services, generics);
 		}
 		if (bpData.def.delegates) {
-			setBlueprintDelegates(blueprint, bpData.def.delegates);
+			setBlueprintDelegates(blueprint, bpData.def.delegates, generics);
 		}
 		if (bpData.def.properties) {
 			setBlueprintProperties(blueprint, bpData.def.properties);

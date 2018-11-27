@@ -1,11 +1,12 @@
 import {BlueprintModel, BlueprintType} from "./blueprint";
 import {OperatorPortModel, PortModelArgs} from "./port";
-import {OperatorDelegateModel} from "./delegate";
+import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
 import {BlackBox} from "../custom/nodes";
 import {Connections} from "../custom/connections";
 import {SlangBehaviorSubject} from "../custom/events";
+import {GenericSpecifications} from "../custom/generics";
 
-export type OperatorModelArgs = { name: string, blueprint: BlueprintModel, geometry: Geometry | undefined };
+export type OperatorModelArgs = { name: string, blueprint: BlueprintModel, geometry: Geometry | undefined, generics: GenericSpecifications };
 
 export interface Geometry {
 	position: [number, number]
@@ -22,7 +23,7 @@ export class OperatorModel extends BlackBox {
 	private readonly geometry: Geometry | undefined;
 
 	constructor(parent: BlueprintModel, args: OperatorModelArgs) {
-		super(parent, false);
+		super(parent, false, args.generics);
 		this.name = args.name;
 		this.blueprint = args.blueprint;
 		this.geometry = args.geometry;
@@ -84,8 +85,8 @@ export class OperatorModel extends BlackBox {
 	}
 
 	// Actions
-	public createDelegate(name: string): OperatorDelegateModel {
-		return this.createChildNode(OperatorDelegateModel, {name});
+	public createDelegate(args: OperatorDelegateModelArgs): OperatorDelegateModel {
+		return this.createChildNode(OperatorDelegateModel, args);
 	}
 
 	public select() {

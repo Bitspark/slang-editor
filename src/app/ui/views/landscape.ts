@@ -4,6 +4,7 @@ import {LandscapeModel} from "../../model/landscape";
 import {BlackBoxComponent, BlueprintBoxComponent} from "../components/blackbox";
 import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";
+import {GenericSpecifications} from "../../custom/generics";
 
 export class LandscapeView extends PaperView {
 
@@ -216,7 +217,8 @@ export class LandscapeView extends PaperView {
 		rect.on("pointerup", function (evt: Event, x: number, y: number) {
 			that.landscape.createBlueprint({
 				fullName: `Unnamed${new Date().getTime()}`,
-				type: BlueprintType.Local
+				type: BlueprintType.Local,
+				generics: new GenericSpecifications([]),
 			}).open();
 		});
 

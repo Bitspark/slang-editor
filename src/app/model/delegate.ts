@@ -3,10 +3,11 @@ import {BlueprintModel} from "./blueprint";
 import {OperatorModel} from "./operator";
 import {BlackBox, PortOwner} from "../custom/nodes";
 import {Connections} from "../custom/connections";
+import {GenericSpecifications} from "../custom/generics";
 
 export abstract class GenericDelegateModel<B extends BlackBox, P extends PortModel> extends PortOwner {
-	protected constructor(parent: B, private name: string, streamSource: boolean) {
-		super(parent, streamSource);
+	protected constructor(parent: B, private name: string, streamSource: boolean, generics: GenericSpecifications) {
+		super(parent, streamSource, generics);
 	}
 
 	public getName(): string {
@@ -27,11 +28,11 @@ export abstract class GenericDelegateModel<B extends BlackBox, P extends PortMod
 
 export type DelegateModel = GenericDelegateModel<BlackBox, PortModel>;
 
-export type BlueprintDelegateModelArgs = { name: string };
+export type BlueprintDelegateModelArgs = { name: string, generics: GenericSpecifications };
 
 export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel, BlueprintPortModel> {
-	constructor(owner: BlueprintModel, {name}: BlueprintDelegateModelArgs) {
-		super(owner, name, false);
+	constructor(owner: BlueprintModel, {name, generics}: BlueprintDelegateModelArgs) {
+		super(owner, name, false, generics);
 	}
 
 	public createPort(args: PortModelArgs): BlueprintPortModel {
@@ -47,11 +48,11 @@ export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel,
 	}
 }
 
-export type OperatorDelegateModelArgs = { name: string };
+export type OperatorDelegateModelArgs = { name: string, generics: GenericSpecifications };
 
 export class OperatorDelegateModel extends GenericDelegateModel<OperatorModel, OperatorPortModel> {
-	constructor(owner: OperatorModel, {name}: OperatorDelegateModelArgs) {
-		super(owner, name, true);
+	constructor(owner: OperatorModel, {name, generics}: OperatorDelegateModelArgs) {
+		super(owner, name, true, generics);
 	}
 
 	public isStreamSource(): boolean {
