@@ -6,7 +6,7 @@ import {Connection, Connections} from "../custom/connections";
 import {SlangType, TypeIdentifier} from "../custom/type";
 import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
 import {StreamPort} from "../custom/stream";
-import {canConnectTo} from "../custom/compatibility";
+import {canConnectTo} from "../custom/connection-check";
 
 export enum PortDirection {
 	In, // 0
