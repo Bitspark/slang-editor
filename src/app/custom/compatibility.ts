@@ -1,6 +1,6 @@
 import {PortModel} from "../model/port";
 import {SlangType, TypeIdentifier} from "./type";
-import {StreamType} from "./stream";
+import {hasCommonStreamTypeTo, StreamType} from "./stream";
 import {PortOwner} from "./nodes";
 
 function typesStreamCompatible(streamTypeA: SlangType, streamTypeB: SlangType): boolean {
@@ -38,18 +38,6 @@ function typesCompatibleTo(sourceType: SlangType, destinationType: SlangType): b
 		return typesStreamCompatible(sourceType, destinationType);
 	}
 	return sourceType.getTypeIdentifier() === destinationType.getTypeIdentifier();
-}
-
-function hasCommonStreamTypeTo(searchStream: StreamType, stream: StreamType): boolean {
-	let baseStream: StreamType | null = searchStream;
-	while (baseStream !== null) {
-		const streamIndex = stream.findStreamType(baseStream);
-		if (streamIndex !== -1) {
-			return true;
-		}
-		baseStream = baseStream.getBaseStreamOrNull();
-	}
-	return false;
 }
 
 function fluentStreamCompatibleTo(fluentStream: StreamType, stream: StreamType): boolean {

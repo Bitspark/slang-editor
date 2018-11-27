@@ -124,6 +124,13 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		const parent = this.getParentNode();
 		return !(parent instanceof GenericPortModel) || parent.typeIdentifier === TypeIdentifier.Stream;
 	}
+	
+	public getStreamParent(): GenericPortModel<O> {
+		if (this.isParentStreamOrOwner()) {
+			return this;
+		}
+		return this.getParentNode() as GenericPortModel<O>;
+	}
 
 	public toString(): string {
 		return this.getIdentity() + "_" + PortDirection[this.getDirection()];

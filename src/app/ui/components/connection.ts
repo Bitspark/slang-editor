@@ -125,18 +125,8 @@ export class ConnectionComponent {
 		link.attr(".connection/vector-effect", Styles.Connection.Ordinary.vectorEffect);
 		
 		if (stream) {
-			if (stream.hasPlaceholderRoot()) {
-				if (stream.isPlaceholder()) {
-					link.attr(".connection/stroke-dasharray", 15);
-				} else {
-					link.attr(".connection/stroke-dasharray", 5);
-				}
-			} else if (stream.hasPlaceholderAncestor()) {
-				if (stream.isPlaceholder()) {
-					link.attr(".connection/stroke-dasharray", 2);
-				} else {
-					link.attr(".connection/stroke-dasharray", 1);
-				}
+			if (stream.hasPlaceholderAncestor()) {
+				link.attr(".connection/stroke-dasharray", 1);
 			} else {
 				link.removeAttr(".connection/stroke-dasharray");
 			}
