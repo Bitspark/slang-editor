@@ -1,7 +1,7 @@
-import m, {CVnode, Vnode} from "mithril";
+import m from "mithril";
 import {dia, g} from "jointjs";
 import {PaperView} from "../views/paper-view";
-import {ClassComponent} from "mithril";
+import {Box, Container} from "./toolkit";
 
 
 export type Alignment =
@@ -77,15 +77,7 @@ export abstract class AnchoredComponent extends Component {
 		return el;
 	}
 
-	private hasMountedElement(): boolean {
-		return !!this.htmlRoot.innerHTML;
-	}
-
 	protected draw() {
-		if (!this.hasMountedElement()) {
-			return;
-		}
-
 		const {x, y} = this.getClientXY();
 		const align = this.align;
 
@@ -126,16 +118,28 @@ export abstract class AnchoredComponent extends Component {
 		this.htmlRoot.style.left = `${left}px`;
 	}
 
-	public mount(mComp: m.Component): this {
+	public mount(wrapped: "[]" | " ", component: m.Component): this {
 		this.unmount();
 
-		m.mount(this.htmlRoot, {
-			view: () => {
-				return m(".sl-container", m(mComp));
-			}
-		});
-
-		this.draw();
+		if (wrapped === "[]") {
+			m.mount(this.htmlRoot, {
+				onupdate: () => {
+					this.draw();
+				},
+				view: () => {
+					return m(Container, m(Box, m(component)));
+				}
+			});
+		} else {
+			m.mount(this.htmlRoot, {
+				onupdate: () => {
+					this.draw();
+				},
+				view: () => {
+					return m(Container, m(component));
+				}
+			});
+		}
 		return this;
 	}
 

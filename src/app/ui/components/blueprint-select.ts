@@ -7,7 +7,7 @@ import {BlueprintView} from "../views/blueprint";
 import {Geometry} from "../../model/operator";
 import {BlackBoxComponent} from "./blackbox";
 import {AttachedComponent, Component, XY} from "./base";
-import {MithrilMouseEvent, StringInput} from "./toolkit";
+import {List, ListHead, ListItem, MithrilMouseEvent, StringInput} from "./toolkit";
 
 export interface Attrs {
 	onSelect: (bp: BlueprintModel) => void,
@@ -21,20 +21,20 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 	oninit({attrs}: CVnode<Attrs>) {
 	}
 
-	onbeforeupdate(vnode: CVnode<Attrs>, old: CVnodeDOM<Attrs>): boolean | void {
-		return true;
-	}
-
 	view({attrs}: CVnode<Attrs>) {
 		const blueprints = attrs.onLoad();
-		return m(".sl-blupr-menu", {
-				onmouseleave: (e: MithrilMouseEvent) => {
-					e.redraw = false;
-					attrs.onHover(undefined);
-				}
-			},
-			[
-				m(".sl-blupr-fltr",
+
+
+		return m(".sl-blupr-menu",
+			m(List, {
+					onMouseLeave: (e: MithrilMouseEvent) => {
+						e.redraw = false;
+						attrs.onHover(undefined);
+					}
+				},
+				m(ListHead, {
+						//class: ".sl-blupr-fltr",
+					},
 					m(StringInput, {
 						class: "sl-fullwidth",
 						label: "",
@@ -42,27 +42,28 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 							attrs.onFilter(f.trim());
 						},
 						autofocus: true,
-					})),
-				m(".sl-blupr-entries",
-					blueprints.length ? blueprints.map((blueprint: BlueprintModel) => {
-						return m(".sl-blupr-entry", {
-								onclick: (e: MithrilMouseEvent) => {
-									e.redraw = false;
-									attrs.onSelect(blueprint);
-								},
-								onmouseenter: (e: MithrilMouseEvent) => {
-									e.redraw = false;
-									attrs.onHover(blueprint);
-								},
-								onmouseleave: (e: MithrilMouseEvent) => {
-									e.redraw = false;
-									attrs.onHover(undefined);
-								}
+					}),
+				),
+
+				blueprints.map((blueprint: BlueprintModel) => {
+					return m(ListItem, {
+							//class: ".sl-blupr-entry",
+							onClick: (e: MithrilMouseEvent) => {
+								e.redraw = false;
+								attrs.onSelect(blueprint);
 							},
-							m(".sl-blupr-title", blueprint.getFullName()));
-					}) : m(".sl-blupr-entry-none")
-				)
-			]
+							onMouseEnter: (e: MithrilMouseEvent) => {
+								e.redraw = false;
+								attrs.onHover(blueprint);
+							},
+							onMouseLeave: (e: MithrilMouseEvent) => {
+								e.redraw = false;
+								attrs.onHover(undefined);
+							}
+						},
+						m(".sl-blupr-title", blueprint.getFullName()));
+				})
+			)
 		);
 	}
 }
@@ -81,7 +82,7 @@ export class BlueprintSelectComponent extends Component {
 		this.ghostRect = this.placeGhostRect({x, y});
 		this.menu = this.createComponent({x: 0, y: 0, align: "tl"})
 			.attachTo(this.ghostRect, "c")
-			.mount({
+			.mount("[]", {
 				view: () => m(BlueprintMenuComponent, {
 					onLoad: () => this.getBlueprints(),
 					onFilter: (fltrExpr: string) => {
@@ -128,7 +129,7 @@ export class BlueprintSelectComponent extends Component {
 			.map(([bp, _]: [BlueprintModel, number]) => bp);
 
 		for (const bp of this.landscape.getChildNodes(BlueprintModel)) {
-			if (blueprints.length < 10) {
+			if (blueprints.length < 20) {
 				if (this.isFilterExprIncluded(bp)) {
 					if (blueprints.indexOf(bp) < 0) {
 						blueprints.push(bp);

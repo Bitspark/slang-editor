@@ -25,6 +25,7 @@ $blackbox-color-label: $black;
 		fill: $blackbox-color-fill;
 		stroke: none;
 	}
+
 	.sl-label {
 		fill: $blackbox-color-label;
 	}
@@ -70,26 +71,32 @@ $blackbox-color-label: $black;
 		stroke: $type-color-number;
 		fill: $type-color-number;
 	}
+
 	&.sl-type-string {
 		stroke: $type-color-string;
 		fill: $type-color-string;
 	}
+
 	&.sl-type-boolean {
 		stroke: $type-color-boolean;
 		fill: $type-color-boolean;
 	}
+
 	&.sl-type-binary {
 		stroke: $type-color-binary;
 		fill: $type-color-binary;
 	}
+
 	&.sl-type-primitive {
 		stroke: $type-color-primitive;
 		fill: $type-color-primitive;
 	}
+
 	&.sl-type-trigger {
 		stroke: $type-color-trigger;
 		fill: $type-color-trigger;
 	}
+
 	&.sl-type-generic {
 		stroke: $type-color-generic;
 		fill: $type-color-generic;
@@ -127,5 +134,5 @@ $blackbox-color-label: $black;
 	}
 }
 
-@import "component/blueprint-select";
-@import "component/form";
+@import "component/base";
+@import "toolkit/base";

@@ -15,7 +15,7 @@ import {Connection} from "../../custom/connections";
 import {OperatorModel} from "../../model/operator";
 import {BlueprintDelegateModel} from "../../model/delegate";
 import {SlangType, SlangTypeValue} from "../../custom/type";
-import {Button, List, ListEntry, MithrilMouseEvent, TypeInput} from "./toolkit";
+import {Button, JSONObj, List, ListItem, MithrilMouseEvent, TypeInput} from "./toolkit";
 
 export class WhiteBoxComponent extends Component {
 	private static readonly padding = 120;
@@ -56,7 +56,7 @@ export class WhiteBoxComponent extends Component {
 	private subscribe() {
 		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
 			if (!instance) {
-				this.buttons.mount({
+				this.buttons.mount(" ", {
 					view: () => m(Button, {
 						onClick: () => {
 							this.blueprint.requestDeployment();
@@ -69,7 +69,7 @@ export class WhiteBoxComponent extends Component {
 				this.output.unmount();
 
 			} else {
-				this.buttons.mount({
+				this.buttons.mount(" ", {
 					view: () => m(".toolbox", [
 						m(Button, {
 							label: "Running",
@@ -89,7 +89,7 @@ export class WhiteBoxComponent extends Component {
 				const portIn = this.blueprint.getPortIn();
 
 				if (portIn) {
-					this.input.mount({
+					this.input.mount("[]", {
 						view: () => m(WhiteBoxComponent.DataInputForm, {
 							onSubmit: (values: SlangTypeValue) => {
 								this.blueprint.pushInput(values);
@@ -103,7 +103,7 @@ export class WhiteBoxComponent extends Component {
 
 				if (portOut) {
 					const that = this;
-					this.output.mount({
+					this.output.mount("[]", {
 						view: () => m(WhiteBoxComponent.DataOutputDisplay, {
 							buffer: that.outputBuffer
 						})
@@ -533,9 +533,11 @@ export namespace WhiteBoxComponent {
 		}
 
 		view({attrs}: CVnode<DataOutputDisplay.Attrs>): any {
-			return m(List, this.buffer.map((outputData) => {
-				return m(ListEntry, JSON.stringify(outputData));
-			}));
+			return m(List, {"class": "sl-op-output"},
+				this.buffer.map((outputData) => {
+					return m(ListItem, m(JSONObj, {value: outputData}));
+				})
+			);
 		}
 	}
 
