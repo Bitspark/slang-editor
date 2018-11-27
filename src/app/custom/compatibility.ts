@@ -2,6 +2,8 @@ import {PortModel} from "../model/port";
 import {SlangType, TypeIdentifier} from "./type";
 import {hasCommonStreamTypeTo, StreamType} from "./stream";
 import {PortOwner} from "./nodes";
+import {OperatorDelegateModel} from "../model/delegate";
+import {OperatorModel} from "../model/operator";
 
 function typesStreamCompatible(streamTypeA: SlangType, streamTypeB: SlangType): boolean {
 	const subA = streamTypeA.getStreamSub();
@@ -50,6 +52,55 @@ function fluentStreamCompatibleTo(fluentStream: StreamType, stream: StreamType):
 	}
 }
 
+function collectDelegateStreams(stream: StreamType): Set<StreamType> {	
+	const streams = new Set<StreamType>();
+	
+	const rootStream = stream.getRootStream();
+	if (!rootStream) {
+		return streams;
+	}
+	
+	const rootSource = rootStream.getSource();
+	if (!rootSource) {
+		return streams;
+	}
+	
+	const rootOwner = rootSource.getOwner();
+	
+	if (rootOwner instanceof OperatorDelegateModel) {
+		const rootBlackBox = rootOwner.getAncestorNode(OperatorModel);
+		if (rootBlackBox) {
+			const rootStream = rootBlackBox.getStreamPortOwner().getBaseStreamType();
+			if (rootStream) {
+				streams.add(rootStream);
+				for (const ancestorStream of collectDelegateStreams(rootStream)) {
+					streams.add(ancestorStream);
+				}
+			}
+		}
+	}
+	
+	return streams;
+}
+
+function delegateStreamCompatibleTo(rootStream: StreamType | null, stream: StreamType | null): boolean {
+	if (!rootStream || !stream) {
+		return true;
+	}
+	
+	const rootStreams = collectDelegateStreams(rootStream);
+	
+	let baseStream: StreamType | null = stream;
+	while (baseStream) {
+		if (rootStreams.has(baseStream)) {
+			return false;
+		}
+		baseStream = baseStream.getBaseStreamOrNull();
+	}
+	
+	return true;
+}
+
 function streamsCompatible(streamA: StreamType | null, streamB: StreamType | null): boolean {
 	if (!streamA || !streamB) {
 		return !streamA && !streamB;
@@ -58,6 +109,10 @@ function streamsCompatible(streamA: StreamType | null, streamB: StreamType | nul
 	if (streamA === streamB) {
 		// Identical stream types
 		return true;
+	}
+	
+	if (!delegateStreamCompatibleTo(streamA, streamB) || !delegateStreamCompatibleTo(streamB, streamA)) {
+		return false;
 	}
 	
 	if (!streamA.isPlaceholder() && !streamB.isPlaceholder()) {

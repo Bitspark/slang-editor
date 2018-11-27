@@ -109,9 +109,6 @@ export class ConnectionComponent {
 			},
 		} as any);
 		ConnectionComponent.refresh(sourcePort, null, link);
-		
-		console.log(sourcePort.getStreamPort().getStreamType().toString());
-		
 		return link;
 	}
 
