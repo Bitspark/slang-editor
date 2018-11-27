@@ -110,7 +110,6 @@ export class ListHead extends ListItem {
 	}
 }
 
-
 export interface ButtonAttrs {
 	onClick?: (e: MithrilMouseEvent) => void
 	label: string
@@ -177,7 +176,6 @@ export class Button implements ClassComponent<ButtonAttrs> {
 	}
 }
 
-
 export interface InputAttrs<T> {
 	label: string,
 	class: string,
@@ -189,7 +187,6 @@ export interface InputAttrs<T> {
 interface Input<T> extends ClassComponent<InputAttrs<T>> {
 }
 
-
 abstract class CompositeInput<T> implements Input<T> {
 	public static getTypeDef(): SlangTypeDef {
 		return {type: TypeIdentifier.Primitive};
@@ -197,7 +194,6 @@ abstract class CompositeInput<T> implements Input<T> {
 
 	abstract view(vnode: m.Vnode<InputAttrs<T>, this>): m.Children | void | null;
 }
-
 
 abstract class BaseInput<T> implements Input<T> {
 	constructor(private inputType: "button" | "number" | "text" | "checkbox" | "file") {
@@ -222,7 +218,6 @@ abstract class BaseInput<T> implements Input<T> {
 	}
 }
 
-
 export function wrapInput<T>(attrs: InputAttrs<T>, input: m.Children): any {
 	const labelName = attrs.label;
 	const labelText = (labelName) ? `${attrs.label}:` : "";
@@ -246,7 +241,6 @@ export function wrapInput<T>(attrs: InputAttrs<T>, input: m.Children): any {
 		)
 	);
 }
-
 
 export class StringInput extends BaseInput<string> {
 	constructor() {
@@ -301,7 +295,6 @@ export class ImageInput extends FileInput {
 	}
 }
 
-
 type CompositeInputType = {
 	typeDef: SlangTypeDef;
 	component: CompositeInput<any>;
@@ -317,7 +310,6 @@ function selectFile(file: File, onInput: (_: { content: string, name: string }) 
 	};
 	reader.readAsDataURL(file);
 }
-
 
 const FileUploadInput: CompositeInputType = {
 	typeDef: {
@@ -427,7 +419,6 @@ export class TypeInput implements ClassComponent<TypeInputAttrs> {
 	}
 }
 
-
 export interface MapInputAttrs extends InputAttrs<{}> {
 	entries: IterableIterator<[string, SlangType]>
 }
@@ -459,7 +450,6 @@ export class MapInputField implements ClassComponent<MapInputAttrs> {
 		);
 	}
 }
-
 
 export interface StreamInputAttrs extends InputAttrs<{}> {
 	type: SlangType
