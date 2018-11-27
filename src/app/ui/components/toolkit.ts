@@ -55,33 +55,38 @@ export class Box implements ClassComponent<{}> {
 	}
 }
 
-export class List implements ClassComponent<List.Attrs> {
-	oninit({attrs}: CVnode<List.Attrs>) {
+export interface ListAttrs {
+	class?: string
+	onMouseEnter?: (e: MithrilMouseEvent) => void
+	onMouseLeave?: (e: MithrilMouseEvent) => void
+	onKey?: {
+		[keyevent in keyof Keypress]: (e: MithrilKeyboardEvent) => void
+	}
+}
+
+export class List implements ClassComponent<ListAttrs> {
+	oninit({attrs}: CVnode<ListAttrs>) {
 	}
 
-	view({children, attrs}: CVnode<List.Attrs>) {
+	view({children, attrs}: CVnode<ListAttrs>) {
 		return m("ul.sl-list", {
 			class: attrs.class,
 		}, children);
 	}
 }
 
-export namespace List {
-	export interface Attrs {
-		class?: string
-		onMouseEnter?: (e: MithrilMouseEvent) => void
-		onMouseLeave?: (e: MithrilMouseEvent) => void
-		onKey?: {
-			[keyevent in keyof Keypress]: (e: MithrilKeyboardEvent) => void
-		}
-	}
+export interface ListItemAttrs {
+	class?: string
+	onMouseEnter?: (e: MithrilMouseEvent) => void
+	onMouseLeave?: (e: MithrilMouseEvent) => void
+	onClick?: (e: MithrilMouseEvent) => void
 }
 
-export class ListItem implements ClassComponent<ListItem.Attrs> {
-	oninit({attrs}: CVnode<ListItem.Attrs>) {
+export class ListItem implements ClassComponent<ListItemAttrs> {
+	oninit({attrs}: CVnode<ListItemAttrs>) {
 	}
 
-	view({children, attrs}: CVnode<ListItem.Attrs>) {
+	view({children, attrs}: CVnode<ListItemAttrs>) {
 		return m("li.sl-list-item", {
 			class: attrs.class,
 			onmouseenter: attrs.onMouseEnter,
@@ -92,10 +97,10 @@ export class ListItem implements ClassComponent<ListItem.Attrs> {
 }
 
 export class ListHead extends ListItem {
-	oninit({attrs}: CVnode<ListItem.Attrs>) {
+	oninit({attrs}: CVnode<ListItemAttrs>) {
 	}
 
-	view({children, attrs}: CVnode<ListItem.Attrs>) {
+	view({children, attrs}: CVnode<ListItemAttrs>) {
 		return m("li.sl-list-head", {
 			class: attrs.class,
 			onmouseenter: attrs.onMouseEnter,
@@ -105,24 +110,26 @@ export class ListHead extends ListItem {
 	}
 }
 
-export namespace ListItem {
-	export interface Attrs {
-		class?: string
-		onMouseEnter?: (e: MithrilMouseEvent) => void
-		onMouseLeave?: (e: MithrilMouseEvent) => void
-		onClick?: (e: MithrilMouseEvent) => void
-	}
+
+export interface ButtonAttrs {
+	onClick?: (e: MithrilMouseEvent) => void
+	label: string
+	icon?: string
+	class?: string
+	notAllowed?: boolean
+	inactive?: boolean
+	full?: boolean
 }
 
-export class Button implements ClassComponent<Button.Attrs> {
+export class Button implements ClassComponent<ButtonAttrs> {
 	private alreadyClicked: boolean = false;
 	private bounceInterval = 500;
 
-	oninit({attrs}: CVnode<Button.Attrs>) {
+	oninit({attrs}: CVnode<ButtonAttrs>) {
 	}
 
 
-	private getClass(attrs: Button.Attrs): string {
+	private getClass(attrs: ButtonAttrs): string {
 		const cls = [];
 
 		if (attrs.full) {
@@ -140,16 +147,16 @@ export class Button implements ClassComponent<Button.Attrs> {
 		return attrs.class + " " + cls.join(" ");
 	}
 
-	private isClickable(attrs: Button.Attrs): boolean {
+	private isClickable(attrs: ButtonAttrs): boolean {
 		return !!attrs.onClick && !attrs.notAllowed;
 	}
 
-	private isInactive(attrs: Button.Attrs): boolean {
+	private isInactive(attrs: ButtonAttrs): boolean {
 		return !!attrs.notAllowed && !!attrs.inactive;
 	}
 
 
-	view({attrs}: CVnode<Button.Attrs>) {
+	view({attrs}: CVnode<ButtonAttrs>) {
 		const that = this;
 
 		return m("a.sl-btn", {
@@ -170,20 +177,16 @@ export class Button implements ClassComponent<Button.Attrs> {
 	}
 }
 
-export namespace Button {
-	export interface Attrs {
-		onClick?: (e: MithrilMouseEvent) => void
-		label: string
-		icon?: string
-		class?: string
-		notAllowed?: boolean
-		inactive?: boolean
-		full?: boolean
-	}
+
+export interface InputAttrs<T> {
+	label: string,
+	class: string,
+	autofocus?: boolean,
+	onInput: (value: T) => void,
+	onchange?: (file: File) => void,
 }
 
-
-interface Input<T> extends ClassComponent<Input.Attrs<T>> {
+interface Input<T> extends ClassComponent<InputAttrs<T>> {
 }
 
 
@@ -192,135 +195,129 @@ abstract class CompositeInput<T> implements Input<T> {
 		return {type: TypeIdentifier.Primitive};
 	}
 
-	abstract view(vnode: m.Vnode<Input.Attrs<T>, this>): m.Children | void | null;
+	abstract view(vnode: m.Vnode<InputAttrs<T>, this>): m.Children | void | null;
 }
 
-abstract class SimpleInput<T> implements Input<T> {
+
+abstract class BaseInput<T> implements Input<T> {
 	constructor(private inputType: "button" | "number" | "text" | "checkbox" | "file") {
 	}
 
-	view({attrs}: CVnode<Input.Attrs<T>>) {
-		const labelName = attrs.label;
-		const labelText = (labelName) ? `${attrs.label}:` : "";
-		const that = this;
-
-		return m(`.sl-input`,
+	view({attrs}: CVnode<InputAttrs<T>>) {
+		return wrapInput(attrs, m("input",
 			{
-				class: attrs.class,
-			},
-			m(".sl-input-outer",
-				[
-					labelText ? m("label",
-						{
-							for: labelName
-						},
-						labelText,
-					) : undefined,
-					m(".sl-input-inner",
-						m(".sl-input-wrap",
-							m("input",
-								{
-									name: labelName,
-									type: that.inputType,
-									oncreate: (v: CVnodeDOM<any>) => {
-										if (v.attrs.autofocus) {
-											(v.dom as HTMLElement).focus();
-										}
-									},
-									oninput: m.withAttr("value", function (v: T) {
-										attrs.onInput(v);
-									}),
-									autofocus: attrs.autofocus
-								}
-							)
-						)
-					)
-				]
-			)
-		);
+				name: attrs.label,
+				type: this.inputType,
+				oncreate: (v: CVnodeDOM<any>) => {
+					if (v.attrs.autofocus) {
+						(v.dom as HTMLElement).focus();
+					}
+				},
+				oninput: m.withAttr("value", function (v: T) {
+					attrs.onInput(v);
+				}),
+				autofocus: attrs.autofocus
+			}
+		));
 	}
 }
 
 
-export namespace Input {
-	export interface Attrs<T> {
-		label: string,
-		class: string,
-		autofocus?: boolean,
-		onInput: (value: T) => void,
-		onchange?: (file: File) => void,
-	}
+export function wrapInput<T>(attrs: InputAttrs<T>, input: m.Children): any {
+	const labelName = attrs.label;
+	const labelText = (labelName) ? `${attrs.label}:` : "";
+
+	return m(`.sl-input`,
+		{
+			class: attrs.class,
+		},
+		m(".sl-input-outer",
+			[
+				labelText ? m("label",
+					{
+						for: labelName
+					},
+					labelText,
+				) : undefined,
+				m(".sl-input-inner",
+					m(".sl-input-wrap", input)
+				)
+			]
+		)
+	);
 }
 
-export class StringInput extends SimpleInput<string> {
+
+export class StringInput extends BaseInput<string> {
 	constructor() {
 		super("text");
 	}
 }
 
-export class NumberInput extends SimpleInput<number> {
+export class NumberInput extends BaseInput<number> {
 	constructor() {
 		super("number");
 	}
 }
 
-export class BooleanInput extends SimpleInput<boolean> {
+export class BooleanInput extends BaseInput<boolean> {
 	constructor() {
 		super("checkbox");
 	}
 }
 
-export class FileInput extends SimpleInput<File> {
+export class FileInput extends BaseInput<File> {
+	protected accept: string;
+
 	constructor() {
 		super("file");
+		this.accept = "";
 	}
 
-	view({attrs}: CVnode<Input.Attrs<File>>) {
-		const labelName = attrs.label;
-		const labelText = (labelName) ? `${attrs.label}:` : "";
-
-		return m(`.sl-input`,
+	view({attrs}: CVnode<InputAttrs<File>>) {
+		return wrapInput(attrs, m("input",
 			{
-				class: attrs.class,
-			},
-			m(".sl-input-outer",
-				[
-					labelText ? m("label",
-						{
-							for: labelName
-						},
-						labelText,
-					) : undefined,
-					m(".sl-input-inner",
-						m(".sl-input-wrap",
-							m("input",
-								{
-									name: labelName,
-									type: "file",
-									oncreate: (v: CVnodeDOM<any>) => {
-										if (v.attrs.autofocus) {
-											(v.dom as HTMLElement).focus();
-										}
-									},
-									oninput: m.withAttr("files", function (files: Array<File>) {
-										attrs.onInput(files[0]);
-									}),
-									autofocus: attrs.autofocus
-								}
-							)
-						)
-					)
-				]
-			)
-		);
+				name: attrs.label,
+				type: "file",
+				accept: (this.accept) ? this.accept : undefined,
+				oncreate: (v: CVnodeDOM<any>) => {
+					if (v.attrs.autofocus) {
+						(v.dom as HTMLElement).focus();
+					}
+				},
+				oninput: m.withAttr("files", function (files: Array<File>) {
+					attrs.onInput(files[0]);
+				}),
+				autofocus: attrs.autofocus
+			}
+		));
+	}
+}
+
+export class ImageInput extends FileInput {
+	constructor() {
+		super();
+		this.accept = "image/*";
 	}
 }
 
 
 type CompositeInputType = {
 	typeDef: SlangTypeDef;
-	component: CompositeInput<{ file: string, name: string }>;
+	component: CompositeInput<any>;
 }
+
+function selectFile(file: File, onInput: (_: { content: string, name: string }) => void) {
+	const reader = new FileReader();
+	reader.onload = function () {
+		const data = reader.result as string;
+		const base64 = data.substr(data.indexOf(",") + 1);
+		onInput({content: "base64:" + base64, name: file.name});
+		m.redraw();
+	};
+	reader.readAsDataURL(file);
+}
+
 
 const FileUploadInput: CompositeInputType = {
 	typeDef: {
@@ -332,40 +329,60 @@ const FileUploadInput: CompositeInputType = {
 	},
 
 	component: {
-		view({attrs}: CVnode<Input.Attrs<{ file: string, name: string }>>) {
+		view({attrs}: CVnode<InputAttrs<{ file: string, name: string }>>) {
 			const origOnInput = attrs.onInput;
 			return m(FileInput, Object.assign(attrs, {
 				onInput: (file: File) => {
-					if (file) {
-						const reader = new FileReader();
-						reader.onload = function () {
-							const data = reader.result as string;
-							const base64 = data.substr(data.indexOf(",") + 1);
-							origOnInput({file: "base64:" + base64, name: file.name});
-							m.redraw();
-						};
-						reader.readAsDataURL(file);
-					}
+					selectFile(file, ({content, name}) => {
+						origOnInput({file: content, name: name});
+					});
 				}
 			}));
 		}
 	}
 };
 
+const ImageUploadInput: CompositeInputType = {
+	typeDef: {
+		type: TypeIdentifier.Map,
+		map: {
+			image: {type: TypeIdentifier.Binary},
+			name: {type: TypeIdentifier.String},
+		}
+	},
 
-export class TypeInput implements ClassComponent<TypeInput.Attrs> {
+	component: {
+		view({attrs}: CVnode<InputAttrs<{ image: string, name: string }>>) {
+			const origOnInput = attrs.onInput;
+			return m(ImageInput, Object.assign(attrs, {
+				onInput: (file: File) => {
+					selectFile(file, ({content, name}) => {
+						origOnInput({image: content, name: name});
+					});
+				}
+			}));
+		}
+	}
+};
+
+export interface TypeInputAttrs extends InputAttrs<any> {
+	type: SlangType
+}
+
+export class TypeInput implements ClassComponent<TypeInputAttrs> {
 	//private name: string = "";
 	private type: SlangType | undefined;
-	//private static CompositeInputs: Array<m.ComponentTypes<Input.Attrs<any>>> = [
+	//private static CompositeInputs: Array<m.ComponentTypes<InputAttrs<any>>> = [
 	private static CompositeInputs: Array<CompositeInputType> = [
-		FileUploadInput
+		FileUploadInput,
+		ImageUploadInput
 	];
 
-	oninit({attrs}: CVnode<TypeInput.Attrs>) {
+	oninit({attrs}: CVnode<TypeInputAttrs>) {
 		this.type = attrs.type;
 	}
 
-	private getInputComponent(attrs: TypeInput.Attrs): any {
+	private getInputComponent(attrs: TypeInputAttrs): any {
 		const t = this.type;
 
 		if (!t) {
@@ -405,21 +422,20 @@ export class TypeInput implements ClassComponent<TypeInput.Attrs> {
 		}
 	}
 
-	view({attrs}: CVnode<TypeInput.Attrs>): any {
+	view({attrs}: CVnode<TypeInputAttrs>): any {
 		return this.getInputComponent(attrs);
 	}
 }
 
-export namespace TypeInput {
-	export interface Attrs extends Input.Attrs<any> {
-		type: SlangType
-	}
+
+export interface MapInputAttrs extends InputAttrs<{}> {
+	entries: IterableIterator<[string, SlangType]>
 }
 
-export class MapInputField implements ClassComponent<MapInput.Attrs> {
+export class MapInputField implements ClassComponent<MapInputAttrs> {
 	private values: { [subName: string]: any } = {};
 
-	view({attrs}: CVnode<MapInput.Attrs>) {
+	view({attrs}: CVnode<MapInputAttrs>) {
 		const labelName = attrs.label;
 		const labelText = (labelName) ? `${attrs.label}:` : "";
 		const values = this.values;
@@ -444,21 +460,19 @@ export class MapInputField implements ClassComponent<MapInput.Attrs> {
 	}
 }
 
-export namespace MapInput {
-	export interface Attrs extends Input.Attrs<{}> {
-		entries: IterableIterator<[string, SlangType]>
-	}
+
+export interface StreamInputAttrs extends InputAttrs<{}> {
+	type: SlangType
 }
 
-
-export class StreamInputField implements ClassComponent<StreamInput.Attrs> {
+export class StreamInputField implements ClassComponent<StreamInputAttrs> {
 	private values: Array<any> = [];
 
 	private getValues(): Array<any> {
 		return this.values.filter(v => !(v === null || v === undefined));
 	}
 
-	view({attrs}: CVnode<StreamInput.Attrs>) {
+	view({attrs}: CVnode<StreamInputAttrs>) {
 		const labelName = attrs.label;
 		const labelText = (labelName) ? `${attrs.label}:` : "";
 		const that = this;
@@ -502,10 +516,3 @@ export class StreamInputField implements ClassComponent<StreamInput.Attrs> {
 		);
 	}
 }
-
-export namespace StreamInput {
-	export interface Attrs extends Input.Attrs<{}> {
-		type: SlangType
-	}
-}
-
