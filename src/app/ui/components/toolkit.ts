@@ -1,5 +1,5 @@
 import m, {ClassComponent, CVnode, CVnodeDOM} from "mithril";
-import {SlangType, SlangTypeDef, TypeIdentifier} from "../../custom/type";
+import {isEqual, SlangType, SlangTypeDef, TypeIdentifier} from "../../custom/type";
 
 export interface MithrilMouseEvent extends MouseEvent {
 	redraw: boolean
@@ -183,11 +183,20 @@ export namespace Button {
 }
 
 
-interface Input<T, A extends Input.Attrs<T>> extends ClassComponent<A> {
+interface Input<T> extends ClassComponent<Input.Attrs<T>> {
 }
 
-abstract class SimpleInput<T> implements Input<T, Input.Attrs<T>> {
-	constructor(private inputType: "button" | "number" | "text" | "checkbox" | "file", private className: string) {
+
+abstract class CompositeInput<T> implements Input<T> {
+	public static getTypeDef(): SlangTypeDef {
+		return {type: TypeIdentifier.Primitive};
+	}
+
+	abstract view(vnode: m.Vnode<Input.Attrs<T>, this>): m.Children | void | null;
+}
+
+abstract class SimpleInput<T> implements Input<T> {
+	constructor(private inputType: "button" | "number" | "text" | "checkbox" | "file") {
 	}
 
 	view({attrs}: CVnode<Input.Attrs<T>>) {
@@ -195,7 +204,7 @@ abstract class SimpleInput<T> implements Input<T, Input.Attrs<T>> {
 		const labelText = (labelName) ? `${attrs.label}:` : "";
 		const that = this;
 
-		return m(`.sl-input.${this.className}`,
+		return m(`.sl-input`,
 			{
 				class: attrs.class,
 			},
@@ -218,10 +227,10 @@ abstract class SimpleInput<T> implements Input<T, Input.Attrs<T>> {
 											(v.dom as HTMLElement).focus();
 										}
 									},
-									oninput: m.withAttr("value", function (v: any) {
+									oninput: m.withAttr("value", function (v: T) {
 										attrs.onInput(v);
 									}),
-									autofocus: attrs.autofocus,
+									autofocus: attrs.autofocus
 								}
 							)
 						)
@@ -232,51 +241,124 @@ abstract class SimpleInput<T> implements Input<T, Input.Attrs<T>> {
 	}
 }
 
+
 export namespace Input {
 	export interface Attrs<T> {
 		label: string,
 		class: string,
 		autofocus?: boolean,
 		onInput: (value: T) => void,
+		onchange?: (file: File) => void,
 	}
 }
 
 export class StringInput extends SimpleInput<string> {
 	constructor() {
-		super("text", "string");
+		super("text");
 	}
 }
 
 export class NumberInput extends SimpleInput<number> {
 	constructor() {
-		super("number", "number");
+		super("number");
 	}
 }
 
 export class BooleanInput extends SimpleInput<boolean> {
 	constructor() {
-		super("checkbox", "boolean");
+		super("checkbox");
 	}
 }
 
-export class FileInput extends SimpleInput<string> {
+export class FileInput extends SimpleInput<File> {
 	constructor() {
-		super("file", "file");
+		super("file");
 	}
 
+	view({attrs}: CVnode<Input.Attrs<File>>) {
+		const labelName = attrs.label;
+		const labelText = (labelName) ? `${attrs.label}:` : "";
+
+		return m(`.sl-input`,
+			{
+				class: attrs.class,
+			},
+			m(".sl-input-outer",
+				[
+					labelText ? m("label",
+						{
+							for: labelName
+						},
+						labelText,
+					) : undefined,
+					m(".sl-input-inner",
+						m(".sl-input-wrap",
+							m("input",
+								{
+									name: labelName,
+									type: "file",
+									oncreate: (v: CVnodeDOM<any>) => {
+										if (v.attrs.autofocus) {
+											(v.dom as HTMLElement).focus();
+										}
+									},
+									oninput: m.withAttr("files", function (files: Array<File>) {
+										attrs.onInput(files[0]);
+									}),
+									autofocus: attrs.autofocus
+								}
+							)
+						)
+					)
+				]
+			)
+		);
+	}
 }
 
-export class TypeInput implements Input<any, TypeInput.Attrs> {
+
+type CompositeInputType = {
+	typeDef: SlangTypeDef;
+	component: CompositeInput<{ file: string, name: string }>;
+}
+
+const FileUploadInput: CompositeInputType = {
+	typeDef: {
+		type: TypeIdentifier.Map,
+		map: {
+			file: {type: TypeIdentifier.Binary},
+			name: {type: TypeIdentifier.String},
+		}
+	},
+
+	component: {
+		view({attrs}: CVnode<Input.Attrs<{ file: string, name: string }>>) {
+			const origOnInput = attrs.onInput;
+			return m(FileInput, Object.assign(attrs, {
+				onInput: (file: File) => {
+					if (file) {
+						const reader = new FileReader();
+						reader.onload = function () {
+							const data = reader.result as string;
+							const base64 = data.substr(data.indexOf(",") + 1);
+							origOnInput({file: "base64:" + base64, name: file.name});
+							m.redraw();
+						};
+						reader.readAsDataURL(file);
+					}
+				}
+			}));
+		}
+	}
+};
+
+
+export class TypeInput implements ClassComponent<TypeInput.Attrs> {
 	//private name: string = "";
 	private type: SlangType | undefined;
-	private static SpecialInput: Array<[m.ComponentTypes<Input.Attrs<any>, Input<any, Input.Attrs<any>>>, SlangTypeDef]> = [
-		[FileInput, {
-			type: TypeIdentifier.Map,
-			map: {
-				file: {type: TypeIdentifier.Binary},
-				name: {type: TypeIdentifier.String},
-			}
-		}],
+	//private static CompositeInputs: Array<m.ComponentTypes<Input.Attrs<any>>> = [
+	private static CompositeInputs: Array<CompositeInputType> = [
+		FileUploadInput
 	];
 
 	oninit({attrs}: CVnode<TypeInput.Attrs>) {
@@ -293,12 +375,11 @@ export class TypeInput implements Input<any, TypeInput.Attrs> {
 		switch (t.getTypeIdentifier()) {
 			case TypeIdentifier.Map:
 				const typeDef = t.toSlangTypeDef();
-				const foundInpComps = TypeInput.SpecialInput
-					.filter(([inp, tyDef]) => Object.is(tyDef, typeDef))
-					.map(([inp, _]) => inp);
+				const foundInpComps = TypeInput.CompositeInputs
+					.filter((inp: CompositeInputType) => isEqual(inp.typeDef, typeDef));
 
 				if (foundInpComps.length) {
-					return m(foundInpComps[0], attrs);
+					return m(foundInpComps[0].component, attrs);
 				}
 				return m(MapInputField, Object.assign(attrs, {
 					entries: t.getMapSubs(),

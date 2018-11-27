@@ -35,7 +35,14 @@ interface SlangTypeDefPrimitive {
 	type: TypeIdentifier.String | TypeIdentifier.Number | TypeIdentifier.Boolean | TypeIdentifier.Binary | TypeIdentifier.Trigger | TypeIdentifier.Primitive
 }
 
+
 export type SlangTypeDef = SlangTypeDefPrimitive | SlangTypeDefGeneric | SlangTypeDefMap | SlangTypeDefStream;
+
+export function isEqual(a: SlangTypeDef, b: SlangTypeDef): boolean {
+	return JSON.stringify(a) === JSON.stringify(b);
+}
+
+
 
 export class SlangType {
 	private readonly mapSubs: Map<string, SlangType> | undefined;
