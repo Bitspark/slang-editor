@@ -4,8 +4,23 @@ import {OperatorDelegateModel} from "./delegate";
 import {BlackBox} from "../custom/nodes";
 import {Connections} from "../custom/connections";
 import {SlangBehaviorSubject} from "../custom/events";
+import {PropertyAssignments} from "./property";
+import {TypeIdentifier} from "../custom/type";
+import {GenericSpecifications} from "./generic";
 
-export type OperatorModelArgs = { name: string, blueprint: BlueprintModel, geometry: Geometry | undefined };
+export type OperatorModelArgs = {
+	name: string,
+	blueprint: BlueprintModel,
+	geometry?: Geometry,
+	properties?: undefined,
+	generics?: undefined,
+} | {
+	name: string,
+	blueprint: BlueprintModel,
+	properties: PropertyAssignments,
+	generics: GenericSpecifications,
+	geometry?: Geometry,
+}
 
 export interface Geometry {
 	position: [number, number]
@@ -20,12 +35,20 @@ export class OperatorModel extends BlackBox {
 	private readonly name: string;
 	private readonly blueprint: BlueprintModel;
 	private readonly geometry: Geometry | undefined;
+	private readonly properties: PropertyAssignments | undefined;
+	private readonly generics: GenericSpecifications | undefined;
+
 
 	constructor(parent: BlueprintModel, args: OperatorModelArgs) {
 		super(parent, false);
 		this.name = args.name;
 		this.blueprint = args.blueprint;
+
 		this.geometry = args.geometry;
+		if (args.properties) {
+			this.properties = args.properties;
+			this.generics = args.generics;
+		}
 	}
 
 	public getName(): string {
@@ -54,6 +77,14 @@ export class OperatorModel extends BlackBox {
 
 	public findDelegate(name: string): OperatorDelegateModel | undefined {
 		return this.scanChildNode(OperatorDelegateModel, delegate => delegate.getName() === name);
+	}
+
+	public getPropertyAssignments(): PropertyAssignments | undefined {
+		return this.properties;
+	}
+
+	public getGenericSpecifications(): GenericSpecifications | undefined {
+		return this.generics;
 	}
 
 	public getDisplayName(): string {
