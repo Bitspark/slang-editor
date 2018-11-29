@@ -88,7 +88,29 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public getDisplayName(): string {
-		return this.getBlueprint().getShortName();
+		if (this.properties) {
+			switch (this.blueprint.getFullName()) {
+				case "slang.data.Value":
+					const value = this.properties.getByName("value").getValue()!;
+					const maxLength = 13;
+					if (value.length > maxLength) {
+						return `"${value.substr(0, maxLength - 2)}..."`;
+					} else {
+						return `"${value}"`;
+					}
+				case "slang.data.Evaluate":
+					return this.properties.getByName("expression").getValue()!;
+				case "slang.data.Convert":
+					const portIn = this.getPortIn();
+					const portOut = this.getPortOut();
+					if (portIn && portOut) {
+						const fromType = TypeIdentifier[portIn.getTypeIdentifier()];
+						const toType = TypeIdentifier[portOut.getTypeIdentifier()];
+						return `${fromType} → ${toType}`;
+					}
+			}
+		}
+		return this.blueprint.getDisplayName();
 	}
 
 	public getConnectionsTo(): Connections {
