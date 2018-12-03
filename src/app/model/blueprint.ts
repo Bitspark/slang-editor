@@ -70,16 +70,18 @@ export class BlueprintModel extends BlackBox {
 		return genericIdentifiers;
 	}
 
-	private instantiateOperator(operator: OperatorModel, params?: { props: PropertyAssignments, gen: GenericSpecifications }) {
+	private instantiateOperator(operator: OperatorModel) {
+		const props = operator.getPropertyAssignments();
+		const gens = operator.getGenericSpecifications();
 
 		function copyAndAddDelegates(owner: OperatorModel, delegate: BlueprintDelegateModel) {
-			if (params) {
-				for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), params.props)) {
+			if (props && gens) {
+				for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), props)) {
 					const delegateCopy = owner.createDelegate(expandedDlgName);
 					for (const port of delegate.getPorts()) {
 						delegateCopy.createPort({
 							name: "",
-							type: port.getType().specifyGenerics(params.gen).expand(params.props),
+							type: port.getType().specifyGenerics(gens).expand(props),
 							direction: port.getDirection()
 						});
 					}
@@ -93,10 +95,10 @@ export class BlueprintModel extends BlackBox {
 		}
 
 		for (const port of this.getPorts()) {
-			if (params) {
+			if (props && gens) {
 				operator.createPort({
 					name: "",
-					type: port.getType().specifyGenerics(params.gen).expand(params.props),
+					type: port.getType().specifyGenerics(gens).expand(props),
 					direction: port.getDirection()
 				});
 			} else {
@@ -109,8 +111,8 @@ export class BlueprintModel extends BlackBox {
 	}
 
 	public createOperator(name: string, blueprint: BlueprintModel, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
-		return this.createChildNode(OperatorModel, {name, blueprint, geometry: undefined,}, operator => {
-			blueprint.instantiateOperator(operator, {props: propAssigns, gen: genSpeci});
+		return this.createChildNode(OperatorModel, {name, blueprint, properties: propAssigns, generics: genSpeci}, operator => {
+			blueprint.instantiateOperator(operator);
 		});
 	}
 
