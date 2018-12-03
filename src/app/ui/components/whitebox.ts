@@ -5,7 +5,6 @@ import {BlackBox} from "../../custom/nodes";
 import {dia, g, layout, shapes} from "jointjs";
 import {BlueprintInstance, BlueprintModel} from "../../model/blueprint";
 import {BlackBoxComponent, OperatorBoxComponent} from "./blackbox";
-import {ClassComponent, CVnode} from "mithril";
 import {PaperView} from "../views/paper-view";
 import {ConnectionComponent} from "./connection";
 import {BlueprintPortModel, GenericPortModel} from "../../model/port";
@@ -14,8 +13,10 @@ import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {Connection} from "../../custom/connections";
 import {OperatorModel} from "../../model/operator";
 import {BlueprintDelegateModel} from "../../model/delegate";
-import {SlangType, SlangTypeValue} from "../../custom/type";
-import {Button, JSONObj, List, ListItem, MithrilMouseEvent, TypeInput} from "./toolkit";
+import {SlangTypeValue} from "../../custom/type";
+import {Tk} from "./toolkit";
+import Button = Tk.Button;
+import {InputConsole, OutputConsole} from "./console";
 
 export class WhiteBoxComponent extends Component {
 	private static readonly padding = 120;
@@ -90,7 +91,7 @@ export class WhiteBoxComponent extends Component {
 
 				if (portIn) {
 					this.input.mount("[]", {
-						view: () => m(WhiteBoxComponent.DataInputForm, {
+						view: () => m(InputConsole, {
 							onSubmit: (values: SlangTypeValue) => {
 								this.blueprint.pushInput(values);
 							},
@@ -104,8 +105,9 @@ export class WhiteBoxComponent extends Component {
 				if (portOut) {
 					const that = this;
 					this.output.mount("[]", {
-						view: () => m(WhiteBoxComponent.DataOutputDisplay, {
-							buffer: that.outputBuffer
+						view: () => m(OutputConsole, {
+							values: that.outputBuffer,
+							type: portOut.getType()
 						})
 					});
 					this.blueprint.subscribeOutputPushed((outputData: SlangTypeValue) => {
@@ -479,71 +481,6 @@ export namespace WhiteBoxComponent {
 			}) as any);
 			this.attr("draggable", false);
 			this.set("obstacle", false);
-		}
-	}
-
-	export class DataInputForm implements ClassComponent<DataInputForm.Attrs> {
-		private type: SlangType | undefined;
-		private values: SlangTypeValue | undefined;
-
-		oninit({attrs}: CVnode<DataInputForm.Attrs>) {
-			this.type = attrs.type;
-		}
-
-		private isValid(): boolean {
-			return this.values !== undefined;
-		}
-
-		view({attrs}: CVnode<DataInputForm.Attrs>): any {
-			const that = this;
-			return m("form.sl-form", {
-					class: (that.isValid() ? "sl-invalid" : "")
-				},
-				m(TypeInput, {
-					label: "", class: "",
-					type: that.type!,
-					onInput: (v: any) => {
-						that.values = v;
-					}
-				}),
-				m(Button, {
-					full: true,
-					notAllowed: !that.isValid(),
-					label: "Push",
-					onClick: that.isValid ? (e: MithrilMouseEvent) => {
-						attrs.onSubmit(that.values!);
-					} : undefined
-				})
-			);
-		}
-	}
-
-	export namespace DataInputForm {
-		export interface Attrs {
-			type: SlangType
-			onSubmit: (values: SlangTypeValue) => void
-		}
-	}
-
-	export class DataOutputDisplay implements ClassComponent<DataOutputDisplay.Attrs> {
-		private buffer: Array<SlangTypeValue> = [];
-
-		oninit({attrs}: CVnode<DataOutputDisplay.Attrs>) {
-			this.buffer = attrs.buffer;
-		}
-
-		view({attrs}: CVnode<DataOutputDisplay.Attrs>): any {
-			return m(List, {"class": "sl-op-output"},
-				this.buffer.map((outputData) => {
-					return m(ListItem, m(JSONObj, {value: outputData}));
-				})
-			);
-		}
-	}
-
-	export namespace DataOutputDisplay {
-		export interface Attrs {
-			buffer: Array<SlangTypeValue>;
 		}
 	}
 }
