@@ -43,7 +43,6 @@ export function isEqual(a: SlangTypeDef, b: SlangTypeDef): boolean {
 }
 
 
-
 export class SlangType {
 	private readonly mapSubs: Map<string, SlangType> | undefined;
 	private genericIdentifier?: string;
@@ -195,7 +194,7 @@ export class SlangType {
 	}
 
 	public isPrimitive(): boolean {
-		const primitiveTypes = [TypeIdentifier.String, TypeIdentifier.Number, TypeIdentifier.Boolean, TypeIdentifier.Primitive];
+		const primitiveTypes = [TypeIdentifier.String, TypeIdentifier.Number, TypeIdentifier.Boolean, TypeIdentifier.Binary, TypeIdentifier.Primitive];
 		return primitiveTypes.indexOf(this.getTypeIdentifier()) !== -1;
 	}
 
