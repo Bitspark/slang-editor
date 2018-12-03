@@ -1,8 +1,19 @@
-import m, {CVnode} from "mithril";
+import m, {CVnode, CVnodeDOM} from "mithril";
 import {Output, ConsoleValueType} from "../console";
 import {TypeIdentifier} from "../../../custom/type";
+import * as Plotly from "plotly.js";
+import {Config, ScatterData} from "plotly.js";
 
-export const GraphValueType: ConsoleValueType<[{ x: number, y: number }]> = {
+
+type GraphType = [{ name: string, data: [{ x: string, y: string }] }];
+
+const PlotlyConfig: Partial<Config> = {
+	modeBarButtonsToRemove: ["sendDataToCloud"],
+	displaylogo: false,
+};
+
+
+export const GraphValueType: ConsoleValueType<GraphType> = {
 	typeDef: {
 		type: TypeIdentifier.Stream,
 		stream: {
@@ -24,10 +35,30 @@ export const GraphValueType: ConsoleValueType<[{ x: number, y: number }]> = {
 	},
 
 	output: {
-		view({attrs}: CVnode<Output.ValueTypeAttrs<[{ x: number, y: number }]>>) {
-			return m(".sl-graph", attrs.value
-				.map(({x, y}: { x: number, y: number }) => m(".sl-graph-xy", JSON.stringify([x, y])))
-			);
+		onupdate({attrs, dom}: CVnodeDOM<Output.ValueTypeAttrs<GraphType>>) {
+			const data = attrs.value.map(({name, data}) => {
+				return {
+					x: data.map(({x}) => x),
+					y: data.map(({y}) => y),
+					mode: "lines+markers",
+					name: name,
+				} as Partial<ScatterData>;
+			});
+			const layout = {
+				width: 500,
+				height: 500,
+				xaxis: {
+					showgrid: true,
+					zeroline: true
+				},
+				yaxis: {
+					showline: true
+				}
+			};
+			Plotly.plot(dom as HTMLElement, data, layout, PlotlyConfig);
+		},
+		view({attrs}: CVnode<Output.ValueTypeAttrs<GraphType>>) {
+			return m(".sl-graph");
 		}
 	}
 };

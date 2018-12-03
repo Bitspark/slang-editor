@@ -1,4 +1,4 @@
-.sl-form {
+.sl-console-in {
 	background: $white;
 	min-width: 120px;
 	max-width: $container-width;
@@ -74,10 +74,10 @@
 }
 
 
-.sl-op-output {
+.sl-console-out {
 	background: $white;
 	min-width: 120px;
-	max-width: $container-width;
+	max-width: 600px;
 	max-height: 600px;
 	background: $white;
 	overflow-y: scroll;

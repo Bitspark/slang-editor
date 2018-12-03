@@ -88,7 +88,14 @@ export namespace Input {
 	}
 
 	export abstract class ValueType<T> implements Tk.Input<T> {
-		abstract view(vnode: m.Vnode<ValueTypeAttrs<T>, this>): m.Children | void | null;
+		oninit?(vnode: m.CVnode<ValueTypeAttrs<T>>): any {
+
+		}
+
+		onupdate?(vnode: m.CVnodeDOM<ValueTypeAttrs<T>>): any {
+		}
+
+		abstract view(vnode: m.CVnode<ValueTypeAttrs<T>>): m.Children | void | null;
 	}
 
 	interface ConsoleEntryAttrs extends Tk.InputAttrs<any> {
@@ -244,7 +251,14 @@ export namespace Output {
 	}
 
 	export abstract class ValueType<T> implements ClassComponent<ValueTypeAttrs<T>> {
-		abstract view(vnode: m.Vnode<ValueTypeAttrs<T>, this>): m.Children | void | null;
+		oninit?(vnode: m.CVnode<ValueTypeAttrs<T>>): any {
+
+		}
+
+		onupdate?(vnode: m.CVnodeDOM<ValueTypeAttrs<T>>): any {
+		}
+
+		abstract view(vnode: m.CVnode<ValueTypeAttrs<T>>): m.Children | void | null;
 	}
 
 	export class ConsoleEntry implements ClassComponent<{ value: any, type: SlangType }> {
@@ -311,7 +325,7 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 
 	view({attrs}: CVnode<InputConsoleAttrs>): any {
 		const that = this;
-		return m("form.sl-form", {
+		return m("form.sl-console-in", {
 				class: (that.isValid() ? "sl-invalid" : "")
 			},
 			this.renderInput(this.type!),
@@ -346,7 +360,7 @@ export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {
 	}
 
 	view({attrs}: CVnode<OutputConsoleAttrs>): any {
-		return m(Tk.List, {"class": "sl-op-output"},
+		return m(Tk.List, {"class": "sl-console-out"},
 			this.values.map((outputData) => {
 				return m(Tk.ListItem, this.renderOutput(outputData, this.type!));
 			})
