@@ -76,14 +76,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				}
 			});
 		}
-		
-		// this.subscribeDisconnected(() => {
-		// 	if (this.connectedWith.length === 0) {
-		// 		if (this.ghost && this.generics) {
-		// 			this.generics.specify(this.genericIdentifier!, new SlangType(null, TypeIdentifier.Map));
-		// 		}
-		// 	}
-		// });
 	}
 	
 	private haveGhostAncestor(): boolean {
