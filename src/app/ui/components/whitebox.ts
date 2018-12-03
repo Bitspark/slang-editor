@@ -146,11 +146,25 @@ export class WhiteBoxComponent extends Component {
 			if (!port.isSource()) {
 				return;
 			}
-			port.subscribeConnected(connection => {
-				this.addConnection(connection);
+			port.subscribeConnected(other => {
+				this.addConnection({source: port, destination: other});
 			});
-			port.subscribeDisconnected(connection => {
-				this.removeConnection(connection);
+			port.subscribeDisconnected(other => {
+				this.removeConnection({source: port, destination: other});
+			});
+		});
+
+		this.blueprint.subscribeChildCreated(OperatorModel, operator => {
+			operator.getGenericSpecifications().subscribeGenericsChanged(() => {
+				this.connections.forEach(component => {
+					const connection = component.getConnection();
+					if (!connection.source.isConnectedWith(connection.destination)) {
+						return;
+					}
+					if (connection.source.getBox() === operator || connection.destination.getBox() === operator) {
+						component.refresh();
+					}
+				});
 			});
 		});
 	}
@@ -415,7 +429,8 @@ export class WhiteBoxComponent extends Component {
 	}
 
 	private addConnection(connection: Connection) {
-		this.connections.push(new ConnectionComponent(this.graph, connection));
+		const connectionComponent = new ConnectionComponent(this.graph, connection);
+		this.connections.push(connectionComponent);
 	}
 
 	private addOperator(operator: OperatorModel) {
@@ -427,14 +442,11 @@ export class WhiteBoxComponent extends Component {
 		const link = ConnectionComponent.findLink(this.graph, connection);
 		if (link) {
 			link.remove();
-		} else {
-			throw new Error(`link with id ${linkId} not found`);
 		}
+		
 		const idx = this.connections.findIndex(conn => conn.getId() === linkId);
 		if (idx !== -1) {
 			this.connections.splice(idx, 1);
-		} else {
-			throw new Error(`connection with id ${linkId} not found`);
 		}
 	}
 

@@ -290,58 +290,35 @@ export class StreamPort {
 			}
 		});
 
-		if (this.port.isDestination()) {
-			this.port.subscribeConnected(connection => {
-				setTimeout(() => {
-					const subscription = connection.source.getStreamPort().subscribeStreamTypeChanged(streamType => {
-						if (!streamType || this.port.getOwner().getStreamPortOwner().isMarkedForReset()) {
-							return;
-						}
-						this.setStreamTypeChildToParent(streamType);
-					});
-					this.connectionSubscriptions.set(connection.source as any, subscription);
-				}, 100);
-			});
+		this.port.subscribeConnected(other => {
+			setTimeout(() => {
+				const subscription = other.getStreamPort().subscribeStreamTypeChanged(streamType => {
+					if (!streamType || this.port.getOwner().getStreamPortOwner().isMarkedForReset()) {
+						return;
+					}
+					this.setStreamTypeChildToParent(streamType);
+				});
+				this.connectionSubscriptions.set(other as any, subscription);
+			}, 100);
+		});
 
-			this.port.subscribeDisconnected(connection => {
-				const subscription = this.connectionSubscriptions.get(connection.source as any);
-				if (subscription) {
-					subscription.unsubscribe();
-				} else {
-					throw new Error("no subscription found");
-				}
-
+		this.port.subscribeDisconnected(other => {
+			const subscription = this.connectionSubscriptions.get(other as any);
+			if (subscription) {
+				subscription.unsubscribe();
+			} else {
+				throw new Error("no subscription found");
+			}
+			
+			if (this.port.isDestination()) {
 				const stream = this.getStreamType();
 				if (stream) {
 					setTimeout(() => {
 						stream.resetStreamType();
 					}, 100);
 				}
-			});
-		}
-
-		if (this.port.isSource()) {
-			this.port.subscribeConnected(connection => {
-				setTimeout(() => {
-					const subscription = connection.destination.getStreamPort().subscribeStreamTypeChanged(streamType => {
-						if (!streamType || this.port.getOwner().getStreamPortOwner().isMarkedForReset()) {
-							return;
-						}
-						this.setStreamTypeChildToParent(streamType);
-					});
-					this.connectionSubscriptions.set(connection.destination as any, subscription);
-				}, 100);
-			});
-			
-			this.port.subscribeDisconnected(connection => {
-				const subscription = this.port.getStreamPort().connectionSubscriptions.get(connection.destination as any);
-				if (subscription) {
-					subscription.unsubscribe();
-				} else {
-					throw new Error("no subscription found");
-				}
-			});
-		}
+			}
+		});
 
 		this.subscribeStreamTypeChanged(streamType => {
 			if (streamType) {

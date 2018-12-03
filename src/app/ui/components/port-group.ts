@@ -80,7 +80,7 @@ export class PortGroupComponent {
 		this.refreshPorts();
 	}
 
-	private refreshPorts() {
+	public refreshPorts() {
 		const parentElement = this.parentElement;
 		if (!parentElement) {
 			throw new Error(`need parent`);

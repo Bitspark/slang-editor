@@ -2,7 +2,7 @@ import {BlueprintModel} from "./blueprint";
 import {OperatorModel} from "./operator";
 import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
 import {BlackBox, PortOwner, SlangNode} from "../custom/nodes";
-import {Connection, Connections} from "../custom/connections";
+import {Connections} from "../custom/connections";
 import {SlangType, TypeIdentifier} from "../custom/type";
 import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
 import {StreamPort} from "../custom/stream";
@@ -18,8 +18,8 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 	// Topics
 	// self
-	private connected = new SlangSubject<Connection>("connected");
-	private disconnected = new SlangSubject<Connection>("disconnected");
+	private connected = new SlangSubject<PortModel>("connected");
+	private disconnected = new SlangSubject<PortModel>("disconnected");
 	private collapsed = new SlangBehaviorSubject<boolean>("collapsed", false);
 
 	// Properties
@@ -39,42 +39,41 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		this.name = name;
 		this.direction = direction;
 		if ((type.getTypeIdentifier() === TypeIdentifier.Generic) && !this.haveGhostAncestor()) {
-			this.generics = this.getGenerics();
+			this.generics = this.fetchGenerics();
 		}
 
 		this.constructPort(type, P, direction);
 		
-		if (this.isDestination()) {
-			this.subscribeConnected(connection => {
-				this.connectedWith.push(connection.source);
-			});
-
-			this.subscribeDisconnected(connection => {
-				const idxS = this.connectedWith.indexOf(connection.source);
-				if (idxS === -1) {
-					throw new Error(`not connected with that port`);
-				}
-				this.connectedWith.splice(idxS, 1);
-			});
-		}
-
-		if (this.isSource()) {
-			this.subscribeConnected(connection => {
-				this.connectedWith.push(connection.destination);
-			});
-
-			this.subscribeDisconnected(connection => {
-				const idxT = this.connectedWith.indexOf(connection.destination);
-				if (idxT === -1) {
-					throw new Error(`inconsistency: not connected with that port`);
-				}
-				this.connectedWith.splice(idxT, 1);
-			});
-		}
+		this.subscribeConnected(port => {
+			this.connectedWith.push(port);
+		});
+		
+		this.subscribeDisconnected(port => {
+			const idxT = this.connectedWith.indexOf(port);
+			if (idxT === -1) {
+				throw new Error(`inconsistency: not connected with that port`);
+			}
+			this.connectedWith.splice(idxT, 1);
+		});
 		
 		if (this.generics) {
-			this.generics.subscribeGenericTypeChanged(this.genericIdentifier!, type => {
-				this.rebuildGeneric(type, P);
+			const generics = this.generics;
+			const identifier = this.genericIdentifier!;
+
+			generics.subscribeGenericTypeChanged(identifier, type => {
+				if (type) {
+					this.constructPort(type, P, this.direction);
+				}
+			});
+
+			this.subscribeConnected(port => {
+				generics.specify(identifier, port.getType());
+			});
+
+			this.subscribeDisconnected(() => {
+				if (this.connectedWith.length === 0) {
+					generics.specify(identifier, type);
+				}
 			});
 		}
 		
@@ -85,13 +84,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		// 		}
 		// 	}
 		// });
-	}
-	
-	private rebuildGeneric(type: SlangType | null, P: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel): void {
-		if (!type) {
-			return;
-		}
-		this.constructPort(type, P, this.direction);
 	}
 	
 	private haveGhostAncestor(): boolean {
@@ -162,8 +154,16 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		}
 		return owner as O;
 	}
+
+	public getBox(): BlackBox {
+		const blackBox = this.getAncestorNode(BlackBox);
+		if (!blackBox) {
+			throw new Error(`port without blackBox detected`);
+		}
+		return blackBox;
+	}
 	
-	private getGenerics(): GenericSpecifications | null {
+	private fetchGenerics(): GenericSpecifications | null {
 		const blackBox = this.getAncestorNode(BlackBox);
 		if (!blackBox) {
 			throw new Error(`port without blackbox detected`);
@@ -172,6 +172,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		 	return blackBox.getGenericSpecifications();
 		}
 		return null;
+	}
+	
+	public getGenerics(): GenericSpecifications | null {
+		return this.generics;
 	}
 
 	public isParentStreamOrOwner(): boolean {
@@ -386,9 +390,8 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			throw new Error(`can only disconnect source ports`);
 		}
 
-		const connection = {source: this, destination: destination};
-		this.disconnected.next(connection);
-		destination.disconnected.next(connection);
+		this.disconnected.next(destination);
+		destination.disconnected.next(this);
 	}
 
 	/**
@@ -410,9 +413,8 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				this.getStreamSub().connectTo(destination.getStreamSub());
 				break;
 			default:
-				const connection = {source: this, destination: destination};
-				destination.connected.next(connection);
-				this.connected.next(connection);
+				destination.connected.next(this);
+				this.connected.next(destination);
 				break;
 		}
 	}
@@ -433,25 +435,29 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		}
 	}
 
+	public isConnectedWith(other: PortModel): boolean {
+		return this.connectedWith.indexOf(other) !== -1;
+	}
+	
 	// Subscriptions
 
 	public subscribeCollapsed(cb: (collapsed: boolean) => void): void {
 		this.collapsed.subscribe(cb);
 	}
 
-	public subscribeConnected(cb: (connection: Connection) => void): void {
-		this.getDirectConnections().forEach(connection => {
-			cb(connection);
+	public subscribeConnected(cb: (other: PortModel) => void): void {
+		this.connectedWith.forEach(port => {
+			cb(port);
 		});
 		this.connected.subscribe(cb);
 	}
 
-	public subscribeDisconnected(cb: (connection: Connection) => void): void {
+	public subscribeDisconnected(cb: (other: PortModel) => void): void {
 		this.disconnected.subscribe(cb);
 	}
 }
 
-export type PortModel = GenericPortModel<PortOwner>;
+export type PortModel = GenericPortModel<PortOwner>
 
 export type PortModelArgs = { name: string, type: SlangType, direction: PortDirection, };
 

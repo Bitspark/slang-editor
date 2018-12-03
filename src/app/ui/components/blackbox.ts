@@ -4,6 +4,7 @@ import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 import {PortGroupComponent} from "./port-group";
 import {Styles} from "../../../styles/studio";
+import {ConnectionComponent} from "./connection";
 
 export class BlackBoxComponent {
 
@@ -18,6 +19,12 @@ export class BlackBoxComponent {
 		this.portGroups.forEach(group => {
 			group.setParent(this.rectangle);
 		});
+	}
+	
+	public refresh(): void {
+		for (const portGroup of this.portGroups) {
+			portGroup.refreshPorts();
+		}
 	}
 
 	public getBBox(): g.Rect {
@@ -78,7 +85,7 @@ export class BlackBoxComponent {
 }
 
 export class BlueprintBoxComponent extends BlackBoxComponent {
-
+	
 	constructor(graph: dia.Graph, blueprint: BlueprintModel) {
 		super(graph, blueprint);
 
@@ -97,11 +104,13 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 
 export class OperatorBoxComponent extends BlackBoxComponent {
 
-	constructor(graph: dia.Graph, operator: OperatorModel) {
+	constructor(graph: dia.Graph, private operator: OperatorModel) {
 		super(graph, operator);
 		if (operator.position) {
 			this.getRectangle().position(operator.position.x, operator.position.y);
 		}
+	
+		operator.getGenericSpecifications().subscribeGenericsChanged(() => this.refresh());
 	}
 
 }

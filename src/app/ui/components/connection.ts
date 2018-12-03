@@ -66,11 +66,10 @@ export class ConnectionComponent {
 			}
 		});
 		this.refresh();
-		this.link.addTo(graph);
 
-		[connection.source, connection.destination].forEach(port => {
+		[[connection.source, connection.destination],[connection.destination, connection.source]].forEach(([port, other]) => {
 			port.getStreamPort().subscribeRefreshStreamType(stream => {
-				if (ConnectionComponent.refreshActive) {
+				if (ConnectionComponent.refreshActive && port.isConnectedWith(other)) {
 					this.refresh();
 					if (stream) {
 						stream.subscribeNestingChanged(() => {
@@ -83,6 +82,9 @@ export class ConnectionComponent {
 	}
 
 	public refresh(): void {
+		if (!this.link.graph) {
+			this.link.addTo(this.graph);
+		}
 		ConnectionComponent.refresh(this.connection.source, this.connection.destination, this.link);
 	}
 

@@ -1,8 +1,9 @@
 import {SlangType} from "./type";
-import {SlangBehaviorSubject} from "./events";
+import {SlangBehaviorSubject, SlangSubject} from "./events";
 import {Subscription} from "rxjs";
 
 export class GenericSpecifications {
+	private genericsChanged = new SlangSubject<[string, SlangType | null]>("generics-changed");
 	private genericTypes: Map<string, SlangBehaviorSubject<SlangType | null>>;
 
 	public constructor(private genericIdentifiers: Array<string>) {
@@ -21,12 +22,12 @@ export class GenericSpecifications {
 	
 	public specify(identifier: string, type: SlangType): void {
 		if (this.genericIdentifiers.indexOf(identifier) === -1) {
-			console.log(this.genericIdentifiers);
 			throw `unknown generic identifier ${identifier}`;
 		}
 		const subject = this.getSubject(identifier, type);
 		if (subject.getValue() !== type) {
 			subject.next(type);
+			this.genericsChanged.next([identifier, type]);
 		}
 	}
 
@@ -52,6 +53,10 @@ export class GenericSpecifications {
 	
 	public subscribeGenericTypeChanged(identifier: string, cb: (type: SlangType | null) => void): Subscription {
 		return this.getSubject(identifier).subscribe(cb);
+	}
+
+	public subscribeGenericsChanged(cb: (generic: [string, SlangType | null]) => void): Subscription {
+		return this.genericsChanged.subscribe(cb);
 	}
 	
 }
