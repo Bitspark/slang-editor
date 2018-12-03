@@ -112,6 +112,11 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 	
 		operator.getGenericSpecifications().subscribeGenericsChanged(() => this.refresh());
 	}
+	
+	public refresh(): void {
+		super.refresh();
+		this.getRectangle().attr("label/text", (this.blackBox as OperatorModel).getDisplayName());
+	}
 
 }
 
