@@ -125,6 +125,9 @@ export abstract class AnchoredComponent extends Component {
 
 		if (wrapped === "[]") {
 			m.mount(this.htmlRoot, {
+				oncreate: () => {
+					this.draw();
+				},
 				onupdate: () => {
 					this.draw();
 				},
@@ -134,6 +137,9 @@ export abstract class AnchoredComponent extends Component {
 			});
 		} else {
 			m.mount(this.htmlRoot, {
+				oncreate: () => {
+					this.draw();
+				},
 				onupdate: () => {
 					this.draw();
 				},

@@ -35,7 +35,7 @@ export const GraphValueType: ConsoleValueType<GraphType> = {
 	},
 
 	output: {
-		onupdate({attrs, dom}: CVnodeDOM<Output.ValueTypeAttrs<GraphType>>) {
+		oncreate({attrs, dom}: CVnodeDOM<Output.ValueTypeAttrs<GraphType>>) {
 			const data = attrs.value.map(({name, data}) => {
 				return {
 					x: data.map(({x}) => x),
@@ -56,6 +56,7 @@ export const GraphValueType: ConsoleValueType<GraphType> = {
 				}
 			};
 			Plotly.plot(dom as HTMLElement, data, layout, PlotlyConfig);
+			m.redraw();
 		},
 		view({attrs}: CVnode<Output.ValueTypeAttrs<GraphType>>) {
 			return m(".sl-graph");

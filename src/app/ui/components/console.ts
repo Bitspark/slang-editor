@@ -88,13 +88,6 @@ export namespace Input {
 	}
 
 	export abstract class ValueType<T> implements Tk.Input<T> {
-		oninit?(vnode: m.CVnode<ValueTypeAttrs<T>>): any {
-
-		}
-
-		onupdate?(vnode: m.CVnodeDOM<ValueTypeAttrs<T>>): any {
-		}
-
 		abstract view(vnode: m.CVnode<ValueTypeAttrs<T>>): m.Children | void | null;
 	}
 
@@ -121,7 +114,6 @@ export namespace Input {
 			if (typeSpecificComp) {
 				return m(typeSpecificComp, attrs);
 			} else {
-
 				switch (t.getTypeIdentifier()) {
 					case TypeIdentifier.Map:
 						return m(MapInputField, Object.assign(attrs, {
@@ -251,8 +243,7 @@ export namespace Output {
 	}
 
 	export abstract class ValueType<T> implements ClassComponent<ValueTypeAttrs<T>> {
-		oninit?(vnode: m.CVnode<ValueTypeAttrs<T>>): any {
-
+		oncreate?(vnode: m.CVnodeDOM<ValueTypeAttrs<T>>): any {
 		}
 
 		onupdate?(vnode: m.CVnodeDOM<ValueTypeAttrs<T>>): any {
