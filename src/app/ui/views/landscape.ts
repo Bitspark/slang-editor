@@ -218,7 +218,6 @@ export class LandscapeView extends PaperView {
 			that.landscape.createBlueprint({
 				fullName: `Unnamed${new Date().getTime()}`,
 				type: BlueprintType.Local,
-				generics: new GenericSpecifications([]),
 			}).open();
 		});
 

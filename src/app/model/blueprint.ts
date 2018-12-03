@@ -17,7 +17,7 @@ export enum BlueprintType {
 	Library,
 }
 
-export type BlueprintModelArgs = { fullName: string, type: BlueprintType, generics: GenericSpecifications };
+export type BlueprintModelArgs = { fullName: string, type: BlueprintType };
 
 export type BlueprintInstance = { handle: string, url: string };
 
@@ -42,8 +42,8 @@ export class BlueprintModel extends BlackBox {
 	private properties: Array<PropertyModel> = [];
 	private genericIdentifiers: Set<string>;
 
-	constructor(parent: LandscapeModel, {fullName, type, generics}: BlueprintModelArgs) {
-		super(parent, true, generics);
+	constructor(parent: LandscapeModel, {fullName, type}: BlueprintModelArgs) {
+		super(parent, true);
 		this.fullName = fullName;
 		this.type = type;
 		this.hierarchy = fullName.split(".");
@@ -70,40 +70,48 @@ export class BlueprintModel extends BlackBox {
 		return genericIdentifiers;
 	}
 
-	private instantiateOperator(operator: OperatorModel, params?: { properties: PropertyAssignments, generics: GenericSpecifications }) {
+	private instantiateOperator(operator: OperatorModel) {
+		const properties = operator.getPropertyAssignments();
+		const generics = operator.getGenericSpecifications();
 
 		function copyAndAddDelegates(owner: OperatorModel, delegate: BlueprintDelegateModel) {
-			if (params) {
-				for (const name of PropertyEvaluator.expand(delegate.getName(), params.properties)) {
-					const delegateCopy = owner.createDelegate({name, generics: params.generics,});
+			if (properties && generics) {
+				for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), properties)) {
+					const delegateCopy = owner.createDelegate({name: expandedDlgName});
 					for (const port of delegate.getPorts()) {
 						delegateCopy.createPort({
 							name: "",
-							type: port.getType().expand(params.properties),
+							type: port.getType().expand(properties),
 							direction: port.getDirection(),
-							generics: params.generics,
 						});
 					}
 				}
 			} else {
 				const generics = new GenericSpecifications([]);
-				const delegateCopy = owner.createDelegate({name: delegate.getName(), generics});
+				const delegateCopy = owner.createDelegate({name: delegate.getName()});
 				for (const port of delegate.getPorts()) {
-					delegateCopy.createPort({name: "", type: port.getType(), direction: port.getDirection(), generics,});
+					delegateCopy.createPort({
+						name: "",
+						type: port.getType(),
+						direction: port.getDirection(),
+					});
 				}
 			}
 		}
 
 		for (const port of this.getPorts()) {
-			if (params) {
+			if (properties && generics) {
 				operator.createPort({
 					name: "",
-					type: port.getType().expand(params.properties),
+					type: port.getType().expand(properties),
 					direction: port.getDirection(),
-					generics: params.generics,
 				});
 			} else {
-				operator.createPort({name: "", type: port.getType(), direction: port.getDirection(), generics: new GenericSpecifications([]),});
+				operator.createPort({
+					name: "",
+					type: port.getType(),
+					direction: port.getDirection(),
+				});
 			}
 		}
 		for (const delegate of this.getDelegates()) {
@@ -111,9 +119,14 @@ export class BlueprintModel extends BlackBox {
 		}
 	}
 
-	public createOperator(name: string, blueprint: BlueprintModel, propAssigns: PropertyAssignments, generics: GenericSpecifications): OperatorModel {
-		return this.createChildNode(OperatorModel, {name, blueprint, geometry: undefined, generics,}, operator => {
-			blueprint.instantiateOperator(operator, {properties: propAssigns, generics});
+	public createOperator(name: string, blueprint: BlueprintModel, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
+		return this.createChildNode(OperatorModel, {
+			name,
+			blueprint,
+			properties: propAssigns,
+			generics: genSpeci
+		}, operator => {
+			blueprint.instantiateOperator(operator);
 		});
 	}
 
@@ -124,7 +137,11 @@ export class BlueprintModel extends BlackBox {
 
 	public createBlankOperator(blueprint: BlueprintModel, geometry: Geometry): OperatorModel {
 		const name = this.getRandomOperatorName(blueprint);
-		return this.createChildNode(OperatorModel, {name, blueprint, geometry, generics: new GenericSpecifications([]),}, operator => {
+		return this.createChildNode(OperatorModel, {
+			name,
+			blueprint,
+			geometry,
+		}, operator => {
 			blueprint.instantiateOperator(operator);
 		});
 	}

@@ -4,9 +4,23 @@ import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
 import {BlackBox} from "../custom/nodes";
 import {Connections} from "../custom/connections";
 import {SlangBehaviorSubject} from "../custom/events";
+import {PropertyAssignments} from "./property";
+import {TypeIdentifier} from "../custom/type";
 import {GenericSpecifications} from "../custom/generics";
 
-export type OperatorModelArgs = { name: string, blueprint: BlueprintModel, geometry: Geometry | undefined, generics: GenericSpecifications };
+export type OperatorModelArgs = {
+	name: string,
+	blueprint: BlueprintModel,
+	geometry?: Geometry,
+	properties?: undefined,
+	generics?: undefined,
+} | {
+	name: string,
+	blueprint: BlueprintModel,
+	properties: PropertyAssignments,
+	generics: GenericSpecifications,
+	geometry?: Geometry,
+}
 
 export interface Geometry {
 	position: [number, number]
@@ -21,12 +35,22 @@ export class OperatorModel extends BlackBox {
 	private readonly name: string;
 	private readonly blueprint: BlueprintModel;
 	private readonly geometry: Geometry | undefined;
+	private readonly properties: PropertyAssignments;
+	private readonly generics: GenericSpecifications;
 
 	constructor(parent: BlueprintModel, args: OperatorModelArgs) {
-		super(parent, false, args.generics);
+		super(parent, false);
 		this.name = args.name;
 		this.blueprint = args.blueprint;
+
 		this.geometry = args.geometry;
+		if (args.properties && args.generics) {
+			this.properties = args.properties;
+			this.generics = args.generics;
+		} else {
+			this.properties = new PropertyAssignments([]);
+			this.generics = new GenericSpecifications([]);
+		}
 	}
 
 	public getName(): string {
@@ -57,8 +81,38 @@ export class OperatorModel extends BlackBox {
 		return this.scanChildNode(OperatorDelegateModel, delegate => delegate.getName() === name);
 	}
 
+	public getPropertyAssignments(): PropertyAssignments {
+		return this.properties;
+	}
+
+	public getGenericSpecifications(): GenericSpecifications {
+		return this.generics;
+	}
+
 	public getDisplayName(): string {
-		return this.getBlueprint().getShortName();
+		if (this.properties) {
+			switch (this.blueprint.getFullName()) {
+				case "slang.data.Value":
+					const value = this.properties.getByName("value").getValue()!;
+					const maxLength = 13;
+					if (value.length > maxLength) {
+						return `"${value.substr(0, maxLength - 2)}..."`;
+					} else {
+						return `"${value}"`;
+					}
+				case "slang.data.Evaluate":
+					return this.properties.getByName("expression").getValue()!;
+				case "slang.data.Convert":
+					const portIn = this.getPortIn();
+					const portOut = this.getPortOut();
+					if (portIn && portOut) {
+						const fromType = TypeIdentifier[portIn.getTypeIdentifier()];
+						const toType = TypeIdentifier[portOut.getTypeIdentifier()];
+						return `${fromType} → ${toType}`;
+					}
+			}
+		}
+		return this.blueprint.getDisplayName();
 	}
 
 	public getConnectionsTo(): Connections {

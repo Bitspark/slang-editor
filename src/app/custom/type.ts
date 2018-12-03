@@ -3,7 +3,7 @@ import {PropertyAssignments} from "../model/property";
 import {PropertyEvaluator} from "./utils";
 
 export enum TypeIdentifier {
-	Unspecified, // 0
+	// Unspecified, // 0
 	Number, // 1
 	Binary, // 2
 	Boolean, // 3
@@ -15,10 +15,66 @@ export enum TypeIdentifier {
 	Map, // 9
 }
 
+interface SlangTypeDefStream {
+	type: TypeIdentifier.Stream
+	stream: SlangTypeDef
+}
+
+interface SlangTypeDefMap {
+	type: TypeIdentifier.Map
+	map: {
+		[portName: string]: SlangTypeDef,
+	}
+}
+
+interface SlangTypeDefGeneric {
+	type: TypeIdentifier.Generic
+	generic: string
+}
+
+interface SlangTypeDefPrimitive {
+	type: TypeIdentifier.String | TypeIdentifier.Number | TypeIdentifier.Boolean | TypeIdentifier.Binary | TypeIdentifier.Trigger | TypeIdentifier.Primitive
+}
+
+
+export type SlangTypeDef = SlangTypeDefPrimitive | SlangTypeDefGeneric | SlangTypeDefMap | SlangTypeDefStream;
+
+export function isEqual(a: SlangTypeDef, b: SlangTypeDef): boolean {
+	return JSON.stringify(a) === JSON.stringify(b);
+}
+
+
 export class SlangType {
 	private readonly mapSubs: Map<string, SlangType> | undefined;
 	private genericIdentifier?: string;
 	private streamSub: SlangType | undefined;
+
+
+	public toSlangTypeDef(): SlangTypeDef {
+		switch (this.typeIdentifier) {
+			case TypeIdentifier.Map:
+				return {
+					type: this.typeIdentifier,
+					map: Array.from(this.getMapSubs()).reduce((obj: any, [name, slType]) => {
+						obj[name] = slType.toSlangTypeDef();
+						return obj;
+					}, {})
+				};
+			case TypeIdentifier.Stream:
+				return {
+					type: this.typeIdentifier,
+					stream: this.getStreamSub().toSlangTypeDef(),
+				};
+			case TypeIdentifier.Generic:
+				return {
+					type: this.typeIdentifier,
+					generic: this.getGenericIdentifier(),
+				};
+			default:
+				return {type: this.typeIdentifier};
+		}
+
+	}
 
 	public constructor(private parent: SlangType | null, private typeIdentifier: TypeIdentifier) {
 		if (this.typeIdentifier === TypeIdentifier.Map) {
@@ -139,12 +195,8 @@ export class SlangType {
 	}
 
 	public isPrimitive(): boolean {
-		const primitiveTypes = [TypeIdentifier.String, TypeIdentifier.Number, TypeIdentifier.Boolean, TypeIdentifier.Primitive];
+		const primitiveTypes = [TypeIdentifier.String, TypeIdentifier.Number, TypeIdentifier.Boolean, TypeIdentifier.Binary, TypeIdentifier.Primitive];
 		return primitiveTypes.indexOf(this.getTypeIdentifier()) !== -1;
-	}
-
-	public isGeneric(): boolean {
-		return this.getTypeIdentifier() === TypeIdentifier.Generic;
 	}
 }
 

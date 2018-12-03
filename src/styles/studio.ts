@@ -87,10 +87,10 @@ export namespace Styles {
 					rx: Styles.BlackBox.rx,
 					ry: Styles.BlackBox.ry,
 					class: "sl-rectangle",
-					filter: Styles.BlackBox.filter,
 				},
 				label: {
 					class: "sl-label",
+					fontSize: 10,
 				},
 			},
 		};

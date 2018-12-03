@@ -23,7 +23,8 @@ $blackbox-color-label: $black;
 .sl-blackbox, .sl-blackbox-ghost {
 	.sl-rectangle {
 		fill: $blackbox-color-fill;
-		stroke: none;
+		stroke: $black;
+		stroke-width: 1px;
 	}
 
 	.sl-label {
@@ -41,8 +42,9 @@ $blackbox-color-label: $black;
 
 .sl-outer {
 	.sl-rectangle {
-		stroke: none;
+		stroke: $black;
 		fill: $blueprint-color-fill;
+		stroke-width: 1px;
 	}
 }
 

@@ -186,7 +186,7 @@ export abstract class PortOwner extends SlangNode {
 	
 	private readonly streamPortOwner: StreamPortOwner;
 	
-	protected constructor(parent: SlangNode, streamSource: boolean, private generics: GenericSpecifications) {
+	protected constructor(parent: SlangNode, streamSource: boolean) {
 		super(parent);
 		this.streamPortOwner = new StreamPortOwner(this, streamSource);
 		this.streamPortOwner.initialize();
@@ -208,10 +208,6 @@ export abstract class PortOwner extends SlangNode {
 	
 	public getStreamPortOwner(): StreamPortOwner {
 		return this.streamPortOwner;
-	}
-	
-	public updateGeneric(genericIdentifier: string, specification: SlangType) {
-		
 	}
 
 }
