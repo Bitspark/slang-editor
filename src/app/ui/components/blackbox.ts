@@ -104,7 +104,7 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 
 export class OperatorBoxComponent extends BlackBoxComponent {
 
-	constructor(graph: dia.Graph, private operator: OperatorModel) {
+	constructor(graph: dia.Graph, operator: OperatorModel) {
 		super(graph, operator);
 		if (operator.position) {
 			this.getRectangle().position(operator.position.x, operator.position.y);

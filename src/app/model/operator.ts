@@ -48,8 +48,8 @@ export class OperatorModel extends BlackBox {
 			this.properties = args.properties;
 			this.generics = args.generics;
 		} else {
-			this.properties = new PropertyAssignments([]);
-			this.generics = new GenericSpecifications([]);
+			this.properties = new PropertyAssignments(Array.from(args.blueprint.getProperties()));
+			this.generics = new GenericSpecifications(Array.from(args.blueprint.getGenericIdentifiers()));
 		}
 	}
 
