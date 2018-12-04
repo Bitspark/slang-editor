@@ -187,7 +187,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		}
 		return null;
 	}
-	
+
 	public isGeneric(): boolean {
 		return !!this.genericIdentifier && (this.typeIdentifier === TypeIdentifier.Generic || this.typeIdentifier === TypeIdentifier.Map);
 	}
@@ -407,10 +407,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		this.disconnected.next(destination);
 		destination.disconnected.next(this);
 	}
-	
-	private createGenericType(other: PortModel): [SlangType, string] {
+
+	private createGenericType(other: PortModel): { type: SlangType, portId: string } {
 		const subName = `gen_${other.getName()}_${(new Date().getTime()) % 100}`;
-		
+
 		let newType: SlangType;
 		if (this.typeIdentifier !== TypeIdentifier.Map) {
 			newType = new SlangType(null, TypeIdentifier.Map);
@@ -418,14 +418,14 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			newType = this.getType();
 		}
 		newType.addMapSub(subName, new SlangType(newType, other.getTypeIdentifier()));
-		
-		return [newType, subName];
+
+		return {type: newType, portId: subName};
 	}
-	
+
 	private findGenericPort(portId: string): PortModel {
 		return this.findMapSub(portId);
 	}
-	
+
 	private createGenericPort(other: PortModel): PortModel {
 		if (!this.generics || !this.genericIdentifier) {
 			throw new Error(`not a generic port`);
@@ -435,11 +435,11 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			this.generics.specify(this.genericIdentifier, other.getType());
 			return this;
 		}
-		
-		const genericType = this.createGenericType(other);
-		this.generics.specify(this.genericIdentifier, genericType[0]);
 
-		return this.findGenericPort(genericType[1]);
+		const {type, portId} = this.createGenericType(other);
+		this.generics.specify(this.genericIdentifier, type);
+
+		return this.findGenericPort(portId);
 	}
 
 	private connectDirectlyTo(destination: PortModel): void {
@@ -454,7 +454,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		otherPort.connected.next(thisPort);
 		thisPort.connected.next(otherPort);
 	}
-	
+
 	/**
 	 * Connects this port to the destination port.
 	 * This has to be a source port and destination a destination port.
