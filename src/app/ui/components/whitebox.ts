@@ -103,17 +103,18 @@ export class WhiteBoxComponent extends Component {
 				const portOut = this.blueprint.getPortOut();
 
 				if (portOut) {
-					const that = this;
+					const outputValues: Array<SlangTypeValue> = [];
+
+					this.blueprint.subscribeOutputPushed((outputData: SlangTypeValue) => {
+						outputValues.unshift(outputData);
+						m.redraw();
+					}, this.blueprint.shutdownRequested);
+
 					this.output.mount("[]", {
-						oninit: (vnode: m.Vnode<{}, { values: Array<SlangTypeValue> }>) => {
-							vnode.state.values = [];
-							this.blueprint.subscribeOutputPushed((outputData: SlangTypeValue) => {
-								vnode.state.values.unshift(outputData);
-								m.redraw();
-							}, this.blueprint.shutdownRequested);
-						},
-						view: (vnode: m.Vnode<{}, { values: Array<SlangTypeValue> }>) => m(OutputConsole, {
-							values: vnode.state.values,
+						view: () => m(OutputConsole, {
+							onLoad: () => {
+								return outputValues;
+							},
 							type: portOut.getType()
 						})
 					});

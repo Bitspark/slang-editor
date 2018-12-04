@@ -336,16 +336,14 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 
 interface OutputConsoleAttrs {
 	type: SlangType;
-	values: Array<SlangTypeValue>;
+	onLoad: () => Array<SlangTypeValue>
 }
 
 export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {
 	private type: SlangType | undefined;
-	private values: Array<SlangTypeValue> = [];
 
 	oninit({attrs}: CVnode<OutputConsoleAttrs>) {
 		this.type = attrs.type;
-		this.values = attrs.values;
 	}
 
 	private renderOutput(value: SlangTypeValue, type: SlangType): m.Children {
@@ -353,9 +351,11 @@ export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {
 	}
 
 	view({attrs}: CVnode<OutputConsoleAttrs>): any {
+		const values = attrs.onLoad();
+		const len = values.length;
 		return m(Tk.List, {"class": "sl-console-out"},
-			this.values.map((outputData) => {
-				return m(Tk.ListItem, this.renderOutput(outputData, this.type!));
+			values.map((outputData, i) => {
+				return m(Tk.ListItem, {key: len - i}, this.renderOutput(outputData, this.type!));
 			})
 		);
 	}
