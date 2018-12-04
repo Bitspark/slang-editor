@@ -117,7 +117,12 @@ export class SlangType {
 
 	public specifyGenerics(genSpec: GenericSpecifications): SlangType {
 		if (this.typeIdentifier === TypeIdentifier.Generic) {
-			return genSpec.get(this.getGenericIdentifier()).copy();
+			const identifier = this.getGenericIdentifier();
+			if (genSpec.has(identifier)) {
+				return genSpec.get(this.getGenericIdentifier()).copy();
+			} else {
+				return this.copy();
+			}
 		}
 		const specifiedType = new SlangType(this.parent, this.typeIdentifier);
 		switch (this.typeIdentifier) {
