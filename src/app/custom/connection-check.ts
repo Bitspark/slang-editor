@@ -177,21 +177,24 @@ export function canConnectTo(source: PortModel, destination: PortModel): boolean
 	if (sourceConnectedWith.indexOf(source) !== -1) {
 		throw new Error(`${source.getIdentity()}: asymmetric connection found`);
 	}
+
+	if (!cycleCompatibleTo(source, destination)) {
+		return false;
+	}
 	
 	if (source.isGeneric() === destination.isGeneric()) {
 		if (!typesCompatibleTo(source.getType(), destination.getType())) {
 			return false;
 		}
+	} else {
+		// TODO: Remove for stream check
+		return true;
 	}
 	
 	const sourceStream = source.getStreamPort().getStreamType();
 	const destinationStream = destination.getStreamPort().getStreamType();
 	
 	if (!streamsCompatible(sourceStream, destinationStream)) {
-		return false;
-	}
-	
-	if (!cycleCompatibleTo(source, destination)) {
 		return false;
 	}
 	

@@ -407,7 +407,25 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		this.disconnected.next(destination);
 		destination.disconnected.next(this);
 	}
-
+	
+	private createGenericType(other: PortModel): [SlangType, string] {
+		const subName = `gen_${other.getName()}_${(new Date().getTime()) % 100}`;
+		
+		let newType: SlangType;
+		if (this.typeIdentifier !== TypeIdentifier.Map) {
+			newType = new SlangType(null, TypeIdentifier.Map);
+		} else {
+			newType = this.getType();
+		}
+		newType.addMapSub(subName, new SlangType(newType, other.getTypeIdentifier()));
+		
+		return [newType, subName];
+	}
+	
+	private findGenericPort(portId: string): PortModel {
+		return this.findMapSub(portId);
+	}
+	
 	private createGenericPort(other: PortModel): PortModel {
 		if (!this.generics || !this.genericIdentifier) {
 			throw new Error(`not a generic port`);
@@ -417,20 +435,11 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			this.generics.specify(this.genericIdentifier, other.getType());
 			return this;
 		}
-
-		const subName = `gen_${other.getName()}_${(new Date().getTime()) % 100}`;
 		
-		let newType: SlangType;
-		if (this.typeIdentifier !== TypeIdentifier.Map) {
-			newType = new SlangType(null, TypeIdentifier.Map);
-		} else {
-			newType = this.getType();
-		}
-		
-		newType.addMapSub(subName, new SlangType(newType, other.getTypeIdentifier()));
-		this.generics.specify(this.genericIdentifier, newType);
+		const genericType = this.createGenericType(other);
+		this.generics.specify(this.genericIdentifier, genericType[0]);
 
-		return this.findMapSub(subName);
+		return this.findGenericPort(genericType[1]);
 	}
 
 	private connectDirectlyTo(destination: PortModel): void {
