@@ -363,4 +363,4 @@ export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {
 
 ConsoleValueTypeManager.register(FileValueType);
 ConsoleValueTypeManager.register(ImageValueType);
-//ConsoleValueTypeManager.register(GraphValueType);
+ConsoleValueTypeManager.register(GraphValueType);
