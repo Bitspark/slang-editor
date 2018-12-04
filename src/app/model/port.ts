@@ -190,7 +190,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	}
 	
 	public isGeneric(): boolean {
-		return !!this.genericIdentifier;
+		return !!this.genericIdentifier && (this.typeIdentifier === TypeIdentifier.Generic || this.typeIdentifier === TypeIdentifier.Map);
 	}
 
 	public isParentStreamOrOwner(): boolean {

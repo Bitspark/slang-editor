@@ -100,14 +100,6 @@ export class PortGroupComponent {
 
 		const ports = createPortItems(this, this.getGroupPosition(), this.port);
 		
-		for (let port1 of ports) {
-			for (let port2 of ports) {
-				if (port1 !== port2 && port1.getPortElement().id === port2.getPortElement().id) {
-					console.log("collision:", port1, port2);
-				}
-			}
-		}
-		
 		this.ports.length = 0;
 		this.ports.push.apply(this.ports, ports);
 		parentElement.addPorts(this.ports.map(port => port.getPortElement()));

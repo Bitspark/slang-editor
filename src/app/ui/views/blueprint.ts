@@ -148,7 +148,6 @@ export class BlueprintView extends PaperView {
 		if (portId.endsWith(".*")) {
 			portId = portId.substring(0, portId.length - 2);
 		}
-		console.log(portId);
 		const port = this.blueprint.findNodeById(portId);
 		if (!port || !(port instanceof GenericPortModel)) {
 			return undefined;

@@ -97,7 +97,7 @@ export class PortComponent {
 				attrs.transform = "";
 				break;
 			case "left":
-				attrs.transform = `rotate(${port.isDirectionIn() ? 90 : -90})`;
+				attrs.transform = `rotate(${port.isDirectionIn() ? -90 : 90})`;
 				break;
 		}
 
