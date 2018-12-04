@@ -2,6 +2,7 @@ import {dia, g, shapes, util} from "jointjs";
 import {ViewFrame} from "../frame";
 import {View} from "./view";
 import {SlangSubjectTrigger} from "../../custom/events";
+import {Component} from "../components/base";
 
 export abstract class PaperView extends View {
 	private positionChanged = new SlangSubjectTrigger("positionChanged");
@@ -14,20 +15,6 @@ export abstract class PaperView extends View {
 		this.paper = this.createPaper();
 		this.redirectPaperEvents();
 		this.catchPaperEvents();
-	}
-
-	public resize(width: number, height: number) {
-		this.paper.setDimensions(width, height);
-		this.paper.translate(width / 2, height / 2);
-		this.positionChanged.next();
-	}
-
-	public getGraph(): dia.Graph {
-		return this.graph;
-	}
-
-	public getPaper(): dia.Paper {
-		return this.paper;
 	}
 
 	protected reset() {
@@ -224,6 +211,29 @@ export abstract class PaperView extends View {
 		origin.attr("body/ry", "24");
 		origin.attr("draggable", false);
 		origin.set("obstacle", false);
+	}
+
+	public resize(width: number, height: number) {
+		this.paper.setDimensions(width, height);
+		this.paper.translate(width / 2, height / 2);
+		this.positionChanged.next();
+	}
+
+	public getPaper(): dia.Paper {
+		return this.paper;
+	}
+
+	public getCell(id: string | number | dia.Cell): dia.Cell {
+		return this.graph.getCell(id);
+	}
+
+	public getCellsBBox(cells: dia.Cell[]): g.Rect | null {
+		return this.graph.getCellsBBox(cells);
+	}
+
+	public renderCell(cell: dia.Cell) {
+		cell.addTo(this.graph);
+		return cell;
 	}
 
 	public subscribePositionChanged(cb: () => void): void {

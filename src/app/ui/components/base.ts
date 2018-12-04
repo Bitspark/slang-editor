@@ -19,11 +19,9 @@ export interface Position extends XY {
 }
 
 export abstract class Component {
-	protected readonly graph: dia.Graph;
 	private readonly paper: dia.Paper;
 
 	protected constructor(protected readonly paperView: PaperView, private xy: XY) {
-		this.graph = this.paperView.getGraph();
 		this.paper = this.paperView.getPaper();
 	}
 

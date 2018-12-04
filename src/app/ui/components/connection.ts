@@ -6,7 +6,8 @@ import {slangRouter} from "../link/router";
 import {slangConnector} from "../link/connector";
 import {Styles} from "../../../styles/studio";
 import {PortModel} from "../../model/port";
-import {StreamType} from "../../custom/stream";
+import {PaperView} from "../views/paper-view";
+import {Component} from "./base";
 
 const ConnectionLink = dia.Link.define("Connection", {
 	router: slangRouter,
@@ -32,14 +33,15 @@ const GhostConnectionLink = dia.Link.define("Connection", {
 		"</g>",].join(""),
 });
 
-export class ConnectionComponent {
+export class ConnectionComponent extends Component {
 
 	private readonly link: dia.Link;
 	private readonly id: string;
-	
+
 	public static refreshActive: boolean = true;
 
-	constructor(private graph: dia.Graph, private connection: Connection) {
+	constructor(paperView: PaperView, private connection: Connection) {
+		super(paperView, {x: 0, y: 0});
 		const ownerIds = ConnectionComponent.getBoxOwnerIds(connection);
 		this.id = ConnectionComponent.getLinkId(connection);
 		this.link = new ConnectionLink({
@@ -66,7 +68,7 @@ export class ConnectionComponent {
 			}
 		});
 		this.refresh();
-		this.link.addTo(graph);
+		this.paperView.renderCell(this.link);
 
 		[connection.source, connection.destination].forEach(port => {
 			port.getStreamPort().subscribeRefreshStreamType(stream => {
@@ -93,7 +95,7 @@ export class ConnectionComponent {
 	public getConnection(): Connection {
 		return this.connection;
 	}
-	
+
 	public getLink(): dia.Link {
 		return this.link;
 	}
@@ -112,7 +114,7 @@ export class ConnectionComponent {
 		return link;
 	}
 
-	private static refresh(sourcePort: PortModel, destinationPort: PortModel | null, link: dia.Link) {		
+	private static refresh(sourcePort: PortModel, destinationPort: PortModel | null, link: dia.Link) {
 		const stream = sourcePort.getStreamPort().getStreamType();
 		const lines = stream ? stream.getStreamDepth() : 1;
 
@@ -120,7 +122,7 @@ export class ConnectionComponent {
 		link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(sourcePort.getTypeIdentifier()));
 		link.attr(".connection/stroke-width", lines === 1 ? 2 : 1);
 		link.attr(".connection/vector-effect", Styles.Connection.Ordinary.vectorEffect);
-		
+
 		if (stream) {
 			if (stream.hasPlaceholderAncestor()) {
 				link.attr(".connection/stroke-dasharray", 1);
@@ -158,9 +160,9 @@ export class ConnectionComponent {
 		return `${connection.source.getIdentity()}:${connection.destination.getIdentity()}`;
 	}
 
-	public static findLink(graph: dia.Graph, connection: Connection): dia.Link | undefined {
+	public static findLink(paperView: PaperView, connection: Connection): dia.Link | undefined {
 		const linkId = ConnectionComponent.getLinkId(connection);
-		const link = graph.getCell(linkId);
+		const link = paperView.getCell(linkId);
 
 		if (!link) {
 			return undefined;

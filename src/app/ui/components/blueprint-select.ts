@@ -154,10 +154,9 @@ export class BlueprintSelectComponent extends Component {
 		let ghostRect: BlackBoxComponent.Rect | BlackBoxComponent.Rect.Ghost;
 
 		if (!blueprint) {
-			ghostRect = BlackBoxComponent.Rect.Ghost.place("• • •", this.getXY());
-			ghostRect.addTo(this.graph);
+			ghostRect = BlackBoxComponent.Rect.Ghost.place(this.paperView, "• • •", this.getXY());
 		} else {
-			ghostRect = BlackBoxComponent.Rect.place(this.graph, blueprint, this.getXY());
+			ghostRect = BlackBoxComponent.Rect.place(this.paperView, blueprint, this.getXY());
 		}
 		return ghostRect;
 	}

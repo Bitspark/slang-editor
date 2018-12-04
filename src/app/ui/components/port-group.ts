@@ -41,12 +41,11 @@ export class PortGroupComponent {
 	private parentElement: dia.Element | null = null;
 	private portGroupElement: dia.Element.PortGroup = {};
 
-	constructor(private graph: dia.Graph,
-				private readonly name: string,
-				private readonly port: PortModel,
-				private readonly groupPosition: PortGroupPosition,
-				start: number,
-				width: number) {
+	constructor(private readonly name: string,
+	            private readonly port: PortModel,
+	            private readonly groupPosition: PortGroupPosition,
+	            start: number,
+	            width: number) {
 		switch (groupPosition) {
 			case "top":
 				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "top", start, width) as any;

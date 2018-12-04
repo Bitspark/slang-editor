@@ -26,7 +26,6 @@ export class WhiteBoxComponent extends Component {
 	private readonly buttons: AttachedComponent;
 	private readonly input: AttachedComponent;
 	private readonly output: AttachedComponent;
-	private outputBuffer: Array<SlangTypeValue> = [];
 
 
 	private readonly operators: Array<BlackBoxComponent> = [];
@@ -50,7 +49,7 @@ export class WhiteBoxComponent extends Component {
 			height: WhiteBoxComponent.padding * 2 + WhiteBoxComponent.minimumSpace,
 		};
 		this.shape = new WhiteBoxComponent.Shape(this.blueprint, size);
-		this.shape.addTo(this.graph);
+		this.paperView.renderCell(this.shape);
 		this.autoLayout();
 	}
 
@@ -174,7 +173,7 @@ export class WhiteBoxComponent extends Component {
 				resizeClusters: false,
 			});
 
-		const boundingBox = this.graph.getCellsBBox(operatorRectangles) || new g.Rect({
+		const boundingBox = this.paperView.getCellsBBox(operatorRectangles) || new g.Rect({
 			x: 0,
 			y: 0,
 			width: WhiteBoxComponent.minimumSpace,
@@ -361,8 +360,9 @@ export class WhiteBoxComponent extends Component {
 		};
 
 		const that = this;
-		const portComponent = new IsolatedBlueprintPortComponent(this.graph, name, id, port, invertedPosition[position]);
+		const portComponent = new IsolatedBlueprintPortComponent(name, id, port, invertedPosition[position]);
 		const portElement = portComponent.getElement();
+		this.paperView.renderCell(portElement);
 
 		let calculateRestrictedRect: (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => g.PlainRect;
 
@@ -421,16 +421,16 @@ export class WhiteBoxComponent extends Component {
 	}
 
 	private addConnection(connection: Connection) {
-		this.connections.push(new ConnectionComponent(this.graph, connection));
+		this.connections.push(new ConnectionComponent(this.paperView, connection));
 	}
 
 	private addOperator(operator: OperatorModel) {
-		this.operators.push(new OperatorBoxComponent(this.graph, operator));
+		this.operators.push(new OperatorBoxComponent(this.paperView, operator));
 	}
 
 	private removeConnection(connection: Connection) {
 		const linkId = ConnectionComponent.getLinkId(connection);
-		const link = ConnectionComponent.findLink(this.graph, connection);
+		const link = ConnectionComponent.findLink(this.paperView, connection);
 		if (link) {
 			link.remove();
 		} else {
