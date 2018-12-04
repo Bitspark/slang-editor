@@ -32,7 +32,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	protected connectedWith: Array<PortModel> = [];
 
 	// Mixins
-	private streamPort!: StreamPort;
+	private readonly streamPort: StreamPort;
 
 	protected constructor(parent: GenericPortModel<O> | O, {type, name, direction}: PortModelArgs, P: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel) {
 		super(parent);
@@ -408,37 +408,37 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		destination.disconnected.next(this);
 	}
 
-	private createGenericType(other: PortModel): { type: SlangType, portId: string } {
-		const subName = `gen_${other.getName()}_${(new Date().getTime()) % 100}`;
-
-		let newType: SlangType;
-		if (this.typeIdentifier !== TypeIdentifier.Map) {
-			newType = new SlangType(null, TypeIdentifier.Map);
-		} else {
-			newType = this.getType();
+	private findGenericPort(portId: Array<string>): PortModel {
+		if (portId.length === 0) {
+			return this;
 		}
-		newType.addMapSub(subName, new SlangType(newType, other.getTypeIdentifier()));
-
-		return {type: newType, portId: subName};
-	}
-
-	private findGenericPort(portId: string): PortModel {
-		return this.findMapSub(portId);
+		
+		const nextPortId = portId.shift();
+		
+		if (!nextPortId) {
+			throw new Error(`unexpected empty array`);
+		}
+		
+		if (nextPortId === "~") {
+			return this.getStreamSub().findGenericPort(portId);
+		} else {
+			return this.findMapSub(nextPortId).findGenericPort(portId);
+		}
 	}
 
 	private createGenericPort(other: PortModel): PortModel {
 		if (!this.generics || !this.genericIdentifier) {
 			throw new Error(`not a generic port`);
 		}
-
 		if (this.typeIdentifier !== TypeIdentifier.Map && this.typeIdentifier !== TypeIdentifier.Generic) {
+			// TODO: Replace this legacy solution once all generics are ensured to be maps
 			this.generics.specify(this.genericIdentifier, other.getType());
 			return this;
 		}
-
-		const {type, portId} = this.createGenericType(other);
+		
+		const {type, portId} = this.streamPort.createGenericType(other);
+		
 		this.generics.specify(this.genericIdentifier, type);
-
 		return this.findGenericPort(portId);
 	}
 

@@ -44,7 +44,6 @@ export class SlangType {
 	private genericIdentifier?: string;
 	private streamSub: SlangType | undefined;
 
-
 	public getTypeDef(): SlangTypeDef {
 		switch (this.typeIdentifier) {
 			case TypeIdentifier.Map:
@@ -197,6 +196,27 @@ export class SlangType {
 	public isPrimitive(): boolean {
 		const primitiveTypes = [TypeIdentifier.String, TypeIdentifier.Number, TypeIdentifier.Boolean, TypeIdentifier.Binary, TypeIdentifier.Primitive];
 		return primitiveTypes.indexOf(this.getTypeIdentifier()) !== -1;
+	}
+	
+	public toString(tab?: string): string {
+		if (!tab) {
+			tab = "";
+		}
+		
+		let str = TypeIdentifier[this.typeIdentifier] + "\n";
+		if (this.typeIdentifier === TypeIdentifier.Map) {
+			for (const sub of this.mapSubs!) {
+				str += tab + "  " + sub[0] + ": " + sub[1].toString(tab + "  ");
+			}
+		}
+		if (this.typeIdentifier === TypeIdentifier.Stream) {
+			str += tab + "  " + this.streamSub!.toString(tab + "  ");
+		}
+		if (this.typeIdentifier === TypeIdentifier.Generic) {
+			str += tab + "  " + "identifier: " + this.genericIdentifier;
+		}
+		
+		return str;
 	}
 }
 

@@ -2,8 +2,8 @@ import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "./events"
 import {Subscription} from "rxjs";
 import {PortOwner} from "./nodes";
 import {ConnectionComponent} from "../ui/components/connection";
-import {GenericPortModel, PortDirection, PortModel} from "../model/port";
-import {TypeIdentifier} from "./type";
+import {GenericPortModel, PortModel} from "../model/port";
+import {SlangType, TypeIdentifier} from "./type";
 
 export class StreamType {
 
@@ -20,6 +20,57 @@ export class StreamType {
 
 	constructor(baseStream: StreamType | null, private source: PortModel | null) {
 		this.setBaseStream(baseStream);
+	}
+	
+	public getStreamStep(other: StreamType): [StreamType | null, number] {
+		// if (this.getStreamDepth() < other.getStreamDepth()) {
+		// 	return [null, -1];
+		// }
+		
+		if (this === other) {
+			return [null, 0];
+		}
+		
+		if (other.hasAncestor(this)) {
+			let last = other;
+			let distance = 1;
+			while (true) {
+				if (last.baseStream === this) {
+					return [last, distance];
+				}
+				if (!last.baseStream) {
+					throw new Error(`unexpected inconsistency: StreamType.hasAncestor behaving incorrectly`);
+				}
+				last = last.baseStream;
+				distance++;
+			}
+		}
+		
+		if (this.hasPlaceholderRoot()) {
+			if (other.hasPlaceholderRoot()) {
+				if (!hasCommonStreamTypeTo(this, other) && !hasCommonStreamTypeTo(other, this)) {
+					return [null, 0];
+				} else {
+					return [null, -1];
+				}
+			} else {
+				if (this.getStreamDepth() < other.getStreamDepth()) {
+					return [null, 0];
+				} else {
+					return [null, -1];
+				}
+			}
+		} else {
+			if (other.hasPlaceholderRoot()) {
+				if (this.getStreamDepth() >= other.getStreamDepth()) {
+					return [null, 0];
+				} else {
+					return [null, -1];
+				}
+			} else {
+				return [null, -1];
+			}
+		}
 	}
 
 	public hasPlaceholderAncestor(): boolean {
@@ -414,6 +465,70 @@ export class StreamPort {
 
 	public subscribeRefreshStreamType(cb: (streamType: StreamType | null) => void): Subscription {
 		return this.streamTypeRefreshRequested.subscribe(cb);
+	}
+
+	public createGenericType(other: PortModel): { type: SlangType, portId: Array<string> } {
+		const [nextStreamType, nextStreamDepth] = this.getStreamType().getStreamStep(other.getStreamPort().getStreamType());
+		
+		if (nextStreamDepth === -1) {
+			throw new Error(`cannot find suitable stream stack`);
+		}
+
+		let mapType: SlangType;
+		if (this.port.getTypeIdentifier() !== TypeIdentifier.Map) {
+			mapType = new SlangType(null, TypeIdentifier.Map);
+		} else {
+			mapType = this.port.getType();
+		}
+
+		const subName = `gen_${other.getName()}_${(new Date().getTime()) % 100}`;
+		
+		if (nextStreamDepth === 0) {
+			mapType.addMapSub(subName, new SlangType(mapType, other.getTypeIdentifier()));
+			return {type: mapType, portId: [subName]};
+		} else {
+			if (this.port.getTypeIdentifier() === TypeIdentifier.Map) {
+				for (const sub of this.port.getMapSubs()) {
+					if (sub.getTypeIdentifier() === TypeIdentifier.Map) {
+						// TODO
+						throw new Error(`nested map: not implemented`);
+					}
+					if (sub.getTypeIdentifier() === TypeIdentifier.Stream) {
+						const streamSub = sub.getStreamSub().getStreamPort();
+						if (streamSub.getStreamType() === nextStreamType) {
+							const {type, portId} = streamSub.createGenericType(other);
+							const streamType = new SlangType(mapType, TypeIdentifier.Stream);
+							streamType.setStreamSub(type);
+							mapType.addMapSub(sub.getName(), streamType);
+							portId.unshift("~");
+							portId.unshift(sub.getName());
+							return {type: mapType, portId: portId};
+						}
+					}
+				}
+				
+				const portId: Array<string> = [];
+				let newMapType = mapType;
+				
+				for (let i = 0; i < nextStreamDepth; i++) {
+					const newStreamType = new SlangType(newMapType, TypeIdentifier.Stream);
+					const newStreamName = `gen_str_${(new Date().getTime()) % 100}`;
+					newMapType.addMapSub(newStreamName, newStreamType);
+					portId.push(newStreamName);
+					
+					newMapType = new SlangType(newStreamType, TypeIdentifier.Map);
+					newStreamType.setStreamSub(newMapType);
+					portId.push("~");
+				}
+
+				newMapType.addMapSub(subName, new SlangType(newMapType, other.getTypeIdentifier()));
+				portId.push(subName);
+				return {type: mapType, portId};
+			} else {
+				// TODO
+				throw new Error(`no map: not implemented`);
+			}
+		}
 	}
 	
 }
