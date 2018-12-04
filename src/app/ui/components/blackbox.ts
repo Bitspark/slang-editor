@@ -1,47 +1,37 @@
+import m from "mithril";
 import {dia, g, shapes} from "jointjs";
 import {BlackBox} from "../../custom/nodes";
 import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 import {PortGroupComponent} from "./port-group";
 import {Styles} from "../../../styles/studio";
-import {AttachedComponent, Component} from "./base";
+import {ElementComponent, XY} from "./base";
 import {PaperView} from "../views/paper-view";
+import {Tk} from "./toolkit";
+import Button = Tk.Button;
 
-export class BlackBoxComponent extends Component {
-
-	protected rectangle: BlackBoxComponent.Rect;
+export class BlackBoxComponent extends ElementComponent {
+	protected readonly shape: BlackBoxComponent.Rect;
 	protected portGroups: Array<PortGroupComponent>;
 
 	constructor(paperView: PaperView, private readonly blackBox: BlackBox) {
 		super(paperView, {x: 0, y: 0});
 		this.portGroups = BlackBoxComponent.createGroups(this.blackBox);
 
-		this.rectangle = new BlackBoxComponent.Rect(this.blackBox, this.portGroups);
-		this.paperView.renderCell(this.rectangle);
+		this.shape = new BlackBoxComponent.Rect(this.blackBox, this.portGroups);
+		this.paperView.renderCell(this.shape);
 
 		this.portGroups.forEach(group => {
-			group.setParent(this.rectangle);
+			group.setParent(this.shape);
 		});
 	}
 
-	public getBBox(): g.Rect {
-		return this.rectangle.getBBox();
-	}
-
 	public translate(tx: number, ty: number) {
-		this.rectangle.translate(tx, ty);
-	}
-
-	public getRectangle(): BlackBoxComponent.Rect {
-		return this.rectangle;
+		this.shape.translate(tx, ty);
 	}
 
 	public on(event: string, handler: Function) {
-		this.rectangle.on(event, handler);
-	}
-
-	public remove(): void {
-		this.rectangle.remove();
+		this.shape.on(event, handler);
 	}
 
 	private static createGroups(blackBox: BlackBox): Array<PortGroupComponent> {
@@ -86,7 +76,7 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 	constructor(paperView: PaperView, blueprint: BlueprintModel) {
 		super(paperView, blueprint);
 
-		this.getRectangle().attr({
+		this.shape.attr({
 			body: {
 				cursor: "pointer",
 			},
@@ -94,20 +84,27 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 				cursor: "pointer",
 			}
 		});
-		this.rectangle.attr("draggable", false);
+		this.shape.attr("draggable", false);
 	}
 
 }
 
 export class OperatorBoxComponent extends BlackBoxComponent {
-	private readonly deleteButton: AttachedComponent;
-
 	constructor(paperView: PaperView, operator: OperatorModel) {
 		super(paperView, operator);
-		this.deleteButton = this.createComponent({x: 0, y: 0, align: "l"});
 		if (operator.position) {
-			this.getRectangle().position(operator.position.x, operator.position.y);
+			this.updateXY(operator.position);
 		}
+		this.createComponent({x: 0, y: 0, align: "l"})
+			.mount(" ", {
+				view: () => m(Button, {
+					onClick: () => {
+					},
+					label: "Remove",
+					class: "sl-op-delete",
+				})
+			})
+			.attachTo(this.shape, "c");
 	}
 
 }
@@ -153,7 +150,7 @@ export namespace BlackBoxComponent {
 
 	export class Rect extends shapes.standard.Rectangle.define("BlackBoxRect", Styles.Defaults.BlackBox) {
 		public static place(paperView: PaperView, blueprint: BlueprintModel, position?: g.PlainPoint): Rect {
-			const bbRect = new BlueprintBoxComponent(paperView, blueprint).getRectangle();
+			const bbRect = new BlueprintBoxComponent(paperView, blueprint).getShape();
 			if (position) {
 				const {width, height} = bbRect.size();
 				bbRect.position(position.x - width / 2, position.y - height / 2);

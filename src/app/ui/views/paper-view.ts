@@ -2,7 +2,7 @@ import {dia, g, shapes, util} from "jointjs";
 import {ViewFrame} from "../frame";
 import {View} from "./view";
 import {SlangSubjectTrigger} from "../../custom/events";
-import {Component} from "../components/base";
+import {XY} from "../components/base";
 
 export abstract class PaperView extends View {
 	private positionChanged = new SlangSubjectTrigger("positionChanged");
@@ -217,6 +217,10 @@ export abstract class PaperView extends View {
 		this.paper.setDimensions(width, height);
 		this.paper.translate(width / 2, height / 2);
 		this.positionChanged.next();
+	}
+
+	public toClientXY(xy: XY): XY {
+		return this.paper.localToClientPoint(xy);
 	}
 
 	public getPaper(): dia.Paper {

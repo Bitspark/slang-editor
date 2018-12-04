@@ -253,7 +253,7 @@ export class LandscapeView extends PaperView {
 		}
 
 		const blueprintBox = new BlueprintBoxComponent(this, blueprint);
-		this.blueprintRects.set(blueprint.getFullName(), blueprintBox.getRectangle());
+		this.blueprintRects.set(blueprint.getFullName(), blueprintBox.getShape());
 
 		// JointJS -> Model
 		blueprintBox.on("pointerup", function (evt: Event, x: number, y: number) {

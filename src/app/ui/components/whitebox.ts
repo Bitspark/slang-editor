@@ -1,5 +1,5 @@
 import m from "mithril";
-import {AttachedComponent, Component} from "./base";
+import {AttachableComponent, CellComponent} from "./base";
 import {Styles} from "../../../styles/studio";
 import {BlackBox} from "../../custom/nodes";
 import {dia, g, layout, shapes} from "jointjs";
@@ -18,14 +18,14 @@ import {Tk} from "./toolkit";
 import Button = Tk.Button;
 import {InputConsole, OutputConsole} from "./console";
 
-export class WhiteBoxComponent extends Component {
+export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 120;
 	private static readonly minimumSpace = 10;
 
-	private readonly shape: WhiteBoxComponent.Shape;
-	private readonly buttons: AttachedComponent;
-	private readonly input: AttachedComponent;
-	private readonly output: AttachedComponent;
+	protected readonly shape: WhiteBoxComponent.Rect;
+	private readonly buttons: AttachableComponent;
+	private readonly input: AttachableComponent;
+	private readonly output: AttachableComponent;
 
 
 	private readonly operators: Array<BlackBoxComponent> = [];
@@ -48,7 +48,7 @@ export class WhiteBoxComponent extends Component {
 			width: WhiteBoxComponent.padding * 2 + WhiteBoxComponent.minimumSpace,
 			height: WhiteBoxComponent.padding * 2 + WhiteBoxComponent.minimumSpace,
 		};
-		this.shape = new WhiteBoxComponent.Shape(this.blueprint, size);
+		this.shape = new WhiteBoxComponent.Rect(this.blueprint, size);
 		this.paperView.renderCell(this.shape);
 		this.autoLayout();
 	}
@@ -161,8 +161,8 @@ export class WhiteBoxComponent extends Component {
 	}
 
 	public autoLayout() {
-		const operatorRectangles = this.operators.map(operatorComponent => operatorComponent.getRectangle());
-		const connectionLinks = this.connections.map(connectionComponent => connectionComponent.getLink());
+		const operatorRectangles = this.operators.map(operatorComponent => operatorComponent.getShape());
+		const connectionLinks = this.connections.map(connectionComponent => connectionComponent.getShape());
 
 		layout.DirectedGraph.layout(
 			[...operatorRectangles, ...connectionLinks, ...this.ports.top, ...this.ports.bottom, ...this.ports.left, ...this.ports.right,], {
@@ -237,7 +237,7 @@ export class WhiteBoxComponent extends Component {
 		let newCornerY: number = currentPosition.y + currentSize.height - 2 * padding;
 
 		this.operators.forEach(operator => {
-			const childBBox = operator.getBBox();
+			const childBBox = operator.bbox;
 			if (childBBox.x < newX) {
 				newX = childBBox.x;
 			}
@@ -443,7 +443,6 @@ export class WhiteBoxComponent extends Component {
 			throw new Error(`connection with id ${linkId} not found`);
 		}
 	}
-
 }
 
 export namespace WhiteBoxComponent {
@@ -477,7 +476,7 @@ export namespace WhiteBoxComponent {
 		};
 	}
 
-	export class Shape extends shapes.standard.Rectangle.define("WhiteBox", Styles.Defaults.Outer) {
+	export class Rect extends shapes.standard.Rectangle.define("WhiteBox", Styles.Defaults.Outer) {
 		constructor(blackBox: BlackBox, size: Size) {
 			super(constructRectAttrs({
 				id: `${blackBox.getIdentity()}_outer`,

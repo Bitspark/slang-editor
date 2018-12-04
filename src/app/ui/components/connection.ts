@@ -7,7 +7,7 @@ import {slangConnector} from "../link/connector";
 import {Styles} from "../../../styles/studio";
 import {PortModel} from "../../model/port";
 import {PaperView} from "../views/paper-view";
-import {Component} from "./base";
+import {CellComponent} from "./base";
 
 const ConnectionLink = dia.Link.define("Connection", {
 	router: slangRouter,
@@ -33,9 +33,9 @@ const GhostConnectionLink = dia.Link.define("Connection", {
 		"</g>",].join(""),
 });
 
-export class ConnectionComponent extends Component {
+export class ConnectionComponent extends CellComponent {
 
-	private readonly link: dia.Link;
+	protected shape: dia.Link;
 	private readonly id: string;
 
 	public static refreshActive: boolean = true;
@@ -44,7 +44,7 @@ export class ConnectionComponent extends Component {
 		super(paperView, {x: 0, y: 0});
 		const ownerIds = ConnectionComponent.getBoxOwnerIds(connection);
 		this.id = ConnectionComponent.getLinkId(connection);
-		this.link = new ConnectionLink({
+		this.shape = new ConnectionLink({
 			id: this.id,
 			source: {
 				id: ownerIds[0],
@@ -61,14 +61,14 @@ export class ConnectionComponent extends Component {
 				},
 			},
 		} as any);
-		this.link.transition("attrs/.connection/stroke-opacity", Styles.Connection.Ordinary.strokeOpacity, {
+		this.shape.transition("attrs/.connection/stroke-opacity", Styles.Connection.Ordinary.strokeOpacity, {
 			duration: 360,
 			timingFunction: t => {
 				return Math.sqrt(t);
 			}
 		});
 		this.refresh();
-		this.paperView.renderCell(this.link);
+		this.paperView.renderCell(this.shape);
 
 		[connection.source, connection.destination].forEach(port => {
 			port.getStreamPort().subscribeRefreshStreamType(stream => {
@@ -85,7 +85,7 @@ export class ConnectionComponent extends Component {
 	}
 
 	public refresh(): void {
-		ConnectionComponent.refresh(this.connection.source, this.connection.destination, this.link);
+		ConnectionComponent.refresh(this.connection.source, this.connection.destination, this.shape);
 	}
 
 	public getId(): string {
@@ -94,10 +94,6 @@ export class ConnectionComponent extends Component {
 
 	public getConnection(): Connection {
 		return this.connection;
-	}
-
-	public getLink(): dia.Link {
-		return this.link;
 	}
 
 	// STATIC
