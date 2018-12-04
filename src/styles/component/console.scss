@@ -82,4 +82,100 @@
 	background: $white;
 	overflow-y: scroll;
 	padding: 4px;
+
+	.sl-json {
+		margin: 0;
+		padding: 0;
+	}
+
+	.sl-json-pair {
+		margin-bottom: 6px;
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+
+		&.sl-json-prim-val {
+			> .sl-json-val, > .sl-json-key {
+				display: inline-block;
+				padding: 2px 6px;
+				border-radius: 500px 0 0 500px;
+			}
+
+			> .sl-json-key {
+				color: $white;
+				background: $black;
+				border-radius: 500px 0 0 500px;
+			}
+
+			> .sl-json-val {
+				display: inline-block;
+				background: transparentize($black, .9);
+				border-radius: 0 500px 500px 0;
+			}
+
+			&:hover {
+				> .sl-json-key {
+					background: $cyan;
+					border-color: $cyan;
+				}
+
+				> .sl-json-val {
+					border-color: $cyan;
+				}
+			}
+		}
+
+		&.sl-json-nested-val {
+			> .sl-json-key {
+				display: inline-block;
+				color: $white;
+				padding: 1px 10px;
+				border-radius: 15px 15px 15px 0;
+				background: $black;
+				border-left: 1px solid $black;
+			}
+
+			> .sl-json-val {
+				border-left: 1px solid $black;
+				border-bottom: 1px solid $black;
+				border-radius: 0 15px;
+				padding: 8px;
+			}
+
+			&:hover {
+				> .sl-json-key {
+					background: $cyan;
+					border-color: $cyan;
+				}
+
+				> .sl-json-val {
+					border-color: $cyan;
+				}
+			}
+		}
+	}
+
+	.sl-list-item, .sl-list-head {
+		@extend %transition;
+		padding: 18px 32px 16px 32px;
+		border-bottom: 1px solid transparentize($black, .85);
+		transition: background-color, color;
+		background: $white;
+		cursor: default;
+	}
+
+	.sl-list-head {
+		position: sticky;
+		top: 0;
+		left: 0;
+		right: 0;
+	}
+
+	.sl-list-item {
+		&:last-child {
+			border-bottom: 0;
+		}
+	}
+
 }

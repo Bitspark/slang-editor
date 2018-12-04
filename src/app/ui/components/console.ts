@@ -263,6 +263,7 @@ export namespace Output {
 						return m(".sl-json", Array.from(type.getMapSubs())
 							.map(([subName, subType]) => [
 								m(".sl-json-pair",
+									{class: (subType.isPrimitive()) ? "sl-json-prim-val" : "sl-json-nested-val"},
 									m(".sl-json-key", subName),
 									m(".sl-json-val", this.getOutputComponent(value[subName], subType)),
 								)
@@ -271,6 +272,7 @@ export namespace Output {
 						const subType = type.getStreamSub();
 						return m(".sl-json", value.map((val: any, i: number) => [
 							m(".sl-json-pair",
+								{class: (subType.isPrimitive()) ? "sl-json-prim-val" : "sl-json-nested-val"},
 								m(".sl-json-key", i),
 								m(".sl-json-val", this.getOutputComponent(val, subType))
 							)
@@ -361,4 +363,4 @@ export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {
 
 ConsoleValueTypeManager.register(FileValueType);
 ConsoleValueTypeManager.register(ImageValueType);
-ConsoleValueTypeManager.register(GraphValueType);
+//ConsoleValueTypeManager.register(GraphValueType);
