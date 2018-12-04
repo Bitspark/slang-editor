@@ -42,6 +42,10 @@ export class GenericSpecifications {
 		}
 		return type;
 	}
+
+	public has(identifier: string): boolean {
+		return this.genericTypes.has(identifier);
+	}
 	
 	public clear(identifier: string): void {
 		if (this.genericIdentifiers.indexOf(identifier) === -1) {

@@ -141,7 +141,11 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
 				}
 				const propAssigns = createPropertyAssignments(blueprint, opData.properties);
 				const genSpeci = createGenericSpecifications(blueprint, opData.generics);
-				outerBlueprint.createOperator(opName, blueprint, propAssigns, genSpeci);
+				try {
+					outerBlueprint.createOperator(opName, blueprint, propAssigns, genSpeci);
+				} catch (e) {
+					throw new Error(`${outerBlueprint.getFullName()}: ${e} (${blueprint.getFullName()})`);
+				}
 			});
 		}
 	});

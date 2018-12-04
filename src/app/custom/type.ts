@@ -39,31 +39,26 @@ interface SlangTypeDefPrimitive {
 
 export type SlangTypeDef = SlangTypeDefPrimitive | SlangTypeDefGeneric | SlangTypeDefMap | SlangTypeDefStream;
 
-export function isEqual(a: SlangTypeDef, b: SlangTypeDef): boolean {
-	return JSON.stringify(a) === JSON.stringify(b);
-}
-
-
 export class SlangType {
 	private readonly mapSubs: Map<string, SlangType> | undefined;
 	private genericIdentifier?: string;
 	private streamSub: SlangType | undefined;
 
 
-	public toSlangTypeDef(): SlangTypeDef {
+	public getTypeDef(): SlangTypeDef {
 		switch (this.typeIdentifier) {
 			case TypeIdentifier.Map:
 				return {
 					type: this.typeIdentifier,
 					map: Array.from(this.getMapSubs()).reduce((obj: any, [name, slType]) => {
-						obj[name] = slType.toSlangTypeDef();
+						obj[name] = slType.getTypeDef();
 						return obj;
 					}, {})
 				};
 			case TypeIdentifier.Stream:
 				return {
 					type: this.typeIdentifier,
-					stream: this.getStreamSub().toSlangTypeDef(),
+					stream: this.getStreamSub().getTypeDef(),
 				};
 			case TypeIdentifier.Generic:
 				return {
@@ -123,7 +118,12 @@ export class SlangType {
 
 	public specifyGenerics(genSpec: GenericSpecifications): SlangType {
 		if (this.typeIdentifier === TypeIdentifier.Generic) {
-			return genSpec.get(this.getGenericIdentifier()).copy();
+			const identifier = this.getGenericIdentifier();
+			if (genSpec.has(identifier)) {
+				return genSpec.get(this.getGenericIdentifier()).copy();
+			} else {
+				return this.copy();
+			}
 		}
 		const specifiedType = new SlangType(this.parent, this.typeIdentifier);
 		switch (this.typeIdentifier) {
