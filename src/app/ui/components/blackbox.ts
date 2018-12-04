@@ -4,7 +4,6 @@ import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 import {PortGroupComponent} from "./port-group";
 import {Styles} from "../../../styles/studio";
-import {ConnectionComponent} from "./connection";
 
 export class BlackBoxComponent {
 

@@ -93,10 +93,8 @@ export class PortGroupComponent {
 		if (!parentElement) {
 			throw new Error(`need parent`);
 		}
-
-		this.ports.forEach(port => {
-			parentElement.removePort(port.getPortElement());
-		});
+		
+		parentElement.removePorts(this.ports.map(port => port.getPortElement()));
 
 		const ports = createPortItems(this, this.getGroupPosition(), this.port);
 		
