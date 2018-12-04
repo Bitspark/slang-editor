@@ -38,9 +38,11 @@ $container-width: 343px;
 %translucent {
 	@extend %transition;
 	opacity: .55;
+
 	&:hover {
 		opacity: .97;
 	}
+
 	transition-property: opacity;
 }
 

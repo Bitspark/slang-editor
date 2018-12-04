@@ -7,7 +7,11 @@ import {BlueprintView} from "../views/blueprint";
 import {Geometry} from "../../model/operator";
 import {BlackBoxComponent} from "./blackbox";
 import {AttachedComponent, Component, XY} from "./base";
-import {List, ListHead, ListItem, MithrilMouseEvent, StringInput} from "./toolkit";
+import {MithrilMouseEvent, Tk} from "./toolkit";
+import ListHead = Tk.ListHead;
+import StringInput = Tk.StringInput;
+import ListItem = Tk.ListItem;
+import List = Tk.List;
 
 export interface Attrs {
 	onSelect: (bp: BlueprintModel) => void,

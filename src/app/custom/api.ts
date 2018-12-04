@@ -25,7 +25,7 @@ export interface PropertyAssignmentsApiResponse {
 }
 
 export interface GenericSpecificationsApiResponse {
-	[genericIdentifier: string]: any
+	[genericIdentifier: string]: TypeDefApiResponse
 }
 
 export interface DeploymentStatusApiResponse {

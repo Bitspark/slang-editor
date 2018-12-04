@@ -1,7 +1,9 @@
 import m from "mithril";
 import {dia, g} from "jointjs";
 import {PaperView} from "../views/paper-view";
-import {Box, Container} from "./toolkit";
+import {Tk} from "./toolkit";
+import Box = Tk.Box;
+import Container = Tk.Container;
 
 
 export type Alignment =
@@ -123,6 +125,9 @@ export abstract class AnchoredComponent extends Component {
 
 		if (wrapped === "[]") {
 			m.mount(this.htmlRoot, {
+				oncreate: () => {
+					this.draw();
+				},
 				onupdate: () => {
 					this.draw();
 				},
@@ -132,6 +137,9 @@ export abstract class AnchoredComponent extends Component {
 			});
 		} else {
 			m.mount(this.htmlRoot, {
+				oncreate: () => {
+					this.draw();
+				},
 				onupdate: () => {
 					this.draw();
 				},

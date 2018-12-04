@@ -9,18 +9,22 @@ export class GenericSpecifications {
 
 	public specify(genId: string, type: SlangType): SlangType {
 		if (this.genericIdentifiers.indexOf(genId) < 0) {
-			throw `unknown generic identifier ${genId}`;
+			throw new Error(`unknown generic identifier ${genId}`);
 
 		}
 		this.genId2Type.set(genId, type);
 		return type;
 	}
 
-	public get(genId: string): SlangType {
-		const genType = this.genId2Type.get(genId);
+	public get(identifier: string): SlangType {
+		const genType = this.genId2Type.get(identifier);
 		if (!genType) {
-			throw `generic is not specified: ${genId}`;
+			throw new Error(`generic is not specified: ${identifier}`);
 		}
 		return genType;
+	}
+
+	public has(identifier: string): boolean {
+		return this.genId2Type.has(identifier);
 	}
 }
