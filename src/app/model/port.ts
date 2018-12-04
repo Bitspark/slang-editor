@@ -79,7 +79,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	}
 
 	private haveGhostAncestor(): boolean {
-		if (!!this.generics) {
+		if (this.isGeneric()) {
 			return true;
 		}
 		const parent = this.getParentNode();

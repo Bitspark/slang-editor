@@ -23,10 +23,6 @@ export class StreamType {
 	}
 	
 	public getStreamStep(other: StreamType): [StreamType | null, number] {
-		// if (this.getStreamDepth() < other.getStreamDepth()) {
-		// 	return [null, -1];
-		// }
-		
 		if (this === other) {
 			return [null, 0];
 		}

@@ -160,6 +160,18 @@ function cycleCompatibleTo(source: PortModel, destination: PortModel): boolean {
 	return !ancestorOwners.has(destination.getOwner());
 }
 
+function genericCompatible(streamTypeA: PortModel, streamTypeB: PortModel): boolean {
+	if (streamTypeA.isGeneric()) {
+		return genericCompatibleTo(streamTypeB.getStreamPort().getStreamType(), streamTypeA.getStreamPort().getStreamType());
+	} else {
+		return genericCompatibleTo(streamTypeA.getStreamPort().getStreamType(), streamTypeB.getStreamPort().getStreamType());
+	}
+}
+
+function genericCompatibleTo(streamType: StreamType, genericStreamType: StreamType): boolean {
+	return genericStreamType.getStreamStep(streamType)[1] !== -1;
+}
+
 export function canConnectTo(source: PortModel, destination: PortModel): boolean {
 	if (!source.isSource() || !destination.isDestination()) {
 		return false;
@@ -177,25 +189,30 @@ export function canConnectTo(source: PortModel, destination: PortModel): boolean
 	if (sourceConnectedWith.indexOf(source) !== -1) {
 		throw new Error(`${source.getIdentity()}: asymmetric connection found`);
 	}
+	
+	if (source.isGeneric() && destination.isGeneric()) {
+		return false;
+	}
 
 	if (!cycleCompatibleTo(source, destination)) {
 		return false;
 	}
 	
-	if (source.isGeneric() === destination.isGeneric()) {
+	if (!source.isGeneric() && !destination.isGeneric()) {
 		if (!typesCompatibleTo(source.getType(), destination.getType())) {
 			return false;
 		}
+
+		const sourceStream = source.getStreamPort().getStreamType();
+		const destinationStream = destination.getStreamPort().getStreamType();
+
+		if (!streamsCompatible(sourceStream, destinationStream)) {
+			return false;
+		}
 	} else {
-		// TODO: Remove for stream check
-		return true;
-	}
-	
-	const sourceStream = source.getStreamPort().getStreamType();
-	const destinationStream = destination.getStreamPort().getStreamType();
-	
-	if (!streamsCompatible(sourceStream, destinationStream)) {
-		return false;
+		if (!genericCompatible(source, destination)) {
+			return false;
+		}
 	}
 	
 	return true;
