@@ -62,21 +62,46 @@ export class BlackBoxComponent {
 
 		const delegates = Array.from(blackBox.getDelegates());
 
-		const width = 0.5 / delegates.length;
-		const step = 0.5 / delegates.length;
-		let pos = 0;
-		for (const delegate of delegates) {
-			const portOut = delegate.getPortOut();
-			if (portOut) {
-				portGroups.push(new PortGroupComponent(this.graph, `Delegate${delegate.getName()}Out`, portOut, "right", pos, width));
-			}
-			pos += step;
+		// const countRight = Math.ceil(delegates.length / 2);
+		const countRight = delegates.length;
+		const widthRight = 0.5 / countRight;
+		const stepRight = 0.5 / countRight;
+		let posRight = 0;
 
-			const portIn = delegate.getPortIn();
-			if (portIn) {
-				portGroups.push(new PortGroupComponent(this.graph, `Delegate${delegate.getName()}In`, portIn, "right", pos, width));
+		const countLeft = Math.floor(delegates.length / 2);
+		const widthLeft = 0.5 / countLeft;
+		const stepLeft = 0.5 / countLeft;
+		let posLeft = 0;
+		
+		let right = true;
+		for (const delegate of delegates) {
+			if (right) {
+				const portOut = delegate.getPortOut();
+				if (portOut) {
+					portGroups.push(new PortGroupComponent(this.graph, `Delegate${delegate.getName()}Out`, portOut, "right", posRight, widthRight));
+				}
+				posRight += stepRight;
+
+				const portIn = delegate.getPortIn();
+				if (portIn) {
+					portGroups.push(new PortGroupComponent(this.graph, `Delegate${delegate.getName()}In`, portIn, "right", posRight, widthRight));
+				}
+				posRight += stepRight;
+			} else {
+				const portOut = delegate.getPortOut();
+				if (portOut) {
+					portGroups.push(new PortGroupComponent(this.graph, `Delegate${delegate.getName()}Out`, portOut, "left", posLeft, widthLeft));
+				}
+				posLeft += stepLeft;
+
+				const portIn = delegate.getPortIn();
+				if (portIn) {
+					portGroups.push(new PortGroupComponent(this.graph, `Delegate${delegate.getName()}In`, portIn, "left", posLeft, widthLeft));
+				}
+				posLeft += stepLeft;
 			}
-			pos += step;
+
+			// right = !right;
 		}
 
 		return portGroups;
