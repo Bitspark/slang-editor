@@ -436,6 +436,19 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		return this.findMapSub(subName);
 	}
 
+	private connectDirectlyTo(destination: PortModel): void {
+		let thisPort: PortModel = this;
+		let otherPort: PortModel = destination;
+		if (thisPort.isGeneric()) {
+			thisPort = thisPort.createGenericPort(otherPort);
+		}
+		if (otherPort.isGeneric()) {
+			otherPort = otherPort.createGenericPort(thisPort);
+		}
+		otherPort.connected.next(thisPort);
+		thisPort.connected.next(otherPort);
+	}
+	
 	/**
 	 * Connects this port to the destination port.
 	 * This has to be a source port and destination a destination port.
@@ -444,6 +457,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	private connectTo(destination: PortModel) {
 		if (!canConnectTo(this, destination)) {
 			throw new Error(`cannot connect: ${this.getIdentity()} --> ${destination.getIdentity()}`);
+		}
+		if (this.isGeneric()) {
+			this.connectDirectlyTo(destination);
+			return;
 		}
 		switch (this.typeIdentifier) {
 			case TypeIdentifier.Map:
@@ -455,16 +472,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				this.getStreamSub().connectTo(destination.getStreamSub());
 				break;
 			default:
-				let thisPort: PortModel = this;
-				let otherPort: PortModel = destination;
-				if (thisPort.isGeneric()) {
-					thisPort = thisPort.createGenericPort(otherPort);
-				}
-				if (otherPort.isGeneric()) {
-					otherPort = otherPort.createGenericPort(thisPort);
-				}
-				otherPort.connected.next(thisPort);
-				thisPort.connected.next(otherPort);
+				this.connectDirectlyTo(destination);
 				break;
 		}
 	}
