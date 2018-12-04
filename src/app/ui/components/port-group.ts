@@ -23,10 +23,18 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
 		case TypeIdentifier.Stream:
 			portItems.push.apply(portItems, createPortItems(parent, position, port.getStreamSub()));
 			break;
+			
+		case TypeIdentifier.Generic:
+			break;
 
 		default:
 			portItems.push(new PortComponent(port, parent));
 	}
+	
+	if (port.isGeneric() && (port.getTypeIdentifier() === TypeIdentifier.Generic || port.getTypeIdentifier() === TypeIdentifier.Map)) {
+		portItems.push(new PortComponent(port, parent));
+	}
+	
 	return portItems;
 }
 
@@ -90,8 +98,18 @@ export class PortGroupComponent {
 			parentElement.removePort(port.getPortElement());
 		});
 
+		const ports = createPortItems(this, this.getGroupPosition(), this.port);
+		
+		for (let port1 of ports) {
+			for (let port2 of ports) {
+				if (port1 !== port2 && port1.getPortElement().id === port2.getPortElement().id) {
+					console.log("collision:", port1, port2);
+				}
+			}
+		}
+		
 		this.ports.length = 0;
-		this.ports.push.apply(this.ports, createPortItems(this, this.getGroupPosition(), this.port));
+		this.ports.push.apply(this.ports, ports);
 		parentElement.addPorts(this.ports.map(port => port.getPortElement()));
 	}
 

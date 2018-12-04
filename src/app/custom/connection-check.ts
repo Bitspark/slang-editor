@@ -22,11 +22,6 @@ function typesMapCompatibleTo(mapTypeA: SlangType, mapTypeB: SlangType): boolean
 }
 
 function typesCompatibleTo(sourceType: SlangType, destinationType: SlangType): boolean {
-	if (destinationType.getTypeIdentifier() === TypeIdentifier.Generic ||
-		sourceType.getTypeIdentifier() === TypeIdentifier.Generic) {
-		return destinationType.getTypeIdentifier() !== TypeIdentifier.Generic ||
-			sourceType.getTypeIdentifier() !== TypeIdentifier.Generic;
-	}
 	if (destinationType.getTypeIdentifier() === TypeIdentifier.Trigger) {
 		return true;
 	}
@@ -183,8 +178,10 @@ export function canConnectTo(source: PortModel, destination: PortModel): boolean
 		throw new Error(`${source.getIdentity()}: asymmetric connection found`);
 	}
 	
-	if (!typesCompatibleTo(source.getType(), destination.getType())) {
-		return false;
+	if (source.isGeneric() === destination.isGeneric()) {
+		if (!typesCompatibleTo(source.getType(), destination.getType())) {
+			return false;
+		}
 	}
 	
 	const sourceStream = source.getStreamPort().getStreamType();

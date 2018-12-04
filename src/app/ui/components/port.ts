@@ -13,7 +13,11 @@ export class PortComponent {
 	private readonly portElement: dia.Element.Port = {};
 
 	constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent) {
-		this.portElement.id = `${port.getIdentity()}`;
+		if (port.isGeneric()) {
+			this.portElement.id = `${port.getIdentity()}.*`;
+		} else {
+			this.portElement.id = `${port.getIdentity()}`;
+		}
 		this.portElement.group = parent.getName();
 		this.portElement.markup = PortComponent.getPortMarkup(port);
 		this.portElement.attrs = {
@@ -66,7 +70,11 @@ export class PortComponent {
 			if (i % 2 == 1) {
 				classes.push(`sl-stripe`);
 			} else {
-				classes.push(`sl-type-${TypeIdentifier[port.getTypeIdentifier()].toLowerCase()}`);
+				if (port.isGeneric() && port.getTypeIdentifier() === TypeIdentifier.Map) {
+					classes.push(`sl-type-generic`);
+				} else {
+					classes.push(`sl-type-${TypeIdentifier[port.getTypeIdentifier()].toLowerCase()}`);
+				}
 			}
 			markup += `<path class="${classes.join(" ")}" d="${PortComponent.getPortShape(width, height)}"></path>`;
 		}

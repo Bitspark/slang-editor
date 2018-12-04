@@ -6,7 +6,7 @@ import {slangRouter} from "../link/router";
 import {slangConnector} from "../link/connector";
 import {Styles} from "../../../styles/studio";
 import {PortModel} from "../../model/port";
-import {StreamType} from "../../custom/stream";
+import {TypeIdentifier} from "../../custom/type";
 
 const ConnectionLink = dia.Link.define("Connection", {
 	router: slangRouter,
@@ -119,7 +119,11 @@ export class ConnectionComponent {
 		const lines = stream ? stream.getStreamDepth() : 1;
 
 		link.connector(slangConnector(sourcePort, destinationPort, lines));
-		link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(sourcePort.getTypeIdentifier()));
+		if (sourcePort.isGeneric()) {
+			link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(TypeIdentifier.Generic));
+		} else {
+			link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(sourcePort.getTypeIdentifier()));
+		}
 		link.attr(".connection/stroke-width", lines === 1 ? 2 : 1);
 		link.attr(".connection/vector-effect", Styles.Connection.Ordinary.vectorEffect);
 		
