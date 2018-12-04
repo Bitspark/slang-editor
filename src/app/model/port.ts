@@ -62,7 +62,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			const identifier = this.genericIdentifier!;
 
 			generics.subscribeGenericTypeChanged(identifier, type => {
-				console.log("changed 1");
 				if (type) {
 					this.reconstructPort(type, P, this.direction);
 				}
@@ -430,8 +429,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		
 		newType.addMapSub(subName, new SlangType(newType, other.getTypeIdentifier()));
 		this.generics.specify(this.genericIdentifier, newType);
-
-		console.log("find 2");
 
 		return this.findMapSub(subName);
 	}
