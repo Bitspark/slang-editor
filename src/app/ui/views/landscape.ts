@@ -4,7 +4,8 @@ import {LandscapeModel} from "../../model/landscape";
 import {BlackBoxComponent, BlueprintBoxComponent} from "../components/blackbox";
 import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";
-import {GenericSpecifications} from "../../custom/generics";
+import {PortDirection} from "../../model/port";
+import {SlangType, TypeIdentifier} from "../../custom/type";
 
 export class LandscapeView extends PaperView {
 
@@ -212,12 +213,14 @@ export class LandscapeView extends PaperView {
 		rect.attr("label/font-size", "28");
 		rect.attr("body/cursor", "pointer");
 
-		const that = this;
-		rect.on("pointerup", function (evt: Event, x: number, y: number) {
-			that.landscape.createBlueprint({
+		rect.on("pointerup", (evt: Event, x: number, y: number) => {
+			const newBlueprint = this.landscape.createBlueprint({
 				fullName: `Unnamed${new Date().getTime()}`,
 				type: BlueprintType.Local,
-			}).open();
+			});
+			newBlueprint.createPort({ name: "", type: new SlangType(null, TypeIdentifier.Map), direction: PortDirection.In, });
+			newBlueprint.createPort({ name: "", type: new SlangType(null, TypeIdentifier.Map), direction: PortDirection.Out, });
+			newBlueprint.open();
 		});
 
 		return rect;

@@ -1,7 +1,6 @@
-import {OperatorModel} from "./operator";
-import {BlueprintPortModel, PortModel, PortModelArgs} from "./port";
+import {Geometry, OperatorModel} from "./operator";
+import {BlueprintPortModel, PortDirection, PortModel, PortModelArgs} from "./port";
 import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
-import {Geometry} from "./operator";
 import {SlangParsing} from "../custom/parsing";
 import {PropertyEvaluator} from "../custom/utils";
 import {BlackBox} from "../custom/nodes";
@@ -32,6 +31,7 @@ export class BlueprintModel extends BlackBox {
 	private instance = new SlangBehaviorSubject<BlueprintInstance | null>("instance", null);
 	private inputPushed = new SlangSubject<SlangTypeValue>("input-pushed");
 	private outputPushed = new SlangSubject<SlangTypeValue>("output-pushed");
+	private readonly fakeGenerics = new GenericSpecifications(["inType", "outType"]);
 
 	// Properties
 	private readonly fullName: string;
@@ -49,7 +49,7 @@ export class BlueprintModel extends BlackBox {
 		this.hierarchy = fullName.split(".");
 		this.genericIdentifiers = new Set<string>();
 	}
-
+	
 	private static revealGenericIdentifiers(port: PortModel): Set<string> {
 		let genericIdentifiers = new Set<string>();
 		switch (port.getTypeIdentifier()) {
@@ -69,6 +69,10 @@ export class BlueprintModel extends BlackBox {
 		}
 		return genericIdentifiers;
 	}
+	
+	public getFakeGenerics(): GenericSpecifications {
+		return this.fakeGenerics;
+	}
 
 	private instantiateOperator(operator: OperatorModel) {
 		const properties = operator.getPropertyAssignments();
@@ -87,7 +91,6 @@ export class BlueprintModel extends BlackBox {
 					}
 				}
 			} else {
-				const generics = new GenericSpecifications([]);
 				const delegateCopy = owner.createDelegate({name: delegate.getName()});
 				for (const port of delegate.getPorts()) {
 					delegateCopy.createPort({
@@ -151,7 +154,10 @@ export class BlueprintModel extends BlackBox {
 	}
 
 	public createPort(args: PortModelArgs): BlueprintPortModel {
-		return this.createChildNode(BlueprintPortModel, args);
+		const identifier = (args.direction === PortDirection.In) ? "inType" : "outType";
+		return this.createChildNode(BlueprintPortModel, args, port => {
+			port.generify(identifier, this.fakeGenerics, BlueprintPortModel);
+		});
 	}
 
 	public getFullName(): string {

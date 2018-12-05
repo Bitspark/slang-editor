@@ -93,20 +93,17 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	}
 	
 	public generify(identifier: string, generics: GenericSpecifications, P: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel): void {
-		this.genericIdentifier = identifier;
-		this.generics = generics;
+		if (!this.isGeneric() && this.typeIdentifier === TypeIdentifier.Map) {
+			this.genericIdentifier = identifier;
+			this.generics = generics;
 
-		generics.registerPort(identifier, this);
-		generics.subscribeGenericTypeChanged(identifier, type => {
-			if (type) {
-				this.reconstructPort(type, P, this.direction);
-			}
-		});
-	}
-	
-	public ungenerify(): void {
-		this.genericIdentifier = undefined;
-		this.generics = null;
+			generics.registerPort(identifier, this);
+			generics.subscribeGenericTypeChanged(identifier, type => {
+				if (type) {
+					this.reconstructPort(type, P, this.direction);
+				}
+			});
+		}
 	}
 
 	private getAncestorGenerics(): [GenericSpecifications, string] | null {

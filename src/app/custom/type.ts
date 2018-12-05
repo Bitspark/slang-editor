@@ -272,10 +272,10 @@ export class SlangType {
 
 	public getGenericIdentifier(): string {
 		if (this.typeIdentifier !== TypeIdentifier.Generic) {
-			throw `access of generic identifier of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+			throw new Error(`access of generic identifier of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);
 		}
 		if (!this.genericIdentifier) {
-			throw `generic port requires a generic identifier`;
+			throw new Error(`generic port requires a generic identifier`);
 		}
 		return this.genericIdentifier;
 	}

@@ -28,7 +28,6 @@ export class WhiteBoxComponent extends CellComponent {
 	private readonly buttons: AttachableComponent;
 	private readonly input: AttachableComponent;
 	private readonly output: AttachableComponent;
-	private readonly fakeGenerics = new GenericSpecifications(["inType", "outType"]);
 	
 	private readonly operators: Array<BlackBoxComponent> = [];
 	private readonly connections: Array<ConnectionComponent> = [];
@@ -133,7 +132,7 @@ export class WhiteBoxComponent extends CellComponent {
 			});
 		});
 
-		this.fakeGenerics.subscribeGenericsChanged(() => {
+		this.blueprint.getFakeGenerics().subscribeGenericsChanged(() => {
 			this.ports.top.forEach(p => p.refresh());
 			this.ports.bottom.forEach(p => p.refresh());
 			
@@ -150,16 +149,10 @@ export class WhiteBoxComponent extends CellComponent {
 
 		this.blueprint.subscribeChildCreated(BlueprintPortModel, port => {
 			if (port.isDirectionIn()) {
-				this.fakeGenerics.specify("inType", port.getType());
-				port.generify("inType", this.fakeGenerics, BlueprintPortModel);
-
 				const p = this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
 				this.buttons.attachTo(p.getElement(), "br");
 				this.input.attachTo(p.getElement(), "c");
 			} else {
-				this.fakeGenerics.specify("outType", port.getType());
-				port.generify("outType", this.fakeGenerics, BlueprintPortModel);
-
 				const p = this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
 				this.output.attachTo(p.getElement(), "c");
 			}
