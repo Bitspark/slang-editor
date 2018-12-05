@@ -308,8 +308,12 @@ export class StreamPort {
 			if (parent.getTypeIdentifier() === TypeIdentifier.Map) {
 				return parent.getStreamPort().streamType;
 			} else if (parent.getTypeIdentifier() === TypeIdentifier.Stream) {
-				// TODO: This streamType always has to have the parent's streamType as baseStream, ensure that
-				return new SlangBehaviorSubject("streamType", new StreamType(null, null));
+				const parentStreamType = parent.getStreamPort().getStreamType();
+				if (this.port.isSource()) {
+					return new SlangBehaviorSubject("streamType", new StreamType(parentStreamType, this.port));
+				} else {
+					return new SlangBehaviorSubject("streamType", new StreamType(parentStreamType, null));
+				}
 			} else {
 				throw new Error(`port parents must be either map or stream`);
 			}
