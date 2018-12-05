@@ -1,10 +1,10 @@
 import m from "mithril";
+
 import {dia, g} from "jointjs";
 import {PaperView} from "../views/paper-view";
 import {Tk} from "./toolkit";
 import Box = Tk.Box;
 import Container = Tk.Container;
-
 
 export type Alignment =
 	"tl" | "t" | "tr" |
@@ -18,49 +18,93 @@ export interface Position extends XY {
 	align: Alignment;
 }
 
-export abstract class Component {
-	protected readonly graph: dia.Graph;
-	private readonly paper: dia.Paper;
-
-	protected constructor(protected readonly paperView: PaperView, private xy: XY) {
-		this.graph = this.paperView.getGraph();
-		this.paper = this.paperView.getPaper();
+abstract class Component {
+	protected constructor(private xy: XY) {
 	}
 
 	public destroy() {
 	}
 
-	public createComponent(offset: Position): AttachedComponent {
-		return new AttachedComponent(this.paperView, offset);
-	}
-
-	protected getXY(): XY {
-		return this.xy;
-	}
-
-
-	protected getClientXY(): XY {
-		return this.paper.localToClientPoint(this.xy);
-	}
-
 	protected updateXY({x, y}: XY) {
 		this.xy = {x, y};
 	}
+
+	protected get XY(): XY {
+		return this.xy;
+	}
 }
 
-export abstract class AnchoredComponent extends Component {
+export abstract class CellComponent extends Component {
+	protected abstract readonly shape: dia.Cell;
+	private components: Array<Component> = [];
+
+	protected constructor(protected readonly paperView: PaperView, xy: XY) {
+		super(xy);
+	}
+
+	public destroy() {
+		super.destroy();
+		this.components.forEach((c) => c.destroy());
+		this.components = [];
+		this.shape.remove();
+	}
+
+	public createComponent(offset: Position): AttachableComponent {
+		const comp = new AttachableComponent(this.paperView, offset);
+		this.addComponent(comp);
+		return comp;
+	}
+
+	public addComponent(comp: Component) {
+		this.components.push(comp);
+	}
+
+	public render() {
+		this.paperView.renderCell(this.shape);
+	}
+
+	public getShape(): dia.Cell {
+		return this.shape;
+	}
+}
+
+export abstract class ElementComponent extends CellComponent {
+	protected abstract readonly shape: dia.Element;
+
+	protected constructor(paperView: PaperView, xy: XY) {
+		super(paperView, xy);
+	}
+
+	protected updateXY({x, y}: XY) {
+		super.updateXY({x, y});
+		this.shape.position(x, y);
+	}
+
+	public get bbox(): g.Rect {
+		return this.shape.getBBox();
+	}
+
+	public getShape(): dia.Element {
+		return this.shape;
+	}
+}
+
+abstract class HtmlComponent extends Component {
 	protected readonly htmlRoot: HTMLElement;
 	protected readonly align: Alignment;
 
-
-	protected constructor(paperView: PaperView, position: Position) {
-		super(paperView, position);
+	protected constructor(protected paperView: PaperView, position: Position) {
+		super(position);
 		this.align = position.align;
-		this.htmlRoot = AnchoredComponent.createRoot();
+		this.htmlRoot = HtmlComponent.createRoot();
 		this.paperView.getFrame().getHTMLElement().appendChild(this.htmlRoot);
 		this.paperView.subscribePositionChanged(() => {
 			this.draw();
 		});
+	}
+
+	protected getClientXY(): XY {
+		return this.paperView.toClientXY(this.XY);
 	}
 
 	public destroy() {
@@ -157,7 +201,7 @@ export abstract class AnchoredComponent extends Component {
 	}
 }
 
-export class AttachedComponent extends AnchoredComponent {
+export class AttachableComponent extends HtmlComponent {
 	public constructor(paperView: PaperView, private offset: Position) {
 		super(paperView, offset);
 	}
@@ -208,4 +252,3 @@ export class AttachedComponent extends AnchoredComponent {
 		super.updateXY(originPos);
 	}
 }
-

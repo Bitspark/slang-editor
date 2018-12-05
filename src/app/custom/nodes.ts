@@ -1,6 +1,6 @@
 import {GenericPortModel, PortModel, PortModelArgs} from "../model/port";
 import {DelegateModel} from "../model/delegate";
-import {SlangNodeSetBehaviorSubject} from "./events";
+import {SlangBehaviorSubject, SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "./events";
 import {StreamPortOwner} from "./stream";
 import {SlangType} from "./type";
 import {GenericSpecifications} from "./generics";
@@ -27,6 +27,7 @@ export abstract class SlangNode {
 	private id = "";
 	private lastId = "0";
 	private children = new SlangNodeSetBehaviorSubject<SlangNode>("children", []);
+	private destroyed = new SlangSubjectTrigger("destroyed");
 
 	protected constructor(private readonly parent: SlangNode | null) {
 	}
@@ -148,8 +149,17 @@ export abstract class SlangNode {
 		const childNode = new ctor(this, args);
 		childNode.id = this.nextId();
 		this.children.nextAdd(childNode, cb);
-
+		childNode.subscribeDestroyed(() => {
+			this.children.nextRemove(childNode);
+		});
 		return childNode;
+	}
+
+	public destroy<T extends SlangNode, A>() {
+		for (const child of this.getChildNodes(SlangNode)) {
+			child.destroy();
+		}
+		this.destroyed.next();
 	}
 
 	private nextId(): string {
@@ -180,12 +190,16 @@ export abstract class SlangNode {
 		});
 	}
 
+	public subscribeDestroyed(cb: () => void): void {
+		this.destroyed.subscribe(cb);
+	}
+
 }
 
 export abstract class PortOwner extends SlangNode {
-	
+
 	private readonly streamPortOwner: StreamPortOwner;
-	
+
 	protected constructor(parent: SlangNode, streamSource: boolean) {
 		super(parent);
 		this.streamPortOwner = new StreamPortOwner(this, streamSource);
@@ -205,7 +219,7 @@ export abstract class PortOwner extends SlangNode {
 	public getPorts(): IterableIterator<PortModel> {
 		return this.getChildNodes(GenericPortModel);
 	}
-	
+
 	public getStreamPortOwner(): StreamPortOwner {
 		return this.streamPortOwner;
 	}

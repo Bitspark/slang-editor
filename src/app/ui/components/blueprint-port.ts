@@ -8,8 +8,8 @@ export class IsolatedBlueprintPortComponent {
 	private readonly portGroup: PortGroupComponent;
 	private readonly rectangle: shapes.standard.Rectangle;
 
-	constructor(private graph: dia.Graph, name: string, identity: string, port: PortModel, position: PortGroupPosition) {
-		this.portGroup = new PortGroupComponent(graph, "PortGroup", port, position, 0, 1.0);
+	constructor(name: string, identity: string, port: PortModel, position: PortGroupPosition) {
+		this.portGroup = new PortGroupComponent("PortGroup", port, position, 0, 1.0);
 		const portGroups = {"PortGroup": this.portGroup.getPortGroupElement()};
 
 		const transform = Styles.BlueprintPort.transformations[position];
@@ -36,7 +36,7 @@ export class IsolatedBlueprintPortComponent {
 			}
 		} as any);
 
-		this.rectangle.addTo(this.graph);
+		
 		
 		this.portGroup.setParent(this.rectangle, true);
 		this.refresh();

@@ -158,5 +158,4 @@ export class BlueprintView extends PaperView {
 	public getBlueprint(): BlueprintModel {
 		return this.blueprint;
 	}
-
 }
