@@ -1,13 +1,14 @@
 import {SlangType} from "./type";
 import {SlangBehaviorSubject, SlangSubject} from "./events";
 import {Subscription} from "rxjs";
+import {PortModel} from "../model/port";
 
 export class GenericSpecifications {
-	private genericsChanged = new SlangSubject<[string, SlangType | null]>("generics-changed");
-	private genericTypes: Map<string, SlangBehaviorSubject<SlangType | null>>;
+	private readonly genericsChanged = new SlangSubject<[string, SlangType | null]>("generics-changed");
+	private readonly genericTypes = new Map<string, SlangBehaviorSubject<SlangType | null>>();
+	private readonly ports = new Map<string, Set<PortModel>>();
 
 	public constructor(private genericIdentifiers: Array<string>) {
-		this.genericTypes = new Map<string, SlangBehaviorSubject<SlangType | null>>();
 	}
 
 	private getSubject(identifier: string, initial: SlangType | null = null): SlangBehaviorSubject<SlangType | null> {
@@ -53,6 +54,24 @@ export class GenericSpecifications {
 		}
 		const subject = this.getSubject(identifier);
 		subject.next(null);
+	}
+	
+	public registerPort(identifier: string, port: PortModel) {
+		let portSet = this.ports.get(identifier);
+		if (!portSet) {
+			portSet = new Set<PortModel>();
+			this.ports.set(identifier, portSet);
+		}
+		portSet.add(port);
+	}
+	
+	public getRegisteredPorts(identifier: string): IterableIterator<PortModel> {
+		let portSet = this.ports.get(identifier);
+		if (portSet) {
+			return portSet.values();
+		} else {
+			return [].values();
+		}
 	}
 	
 	public subscribeGenericTypeChanged(identifier: string, cb: (type: SlangType | null) => void): Subscription {

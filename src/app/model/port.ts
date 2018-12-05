@@ -57,9 +57,11 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			this.connectedWith.splice(idxT, 1);
 		});
 
-		if (this.generics) {
+		if (this.generics && this.genericIdentifier) {
 			const generics = this.generics;
-			const identifier = this.genericIdentifier!;
+			const identifier = this.genericIdentifier;
+			
+			generics.registerPort(identifier, this);
 
 			generics.subscribeGenericTypeChanged(identifier, type => {
 				if (type) {
