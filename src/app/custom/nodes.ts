@@ -1,9 +1,7 @@
 import {GenericPortModel, PortModel, PortModelArgs} from "../model/port";
 import {DelegateModel} from "../model/delegate";
-import {SlangBehaviorSubject, SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "./events";
+import {SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "./events";
 import {StreamPortOwner} from "./stream";
-import {SlangType} from "./type";
-import {GenericSpecifications} from "./generics";
 
 type Type<T> = Function & { prototype: T };
 

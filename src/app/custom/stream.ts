@@ -53,7 +53,7 @@ export class StreamType {
 				if (this.getStreamDepth() <= other.getStreamDepth()) {
 					return [null, 0];
 				} else {
-					return [null, -1];
+					return [null, other.getStreamDepth() - this.getStreamDepth()];
 				}
 			}
 		} else {
@@ -61,7 +61,7 @@ export class StreamType {
 				if (this.getStreamDepth() >= other.getStreamDepth()) {
 					return [null, 0];
 				} else {
-					return [null, -1];
+					return [null, other.getStreamDepth() - this.getStreamDepth()];
 				}
 			} else {
 				return [null, -1];
@@ -77,6 +77,26 @@ export class StreamType {
 			return false;
 		}
 		return this.baseStream.hasPlaceholderAncestor();
+	}
+
+	public hasFixedAncestor(): boolean {
+		if (!!this.source) {
+			return true;
+		}
+		if (!this.baseStream) {
+			return false;
+		}
+		return this.baseStream.hasFixedAncestor();
+	}
+	
+	public getPlaceholderDepth(): number {
+		if (!!this.source) {
+			return 0;
+		}
+		if (!this.baseStream) {
+			return -1;
+		}
+		return this.baseStream.getPlaceholderDepth() + 1;
 	}
 
 	public hasPlaceholderRoot(): boolean {
@@ -152,7 +172,7 @@ export class StreamType {
 	}
 
 	public getStreamDepth(): number {
-		if (this.baseStream) {
+		if (!!this.baseStream) {
 			return this.baseStream.getStreamDepth() + 1;
 		}
 		return 1;
