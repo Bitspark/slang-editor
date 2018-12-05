@@ -69,6 +69,90 @@ export class SlangType {
 		}
 
 	}
+	
+	public isVoid(): boolean {
+		if (this.typeIdentifier === TypeIdentifier.Map) {
+			for (const sub of this.getMapSubs()) {
+				if (!sub[1].isVoid()) {
+					return false;
+				}
+			}
+			return true;
+		} else if (this.typeIdentifier === TypeIdentifier.Stream) {
+			return this.getStreamSub().isVoid();
+		}
+		
+		return false;
+	}
+	
+	public union(other: SlangType): SlangType {
+		if (this.typeIdentifier !== other.typeIdentifier) {
+			throw new Error(`types not unifiable`);
+		}
+		
+		if (this.typeIdentifier === TypeIdentifier.Map) {
+			const newMap = new SlangType(this.parent, TypeIdentifier.Map);
+			for (const [subName, sub1] of this.getMapSubs()) {
+				const sub2 = other.findMapSub(subName);
+				let newSub: SlangType;
+				if (sub2) {
+					newSub = sub1.union(sub2);
+				} else {
+					newSub = sub1.copy();
+				}
+				if (!newSub.isVoid()) {
+					newMap.addMapSub(subName, newSub);
+				}
+			}
+			for (const [subName, sub1] of other.getMapSubs()) {
+				const sub2 = newMap.findMapSub(subName);
+				if (!sub2) {
+					newMap.addMapSub(subName, sub1.copy());
+				}
+			}
+			return newMap;
+		} else if (this.typeIdentifier === TypeIdentifier.Stream) {
+			const newStream = new SlangType(this.parent, TypeIdentifier.Stream);
+			newStream.setStreamSub(this.getStreamSub().union(other.getStreamSub()));
+			return newStream;
+		}
+		
+		if (this.typeIdentifier === TypeIdentifier.Generic) {
+			if (this.genericIdentifier !== other.genericIdentifier) {
+				throw new Error(`generics not unifiable ${this.genericIdentifier} != ${other.genericIdentifier}`);
+			}
+		}
+		
+		return this.copy();
+	}
+	
+	public equals(other: SlangType): boolean {
+		if (this.typeIdentifier !== other.typeIdentifier) {
+			return false;
+		}
+
+		if (this.typeIdentifier === TypeIdentifier.Map) {
+			for (const [subName, sub1] of this.getMapSubs()) {
+				const sub2 = other.findMapSub(subName);
+				if (!sub2 || !sub1.equals(sub2)) {
+					return false;
+				}
+			}
+			for (const [subName,] of other.getMapSubs()) {
+				const sub = this.findMapSub(subName);
+				if (!sub) {
+					return false;
+				}
+			}
+			return true;
+		} else if (this.typeIdentifier === TypeIdentifier.Stream) {
+			return this.getStreamSub().equals(other.getStreamSub());
+		} else if (this.typeIdentifier === TypeIdentifier.Generic) {
+			return this.genericIdentifier === other.genericIdentifier;
+		}
+		
+		return true;
+	}
 
 	public constructor(private parent: SlangType | null, private typeIdentifier: TypeIdentifier) {
 		if (this.typeIdentifier === TypeIdentifier.Map) {
@@ -145,6 +229,13 @@ export class SlangType {
 		this.mapSubs!.set(name, port);
 		port.parent = this;
 		return this;
+	}
+	
+	public findMapSub(name: string): SlangType | null {
+		if (this.typeIdentifier !== TypeIdentifier.Map) {
+			throw `find map sub port to a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+		}
+		return this.mapSubs!.get(name) || null;
 	}
 
 	public getMapSubs(): IterableIterator<[string, SlangType]> {

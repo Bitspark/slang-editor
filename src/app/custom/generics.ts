@@ -64,14 +64,28 @@ export class GenericSpecifications {
 		}
 		portSet.add(port);
 	}
-	
-	public getRegisteredPorts(identifier: string): IterableIterator<PortModel> {
+
+	public unregisterPort(identifier: string, port: PortModel) {
 		let portSet = this.ports.get(identifier);
 		if (portSet) {
-			return portSet.values();
-		} else {
-			return [].values();
+			portSet.delete(port);
 		}
+	}
+	
+	public getUnifiedType(identifier: string): SlangType | null {
+		let portSet = this.ports.get(identifier);
+		if (!portSet) {
+			return null;
+		}
+		let unifiedType: SlangType | null = null;
+		for (const registeredPort of portSet) {
+			if (!unifiedType) {
+				unifiedType = registeredPort.getConnectedType();
+			} else {
+				unifiedType = unifiedType.union(registeredPort.getConnectedType());
+			}
+		}
+		return unifiedType;
 	}
 	
 	public subscribeGenericTypeChanged(identifier: string, cb: (type: SlangType | null) => void): Subscription {
