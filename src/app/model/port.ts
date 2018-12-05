@@ -148,7 +148,12 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 							this.createChildNode(P, {name: subName, type: subType, direction,});
 						}
 					}
-					// TODO: Delete ports that are no longer inside type
+					for (const sub of this.getMapSubs()) {
+						if (!type.findMapSub(sub.getName())) {
+							console.log("remove", sub);
+							// TODO: Remove subPort
+						}
+					}
 					break;
 				case TypeIdentifier.Stream:
 					const subType = type.getStreamSub();
