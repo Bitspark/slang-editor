@@ -50,7 +50,7 @@ export class StreamType {
 					return [null, -1];
 				}
 			} else {
-				if (this.getStreamDepth() < other.getStreamDepth()) {
+				if (this.getStreamDepth() <= other.getStreamDepth()) {
 					return [null, 0];
 				} else {
 					return [null, -1];
