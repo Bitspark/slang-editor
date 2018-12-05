@@ -68,7 +68,7 @@ export class ConnectionComponent extends CellComponent {
 			}
 		});
 		this.refresh();
-		this.paperView.renderCell(this.shape);
+		this.render();
 
 		[connection.source, connection.destination].forEach(port => {
 			port.getStreamPort().subscribeRefreshStreamType(stream => {

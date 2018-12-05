@@ -1,6 +1,6 @@
 import {GenericPortModel, PortModel, PortModelArgs} from "../model/port";
 import {DelegateModel} from "../model/delegate";
-import {SlangNodeSetBehaviorSubject} from "./events";
+import {SlangBehaviorSubject, SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "./events";
 import {StreamPortOwner} from "./stream";
 
 type Type<T> = Function & { prototype: T };
@@ -25,6 +25,7 @@ export abstract class SlangNode {
 	private id = "";
 	private lastId = "0";
 	private children = new SlangNodeSetBehaviorSubject<SlangNode>("children", []);
+	private destroyed = new SlangSubjectTrigger("destroyed");
 
 	protected constructor(private readonly parent: SlangNode | null) {
 	}
@@ -146,8 +147,12 @@ export abstract class SlangNode {
 		const childNode = new ctor(this, args);
 		childNode.id = this.nextId();
 		this.children.nextAdd(childNode, cb);
-
 		return childNode;
+	}
+
+	public destroyChildNode<T extends SlangNode, A>(childNode: T) {
+		this.children.nextRemove(childNode);
+		childNode.destroyed.next();
 	}
 
 	private nextId(): string {
@@ -167,6 +172,16 @@ export abstract class SlangNode {
 		});
 	}
 
+	public subscribeChildDestroyed<T extends SlangNode>(types: Types<T>, cb: (child: T) => void) {
+		this.children.subscribeRemoved(child => {
+			for (const type of getTypes(types)) {
+				if (child instanceof type) {
+					cb(child as T);
+				}
+			}
+		});
+	}
+
 	public subscribeDescendantCreated<T extends SlangNode>(types: Types<T>, cb: (child: T) => void) {
 		this.children.subscribeAdded(child => {
 			for (const type of getTypes(types)) {
@@ -178,12 +193,16 @@ export abstract class SlangNode {
 		});
 	}
 
+	public subscribeDestroyed(cb: () => void): void {
+		this.destroyed.subscribe(cb);
+	}
+
 }
 
 export abstract class PortOwner extends SlangNode {
-	
+
 	private readonly streamPortOwner: StreamPortOwner;
-	
+
 	protected constructor(parent: SlangNode, streamSource: boolean) {
 		super(parent);
 		this.streamPortOwner = new StreamPortOwner(this, streamSource);
@@ -203,7 +222,7 @@ export abstract class PortOwner extends SlangNode {
 	public getPorts(): IterableIterator<PortModel> {
 		return this.getChildNodes(GenericPortModel);
 	}
-	
+
 	public getStreamPortOwner(): StreamPortOwner {
 		return this.streamPortOwner;
 	}

@@ -51,8 +51,16 @@ export abstract class CellComponent extends Component {
 
 	public createComponent(offset: Position): AttachableComponent {
 		const comp = new AttachableComponent(this.paperView, offset);
-		this.components.push(comp);
+		this.addComponent(comp);
 		return comp;
+	}
+
+	public addComponent(comp: Component) {
+		this.components.push(comp);
+	}
+
+	public render() {
+		this.paperView.renderCell(this.shape);
 	}
 
 	public getShape(): dia.Cell {

@@ -2,7 +2,7 @@ import {dia, g, shapes, util} from "jointjs";
 import {ViewFrame} from "../frame";
 import {View} from "./view";
 import {SlangSubjectTrigger} from "../../custom/events";
-import {XY} from "../components/base";
+import {CellComponent, XY} from "../components/base";
 
 export abstract class PaperView extends View {
 	private positionChanged = new SlangSubjectTrigger("positionChanged");
@@ -237,7 +237,6 @@ export abstract class PaperView extends View {
 
 	public renderCell(cell: dia.Cell) {
 		cell.addTo(this.graph);
-		return cell;
 	}
 
 	public subscribePositionChanged(cb: () => void): void {

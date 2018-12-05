@@ -19,11 +19,12 @@ export class BlackBoxComponent extends ElementComponent {
 		this.portGroups = BlackBoxComponent.createGroups(this.blackBox);
 
 		this.shape = new BlackBoxComponent.Rect(this.blackBox, this.portGroups);
-		this.paperView.renderCell(this.shape);
 
 		this.portGroups.forEach(group => {
 			group.setParent(this.shape);
 		});
+
+		this.render();
 	}
 
 	public translate(tx: number, ty: number) {
@@ -95,16 +96,17 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 		if (operator.position) {
 			this.updateXY(operator.position);
 		}
-		this.createComponent({x: 0, y: 0, align: "l"})
+		this.createComponent({x: 0, y: 0, align: "br"})
 			.mount(" ", {
 				view: () => m(Button, {
+					tooltip: "Remove operator",
+					class: "sl-danger sl-btn-icon",
 					onClick: () => {
+						operator.destroy();
 					},
-					label: "Remove",
-					class: "sl-op-delete",
-				})
+				}, m("i.fas.fa-times"))
 			})
-			.attachTo(this.shape, "c");
+			.attachTo(this.shape, "tl");
 	}
 
 }

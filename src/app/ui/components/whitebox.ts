@@ -49,7 +49,7 @@ export class WhiteBoxComponent extends CellComponent {
 			height: WhiteBoxComponent.padding * 2 + WhiteBoxComponent.minimumSpace,
 		};
 		this.shape = new WhiteBoxComponent.Rect(this.blueprint, size);
-		this.paperView.renderCell(this.shape);
+		this.render();
 		this.autoLayout();
 	}
 
@@ -61,9 +61,8 @@ export class WhiteBoxComponent extends CellComponent {
 						onClick: () => {
 							this.blueprint.requestDeployment();
 						},
-						label: "Deploy",
 						class: "sl-blupr-deploy",
-					})
+					}, "Deploy")
 				});
 				this.input.unmount();
 				this.output.unmount();
@@ -72,17 +71,14 @@ export class WhiteBoxComponent extends CellComponent {
 				this.buttons.mount(" ", {
 					view: () => m(".toolbox", [
 						m(Button, {
-							label: "Running",
 							class: "sl-green-pulsing",
-						}),
+						}, "Running"),
 						m(Button, {
 							onClick: () => {
 								this.blueprint.requestShutdown();
 							},
-							label: "Shutdown",
-							icon: "S",
 							class: "sl-btn-warn",
-						}),
+						}, "Shutdown"),
 					])
 				});
 
@@ -122,8 +118,17 @@ export class WhiteBoxComponent extends CellComponent {
 		});
 
 		this.blueprint.subscribeChildCreated(OperatorModel, operator => {
-			this.addOperator(operator);
+			const opComp = this.addOperator(operator);
 			this.fitOuter(true);
+
+			operator.subscribeDestroyed(() => {
+				const idx = this.operators.indexOf(opComp);
+				if (idx >= 0) {
+					opComp.destroy();
+					this.operators.splice(idx, 1);
+					this.fitOuter(true);
+				}
+			});
 		});
 
 		this.blueprint.subscribeChildCreated(BlueprintPortModel, port => {
@@ -424,8 +429,10 @@ export class WhiteBoxComponent extends CellComponent {
 		this.connections.push(new ConnectionComponent(this.paperView, connection));
 	}
 
-	private addOperator(operator: OperatorModel) {
-		this.operators.push(new OperatorBoxComponent(this.paperView, operator));
+	private addOperator(operator: OperatorModel): OperatorBoxComponent {
+		const comp = new OperatorBoxComponent(this.paperView, operator);
+		this.operators.push(comp);
+		return comp;
 	}
 
 	private removeConnection(connection: Connection) {
