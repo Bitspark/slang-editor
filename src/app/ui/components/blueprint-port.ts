@@ -38,7 +38,7 @@ export class IsolatedBlueprintPortComponent {
 
 		this.rectangle.addTo(this.graph);
 		
-		this.portGroup.setParent(this.rectangle);
+		this.portGroup.setParent(this.rectangle, true);
 		this.refresh();
 	}
 
@@ -47,7 +47,7 @@ export class IsolatedBlueprintPortComponent {
 	}
 	
 	public refresh(): void {
-		this.portGroup.refreshPorts();
+		this.portGroup.refreshPorts(true);
 	}
 
 }

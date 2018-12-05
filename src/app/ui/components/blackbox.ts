@@ -10,19 +10,19 @@ export class BlackBoxComponent {
 	protected rectangle: BlackBoxComponent.Rect;
 	protected portGroups: Array<PortGroupComponent>;
 
-	constructor(protected graph: dia.Graph, protected readonly blackBox: BlackBox) {
+	constructor(protected graph: dia.Graph, protected readonly blackBox: BlackBox, protected readonly drawGenerics: boolean) {
 		this.portGroups = this.createGroups(this.blackBox);
 		this.rectangle = new BlackBoxComponent.Rect(blackBox, this.portGroups);
 		this.rectangle.addTo(graph);
 
 		this.portGroups.forEach(group => {
-			group.setParent(this.rectangle);
+			group.setParent(this.rectangle, this.drawGenerics);
 		});
 	}
 	
 	public refresh(): void {
 		for (const portGroup of this.portGroups) {
-			portGroup.refreshPorts();
+			portGroup.refreshPorts(this.drawGenerics);
 		}
 	}
 
@@ -111,7 +111,7 @@ export class BlackBoxComponent {
 export class BlueprintBoxComponent extends BlackBoxComponent {
 	
 	constructor(graph: dia.Graph, blueprint: BlueprintModel) {
-		super(graph, blueprint);
+		super(graph, blueprint, false);
 
 		this.getRectangle().attr({
 			body: {
@@ -129,7 +129,7 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 export class OperatorBoxComponent extends BlackBoxComponent {
 
 	constructor(graph: dia.Graph, operator: OperatorModel) {
-		super(graph, operator);
+		super(graph, operator, true);
 		if (operator.position) {
 			this.getRectangle().position(operator.position.x, operator.position.y);
 		}
