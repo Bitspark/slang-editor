@@ -5,12 +5,12 @@ import {Styles} from "../../../styles/studio";
 
 export class IsolatedBlueprintPortComponent {
 
-	private portGroup: PortGroupComponent;
+	private readonly portGroup: PortGroupComponent;
 	private readonly rectangle: shapes.standard.Rectangle;
 
 	constructor(private graph: dia.Graph, name: string, identity: string, port: PortModel, position: PortGroupPosition) {
-		const portGroup = new PortGroupComponent(graph, "PortGroup", port, position, 0, 1.0);
-		const portGroups = {"PortGroup": portGroup.getPortGroupElement()};
+		this.portGroup = new PortGroupComponent(graph, "PortGroup", port, position, 0, 1.0);
+		const portGroups = {"PortGroup": this.portGroup.getPortGroupElement()};
 
 		const transform = Styles.BlueprintPort.transformations[position];
 
@@ -37,13 +37,17 @@ export class IsolatedBlueprintPortComponent {
 		} as any);
 
 		this.rectangle.addTo(this.graph);
-
-		this.portGroup = portGroup;
-		portGroup.setParent(this.rectangle);
+		
+		this.portGroup.setParent(this.rectangle);
+		this.refresh();
 	}
 
 	public getElement(): dia.Element {
 		return this.rectangle;
+	}
+	
+	public refresh(): void {
+		this.portGroup.refreshPorts();
 	}
 
 }
