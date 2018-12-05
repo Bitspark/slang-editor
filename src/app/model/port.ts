@@ -57,6 +57,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			}
 			this.connectedWith.splice(idxT, 1);
 		});
+		
+		this.subscribeDestroyed(() => {
+			this.disconnectAll();
+		});
 
 		if (this.generics && this.genericIdentifier) {
 			const generics = this.generics;
@@ -478,6 +482,18 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 		this.disconnected.next(destination);
 		destination.disconnected.next(this);
+	}
+	
+	private disconnectAll() {
+		if (this.isSource()) {
+			for (const destination of this.connectedWith) {
+				this.disconnectTo(destination);
+			}
+		} else {
+			for (const source of this.connectedWith) {
+				source.disconnectTo(this);
+			}
+		}
 	}
 
 	private findGenericPort(portId: Array<string>): PortModel {
