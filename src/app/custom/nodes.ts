@@ -147,12 +147,17 @@ export abstract class SlangNode {
 		const childNode = new ctor(this, args);
 		childNode.id = this.nextId();
 		this.children.nextAdd(childNode, cb);
+		childNode.subscribeDestroyed(() => {
+			this.children.nextRemove(childNode);
+		});
 		return childNode;
 	}
 
-	public destroyChildNode<T extends SlangNode, A>(childNode: T) {
-		this.children.nextRemove(childNode);
-		childNode.destroyed.next();
+	public destroy<T extends SlangNode, A>() {
+		for (const child of this.getChildNodes(SlangNode)) {
+			child.destroy();
+		}
+		this.destroyed.next();
 	}
 
 	private nextId(): string {
@@ -164,16 +169,6 @@ export abstract class SlangNode {
 
 	public subscribeChildCreated<T extends SlangNode>(types: Types<T>, cb: (child: T) => void) {
 		this.children.subscribeAdded(child => {
-			for (const type of getTypes(types)) {
-				if (child instanceof type) {
-					cb(child as T);
-				}
-			}
-		});
-	}
-
-	public subscribeChildDestroyed<T extends SlangNode>(types: Types<T>, cb: (child: T) => void) {
-		this.children.subscribeRemoved(child => {
 			for (const type of getTypes(types)) {
 				if (child instanceof type) {
 					cb(child as T);

@@ -146,11 +146,4 @@ export class OperatorModel extends BlackBox {
 			this.selected.next(true);
 		}
 	}
-
-	public destroy() {
-		const parent = this.getParentNode();
-		if (parent) {
-			parent.destroyChildNode(this);
-		}
-	}
 }
