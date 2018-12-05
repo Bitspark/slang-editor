@@ -208,10 +208,8 @@ export namespace Input {
 										that.values[index] = undefined;
 										attrs.onInput(that.getValues());
 									},
-									label: "✖",
-									icon: "✖",
 									class: "sl-remove-entry",
-								}),
+								}, m("i.fas.fa-times")),
 								m(ConsoleEntry, {
 									label: "", class: "",
 									type: attrs.type,
@@ -226,10 +224,8 @@ export namespace Input {
 						onClick: () => {
 							that.values.push(null);
 						},
-						label: "✚",
-						icon: "✚",
 						class: "sl-add-entry",
-					}))
+					}, m("i.fas.fa-plus")))
 				])
 			);
 		}
@@ -325,11 +321,10 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 			m(Tk.Button, {
 				full: true,
 				notAllowed: !that.isValid(),
-				label: "Push",
 				onClick: that.isValid ? (e: MithrilMouseEvent) => {
 					attrs.onSubmit(that.value!);
 				} : undefined
-			})
+			}, "Push")
 		);
 	}
 }

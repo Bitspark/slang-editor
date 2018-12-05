@@ -5,7 +5,7 @@ button, .sl-btn {
 	font-size: .7rem;
 	text-align: center;
 	text-transform: uppercase;
-	padding: 6px 12px 4px;
+	padding: 6px 8px 4px;
 
 	display: inline-block;
 
@@ -14,9 +14,6 @@ button, .sl-btn {
 	&.sl-fullwidth {
 		display: block;
 	}
-
-	color: $black;
-	background: $white;
 
 	cursor: default;
 
@@ -34,12 +31,32 @@ button, .sl-btn {
 		}
 	}
 
-	&.sl-warn {
-		background: $yellow;
+	color: $black;
+	background: $white;
+
+	&.sl-white, &.sl-default {
+		color: $black;
+		background: $white;
+	}
+
+	&.sl-cyan, &.sl-primary {
+		color: $white;
+		background: $cyan;
+	}
+
+	&.sl-red, &.sl-danger {
+		color: $white;
+		background: $red;
 	}
 
 	&.sl-green {
+		color: $white;
 		background: $green;
+	}
+
+	&.sl-yellow, &.sl-warn {
+		color: $white;
+		background: $yellow;
 	}
 
 	&.sl-green-pulsing {
@@ -61,5 +78,25 @@ button, .sl-btn {
 		animation-duration: 600ms;
 		animation-direction: alternate;
 		animation-iteration-count: infinite;
+	}
+
+	&.sl-btn-icon {
+		border: 0;
+		padding: 0;
+		width: 16px;
+		height: 16px;
+		display: inline-block;
+		position: relative;
+
+		> i {
+			text-align: center;
+			vertical-align: middle;
+			font-size: 1rem;
+			position: absolute;
+			left: 0;
+			right: 0;
+			top: 0;
+			bottom: 0;
+		}
 	}
 }

@@ -1,56 +1,51 @@
+import m from "mithril";
 import {dia, g, shapes} from "jointjs";
 import {BlackBox} from "../../custom/nodes";
 import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 import {PortGroupComponent} from "./port-group";
 import {Styles} from "../../../styles/studio";
+import {ElementComponent, XY} from "./base";
+import {PaperView} from "../views/paper-view";
+import {Tk} from "./toolkit";
+import Button = Tk.Button;
 
-export class BlackBoxComponent {
-
-	protected rectangle: BlackBoxComponent.Rect;
+export class BlackBoxComponent extends ElementComponent {
+	protected readonly shape: BlackBoxComponent.Rect;
 	protected portGroups: Array<PortGroupComponent>;
 
-	constructor(protected graph: dia.Graph, protected readonly blackBox: BlackBox) {
-		this.portGroups = this.createGroups(this.blackBox);
-		this.rectangle = new BlackBoxComponent.Rect(blackBox, this.portGroups);
-		this.rectangle.addTo(graph);
+	constructor(paperView: PaperView, private readonly blackBox: BlackBox) {
+		super(paperView, {x: 0, y: 0});
+		this.portGroups = BlackBoxComponent.createGroups(this.blackBox);
+
+		this.shape = new BlackBoxComponent.Rect(this.blackBox, this.portGroups);
 
 		this.portGroups.forEach(group => {
-			group.setParent(this.rectangle);
+			group.setParent(this.shape);
 		});
-	}
 
-	public getBBox(): g.Rect {
-		return this.rectangle.getBBox();
+		this.render();
 	}
 
 	public translate(tx: number, ty: number) {
-		this.rectangle.translate(tx, ty);
-	}
-
-	public getRectangle(): BlackBoxComponent.Rect {
-		return this.rectangle;
+		this.shape.translate(tx, ty);
 	}
 
 	public on(event: string, handler: Function) {
-		this.rectangle.on(event, handler);
+		this.shape.on(event, handler);
 	}
 
-	public remove(): void {
-		this.rectangle.remove();
-	}
-
-	private createGroups(blackBox: BlackBox): Array<PortGroupComponent> {
+	private static createGroups(blackBox: BlackBox): Array<PortGroupComponent> {
 		const portGroups: Array<PortGroupComponent> = [];
 
 		const portIn = blackBox.getPortIn();
 		if (portIn) {
-			portGroups.push(new PortGroupComponent(this.graph, "MainIn", portIn, "top", 0.0, 1.0));
+			portGroups.push(new PortGroupComponent("MainIn", portIn, "top", 0.0, 1.0));
 		}
 
 		const portOut = blackBox.getPortOut();
 		if (portOut) {
-			portGroups.push(new PortGroupComponent(this.graph, "MainOut", portOut, "bottom", 0.0, 1.0));
+			portGroups.push(new PortGroupComponent("MainOut", portOut, "bottom", 0.0, 1.0));
 		}
 
 		const delegates = Array.from(blackBox.getDelegates());
@@ -61,13 +56,13 @@ export class BlackBoxComponent {
 		for (const delegate of delegates) {
 			const portOut = delegate.getPortOut();
 			if (portOut) {
-				portGroups.push(new PortGroupComponent(this.graph, `Delegate${delegate.getName()}Out`, portOut, "right", pos, width));
+				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "right", pos, width));
 			}
 			pos += step;
 
 			const portIn = delegate.getPortIn();
 			if (portIn) {
-				portGroups.push(new PortGroupComponent(this.graph, `Delegate${delegate.getName()}In`, portIn, "right", pos, width));
+				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "right", pos, width));
 			}
 			pos += step;
 		}
@@ -79,10 +74,10 @@ export class BlackBoxComponent {
 
 export class BlueprintBoxComponent extends BlackBoxComponent {
 
-	constructor(graph: dia.Graph, blueprint: BlueprintModel) {
-		super(graph, blueprint);
+	constructor(paperView: PaperView, blueprint: BlueprintModel) {
+		super(paperView, blueprint);
 
-		this.getRectangle().attr({
+		this.shape.attr({
 			body: {
 				cursor: "pointer",
 			},
@@ -90,18 +85,28 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 				cursor: "pointer",
 			}
 		});
-		this.rectangle.attr("draggable", false);
+		this.shape.attr("draggable", false);
 	}
 
 }
 
 export class OperatorBoxComponent extends BlackBoxComponent {
-
-	constructor(graph: dia.Graph, operator: OperatorModel) {
-		super(graph, operator);
+	constructor(paperView: PaperView, operator: OperatorModel) {
+		super(paperView, operator);
 		if (operator.position) {
-			this.getRectangle().position(operator.position.x, operator.position.y);
+			this.updateXY(operator.position);
 		}
+		this.createComponent({x: 0, y: 0, align: "br"})
+			.mount(" ", {
+				view: () => m(Button, {
+					tooltip: "Remove operator",
+					class: "sl-danger sl-btn-icon",
+					onClick: () => {
+						operator.destroy();
+					},
+				}, m("i.fas.fa-times"))
+			})
+			.attachTo(this.shape, "tl");
 	}
 
 }
@@ -146,8 +151,8 @@ export namespace BlackBoxComponent {
 	}
 
 	export class Rect extends shapes.standard.Rectangle.define("BlackBoxRect", Styles.Defaults.BlackBox) {
-		public static place(graph: dia.Graph, blueprint: BlueprintModel, position?: g.PlainPoint): Rect {
-			const bbRect = new BlueprintBoxComponent(graph, blueprint).getRectangle();
+		public static place(paperView: PaperView, blueprint: BlueprintModel, position?: g.PlainPoint): Rect {
+			const bbRect = new BlueprintBoxComponent(paperView, blueprint).getShape();
 			if (position) {
 				const {width, height} = bbRect.size();
 				bbRect.position(position.x - width / 2, position.y - height / 2);
@@ -169,8 +174,10 @@ export namespace BlackBoxComponent {
 
 	export namespace Rect {
 		export class Ghost extends shapes.standard.Rectangle.define("BlackBoxGhost", Styles.Defaults.BlackBox) {
-			public static place(label: string, position?: g.PlainPoint): Rect.Ghost {
-				return new Ghost(label, position);
+			public static place(paperView: PaperView, label: string, position?: g.PlainPoint): Rect.Ghost {
+				const ghost = new Ghost(label, position);
+				paperView.renderCell(ghost);
+				return ghost;
 			}
 
 			constructor(label: string, position?: g.PlainPoint) {

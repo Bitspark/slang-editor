@@ -205,12 +205,11 @@ export class LandscapeView extends PaperView {
 			throw `no graph`;
 		}
 		
-		const rect = BlackBoxComponent.Rect.Ghost.place("＋");
+		const rect = BlackBoxComponent.Rect.Ghost.place(this, "＋");
 		rect.attr("draggable", false);
 		rect.attr("label/cursor", "pointer");
 		rect.attr("label/font-size", "28");
 		rect.attr("body/cursor", "pointer");
-		rect.addTo(this.graph);
 
 		const that = this;
 		rect.on("pointerup", function (evt: Event, x: number, y: number) {
@@ -253,8 +252,8 @@ export class LandscapeView extends PaperView {
 			return;
 		}
 
-		const blueprintBox = new BlueprintBoxComponent(this.graph, blueprint);
-		this.blueprintRects.set(blueprint.getFullName(), blueprintBox.getRectangle());
+		const blueprintBox = new BlueprintBoxComponent(this, blueprint);
+		this.blueprintRects.set(blueprint.getFullName(), blueprintBox.getShape());
 
 		// JointJS -> Model
 		blueprintBox.on("pointerup", function (evt: Event, x: number, y: number) {

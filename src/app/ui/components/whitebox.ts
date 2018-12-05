@@ -1,5 +1,5 @@
 import m from "mithril";
-import {AttachedComponent, Component} from "./base";
+import {AttachableComponent, CellComponent} from "./base";
 import {Styles} from "../../../styles/studio";
 import {BlackBox} from "../../custom/nodes";
 import {dia, g, layout, shapes} from "jointjs";
@@ -18,15 +18,14 @@ import {Tk} from "./toolkit";
 import Button = Tk.Button;
 import {InputConsole, OutputConsole} from "./console";
 
-export class WhiteBoxComponent extends Component {
+export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 120;
 	private static readonly minimumSpace = 10;
 
-	private readonly shape: WhiteBoxComponent.Shape;
-	private readonly buttons: AttachedComponent;
-	private readonly input: AttachedComponent;
-	private readonly output: AttachedComponent;
-	private outputBuffer: Array<SlangTypeValue> = [];
+	protected readonly shape: WhiteBoxComponent.Rect;
+	private readonly buttons: AttachableComponent;
+	private readonly input: AttachableComponent;
+	private readonly output: AttachableComponent;
 
 
 	private readonly operators: Array<BlackBoxComponent> = [];
@@ -49,8 +48,8 @@ export class WhiteBoxComponent extends Component {
 			width: WhiteBoxComponent.padding * 2 + WhiteBoxComponent.minimumSpace,
 			height: WhiteBoxComponent.padding * 2 + WhiteBoxComponent.minimumSpace,
 		};
-		this.shape = new WhiteBoxComponent.Shape(this.blueprint, size);
-		this.shape.addTo(this.graph);
+		this.shape = new WhiteBoxComponent.Rect(this.blueprint, size);
+		this.render();
 		this.autoLayout();
 	}
 
@@ -62,9 +61,8 @@ export class WhiteBoxComponent extends Component {
 						onClick: () => {
 							this.blueprint.requestDeployment();
 						},
-						label: "Deploy",
 						class: "sl-blupr-deploy",
-					})
+					}, "Deploy")
 				});
 				this.input.unmount();
 				this.output.unmount();
@@ -73,17 +71,14 @@ export class WhiteBoxComponent extends Component {
 				this.buttons.mount(" ", {
 					view: () => m(".toolbox", [
 						m(Button, {
-							label: "Running",
 							class: "sl-green-pulsing",
-						}),
+						}, "Running"),
 						m(Button, {
 							onClick: () => {
 								this.blueprint.requestShutdown();
 							},
-							label: "Shutdown",
-							icon: "S",
 							class: "sl-btn-warn",
-						}),
+						}, "Shutdown"),
 					])
 				});
 
@@ -123,8 +118,17 @@ export class WhiteBoxComponent extends Component {
 		});
 
 		this.blueprint.subscribeChildCreated(OperatorModel, operator => {
-			this.addOperator(operator);
+			const opComp = this.addOperator(operator);
 			this.fitOuter(true);
+
+			operator.subscribeDestroyed(() => {
+				const idx = this.operators.indexOf(opComp);
+				if (idx >= 0) {
+					opComp.destroy();
+					this.operators.splice(idx, 1);
+					this.fitOuter(true);
+				}
+			});
 		});
 
 		this.blueprint.subscribeChildCreated(BlueprintPortModel, port => {
@@ -162,8 +166,8 @@ export class WhiteBoxComponent extends Component {
 	}
 
 	public autoLayout() {
-		const operatorRectangles = this.operators.map(operatorComponent => operatorComponent.getRectangle());
-		const connectionLinks = this.connections.map(connectionComponent => connectionComponent.getLink());
+		const operatorRectangles = this.operators.map(operatorComponent => operatorComponent.getShape());
+		const connectionLinks = this.connections.map(connectionComponent => connectionComponent.getShape());
 
 		layout.DirectedGraph.layout(
 			[...operatorRectangles, ...connectionLinks, ...this.ports.top, ...this.ports.bottom, ...this.ports.left, ...this.ports.right,], {
@@ -174,7 +178,7 @@ export class WhiteBoxComponent extends Component {
 				resizeClusters: false,
 			});
 
-		const boundingBox = this.graph.getCellsBBox(operatorRectangles) || new g.Rect({
+		const boundingBox = this.paperView.getCellsBBox(operatorRectangles) || new g.Rect({
 			x: 0,
 			y: 0,
 			width: WhiteBoxComponent.minimumSpace,
@@ -238,7 +242,7 @@ export class WhiteBoxComponent extends Component {
 		let newCornerY: number = currentPosition.y + currentSize.height - 2 * padding;
 
 		this.operators.forEach(operator => {
-			const childBBox = operator.getBBox();
+			const childBBox = operator.bbox;
 			if (childBBox.x < newX) {
 				newX = childBBox.x;
 			}
@@ -361,8 +365,9 @@ export class WhiteBoxComponent extends Component {
 		};
 
 		const that = this;
-		const portComponent = new IsolatedBlueprintPortComponent(this.graph, name, id, port, invertedPosition[position]);
+		const portComponent = new IsolatedBlueprintPortComponent(name, id, port, invertedPosition[position]);
 		const portElement = portComponent.getElement();
+		this.paperView.renderCell(portElement);
 
 		let calculateRestrictedRect: (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => g.PlainRect;
 
@@ -421,16 +426,18 @@ export class WhiteBoxComponent extends Component {
 	}
 
 	private addConnection(connection: Connection) {
-		this.connections.push(new ConnectionComponent(this.graph, connection));
+		this.connections.push(new ConnectionComponent(this.paperView, connection));
 	}
 
-	private addOperator(operator: OperatorModel) {
-		this.operators.push(new OperatorBoxComponent(this.graph, operator));
+	private addOperator(operator: OperatorModel): OperatorBoxComponent {
+		const comp = new OperatorBoxComponent(this.paperView, operator);
+		this.operators.push(comp);
+		return comp;
 	}
 
 	private removeConnection(connection: Connection) {
 		const linkId = ConnectionComponent.getLinkId(connection);
-		const link = ConnectionComponent.findLink(this.graph, connection);
+		const link = ConnectionComponent.findLink(this.paperView, connection);
 		if (link) {
 			link.remove();
 		} else {
@@ -443,7 +450,6 @@ export class WhiteBoxComponent extends Component {
 			throw new Error(`connection with id ${linkId} not found`);
 		}
 	}
-
 }
 
 export namespace WhiteBoxComponent {
@@ -477,7 +483,7 @@ export namespace WhiteBoxComponent {
 		};
 	}
 
-	export class Shape extends shapes.standard.Rectangle.define("WhiteBox", Styles.Defaults.Outer) {
+	export class Rect extends shapes.standard.Rectangle.define("WhiteBox", Styles.Defaults.Outer) {
 		constructor(blackBox: BlackBox, size: Size) {
 			super(constructRectAttrs({
 				id: `${blackBox.getIdentity()}_outer`,

@@ -84,8 +84,7 @@ export namespace Tk {
 
 	interface ButtonAttrs {
 		onClick?: (e: MithrilMouseEvent) => void
-		label: string
-		icon?: string
+		tooltip?: string
 		class?: string
 		notAllowed?: boolean
 		inactive?: boolean
@@ -127,24 +126,23 @@ export namespace Tk {
 		}
 
 
-		view({attrs}: CVnode<ButtonAttrs>) {
+		view({attrs, children}: CVnode<ButtonAttrs>) {
 			const that = this;
 
 			return m("a.sl-btn", {
-					class: that.getClass(attrs),
-					inacitve: that.isInactive(attrs),
-					onclick: (that.isClickable(attrs)) ? (e: MithrilMouseEvent) => {
-						if (!that.alreadyClicked) {
-							that.alreadyClicked = true;
-							attrs.onClick!(e);
-							setTimeout(() => {
-								that.alreadyClicked = false;
-							}, that.bounceInterval);
-						}
-					} : undefined,
-					tooltip: attrs.label,
-				},
-				attrs.label);
+				class: that.getClass(attrs),
+				inacitve: that.isInactive(attrs),
+				onclick: (that.isClickable(attrs)) ? (e: MithrilMouseEvent) => {
+					if (!that.alreadyClicked) {
+						that.alreadyClicked = true;
+						attrs.onClick!(e);
+						setTimeout(() => {
+							that.alreadyClicked = false;
+						}, that.bounceInterval);
+					}
+				} : undefined,
+				tooltip: attrs.tooltip,
+			}, children);
 		}
 	}
 
