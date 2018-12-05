@@ -275,12 +275,14 @@ function merge(oldStream: StreamType | null, newStream: StreamType | null): Stre
 
 export function hasCommonStreamTypeTo(searchStream: StreamType, stream: StreamType): boolean {
 	let baseStream: StreamType | null = searchStream;
+	let index = 0;
 	while (baseStream !== null) {
 		const streamIndex = stream.findStreamType(baseStream);
-		if (streamIndex !== -1) {
+		if (streamIndex !== -1 && streamIndex !== index) {
 			return true;
 		}
 		baseStream = baseStream.getBaseStreamOrNull();
+		index++;
 	}
 	return false;
 }
