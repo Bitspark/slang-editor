@@ -44,7 +44,7 @@ export class StreamType {
 		
 		if (this.hasPlaceholderRoot()) {
 			if (other.hasPlaceholderRoot()) {
-				if (!hasCommonStreamTypeTo(this, other) && !hasCommonStreamTypeTo(other, this)) {
+				if (!containsMisplacedStreamTypeTo(this, other) && !containsMisplacedStreamTypeTo(other, this)) {
 					return [null, 0];
 				} else {
 					return [null, -1];
@@ -273,7 +273,7 @@ function merge(oldStream: StreamType | null, newStream: StreamType | null): Stre
 	}
 }
 
-export function hasCommonStreamTypeTo(searchStream: StreamType, stream: StreamType): boolean {
+export function containsMisplacedStreamTypeTo(searchStream: StreamType, stream: StreamType): boolean {
 	let baseStream: StreamType | null = searchStream;
 	let index = 0;
 	while (baseStream !== null) {
