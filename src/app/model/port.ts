@@ -150,8 +150,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 					}
 					for (const sub of this.getMapSubs()) {
 						if (!type.findMapSub(sub.getName())) {
-							console.log("remove", sub);
-							// TODO: Remove subPort
+							sub.destroy();
 						}
 					}
 					break;
