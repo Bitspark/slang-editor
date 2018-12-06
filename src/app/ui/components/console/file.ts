@@ -8,8 +8,10 @@ function selectFile(file: File, onInput: (_: { content: string, name: string }) 
 	reader.onload = function () {
 		// e.g.: "data:application/pdf;base64,JVBERi0xLj..."
 		//       "data:image/jpeg;base64,/9j/4QyIRXhpZgA..."
+		const base64Prefix = "base64,";
 		const data = reader.result as string;
-		onInput({content: data, name: file.name});
+		const base64 = data.substr(data.indexOf(base64Prefix) + base64Prefix.length);
+		onInput({content: `base64:${base64}`, name: file.name});
 		m.redraw();
 	};
 	reader.readAsDataURL(file);
