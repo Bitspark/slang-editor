@@ -1,6 +1,6 @@
 import {PortModel} from "../model/port";
 import {SlangType, TypeIdentifier} from "./type";
-import {hasCommonStreamTypeTo, StreamType} from "./stream";
+import {containsMisplacedStreamTypeTo, StreamType} from "./stream";
 import {PortOwner} from "./nodes";
 import {OperatorDelegateModel} from "../model/delegate";
 import {OperatorModel} from "../model/operator";
@@ -45,7 +45,7 @@ function typesCompatibleTo(sourceType: SlangType, destinationType: SlangType): b
 function fluentStreamCompatibleTo(fluentStream: StreamType, stream: StreamType): boolean {
 	if (stream.hasPlaceholderRoot()) {
 		// Both streams are fluent
-		return !hasCommonStreamTypeTo(fluentStream, stream) && !hasCommonStreamTypeTo(stream, fluentStream);
+		return !containsMisplacedStreamTypeTo(fluentStream, stream) && !containsMisplacedStreamTypeTo(stream, fluentStream);
 	} else {
 		// Non-fluent stream must have at least the depth of the fluent stream
 		return stream.getStreamDepth() >= fluentStream.getStreamDepth();
@@ -101,6 +101,10 @@ function delegateStreamCompatibleTo(rootStream: StreamType | null, stream: Strea
 	return true;
 }
 
+function delegateStreamCompatible(streamA: StreamType, streamB: StreamType): boolean {
+	return delegateStreamCompatibleTo(streamA, streamB) && delegateStreamCompatibleTo(streamB, streamA);
+}
+
 function streamsCompatible(streamA: StreamType | null, streamB: StreamType | null): boolean {
 	if (!streamA || !streamB) {
 		return !streamA && !streamB;
@@ -109,10 +113,6 @@ function streamsCompatible(streamA: StreamType | null, streamB: StreamType | nul
 	if (streamA === streamB) {
 		// Identical stream types
 		return true;
-	}
-	
-	if (!delegateStreamCompatibleTo(streamA, streamB) || !delegateStreamCompatibleTo(streamB, streamA)) {
-		return false;
 	}
 	
 	if (!streamA.isPlaceholder() && !streamB.isPlaceholder()) {
@@ -160,6 +160,18 @@ function cycleCompatibleTo(source: PortModel, destination: PortModel): boolean {
 	return !ancestorOwners.has(destination.getOwner());
 }
 
+function genericCompatible(streamTypeA: PortModel, streamTypeB: PortModel): boolean {
+	if (streamTypeA.isGeneric()) {
+		return genericCompatibleTo(streamTypeB.getStreamPort().getStreamType(), streamTypeA.getStreamPort().getStreamType());
+	} else {
+		return genericCompatibleTo(streamTypeA.getStreamPort().getStreamType(), streamTypeB.getStreamPort().getStreamType());
+	}
+}
+
+function genericCompatibleTo(streamType: StreamType, genericStreamType: StreamType): boolean {
+	return genericStreamType.getStreamStep(streamType)[1] !== -1;
+}
+
 export function canConnectTo(source: PortModel, destination: PortModel): boolean {
 	if (!source.isSource() || !destination.isDestination()) {
 		return false;
@@ -178,19 +190,33 @@ export function canConnectTo(source: PortModel, destination: PortModel): boolean
 		throw new Error(`${source.getIdentity()}: asymmetric connection found`);
 	}
 	
-	if (!typesCompatibleTo(source.getType(), destination.getType())) {
+	if (source.isGeneric() && destination.isGeneric()) {
 		return false;
 	}
-	
+
+	if (!cycleCompatibleTo(source, destination)) {
+		return false;
+	}
+
 	const sourceStream = source.getStreamPort().getStreamType();
 	const destinationStream = destination.getStreamPort().getStreamType();
 	
-	if (!streamsCompatible(sourceStream, destinationStream)) {
+	if (!delegateStreamCompatible(sourceStream, destinationStream)) {
 		return false;
 	}
 	
-	if (!cycleCompatibleTo(source, destination)) {
-		return false;
+	if (!source.isGeneric() && !destination.isGeneric()) {
+		if (!typesCompatibleTo(source.getType(), destination.getType())) {
+			return false;
+		}
+
+		if (!streamsCompatible(sourceStream, destinationStream)) {
+			return false;
+		}
+	} else {
+		if (!genericCompatible(source, destination)) {
+			return false;
+		}
 	}
 	
 	return true;

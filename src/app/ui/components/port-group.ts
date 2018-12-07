@@ -6,7 +6,7 @@ import {Styles} from "../../../styles/studio";
 
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";
 
-function createPortItems(parent: PortGroupComponent, position: PortGroupPosition, port: PortModel): Array<PortComponent> {
+function createPortItems(parent: PortGroupComponent, position: PortGroupPosition, port: PortModel, createGhostPorts: boolean): Array<PortComponent> {
 	let portItems: Array<PortComponent> = [];
 
 	switch (port.getTypeIdentifier()) {
@@ -16,17 +16,25 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
 				break;
 			}
 			for (const sub of port.getMapSubs()) {
-				portItems.push.apply(portItems, createPortItems(parent, position, sub));
+				portItems.push.apply(portItems, createPortItems(parent, position, sub, createGhostPorts));
 			}
 			break;
 
 		case TypeIdentifier.Stream:
-			portItems.push.apply(portItems, createPortItems(parent, position, port.getStreamSub()));
+			portItems.push.apply(portItems, createPortItems(parent, position, port.getStreamSub(), createGhostPorts));
+			break;
+			
+		case TypeIdentifier.Generic:
 			break;
 
 		default:
 			portItems.push(new PortComponent(port, parent));
 	}
+	
+	if (createGhostPorts && port.isGeneric()) {
+		portItems.push(new PortComponent(port, parent));
+	}
+	
 	return portItems;
 }
 
@@ -74,23 +82,23 @@ export class PortGroupComponent {
 		return this.groupPosition;
 	}
 
-	public setParent(parent: dia.Element) {
+	public setParent(parent: dia.Element, drawGenerics: boolean) {
 		this.parentElement = parent;
-		this.refreshPorts();
+		this.refreshPorts(drawGenerics);
 	}
 
-	private refreshPorts() {
+	public refreshPorts(drawGenerics: boolean) {
 		const parentElement = this.parentElement;
 		if (!parentElement) {
 			throw new Error(`need parent`);
 		}
+		
+		parentElement.removePorts(this.ports.map(port => port.getPortElement()));
 
-		this.ports.forEach(port => {
-			parentElement.removePort(port.getPortElement());
-		});
-
+		const ports = createPortItems(this, this.getGroupPosition(), this.port, drawGenerics);
+		
 		this.ports.length = 0;
-		this.ports.push.apply(this.ports, createPortItems(this, this.getGroupPosition(), this.port));
+		this.ports.push.apply(this.ports, ports);
 		parentElement.addPorts(this.ports.map(port => port.getPortElement()));
 	}
 

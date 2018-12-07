@@ -36,9 +36,7 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 						attrs.onHover(undefined);
 					}
 				},
-				m(ListHead, {
-						//class: ".sl-blupr-fltr",
-					},
+				m(ListHead, {},
 					m(StringInput, {
 						class: "sl-fullwidth",
 						label: "",

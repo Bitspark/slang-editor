@@ -1,4 +1,5 @@
 import m, {ClassComponent, CVnode} from "mithril";
+
 import {SlangType, SlangTypeDef, SlangTypeValue, TypeIdentifier} from "../../custom/type";
 import {MithrilMouseEvent, Tk} from "./toolkit";
 import {FileValueType, ImageValueType} from "./console/file";

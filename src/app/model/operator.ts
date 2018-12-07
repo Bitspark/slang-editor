@@ -1,12 +1,12 @@
 import {BlueprintModel, BlueprintType} from "./blueprint";
 import {OperatorPortModel, PortModelArgs} from "./port";
-import {OperatorDelegateModel} from "./delegate";
+import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
 import {BlackBox} from "../custom/nodes";
 import {Connections} from "../custom/connections";
 import {SlangBehaviorSubject} from "../custom/events";
 import {PropertyAssignments} from "./property";
 import {TypeIdentifier} from "../custom/type";
-import {GenericSpecifications} from "./generic";
+import {GenericSpecifications} from "../custom/generics";
 
 export type OperatorModelArgs = {
 	name: string,
@@ -35,9 +35,8 @@ export class OperatorModel extends BlackBox {
 	private readonly name: string;
 	private readonly blueprint: BlueprintModel;
 	private readonly geometry: Geometry | undefined;
-	private readonly properties: PropertyAssignments | undefined;
-	private readonly generics: GenericSpecifications | undefined;
-
+	private readonly properties: PropertyAssignments;
+	private readonly generics: GenericSpecifications;
 
 	constructor(parent: BlueprintModel, args: OperatorModelArgs) {
 		super(parent, false);
@@ -45,9 +44,12 @@ export class OperatorModel extends BlackBox {
 		this.blueprint = args.blueprint;
 
 		this.geometry = args.geometry;
-		if (args.properties) {
+		if (args.properties && args.generics) {
 			this.properties = args.properties;
 			this.generics = args.generics;
+		} else {
+			this.properties = new PropertyAssignments(Array.from(args.blueprint.getProperties()));
+			this.generics = new GenericSpecifications(Array.from(args.blueprint.getGenericIdentifiers()));
 		}
 	}
 
@@ -79,11 +81,11 @@ export class OperatorModel extends BlackBox {
 		return this.scanChildNode(OperatorDelegateModel, delegate => delegate.getName() === name);
 	}
 
-	public getPropertyAssignments(): PropertyAssignments | undefined {
+	public getPropertyAssignments(): PropertyAssignments {
 		return this.properties;
 	}
 
-	public getGenericSpecifications(): GenericSpecifications | undefined {
+	public getGenericSpecifications(): GenericSpecifications {
 		return this.generics;
 	}
 
@@ -137,8 +139,8 @@ export class OperatorModel extends BlackBox {
 	}
 
 	// Actions
-	public createDelegate(name: string): OperatorDelegateModel {
-		return this.createChildNode(OperatorDelegateModel, {name});
+	public createDelegate(args: OperatorDelegateModelArgs): OperatorDelegateModel {
+		return this.createChildNode(OperatorDelegateModel, args);
 	}
 
 	public select() {

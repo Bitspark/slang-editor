@@ -5,7 +5,7 @@ import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 import {PortGroupComponent} from "./port-group";
 import {Styles} from "../../../styles/studio";
-import {ElementComponent, XY} from "./base";
+import {ElementComponent} from "./base";
 import {PaperView} from "../views/paper-view";
 import {Tk} from "./toolkit";
 import Button = Tk.Button;
@@ -14,17 +14,23 @@ export class BlackBoxComponent extends ElementComponent {
 	protected readonly shape: BlackBoxComponent.Rect;
 	protected portGroups: Array<PortGroupComponent>;
 
-	constructor(paperView: PaperView, private readonly blackBox: BlackBox) {
+	constructor(paperView: PaperView, protected readonly blackBox: BlackBox, protected readonly drawGenerics: boolean) {
 		super(paperView, {x: 0, y: 0});
 		this.portGroups = BlackBoxComponent.createGroups(this.blackBox);
 
 		this.shape = new BlackBoxComponent.Rect(this.blackBox, this.portGroups);
 
 		this.portGroups.forEach(group => {
-			group.setParent(this.shape);
+			group.setParent(this.shape, this.drawGenerics);
 		});
-
+		
 		this.render();
+	}
+
+	public refresh(): void {
+		for (const portGroup of this.portGroups) {
+			portGroup.refreshPorts(this.drawGenerics);
+		}
 	}
 
 	public translate(tx: number, ty: number) {
@@ -50,21 +56,46 @@ export class BlackBoxComponent extends ElementComponent {
 
 		const delegates = Array.from(blackBox.getDelegates());
 
-		const width = 0.5 / delegates.length;
-		const step = 0.5 / delegates.length;
-		let pos = 0;
-		for (const delegate of delegates) {
-			const portOut = delegate.getPortOut();
-			if (portOut) {
-				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "right", pos, width));
-			}
-			pos += step;
+		// const countRight = Math.ceil(delegates.length / 2);
+		const countRight = delegates.length;
+		const widthRight = 0.5 / countRight;
+		const stepRight = 0.5 / countRight;
+		let posRight = 0;
 
-			const portIn = delegate.getPortIn();
-			if (portIn) {
-				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "right", pos, width));
+		const countLeft = Math.floor(delegates.length / 2);
+		const widthLeft = 0.5 / countLeft;
+		const stepLeft = 0.5 / countLeft;
+		let posLeft = 0;
+		
+		let right = true;
+		for (const delegate of delegates) {
+			if (right) {
+				const portOut = delegate.getPortOut();
+				if (portOut) {
+					portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "right", posRight, widthRight));
+				}
+				posRight += stepRight;
+
+				const portIn = delegate.getPortIn();
+				if (portIn) {
+					portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "right", posRight, widthRight));
+				}
+				posRight += stepRight;
+			} else {
+				const portOut = delegate.getPortOut();
+				if (portOut) {
+					portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "left", posLeft, widthLeft));
+				}
+				posLeft += stepLeft;
+
+				const portIn = delegate.getPortIn();
+				if (portIn) {
+					portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "left", posLeft, widthLeft));
+				}
+				posLeft += stepLeft;
 			}
-			pos += step;
+
+			// right = !right;
 		}
 
 		return portGroups;
@@ -73,9 +104,9 @@ export class BlackBoxComponent extends ElementComponent {
 }
 
 export class BlueprintBoxComponent extends BlackBoxComponent {
-
+	
 	constructor(paperView: PaperView, blueprint: BlueprintModel) {
-		super(paperView, blueprint);
+		super(paperView, blueprint, false);
 
 		this.shape.attr({
 			body: {
@@ -92,7 +123,7 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 
 export class OperatorBoxComponent extends BlackBoxComponent {
 	constructor(paperView: PaperView, operator: OperatorModel) {
-		super(paperView, operator);
+		super(paperView, operator, true);
 		if (operator.position) {
 			this.updateXY(operator.position);
 		}
@@ -107,6 +138,13 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 				}, m("i.fas.fa-times"))
 			})
 			.attachTo(this.shape, "tl");
+	
+		operator.getGenericSpecifications().subscribeGenericsChanged(() => this.refresh());
+	}
+	
+	public refresh(): void {
+		super.refresh();
+		this.getShape().attr("label/text", (this.blackBox as OperatorModel).getDisplayName());
 	}
 
 }

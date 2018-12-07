@@ -69,11 +69,11 @@ export class BlueprintView extends PaperView {
 				}
 			},
 			validateConnection: function (cellViewS: dia.CellView,
-			                              magnetS: SVGElement,
-			                              cellViewT: dia.CellView,
-			                              magnetT: SVGElement,
-			                              end: "source" | "target",
-			                              linkView: dia.LinkView): boolean {
+										  magnetS: SVGElement,
+										  cellViewT: dia.CellView,
+										  magnetT: SVGElement,
+										  end: "source" | "target",
+										  linkView: dia.LinkView): boolean {
 				const portS = that.getPortFromMagnet(magnetS);
 				if (!portS) {
 					return false;
@@ -141,9 +141,12 @@ export class BlueprintView extends PaperView {
 		if (!magnet) {
 			return undefined;
 		}
-		const portId = magnet.getAttribute("port");
+		let portId = magnet.getAttribute("port");
 		if (!portId) {
 			return undefined;
+		}
+		if (portId.endsWith(".*")) {
+			portId = portId.substring(0, portId.length - 2);
 		}
 		const port = this.blueprint.findNodeById(portId);
 		if (!port || !(port instanceof GenericPortModel)) {

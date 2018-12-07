@@ -13,7 +13,7 @@ import {BlueprintDelegateModel} from "../model/delegate";
 import {BlueprintPortModel, PortDirection} from "../model/port";
 import {PropertyAssignments, PropertyModel} from "../model/property";
 import {TypeIdentifier, SlangType} from "./type";
-import {GenericSpecifications} from "../model/generic";
+import {GenericSpecifications} from "./generics";
 
 function toTypeIdentifier(typeName: string): TypeIdentifier {
 	const type = ({
@@ -37,7 +37,7 @@ function toTypeIdentifier(typeName: string): TypeIdentifier {
 
 function setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupApiResponse) {
 	Object.keys(delegates).forEach((delegateName: string) => {
-		blueprint.createDelegate(delegateName, delegate => {
+		blueprint.createDelegate({name: delegateName}, delegate => {
 			createPort(delegates[delegateName].in, delegate, PortDirection.In);
 			createPort(delegates[delegateName].out, delegate, PortDirection.Out);
 		});
@@ -113,6 +113,8 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
 			throw `unknown blueprint type '${bpData.type}'`;
 		}
 
+		const generics = new GenericSpecifications([]);
+		
 		const blueprint = landscape.createBlueprint({fullName: bpData.name, type});
 		if (bpData.def.services) {
 			setBlueprintServices(blueprint, bpData.def.services);

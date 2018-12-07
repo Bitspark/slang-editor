@@ -1,17 +1,18 @@
-import {GenericSpecifications} from "../model/generic";
+import {GenericSpecifications} from "./generics";
 import {PropertyAssignments} from "../model/property";
 import {PropertyEvaluator} from "./utils";
 
 export enum TypeIdentifier {
-	Number, // 0
-	Binary, // 1
-	Boolean, // 2
-	String, // 3
-	Trigger, // 4
-	Primitive, // 5
-	Generic, // 6
-	Stream, // 7
-	Map, // 8
+	// Unspecified, // 0
+	Number, // 1
+	Binary, // 2
+	Boolean, // 3
+	String, // 4
+	Trigger, // 5
+	Primitive, // 6
+	Generic, // 7
+	Stream, // 8
+	Map, // 9
 }
 
 interface SlangTypeDefStream {
@@ -43,7 +44,6 @@ export class SlangType {
 	private genericIdentifier?: string;
 	private streamSub: SlangType | undefined;
 
-
 	public getTypeDef(): SlangTypeDef {
 		switch (this.typeIdentifier) {
 			case TypeIdentifier.Map:
@@ -68,6 +68,90 @@ export class SlangType {
 				return {type: this.typeIdentifier};
 		}
 
+	}
+	
+	public isVoid(): boolean {
+		if (this.typeIdentifier === TypeIdentifier.Map) {
+			for (const sub of this.getMapSubs()) {
+				if (!sub[1].isVoid()) {
+					return false;
+				}
+			}
+			return true;
+		} else if (this.typeIdentifier === TypeIdentifier.Stream) {
+			return this.getStreamSub().isVoid();
+		}
+		
+		return false;
+	}
+	
+	public union(other: SlangType): SlangType {
+		if (this.typeIdentifier !== other.typeIdentifier) {
+			throw new Error(`types not unifiable`);
+		}
+		
+		if (this.typeIdentifier === TypeIdentifier.Map) {
+			const newMap = new SlangType(this.parent, TypeIdentifier.Map);
+			for (const [subName, sub1] of this.getMapSubs()) {
+				const sub2 = other.findMapSub(subName);
+				let newSub: SlangType;
+				if (sub2) {
+					newSub = sub1.union(sub2);
+				} else {
+					newSub = sub1.copy();
+				}
+				if (!newSub.isVoid()) {
+					newMap.addMapSub(subName, newSub);
+				}
+			}
+			for (const [subName, sub1] of other.getMapSubs()) {
+				const sub2 = newMap.findMapSub(subName);
+				if (!sub2) {
+					newMap.addMapSub(subName, sub1.copy());
+				}
+			}
+			return newMap;
+		} else if (this.typeIdentifier === TypeIdentifier.Stream) {
+			const newStream = new SlangType(this.parent, TypeIdentifier.Stream);
+			newStream.setStreamSub(this.getStreamSub().union(other.getStreamSub()));
+			return newStream;
+		}
+		
+		if (this.typeIdentifier === TypeIdentifier.Generic) {
+			if (this.genericIdentifier !== other.genericIdentifier) {
+				throw new Error(`generics not unifiable ${this.genericIdentifier} != ${other.genericIdentifier}`);
+			}
+		}
+		
+		return this.copy();
+	}
+	
+	public equals(other: SlangType): boolean {
+		if (this.typeIdentifier !== other.typeIdentifier) {
+			return false;
+		}
+
+		if (this.typeIdentifier === TypeIdentifier.Map) {
+			for (const [subName, sub1] of this.getMapSubs()) {
+				const sub2 = other.findMapSub(subName);
+				if (!sub2 || !sub1.equals(sub2)) {
+					return false;
+				}
+			}
+			for (const [subName,] of other.getMapSubs()) {
+				const sub = this.findMapSub(subName);
+				if (!sub) {
+					return false;
+				}
+			}
+			return true;
+		} else if (this.typeIdentifier === TypeIdentifier.Stream) {
+			return this.getStreamSub().equals(other.getStreamSub());
+		} else if (this.typeIdentifier === TypeIdentifier.Generic) {
+			return this.genericIdentifier === other.genericIdentifier;
+		}
+		
+		return true;
 	}
 
 	public constructor(private parent: SlangType | null, private typeIdentifier: TypeIdentifier) {
@@ -146,6 +230,13 @@ export class SlangType {
 		port.parent = this;
 		return this;
 	}
+	
+	public findMapSub(name: string): SlangType | null {
+		if (this.typeIdentifier !== TypeIdentifier.Map) {
+			throw `find map sub port to a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+		}
+		return this.mapSubs!.get(name) || null;
+	}
 
 	public getMapSubs(): IterableIterator<[string, SlangType]> {
 		if (this.typeIdentifier !== TypeIdentifier.Map) {
@@ -181,10 +272,10 @@ export class SlangType {
 
 	public getGenericIdentifier(): string {
 		if (this.typeIdentifier !== TypeIdentifier.Generic) {
-			throw `access of generic identifier of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+			throw new Error(`access of generic identifier of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);
 		}
 		if (!this.genericIdentifier) {
-			throw `generic port requires a generic identifier`;
+			throw new Error(`generic port requires a generic identifier`);
 		}
 		return this.genericIdentifier;
 	}
@@ -197,7 +288,27 @@ export class SlangType {
 		const primitiveTypes = [TypeIdentifier.String, TypeIdentifier.Number, TypeIdentifier.Boolean, TypeIdentifier.Binary, TypeIdentifier.Primitive];
 		return primitiveTypes.indexOf(this.getTypeIdentifier()) !== -1;
 	}
-
+	
+	public toString(tab?: string): string {
+		if (!tab) {
+			tab = "";
+		}
+		
+		let str = TypeIdentifier[this.typeIdentifier] + "\n";
+		if (this.typeIdentifier === TypeIdentifier.Map) {
+			for (const sub of this.mapSubs!) {
+				str += tab + "  " + sub[0] + ": " + sub[1].toString(tab + "  ");
+			}
+		}
+		if (this.typeIdentifier === TypeIdentifier.Stream) {
+			str += tab + "  " + this.streamSub!.toString(tab + "  ");
+		}
+		if (this.typeIdentifier === TypeIdentifier.Generic) {
+			str += tab + "  " + "identifier: " + this.genericIdentifier;
+		}
+		
+		return str;
+	}
 }
 
 export type SlangTypeValue = { [k: string]: any } | [] | string | number | boolean | null;

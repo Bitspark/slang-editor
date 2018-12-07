@@ -1,4 +1,5 @@
 import m from "mithril";
+
 import {AttachableComponent, CellComponent} from "./base";
 import {Styles} from "../../../styles/studio";
 import {BlackBox} from "../../custom/nodes";
@@ -17,6 +18,7 @@ import {SlangTypeValue} from "../../custom/type";
 import {Tk} from "./toolkit";
 import Button = Tk.Button;
 import {InputConsole, OutputConsole} from "./console";
+import {GenericSpecifications} from "../../custom/generics";
 
 export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 120;
@@ -26,15 +28,14 @@ export class WhiteBoxComponent extends CellComponent {
 	private readonly buttons: AttachableComponent;
 	private readonly input: AttachableComponent;
 	private readonly output: AttachableComponent;
-
-
+	
 	private readonly operators: Array<BlackBoxComponent> = [];
 	private readonly connections: Array<ConnectionComponent> = [];
 	private readonly ports = {
-		top: [] as Array<dia.Element>,
-		bottom: [] as Array<dia.Element>,
-		left: [] as Array<dia.Element>,
-		right: [] as Array<dia.Element>,
+		top: [] as Array<IsolatedBlueprintPortComponent>,
+		bottom: [] as Array<IsolatedBlueprintPortComponent>,
+		left: [] as Array<IsolatedBlueprintPortComponent>,
+		right: [] as Array<IsolatedBlueprintPortComponent>,
 	};
 
 	constructor(paperView: PaperView, private readonly blueprint: BlueprintModel) {
@@ -131,6 +132,21 @@ export class WhiteBoxComponent extends CellComponent {
 			});
 		});
 
+		this.blueprint.getFakeGenerics().subscribeGenericsChanged(() => {
+			this.ports.top.forEach(p => p.refresh());
+			this.ports.bottom.forEach(p => p.refresh());
+			
+			this.connections.forEach(component => {
+				const connection = component.getConnection();
+				if (!connection.source.isConnectedWith(connection.destination)) {
+					return;
+				}
+				if (connection.source.getBox() === this.blueprint || connection.destination.getBox() === this.blueprint) {
+					component.refresh();
+				}
+			});
+		});
+
 		this.blueprint.subscribeChildCreated(BlueprintPortModel, port => {
 			if (port.isDirectionIn()) {
 				const p = this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
@@ -156,11 +172,25 @@ export class WhiteBoxComponent extends CellComponent {
 			if (!port.isSource()) {
 				return;
 			}
-			port.subscribeConnected(connection => {
-				this.addConnection(connection);
+			port.subscribeConnected(other => {
+				this.addConnection({source: port, destination: other});
 			});
-			port.subscribeDisconnected(connection => {
-				this.removeConnection(connection);
+			port.subscribeDisconnected(other => {
+				this.removeConnection({source: port, destination: other});
+			});
+		});
+
+		this.blueprint.subscribeChildCreated(OperatorModel, operator => {
+			operator.getGenericSpecifications().subscribeGenericsChanged(() => {
+				this.connections.forEach(component => {
+					const connection = component.getConnection();
+					if (!connection.source.isConnectedWith(connection.destination)) {
+						return;
+					}
+					if (connection.source.getBox() === operator || connection.destination.getBox() === operator) {
+						component.refresh();
+					}
+				});
 			});
 		});
 	}
@@ -170,7 +200,14 @@ export class WhiteBoxComponent extends CellComponent {
 		const connectionLinks = this.connections.map(connectionComponent => connectionComponent.getShape());
 
 		layout.DirectedGraph.layout(
-			[...operatorRectangles, ...connectionLinks, ...this.ports.top, ...this.ports.bottom, ...this.ports.left, ...this.ports.right,], {
+			[
+				...operatorRectangles,
+				...connectionLinks,
+				...this.ports.top.map(p => p.getElement()),
+				...this.ports.bottom.map(p => p.getElement()),
+				...this.ports.left.map(p => p.getElement()),
+				...this.ports.right.map(p => p.getElement()),
+			], {
 				nodeSep: 120,
 				rankSep: 120,
 				edgeSep: 0,
@@ -197,7 +234,7 @@ export class WhiteBoxComponent extends CellComponent {
 		const padding = WhiteBoxComponent.padding;
 
 		for (const port of this.ports.top) {
-			port.set({
+			port.getElement().set({
 				position: {
 					x: boundingBox.x - 50 + boundingBox.width / 2,
 					y: boundingBox.y - 100 - padding,
@@ -206,7 +243,7 @@ export class WhiteBoxComponent extends CellComponent {
 		}
 
 		for (const port of this.ports.bottom) {
-			port.set({
+			port.getElement().set({
 				position: {
 					x: boundingBox.x - 50 + boundingBox.width / 2,
 					y: boundingBox.y + boundingBox.height + padding,
@@ -216,7 +253,7 @@ export class WhiteBoxComponent extends CellComponent {
 
 		const offset = boundingBox.y + (boundingBox.height - this.ports.right.length * 100) / 2;
 		this.ports.right.forEach((port, index) => {
-			port.set({
+			port.getElement().set({
 				position: {
 					x: boundingBox.x + boundingBox.width + padding,
 					y: offset + index * 100,
@@ -312,7 +349,7 @@ export class WhiteBoxComponent extends CellComponent {
 				}
 			}
 
-			for (const port of this.ports.top) {
+			this.ports.top.map(p => p.getElement()).forEach(port => {
 				const currentPortPosition = port.get("position");
 				const targetPosition = {
 					x: currentPortPosition.x,
@@ -324,9 +361,9 @@ export class WhiteBoxComponent extends CellComponent {
 					port.transition("position/x", targetPosition.x);
 					port.transition("position/y", targetPosition.y);
 				}
-			}
+			});
 
-			for (const port of this.ports.bottom) {
+			this.ports.bottom.map(p => p.getElement()).forEach(port => {
 				const currentPortPosition = port.get("position");
 				const targetPosition = {
 					x: currentPortPosition.x,
@@ -338,9 +375,9 @@ export class WhiteBoxComponent extends CellComponent {
 					port.transition("position/x", targetPosition.x);
 					port.transition("position/y", targetPosition.y);
 				}
-			}
+			});
 
-			this.ports.right.forEach(port => {
+			this.ports.right.map(p => p.getElement()).forEach(port => {
 				const currentPortPosition = port.get("position");
 				const targetPosition = {
 					x: newPosition.x + newSize.width,
@@ -376,7 +413,7 @@ export class WhiteBoxComponent extends CellComponent {
 		switch (position) {
 			case "top":
 				portElement.set({position: {x: -elementSize.width / 2, y: 0}});
-				this.ports.top.push(portElement);
+				this.ports.top.push(portComponent);
 				calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
 					x: outerPosition.x,
 					y: outerPosition.y - elementSize.height,
@@ -386,7 +423,7 @@ export class WhiteBoxComponent extends CellComponent {
 				break;
 			case "bottom":
 				portElement.set({position: {x: -elementSize.width / 2, y: 0}});
-				this.ports.bottom.push(portElement);
+				this.ports.bottom.push(portComponent);
 				calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
 					x: outerPosition.x,
 					y: outerPosition.y + outerSize.height,
@@ -396,7 +433,7 @@ export class WhiteBoxComponent extends CellComponent {
 				break;
 			case "left":
 				portElement.set({position: {x: 0, y: -elementSize.height / 2}});
-				this.ports.left.push(portElement);
+				this.ports.left.push(portComponent);
 				calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
 					x: outerPosition.x - elementSize.width,
 					y: outerPosition.y,
@@ -406,7 +443,7 @@ export class WhiteBoxComponent extends CellComponent {
 				break;
 			case "right":
 				portElement.set({position: {x: 0, y: -elementSize.height / 2}});
-				this.ports.right.push(portElement);
+				this.ports.right.push(portComponent);
 				calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
 					x: outerPosition.x + outerSize.width,
 					y: outerPosition.y,
@@ -426,7 +463,8 @@ export class WhiteBoxComponent extends CellComponent {
 	}
 
 	private addConnection(connection: Connection) {
-		this.connections.push(new ConnectionComponent(this.paperView, connection));
+		const connectionComponent = new ConnectionComponent(this.paperView, connection);
+		this.connections.push(connectionComponent);
 	}
 
 	private addOperator(operator: OperatorModel): OperatorBoxComponent {
@@ -440,14 +478,11 @@ export class WhiteBoxComponent extends CellComponent {
 		const link = ConnectionComponent.findLink(this.paperView, connection);
 		if (link) {
 			link.remove();
-		} else {
-			throw new Error(`link with id ${linkId} not found`);
 		}
+
 		const idx = this.connections.findIndex(conn => conn.getId() === linkId);
 		if (idx !== -1) {
 			this.connections.splice(idx, 1);
-		} else {
-			throw new Error(`connection with id ${linkId} not found`);
 		}
 	}
 }

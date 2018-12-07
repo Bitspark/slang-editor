@@ -6,6 +6,7 @@ import {slangRouter} from "../link/router";
 import {slangConnector} from "../link/connector";
 import {Styles} from "../../../styles/studio";
 import {PortModel} from "../../model/port";
+import {TypeIdentifier} from "../../custom/type";
 import {PaperView} from "../views/paper-view";
 import {CellComponent} from "./base";
 
@@ -70,9 +71,9 @@ export class ConnectionComponent extends CellComponent {
 		this.refresh();
 		this.render();
 
-		[connection.source, connection.destination].forEach(port => {
+		[[connection.source, connection.destination],[connection.destination, connection.source]].forEach(([port, other]) => {
 			port.getStreamPort().subscribeRefreshStreamType(stream => {
-				if (ConnectionComponent.refreshActive) {
+				if (ConnectionComponent.refreshActive && port.isConnectedWith(other)) {
 					this.refresh();
 					if (stream) {
 						stream.subscribeNestingChanged(() => {
@@ -85,6 +86,9 @@ export class ConnectionComponent extends CellComponent {
 	}
 
 	public refresh(): void {
+		if (!this.getShape().graph) {
+			this.render();
+		}
 		ConnectionComponent.refresh(this.connection.source, this.connection.destination, this.shape);
 	}
 
@@ -115,7 +119,11 @@ export class ConnectionComponent extends CellComponent {
 		const lines = stream ? stream.getStreamDepth() : 1;
 
 		link.connector(slangConnector(sourcePort, destinationPort, lines));
-		link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(sourcePort.getTypeIdentifier()));
+		if (sourcePort.isGeneric()) {
+			link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(TypeIdentifier.Generic));
+		} else {
+			link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(sourcePort.getTypeIdentifier()));
+		}
 		link.attr(".connection/stroke-width", lines === 1 ? 2 : 1);
 		link.attr(".connection/vector-effect", Styles.Connection.Ordinary.vectorEffect);
 

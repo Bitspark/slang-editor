@@ -3,6 +3,7 @@ import {BlueprintModel} from "./blueprint";
 import {OperatorModel} from "./operator";
 import {BlackBox, PortOwner} from "../custom/nodes";
 import {Connections} from "../custom/connections";
+import {GenericSpecifications} from "../custom/generics";
 
 export abstract class GenericDelegateModel<B extends BlackBox, P extends PortModel> extends PortOwner {
 	protected constructor(parent: B, private name: string, streamSource: boolean) {
