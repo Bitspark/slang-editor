@@ -2,7 +2,7 @@ import {BlueprintModel, BlueprintType} from "../model/blueprint";
 import {
 	BlueprintApiResponse,
 	BlueprintDefApiResponse,
-	GenericSpecificationsApiResponse,
+	GenericSpecificationsApiResponse, OperatorApiResponse,
 	PortGroupApiResponse,
 	PropertyApiResponse,
 	PropertyAssignmentsApiResponse,
@@ -14,6 +14,105 @@ import {BlueprintPortModel, PortDirection} from "../model/port";
 import {PropertyAssignments, PropertyModel} from "../model/property";
 import {TypeIdentifier, SlangType} from "./type";
 import {GenericSpecifications} from "./generics";
+import {dia} from "jointjs";
+import {OperatorModel} from "../model/operator";
+
+export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApiResponse {
+	return {
+		operators: Array.from(blueprint.getOperators()).reduce((result: { [_: string]: OperatorApiResponse }, operator) => {
+			result[operator.getName()] = operatorModelToJSON(operator);
+			return result;
+		}, {}),
+	}
+}
+
+
+export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<BlueprintApiResponse>) {
+	const blueprintToOperator = new Map<BlueprintModel, BlueprintDefApiResponse>();
+	// 1) Add Blueprints
+	bpDataList.forEach(bpData => {
+		const type: BlueprintType | null = ({
+			local: BlueprintType.Local,
+			library: BlueprintType.Library,
+			elementary: BlueprintType.Elementary,
+		} as any)[bpData.type];
+
+		if (type === null) {
+			throw `unknown blueprint type '${bpData.type}'`;
+		}
+
+		const generics = new GenericSpecifications([]);
+
+		const blueprint = landscape.createBlueprint({fullName: bpData.name, type});
+		if (bpData.def.services) {
+			setBlueprintServices(blueprint, bpData.def.services);
+		}
+		if (bpData.def.delegates) {
+			setBlueprintDelegates(blueprint, bpData.def.delegates);
+		}
+		if (bpData.def.properties) {
+			setBlueprintProperties(blueprint, bpData.def.properties);
+		}
+		const def = bpData.def;
+		blueprintToOperator.set(blueprint, def);
+	});
+
+	// 2) Add Operators. Use previously defined Blueprints for assigning Operator.blueprint
+	blueprintToOperator.forEach((bpDef: BlueprintDefApiResponse, outerBlueprint: BlueprintModel) => {
+		const operators = bpDef.operators;
+		if (operators) {
+			Object.keys(operators).forEach((opName: string) => {
+				const opData = operators[opName];
+				const blueprint = landscape.findBlueprint(opData.operator);
+				if (!blueprint) {
+					throw `unknown blueprint '${opData.operator}'`;
+				}
+				const propAssigns = createPropertyAssignments(blueprint, opData.properties);
+				const genSpeci = createGenericSpecifications(blueprint, opData.generics);
+				try {
+					outerBlueprint.createOperator(opName, blueprint, propAssigns, genSpeci);
+				} catch (e) {
+					throw new Error(`${outerBlueprint.getFullName()}: ${e} (${blueprint.getFullName()})`);
+				}
+			});
+		}
+	});
+
+	// 3) Connect operator and blueprint ports
+	blueprintToOperator.forEach((bpDef: BlueprintDefApiResponse, outerBlueprint: BlueprintModel) => {
+		const connections = bpDef.connections;
+		if (connections) {
+			Object.keys(connections).forEach((sourcePortReference: string) => {
+				const destinationPortReferences = connections[sourcePortReference];
+				for (const destinationPortReference of destinationPortReferences) {
+					// Connect sourcePortReference -> destinationPortReference
+					try {
+						const sourcePort = outerBlueprint.resolvePortReference(sourcePortReference);
+						const destinationPort = outerBlueprint.resolvePortReference(destinationPortReference);
+						if (!sourcePort) {
+							throw `source port ${sourcePortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
+						}
+						if (!destinationPort) {
+							throw `destination port ${destinationPortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
+						}
+						sourcePort.connect(destinationPort);
+					} catch (e) {
+						console.error(e);
+					}
+				}
+			});
+		}
+	});
+}
+
+function operatorModelToJSON(operator: OperatorModel): OperatorApiResponse {
+	return {
+		operator: operator.getBlueprint().getFullName(),
+		properties: {},
+		generics: {},
+	}
+}
+
 
 function toTypeIdentifier(typeName: string): TypeIdentifier {
 	const type = ({
@@ -26,7 +125,7 @@ function toTypeIdentifier(typeName: string): TypeIdentifier {
 		generic: TypeIdentifier.Generic,
 		stream: TypeIdentifier.Stream,
 		map: TypeIdentifier.Map,
-	} as  { [_: string]: TypeIdentifier })[typeName];
+	} as { [_: string]: TypeIdentifier })[typeName];
 
 	if (type === null) {
 		throw `unknown property type '${TypeIdentifier[type]}'`;
@@ -99,80 +198,3 @@ function createGenericSpecifications(blueprint: BlueprintModel, genSpeciData: Ge
 	return genSpeci;
 }
 
-export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<BlueprintApiResponse>) {
-	const blueprintToOperator = new Map<BlueprintModel, BlueprintDefApiResponse>();
-	// 1) Add Blueprints
-	bpDataList.forEach(bpData => {
-		const type: BlueprintType | null = ({
-			local: BlueprintType.Local,
-			library: BlueprintType.Library,
-			elementary: BlueprintType.Elementary,
-		} as any)[bpData.type];
-
-		if (type === null) {
-			throw `unknown blueprint type '${bpData.type}'`;
-		}
-
-		const generics = new GenericSpecifications([]);
-		
-		const blueprint = landscape.createBlueprint({fullName: bpData.name, type});
-		if (bpData.def.services) {
-			setBlueprintServices(blueprint, bpData.def.services);
-		}
-		if (bpData.def.delegates) {
-			setBlueprintDelegates(blueprint, bpData.def.delegates);
-		}
-		if (bpData.def.properties) {
-			setBlueprintProperties(blueprint, bpData.def.properties);
-		}
-		const def = bpData.def;
-		blueprintToOperator.set(blueprint, def);
-	});
-
-	// 2) Add Operators. Use previously defined Blueprints for assigning Operator.blueprint
-	blueprintToOperator.forEach((bpDef: BlueprintDefApiResponse, outerBlueprint: BlueprintModel) => {
-		const operators = bpDef.operators;
-		if (operators) {
-			Object.keys(operators).forEach((opName: string) => {
-				const opData = operators[opName];
-				const blueprint = landscape.findBlueprint(opData.operator);
-				if (!blueprint) {
-					throw `unknown blueprint '${opData.operator}'`;
-				}
-				const propAssigns = createPropertyAssignments(blueprint, opData.properties);
-				const genSpeci = createGenericSpecifications(blueprint, opData.generics);
-				try {
-					outerBlueprint.createOperator(opName, blueprint, propAssigns, genSpeci);
-				} catch (e) {
-					throw new Error(`${outerBlueprint.getFullName()}: ${e} (${blueprint.getFullName()})`);
-				}
-			});
-		}
-	});
-
-	// 3) Connect operator and blueprint ports
-	blueprintToOperator.forEach((bpDef: BlueprintDefApiResponse, outerBlueprint: BlueprintModel) => {
-		const connections = bpDef.connections;
-		if (connections) {
-			Object.keys(connections).forEach((sourcePortReference: string) => {
-				const destinationPortReferences = connections[sourcePortReference];
-				for (const destinationPortReference of destinationPortReferences) {
-					// Connect sourcePortReference -> destinationPortReference
-					try {
-						const sourcePort = outerBlueprint.resolvePortReference(sourcePortReference);
-						const destinationPort = outerBlueprint.resolvePortReference(destinationPortReference);
-						if (!sourcePort) {
-							throw `source port ${sourcePortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
-						}
-						if (!destinationPort) {
-							throw `destination port ${destinationPortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
-						}
-						sourcePort.connect(destinationPort);
-					} catch (e) {
-						console.error(e);
-					}
-				}
-			});
-		}
-	});
-}

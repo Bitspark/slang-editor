@@ -5,6 +5,7 @@ import {SlangSubjectTrigger} from "../../custom/events";
 import {CellComponent, XY} from "../components/base";
 
 export abstract class PaperView extends View {
+	protected static autosaveIntervalHandle: number;
 	private positionChanged = new SlangSubjectTrigger("positionChanged");
 
 	protected readonly graph = new dia.Graph();
@@ -15,6 +16,10 @@ export abstract class PaperView extends View {
 		this.paper = this.createPaper();
 		this.redirectPaperEvents();
 		this.catchPaperEvents();
+
+		if (PaperView.autosaveIntervalHandle) {
+			clearInterval(PaperView.autosaveIntervalHandle);
+		}
 	}
 
 	protected reset() {

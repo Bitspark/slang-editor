@@ -7,7 +7,7 @@ import {BlackBox} from "../custom/nodes";
 import {SlangTypeValue, TypeIdentifier} from "../custom/type";
 import {PropertyAssignments, PropertyModel} from "./property";
 import {GenericSpecifications} from "../custom/generics";
-import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
+import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../custom/events";
 import {LandscapeModel} from "./landscape";
 
 export enum BlueprintType {
@@ -24,6 +24,7 @@ export class BlueprintModel extends BlackBox {
 	// Topics::self
 	private selected = new SlangBehaviorSubject<boolean>("selected", false);
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
+	private saveChanges = new SlangSubjectTrigger("save-changes");
 
 	// Topics::Deployment
 	private deploymentRequested = new SlangSubject<boolean>("deployment-triggered");
@@ -49,7 +50,7 @@ export class BlueprintModel extends BlackBox {
 		this.hierarchy = fullName.split(".");
 		this.genericIdentifiers = new Set<string>();
 	}
-	
+
 	private static revealGenericIdentifiers(port: PortModel): Set<string> {
 		let genericIdentifiers = new Set<string>();
 		switch (port.getTypeIdentifier()) {
@@ -69,7 +70,7 @@ export class BlueprintModel extends BlackBox {
 		}
 		return genericIdentifiers;
 	}
-	
+
 	public getFakeGenerics(): GenericSpecifications {
 		return this.fakeGenerics;
 	}
@@ -364,7 +365,16 @@ export class BlueprintModel extends BlackBox {
 		this.instance.next(null);
 	}
 
+	public save() {
+		console.log(">>> SAVE", this.getFullName())
+		this.saveChanges.next();
+	}
+
 	// Subscriptions
+
+	public subscribeSaveChanges(cb: () => void): void {
+		this.saveChanges.subscribe(cb);
+	}
 
 	public subscribeSelectChanged(cb: (selected: boolean) => void): void {
 		this.selected.subscribe(cb);

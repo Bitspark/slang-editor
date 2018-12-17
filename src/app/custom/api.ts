@@ -33,13 +33,15 @@ export interface DeploymentStatusApiResponse {
 	handle: string
 }
 
+export interface OperatorApiResponse {
+	operator: string
+	properties: PropertyAssignmentsApiResponse
+	generics: GenericSpecificationsApiResponse
+}
+
 export interface BlueprintDefApiResponse {
 	operators?: {
-		[operatorName: string]: {
-			operator: string
-			properties: PropertyAssignmentsApiResponse
-			generics: GenericSpecificationsApiResponse
-		}
+		[operatorName: string]: OperatorApiResponse
 	}
 	properties?: PropertyApiResponse
 	services?: PortGroupApiResponse
@@ -117,6 +119,24 @@ export class ApiService {
 			(data: any) => (data as { objects: any }).objects as Array<BlueprintApiResponse>,
 			(err: any) => console.error(err)
 		);
+	}
+
+	public async storeBlueprint(blueprintFullName: string, blueprintDefJSON: BlueprintDefApiResponse): Promise<any> {
+		const process = (data: any) => {
+			if (data.status === "success") {
+				return data as DeploymentStatusApiResponse;
+			}
+			throw(data);
+		};
+		const error = (err: any) => console.error(err);
+
+		return new Promise<{}>((resolve) => {
+			const reqInit = {method: "post", body: JSON.stringify(blueprintDefJSON)};
+			fetch(`${this.host}/operator/def/?fqop=${blueprintFullName}`, reqInit)
+				.then((response: Response) => response.json())
+				.then((data: any) => resolve(process(data)))
+				.catch(error);
+		});
 	}
 
 	public async deployBlueprint(blueprintFullName: string): Promise<DeploymentStatusApiResponse> {

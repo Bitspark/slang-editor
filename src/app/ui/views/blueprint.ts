@@ -20,8 +20,11 @@ export class BlueprintView extends PaperView {
 		this.whiteBox = new WhiteBoxComponent(this, blueprint);
 
 		this.attachEventHandlers();
-
 		this.fit();
+
+		PaperView.autosaveIntervalHandle = setInterval(() => {
+			this.blueprint.save();
+		}, 1000);
 	}
 
 	protected createPaper(): dia.Paper {
