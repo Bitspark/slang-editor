@@ -125,14 +125,15 @@ export class ApiService {
 
 	public async storeBlueprint(blueprintFullName: string, blueprintDefJSON: BlueprintDefApiResponse): Promise<any> {
 		const process = (data: any) => {
-			if (data.status === "success") {
-				return data as DeploymentStatusApiResponse;
+			if (data) {
+				console.error(data);
+				return false;
 			}
-			throw(data);
+			return true;
 		};
 		const error = (err: any) => console.error(err);
 
-		return new Promise<{}>((resolve) => {
+		return new Promise<boolean>((resolve) => {
 			const reqInit = {method: "post", body: JSON.stringify(blueprintDefJSON)};
 			fetch(`${this.host}/operator/def/?fqop=${blueprintFullName}`, reqInit)
 				.then((response: Response) => response.json())

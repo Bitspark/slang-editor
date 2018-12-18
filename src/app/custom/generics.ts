@@ -44,6 +44,15 @@ export class GenericSpecifications {
 		return type;
 	}
 
+	public *getIterator(): IterableIterator<[string, SlangType]> {
+		for (const [genName, subject] of this.genericTypes.entries()) {
+			const genType = subject.getValue();
+			if (genType) {
+				yield [genName, genType!];
+			}
+		}
+	}
+
 	public has(identifier: string): boolean {
 		return this.genericTypes.has(identifier);
 	}

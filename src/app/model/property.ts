@@ -8,6 +8,10 @@ export class PropertyModel {
 		return this.name;
 	}
 
+	public getType(): SlangType {
+		return this.type;
+	}
+
 	public getTypeIdentifier(): TypeIdentifier {
 		return this.type.getTypeIdentifier();
 	}
@@ -39,6 +43,10 @@ export class PropertyAssignments {
 			properties.map<[string, PropertyModel]>((property: PropertyModel) => [property.getName(), property])
 		);
 		this.name2propAssign = new Map<string, PropertyAssignment>();
+	}
+
+	public getIterator(): IterableIterator<[string, PropertyAssignment]> {
+		return this.name2propAssign.entries();
 	}
 
 	public assign(propertyName: string, propertyValue: any): PropertyAssignment {

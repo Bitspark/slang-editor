@@ -11,30 +11,117 @@ import {
 import {LandscapeModel} from "../model/landscape";
 import {BlueprintDelegateModel} from "../model/delegate";
 import {BlueprintPortModel, PortDirection, PortModel} from "../model/port";
-import {PropertyAssignments, PropertyModel} from "../model/property";
+import {PropertyAssignment, PropertyAssignments, PropertyModel} from "../model/property";
 import {TypeIdentifier, SlangType} from "./type";
 import {GenericSpecifications} from "./generics";
 import {OperatorModel} from "../model/operator";
+import {Connection} from "./connections";
+
+/*
+\
+ \ Model --> JSON
+  \
+ */
+
+function iter2map<S, T>(iter: IterableIterator<S>, process: (result: T, curr: S) => void): T {
+	return Array.from(iter).reduce((result, curr) => {
+		process(result, curr);
+		return result;
+	}, {} as T)
+}
 
 export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApiResponse {
 	return {
-		operators: Array.from(blueprint.getOperators()).reduce((result: { [_: string]: OperatorApiResponse }, operator) => {
-			result[operator.getName()] = operatorModelToJSON(operator);
-			return result;
-		}, {}),
-		connections: Array.from(blueprint.getConnectionsTo().getIterator()).reduce((result: ConnectionsApiResponse, connection) => {
-			const srcPortRef = connection.source.getPortReference();
-			const dstPortRef = connection.destination.getPortReference();
-			if (!result[srcPortRef]) {
-				result[srcPortRef] = [dstPortRef];
-			} else {
-				result[srcPortRef].push(dstPortRef);
-			}
-			return result;
-		}, {}),
+		operators: iter2map<OperatorModel, { [_: string]: OperatorApiResponse }>(blueprint.getOperators(),
+			(result, operator) => {
+				result[operator.getName()] = operatorModelToJSON(operator);
+			}),
+		services: {
+			main: iter2map<PortModel, { in: TypeDefApiResponse, out: TypeDefApiResponse }>(blueprint.getPorts(),
+				(result, port) => {
+					result[port.isDirectionIn() ? "in" : "out"] = typeModelToJSON(port.getType());
+				})
+		},
+		delegates: iter2map<BlueprintDelegateModel, PortGroupApiResponse>(blueprint.getDelegates(),
+			(result, delegate) => {
+				const portDef: any = {};
+				const portIn = delegate.getPortIn();
+				const portOut = delegate.getPortOut();
+
+				if (portIn) {
+					portDef.in = typeModelToJSON(portIn.getType());
+				}
+
+				if (portOut) {
+					portDef.out = typeModelToJSON(portOut.getType());
+				}
+				result[delegate.getName()] = portDef;
+			}),
+		properties: iter2map<PropertyModel, PropertyApiResponse>(blueprint.getProperties(),
+			(result, property) => {
+				result[property.getName()] = typeModelToJSON(property.getType());
+			}),
+		connections: iter2map<Connection, ConnectionsApiResponse>(blueprint.getConnectionsTo().getIterator(),
+			(result: ConnectionsApiResponse, connection) => {
+				const srcPortRef = connection.source.getPortReference();
+				const dstPortRef = connection.destination.getPortReference();
+				if (!result[srcPortRef]) {
+					result[srcPortRef] = [dstPortRef];
+				} else {
+					result[srcPortRef].push(dstPortRef);
+				}
+			}),
 	}
 }
 
+function operatorModelToJSON(operator: OperatorModel): OperatorApiResponse {
+	return {
+		operator: operator.getBlueprint().getFullName(),
+		properties: iter2map<[string, PropertyAssignment], PropertyAssignmentsApiResponse>(operator.getPropertyAssignments().getIterator(),
+			(result, [name, propAssign]) => {
+				result[name] = propAssign.getValue();
+			}),
+		generics: iter2map<[string, SlangType], GenericSpecificationsApiResponse>(operator.getGenericSpecifications().getIterator(),
+			(result, [name, type]) => {
+				result[name] = typeModelToJSON(type);
+			}),
+	}
+}
+
+function typeModelToJSON(type: SlangType): TypeDefApiResponse {
+	switch (type.getTypeIdentifier()) {
+		case TypeIdentifier.Map:
+			return {
+				type: fromTypeIdentifier(type.getTypeIdentifier()),
+				map: iter2map<[string, SlangType], any>(type.getMapSubs(), (obj, [name, slType]) => {
+					obj[name] = typeModelToJSON(slType);
+					return obj;
+				}),
+			};
+		case TypeIdentifier.Stream:
+			return {
+				type: fromTypeIdentifier(type.getTypeIdentifier()),
+				stream: typeModelToJSON(type.getStreamSub()),
+			};
+		case TypeIdentifier.Generic:
+			return {
+				type: fromTypeIdentifier(type.getTypeIdentifier()),
+				generic: type.getGenericIdentifier(),
+			};
+		default:
+			return {type: fromTypeIdentifier(type.getTypeIdentifier())};
+	}
+}
+
+function fromTypeIdentifier(t: TypeIdentifier): "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic" {
+	return TypeIdentifier[t].toLowerCase() as "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic";
+}
+
+/*
+\
+ \ JSON --> MODEL
+  \
+ */
 
 export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<BlueprintApiResponse>) {
 	const blueprintToOperator = new Map<BlueprintModel, BlueprintDefApiResponse>();
@@ -112,14 +199,6 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
 			});
 		}
 	});
-}
-
-function operatorModelToJSON(operator: OperatorModel): OperatorApiResponse {
-	return {
-		operator: operator.getBlueprint().getFullName(),
-		properties: {},
-		generics: {},
-	}
 }
 
 

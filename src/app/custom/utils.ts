@@ -28,7 +28,6 @@ export class PropertyEvaluator {
 		return exprs;
 	}
 
-
 	private static expandExpr(exprPart: string, propAssigns: PropertyAssignments): Array<string> {
 		const vals: Array<string> = [];
 		const propAssign = propAssigns.getByName(exprPart);
@@ -42,8 +41,7 @@ export class PropertyEvaluator {
 		if (propAssign.isStream()) {
 			if (typeof propValue === "string" && (propValue as string).startsWith("$")) {
 				vals.push(`{${propValue.substr(1)}}`);
-			}
-			else {
+			} else {
 				for (const el of propValue) {
 					vals.push((typeof el === "string") ? el : JSON.stringify(el));
 				}
