@@ -59,6 +59,10 @@ export class PropertyAssignments {
 		return def;
 	}
 
+	public has(propertyName: string): boolean {
+		return this.name2propAssign.has(propertyName);
+	}
+
 	public getByName(propertyName: string): PropertyAssignment {
 		const propVal = this.name2propAssign.get(propertyName);
 		if (!propVal) {

@@ -398,9 +398,11 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 					connections.addConnections(mapSub.getConnectionsTo());
 					noMapSubs = false;
 				}
+				/*
 				if (noMapSubs) {
 					throw new Error(`map port without map sub ports`);
 				}
+				*/
 				break;
 			case TypeIdentifier.Stream:
 				const streamSub = this.getStreamSub();

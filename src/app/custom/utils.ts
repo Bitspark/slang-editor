@@ -30,12 +30,12 @@ export class PropertyEvaluator {
 
 	private static expandExpr(exprPart: string, propAssigns: PropertyAssignments): Array<string> {
 		const vals: Array<string> = [];
-		const propAssign = propAssigns.getByName(exprPart);
 
-		if (!propAssign) {
+		if (!propAssigns.has(exprPart)) {
 			return [];
 		}
 
+		const propAssign = propAssigns.getByName(exprPart);
 		const propValue: any = propAssign.getValue();
 
 		if (propAssign.isStream()) {
