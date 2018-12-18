@@ -21,18 +21,13 @@ button, .sl-btn {
 		cursor: not-allowed;
 	}
 
-	&.sl-clickable {
-		cursor: pointer;
-		transition-property: background-color, color;
-
-		&:hover {
-			color: $white;
-			background: $black;
-		}
-	}
-
 	color: $black;
 	background: $white;
+	transition-property: background-color, color;
+
+	&.sl-clickable {
+		cursor: pointer;
+	}
 
 	&.sl-white, &.sl-default {
 		color: $black;
@@ -59,6 +54,7 @@ button, .sl-btn {
 		background: $yellow;
 	}
 
+
 	&.sl-green-pulsing {
 		cursor: progress;
 		@keyframes isPulsing {
@@ -83,18 +79,18 @@ button, .sl-btn {
 	&.sl-btn-icon {
 		border: 0;
 		padding: 0;
-		width: 16px;
-		height: 16px;
+		width: 12px;
+		height: 12px;
 		display: inline-block;
 		position: relative;
 
 		> i {
 			text-align: center;
 			vertical-align: middle;
-			font-size: 1rem;
+			font-size: 11px;
 			position: absolute;
-			left: 0;
-			right: 0;
+			left: 1px;
+			right: 1px;
 			top: 0;
 			bottom: 0;
 		}

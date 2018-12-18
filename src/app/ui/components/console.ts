@@ -209,7 +209,7 @@ export namespace Input {
 										that.values[index] = undefined;
 										attrs.onInput(that.getValues());
 									},
-									class: "sl-remove-entry",
+									class: "sl-remove-entry sl-red",
 								}, m("i.fas.fa-times")),
 								m(ConsoleEntry, {
 									label: "", class: "",
