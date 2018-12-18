@@ -618,30 +618,6 @@ export class BlueprintPortModel extends GenericPortModel<BlueprintModel | Bluepr
 	public isSource(): boolean {
 		return this.isDirectionIn();
 	}
-
-	public getPortReference(): string {
-		const portRef = super.getPortReference();
-		const parent = this.getParentNode();
-		if (parent instanceof GenericPortModel) {
-			return portRef;
-		}
-
-		const ownerRefParts = [""];
-		const owner = super.getOwner();
-
-		console.log(">>>>", portRef);
-
-		if (owner instanceof BlueprintDelegateModel) {
-			const delegate = owner as DelegateModel as BlueprintDelegateModel;
-			ownerRefParts.push(delegate.getName());
-		}
-
-		if (this.isDirectionIn()) {
-			return `${portRef}(`;
-		} else {
-			return `)${portRef}`;
-		}
-	}
 }
 
 export class OperatorPortModel extends GenericPortModel<OperatorModel | OperatorDelegateModel> {
@@ -654,35 +630,4 @@ export class OperatorPortModel extends GenericPortModel<OperatorModel | Operator
 	}
 
 
-	public getPortReference(): string {
-		const portRef = super.getPortReference();
-		const parent = this.getParentNode();
-		if (parent instanceof GenericPortModel) {
-			return portRef;
-		}
-
-		const ownerRefParts = [];
-		const owner = super.getOwner();
-
-		console.log(">>>>", portRef);
-
-
-		if (owner instanceof OperatorDelegateModel) {
-			const delegate = owner as DelegateModel as OperatorDelegateModel;
-			const operator = delegate.getParentNode() as OperatorModel;
-			ownerRefParts.push(operator.getName());
-			ownerRefParts.push(delegate.getName());
-		} else {
-			const operator = owner as OperatorModel;
-			ownerRefParts.push(operator.getName());
-		}
-
-		const ownerRef = ownerRefParts.join(".");
-		if (this.isDirectionIn()) {
-			return `${portRef}(${ownerRef}`;
-		} else {
-			return `${ownerRef})${portRef}`;
-		}
-
-	}
 }

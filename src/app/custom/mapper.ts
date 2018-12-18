@@ -9,8 +9,8 @@ import {
 	TypeDefApiResponse
 } from "./api";
 import {LandscapeModel} from "../model/landscape";
-import {BlueprintDelegateModel} from "../model/delegate";
-import {BlueprintPortModel, PortDirection, PortModel} from "../model/port";
+import {BlueprintDelegateModel, DelegateModel, GenericDelegateModel, OperatorDelegateModel} from "../model/delegate";
+import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel} from "../model/port";
 import {PropertyAssignment, PropertyAssignments, PropertyModel} from "../model/property";
 import {TypeIdentifier, SlangType} from "./type";
 import {GenericSpecifications} from "./generics";
@@ -63,8 +63,8 @@ export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApi
 			}),
 		connections: iter2map<Connection, ConnectionsApiResponse>(blueprint.getConnectionsTo().getIterator(),
 			(result: ConnectionsApiResponse, connection) => {
-				const srcPortRef = connection.source.getPortReference();
-				const dstPortRef = connection.destination.getPortReference();
+				const srcPortRef = getFullPortRef(connection.source);
+				const dstPortRef = getFullPortRef(connection.destination);
 				if (!result[srcPortRef]) {
 					result[srcPortRef] = [dstPortRef];
 				} else {
@@ -111,6 +111,58 @@ function typeModelToJSON(type: SlangType): TypeDefApiResponse {
 		default:
 			return {type: fromTypeIdentifier(type.getTypeIdentifier())};
 	}
+}
+
+function getFullPortRef(port: PortModel): string {
+	if (port instanceof BlueprintPortModel) {
+		return blueprintPortRef(port);
+	} else if (port instanceof OperatorPortModel) {
+		return operatorPortDef(port);
+	} else {
+		throw("unexpected port model");
+	}
+}
+
+function blueprintPortRef(port: BlueprintPortModel): string {
+	const portRef = port.getPortReference();
+	const ownerRefParts = [""];
+	const owner = port.getOwner();
+
+	if (owner instanceof BlueprintDelegateModel) {
+		const delegate = owner as BlueprintDelegateModel;
+		ownerRefParts.push(delegate.getName());
+	}
+
+	if (port.isDirectionIn()) {
+		return `${portRef}(`;
+	} else {
+		return `)${portRef}`;
+	}
+}
+
+function operatorPortDef(port: OperatorPortModel): string {
+	const portRef = port.getPortReference();
+	const ownerRefParts = [];
+	const owner = port.getOwner();
+
+
+	if (owner instanceof OperatorDelegateModel) {
+		const delegate = owner as OperatorDelegateModel;
+		const operator = delegate.getParentNode() as OperatorModel;
+		ownerRefParts.push(operator.getName());
+		ownerRefParts.push(delegate.getName());
+	} else {
+		const operator = owner as OperatorModel;
+		ownerRefParts.push(operator.getName());
+	}
+
+	const ownerRef = ownerRefParts.join(".");
+	if (port.isDirectionIn()) {
+		return `${portRef}(${ownerRef}`;
+	} else {
+		return `${ownerRef})${portRef}`;
+	}
+
 }
 
 function fromTypeIdentifier(t: TypeIdentifier): "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic" {

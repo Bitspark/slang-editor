@@ -388,7 +388,6 @@ export class BlueprintModel extends BlackBox {
 	}
 
 	public save() {
-		console.log(">>> SAVE", this.getFullName())
 		this.saveChanges.next();
 	}
 
