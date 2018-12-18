@@ -136,8 +136,9 @@ export class BlueprintModel extends BlackBox {
 	}
 
 	private getRandomOperatorName(blueprint: BlueprintModel): string {
-		const cnt = Array.from(this.getChildNodes(OperatorModel)).filter((op: OperatorModel) => op.getBlueprint() === blueprint).length;
-		return `${blueprint.getFullName()}-${cnt + 1}`;
+		const operatorBaseName = blueprint.getShortName().toLowerCase();
+		const cnt = Array.from(this.getOperators()).filter((op: OperatorModel) => op.getName().startsWith(operatorBaseName)).length;
+		return `${operatorBaseName}-${cnt + 1}`;
 	}
 
 	public createBlankOperator(blueprint: BlueprintModel, geometry: Geometry): OperatorModel {
