@@ -1,9 +1,8 @@
 import {PortComponent} from "./port";
 import {dia, g} from "jointjs";
-import {BlueprintPortModel, OperatorPortModel, PortModel} from "../../model/port";
+import {PortModel} from "../../model/port";
 import {TypeIdentifier} from "../../custom/type";
 import {Styles} from "../../../styles/studio";
-import {OperatorDelegateModel} from "../../model/delegate";
 import {OperatorModel} from "../../model/operator";
 
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";
