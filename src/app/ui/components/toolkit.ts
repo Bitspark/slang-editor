@@ -157,29 +157,6 @@ export namespace Tk {
 	export interface Input<T> extends ClassComponent<InputAttrs<T>> {
 	}
 
-	class BaseInput<T> implements Input<T> {
-		constructor(private inputType: "button" | "number" | "text" | "checkbox" | "file") {
-		}
-
-		view({attrs}: CVnode<InputAttrs<T>>) {
-			return wrapInput(attrs, m("input",
-				{
-					name: attrs.label,
-					type: this.inputType,
-					oncreate: (v: CVnodeDOM<any>) => {
-						if (v.attrs.autofocus) {
-							(v.dom as HTMLElement).focus();
-						}
-					},
-					oninput: m.withAttr("value", function (v: T) {
-						attrs.onInput(v);
-					}),
-					autofocus: attrs.autofocus
-				}
-			));
-		}
-	}
-
 	function wrapInput<T>(attrs: InputAttrs<T>, input: m.Children): any {
 		const labelName = attrs.label;
 		const labelText = (labelName) ? `${attrs.label}:` : "";
@@ -204,31 +181,69 @@ export namespace Tk {
 		);
 	}
 
-	export class StringInput extends BaseInput<string> {
-		constructor() {
-			super("text");
+	export class StringInput implements Input<string> {
+		view({attrs}: CVnode<InputAttrs<string>>) {
+			return wrapInput(attrs, m("input",
+				{
+					name: attrs.label,
+					type: "text",
+					oncreate: (v: CVnodeDOM<any>) => {
+						if (v.attrs.autofocus) {
+							(v.dom as HTMLElement).focus();
+						}
+					},
+					oninput: m.withAttr("value", function (v: string) {
+						console.log(">>>", JSON.stringify(v));
+						attrs.onInput(v);
+					}),
+					autofocus: attrs.autofocus
+				}
+			));
 		}
 	}
 
-	export class NumberInput extends BaseInput<number> {
-		constructor() {
-			super("number");
+	export class NumberInput implements Input<number> {
+		view({attrs}: CVnode<InputAttrs<number>>) {
+			return wrapInput(attrs, m("input",
+				{
+					name: attrs.label,
+					type: "number",
+					oncreate: (v: CVnodeDOM<any>) => {
+						if (v.attrs.autofocus) {
+							(v.dom as HTMLElement).focus();
+						}
+					},
+					oninput: m.withAttr("value", function (v: number) {
+						attrs.onInput(Number(v));
+					}),
+					autofocus: attrs.autofocus
+				}
+			));
 		}
 	}
 
-	export class BooleanInput extends BaseInput<boolean> {
-		constructor() {
-			super("checkbox");
+	export class BooleanInput implements Input<boolean> {
+		view({attrs}: CVnode<InputAttrs<boolean>>) {
+			return wrapInput(attrs, m("input",
+				{
+					name: attrs.label,
+					type: "checkbox",
+					oncreate: (v: CVnodeDOM<any>) => {
+						if (v.attrs.autofocus) {
+							(v.dom as HTMLElement).focus();
+						}
+					},
+					oninput: m.withAttr("checked", function (v: boolean) {
+						attrs.onInput(v);
+					}),
+					autofocus: attrs.autofocus
+				}
+			));
 		}
 	}
 
-	export class FileInput extends BaseInput<File> {
-		protected accept: string;
-
-		constructor() {
-			super("file");
-			this.accept = "";
-		}
+	export class FileInput implements Input<File> {
+		protected accept: string = "";
 
 		view({attrs}: CVnode<InputAttrs<File>>) {
 			return wrapInput(attrs, m("input",
