@@ -9,6 +9,7 @@ import {PropertyAssignments, PropertyModel} from "./property";
 import {GenericSpecifications} from "../custom/generics";
 import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../custom/events";
 import {LandscapeModel} from "./landscape";
+import {Connections} from "../custom/connections";
 
 export enum BlueprintType {
 	Local,
@@ -316,6 +317,27 @@ export class BlueprintModel extends BlackBox {
 
 	public isStreamSource(): boolean {
 		return true;
+	}
+
+	public getConnectionsTo(): Connections {
+		const connections = new Connections();
+
+		// First, handle operator in-ports
+		const portIn = this.getPortIn();
+		if (portIn) {
+			connections.addConnections(portIn.getConnectionsTo());
+		}
+
+		// Then, handle delegate in-ports
+		for (const delegate of this.getChildNodes(BlueprintDelegateModel)) {
+			connections.addConnections(delegate.getConnectionsTo());
+		}
+
+		for (const operator of this.getOperators()) {
+			connections.addConnections(operator.getConnectionsTo());
+		}
+
+		return connections;
 	}
 
 	// Actions

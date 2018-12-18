@@ -1,7 +1,7 @@
 import {BlueprintModel, BlueprintType} from "../model/blueprint";
 import {
 	BlueprintApiResponse,
-	BlueprintDefApiResponse,
+	BlueprintDefApiResponse, ConnectionsApiResponse,
 	GenericSpecificationsApiResponse, OperatorApiResponse,
 	PortGroupApiResponse,
 	PropertyApiResponse,
@@ -10,17 +10,26 @@ import {
 } from "./api";
 import {LandscapeModel} from "../model/landscape";
 import {BlueprintDelegateModel} from "../model/delegate";
-import {BlueprintPortModel, PortDirection} from "../model/port";
+import {BlueprintPortModel, PortDirection, PortModel} from "../model/port";
 import {PropertyAssignments, PropertyModel} from "../model/property";
 import {TypeIdentifier, SlangType} from "./type";
 import {GenericSpecifications} from "./generics";
-import {dia} from "jointjs";
 import {OperatorModel} from "../model/operator";
 
 export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApiResponse {
 	return {
 		operators: Array.from(blueprint.getOperators()).reduce((result: { [_: string]: OperatorApiResponse }, operator) => {
 			result[operator.getName()] = operatorModelToJSON(operator);
+			return result;
+		}, {}),
+		connections: Array.from(blueprint.getConnectionsTo().getIterator()).reduce((result: ConnectionsApiResponse, connection) => {
+			const srcPortRef = connection.source.getPortReference();
+			const dstPortRef = connection.destination.getPortReference();
+			if (!result[srcPortRef]) {
+				result[srcPortRef] = [dstPortRef];
+			} else {
+				result[srcPortRef].push(dstPortRef);
+			}
 			return result;
 		}, {}),
 	}

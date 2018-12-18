@@ -46,9 +46,11 @@ export interface BlueprintDefApiResponse {
 	properties?: PropertyApiResponse
 	services?: PortGroupApiResponse
 	delegates?: PortGroupApiResponse
-	connections?: {
-		[sourcePortReference: string]: [string]
-	}
+	connections?: ConnectionsApiResponse
+}
+
+export interface ConnectionsApiResponse {
+	[sourcePortReference: string]: [string]
 }
 
 export interface BlueprintApiResponse {

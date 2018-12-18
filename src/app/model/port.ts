@@ -1,6 +1,6 @@
 import {BlueprintModel} from "./blueprint";
 import {OperatorModel} from "./operator";
-import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
+import {BlueprintDelegateModel, DelegateModel, GenericDelegateModel, OperatorDelegateModel} from "./delegate";
 import {BlackBox, PortOwner, SlangNode} from "../custom/nodes";
 import {Connections} from "../custom/connections";
 import {SlangType, TypeIdentifier} from "../custom/type";
@@ -57,7 +57,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			}
 			this.connectedWith.splice(idxT, 1);
 		});
-		
+
 		this.subscribeDestroyed(() => {
 			this.disconnectAll();
 		});
@@ -65,7 +65,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		if (this.generics && this.genericIdentifier) {
 			const generics = this.generics;
 			const identifier = this.genericIdentifier;
-			
+
 			generics.registerPort(identifier, this);
 
 			generics.subscribeGenericTypeChanged(identifier, type => {
@@ -74,11 +74,11 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				}
 			});
 		}
-		
+
 		if (!!ancestorGenerics) {
 			const generics = ancestorGenerics[0];
 			const identifier = ancestorGenerics[1];
-			
+
 			this.subscribeDisconnected(() => {
 				if (this.connectedWith.length === 0) {
 					const newType = generics.getUnifiedType(identifier);
@@ -91,7 +91,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 		this.streamPort.initialize();
 	}
-	
+
 	public generify(identifier: string, generics: GenericSpecifications, P: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel): void {
 		if (!this.isGeneric() && this.typeIdentifier === TypeIdentifier.Map) {
 			this.genericIdentifier = identifier;
@@ -294,12 +294,12 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		}
 		return type;
 	}
-	
+
 	public anySubstreamConnected(): boolean {
 		if (this.connectedWith.length !== 0) {
 			return true;
 		}
-		
+
 		if (this.typeIdentifier === TypeIdentifier.Map) {
 			for (const sub of this.getMapSubs()) {
 				if (sub.anySubstreamConnected()) {
@@ -309,10 +309,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		} else if (this.typeIdentifier === TypeIdentifier.Stream) {
 			return this.getStreamSub().anySubstreamConnected();
 		}
-		
+
 		return false;
 	}
-	
+
 	public getConnectedType(): SlangType {
 		const type = new SlangType(null, this.typeIdentifier);
 		switch (this.typeIdentifier) {
@@ -413,7 +413,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		return connections;
 	}
 
-	private getPortReference(): string {
+	public getPortReference(): string {
 		const parent = this.getParentNode();
 		if (!(parent instanceof GenericPortModel)) {
 			return "";
@@ -480,7 +480,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		this.disconnected.next(destination);
 		destination.disconnected.next(this);
 	}
-	
+
 	private disconnectAll() {
 		if (this.isSource()) {
 			for (const destination of this.connectedWith) {
@@ -497,13 +497,13 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		if (portId.length === 0) {
 			return this;
 		}
-		
+
 		const nextPortId = portId.shift();
-		
+
 		if (!nextPortId) {
 			throw new Error(`unexpected empty array`);
 		}
-		
+
 		if (nextPortId === "~") {
 			return this.getStreamSub().findGenericPort(portId);
 		} else {
@@ -520,9 +520,9 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			this.generics.specify(this.genericIdentifier, other.getType());
 			return this;
 		}
-		
+
 		const {type, portId} = this.streamPort.createGenericType(other);
-		
+
 		this.generics.specify(this.genericIdentifier, type);
 		return this.findGenericPort(portId);
 	}
@@ -618,6 +618,30 @@ export class BlueprintPortModel extends GenericPortModel<BlueprintModel | Bluepr
 	public isSource(): boolean {
 		return this.isDirectionIn();
 	}
+
+	public getPortReference(): string {
+		const portRef = super.getPortReference();
+		const parent = this.getParentNode();
+		if (parent instanceof GenericPortModel) {
+			return portRef;
+		}
+
+		const ownerRefParts = [""];
+		const owner = super.getOwner();
+
+		console.log(">>>>", portRef);
+
+		if (owner instanceof BlueprintDelegateModel) {
+			const delegate = owner as DelegateModel as BlueprintDelegateModel;
+			ownerRefParts.push(delegate.getName());
+		}
+
+		if (this.isDirectionIn()) {
+			return `${portRef}(`;
+		} else {
+			return `)${portRef}`;
+		}
+	}
 }
 
 export class OperatorPortModel extends GenericPortModel<OperatorModel | OperatorDelegateModel> {
@@ -627,5 +651,38 @@ export class OperatorPortModel extends GenericPortModel<OperatorModel | Operator
 
 	public isSource(): boolean {
 		return this.isDirectionOut();
+	}
+
+
+	public getPortReference(): string {
+		const portRef = super.getPortReference();
+		const parent = this.getParentNode();
+		if (parent instanceof GenericPortModel) {
+			return portRef;
+		}
+
+		const ownerRefParts = [];
+		const owner = super.getOwner();
+
+		console.log(">>>>", portRef);
+
+
+		if (owner instanceof OperatorDelegateModel) {
+			const delegate = owner as DelegateModel as OperatorDelegateModel;
+			const operator = delegate.getParentNode() as OperatorModel;
+			ownerRefParts.push(operator.getName());
+			ownerRefParts.push(delegate.getName());
+		} else {
+			const operator = owner as OperatorModel;
+			ownerRefParts.push(operator.getName());
+		}
+
+		const ownerRef = ownerRefParts.join(".");
+		if (this.isDirectionIn()) {
+			return `${portRef}(${ownerRef}`;
+		} else {
+			return `${ownerRef})${portRef}`;
+		}
+
 	}
 }
