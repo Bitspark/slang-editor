@@ -291,9 +291,11 @@ function createTypeModel(typeDef: TypeDefApiResponse): SlangType {
 	const type = new SlangType(null, toTypeIdentifier(typeDef.type));
 	switch (type.getTypeIdentifier()) {
 		case TypeIdentifier.Map:
-			Object.keys(typeDef.map!).forEach((subName: string) => {
-				type.addMapSub(subName, createTypeModel(typeDef.map![subName]));
-			});
+			if (typeDef.map) {
+				Object.keys(typeDef.map).forEach((subName: string) => {
+					type.addMapSub(subName, createTypeModel(typeDef.map![subName]));
+				});
+			}
 			break;
 		case TypeIdentifier.Stream:
 			type.setStreamSub(createTypeModel(typeDef.stream!));
