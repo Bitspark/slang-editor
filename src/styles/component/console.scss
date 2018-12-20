@@ -55,13 +55,6 @@
 						position: absolute;
 						top: 0;
 						bottom: 0;
-						color: transparentize($red, .3);
-						background: $white;
-
-						&:hover {
-							color: $white;
-							background: transparentize($red, .3);
-						}
 					}
 				}
 			}

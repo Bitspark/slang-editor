@@ -38,6 +38,7 @@ interface SlangTypeDefPrimitive {
 
 
 export type SlangTypeDef = SlangTypeDefPrimitive | SlangTypeDefGeneric | SlangTypeDefMap | SlangTypeDefStream;
+export type SlangTypeValue = { [k: string]: any } | [] | string | number | boolean | null;
 
 export class SlangType {
 	private readonly mapSubs: Map<string, SlangType> | undefined;
@@ -310,5 +311,3 @@ export class SlangType {
 		return str;
 	}
 }
-
-export type SlangTypeValue = { [k: string]: any } | [] | string | number | boolean | null;

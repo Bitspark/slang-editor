@@ -127,7 +127,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 		if (operator.position) {
 			this.updateXY(operator.position);
 		}
-		this.createComponent({x: 0, y: 0, align: "br"})
+		this.createComponent({x: 0, y: 0, align: "c"})
 			.mount(" ", {
 				view: () => m(Button, {
 					tooltip: "Remove operator",
