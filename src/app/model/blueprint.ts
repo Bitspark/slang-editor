@@ -7,8 +7,9 @@ import {BlackBox} from "../custom/nodes";
 import {SlangTypeValue, TypeIdentifier} from "../custom/type";
 import {PropertyAssignments, PropertyModel} from "./property";
 import {GenericSpecifications} from "../custom/generics";
-import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
+import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../custom/events";
 import {LandscapeModel} from "./landscape";
+import {Connections} from "../custom/connections";
 
 export enum BlueprintType {
 	Local,
@@ -24,6 +25,7 @@ export class BlueprintModel extends BlackBox {
 	// Topics::self
 	private selected = new SlangBehaviorSubject<boolean>("selected", false);
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
+	private saveChanges = new SlangSubjectTrigger("save-changes");
 
 	// Topics::Deployment
 	private deploymentRequested = new SlangSubject<boolean>("deployment-triggered");
@@ -49,7 +51,7 @@ export class BlueprintModel extends BlackBox {
 		this.hierarchy = fullName.split(".");
 		this.genericIdentifiers = new Set<string>();
 	}
-	
+
 	private static revealGenericIdentifiers(port: PortModel): Set<string> {
 		let genericIdentifiers = new Set<string>();
 		switch (port.getTypeIdentifier()) {
@@ -69,7 +71,7 @@ export class BlueprintModel extends BlackBox {
 		}
 		return genericIdentifiers;
 	}
-	
+
 	public getFakeGenerics(): GenericSpecifications {
 		return this.fakeGenerics;
 	}
@@ -134,8 +136,9 @@ export class BlueprintModel extends BlackBox {
 	}
 
 	private getRandomOperatorName(blueprint: BlueprintModel): string {
-		const cnt = Array.from(this.getChildNodes(OperatorModel)).filter((op: OperatorModel) => op.getBlueprint() === blueprint).length;
-		return `${blueprint.getFullName()}-${cnt + 1}`;
+		const operatorBaseName = blueprint.getShortName().toLowerCase();
+		const cnt = Array.from(this.getOperators()).filter((op: OperatorModel) => op.getName().startsWith(operatorBaseName)).length;
+		return `${operatorBaseName}-${cnt + 1}`;
 	}
 
 	public createBlankOperator(blueprint: BlueprintModel, geometry: Geometry): OperatorModel {
@@ -317,6 +320,27 @@ export class BlueprintModel extends BlackBox {
 		return true;
 	}
 
+	public getConnectionsTo(): Connections {
+		const connections = new Connections();
+
+		// First, handle operator in-ports
+		const portIn = this.getPortIn();
+		if (portIn) {
+			connections.addConnections(portIn.getConnectionsTo());
+		}
+
+		// Then, handle delegate in-ports
+		for (const delegate of this.getChildNodes(BlueprintDelegateModel)) {
+			connections.addConnections(delegate.getConnectionsTo());
+		}
+
+		for (const operator of this.getOperators()) {
+			connections.addConnections(operator.getConnectionsTo());
+		}
+
+		return connections;
+	}
+
 	// Actions
 
 	public addProperty(property: PropertyModel): PropertyModel {
@@ -364,7 +388,15 @@ export class BlueprintModel extends BlackBox {
 		this.instance.next(null);
 	}
 
+	public save() {
+		this.saveChanges.next();
+	}
+
 	// Subscriptions
+
+	public subscribeSaveChanges(cb: () => void): void {
+		this.saveChanges.subscribe(cb);
+	}
 
 	public subscribeSelectChanged(cb: (selected: boolean) => void): void {
 		this.selected.subscribe(cb);

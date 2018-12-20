@@ -1,7 +1,7 @@
 import {BlueprintModel} from "./blueprint";
 import {LandscapeModel} from "./landscape";
 import {SlangNode} from "../custom/nodes";
-import {SlangBehaviorSubject, SlangSubjectTrigger} from "../custom/events";
+import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../custom/events";
 
 export type AppModelArgs = { name: string };
 
@@ -10,6 +10,7 @@ export class AppModel extends SlangNode {
 	private openedBlueprint = new SlangBehaviorSubject<BlueprintModel | null>("opened-blueprint", null);
 	private openedLandscape = new SlangBehaviorSubject<LandscapeModel | null>("opened-landscape", null);
 	private loadRequested = new SlangSubjectTrigger("load-requested");
+	private storeRequested = new SlangSubject<BlueprintModel>("save-requested");
 
 	private readonly name: string;
 	private loading: Array<Promise<void>> = [];
@@ -54,6 +55,9 @@ export class AppModel extends SlangNode {
 				if (openedLandscape !== null) {
 					openedLandscape.close();
 				}
+				blueprint.subscribeSaveChanges(() => {
+					this.storeRequested.next(blueprint);
+				});
 				this.openedBlueprint.next(blueprint);
 			} else {
 				if (blueprint === this.openedBlueprint.getValue()) {
@@ -77,11 +81,11 @@ export class AppModel extends SlangNode {
 
 	// Subscriptions
 
-	public subscribeOpenedBlueprintChanged(cb: (bp: BlueprintModel | null) => void) {
+	public subscribeOpenedBlueprintChanged(cb: (blueprint: BlueprintModel | null) => void) {
 		this.openedBlueprint.subscribe(cb);
 	}
 
-	public subscribeOpenedLandscapeChanged(cb: (ls: LandscapeModel | null) => void) {
+	public subscribeOpenedLandscapeChanged(cb: (landscape: LandscapeModel | null) => void) {
 		this.openedLandscape.subscribe(cb);
 	}
 
@@ -89,6 +93,10 @@ export class AppModel extends SlangNode {
 		this.loadRequested.subscribe(() => {
 			this.loading.push(cb());
 		});
+	}
+
+	public subscribeStoreRequested(cb: (blueprint: BlueprintModel) => void) {
+		this.storeRequested.subscribe(cb);
 	}
 
 }

@@ -20,7 +20,6 @@ export class BlueprintView extends PaperView {
 		this.whiteBox = new WhiteBoxComponent(this, blueprint);
 
 		this.attachEventHandlers();
-
 		this.fit();
 	}
 

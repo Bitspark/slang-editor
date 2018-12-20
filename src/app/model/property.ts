@@ -8,6 +8,10 @@ export class PropertyModel {
 		return this.name;
 	}
 
+	public getType(): SlangType {
+		return this.type;
+	}
+
 	public getTypeIdentifier(): TypeIdentifier {
 		return this.type.getTypeIdentifier();
 	}
@@ -41,6 +45,10 @@ export class PropertyAssignments {
 		this.name2propAssign = new Map<string, PropertyAssignment>();
 	}
 
+	public getIterator(): IterableIterator<[string, PropertyAssignment]> {
+		return this.name2propAssign.entries();
+	}
+
 	public assign(propertyName: string, propertyValue: any): PropertyAssignment {
 		const property = this.name2Prop.get(propertyName);
 		if (!property) {
@@ -49,6 +57,10 @@ export class PropertyAssignments {
 		const def = property.define(propertyValue);
 		this.name2propAssign.set(property.getName(), def);
 		return def;
+	}
+
+	public has(propertyName: string): boolean {
+		return this.name2propAssign.has(propertyName);
 	}
 
 	public getByName(propertyName: string): PropertyAssignment {
