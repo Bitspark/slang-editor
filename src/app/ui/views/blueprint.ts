@@ -21,10 +21,6 @@ export class BlueprintView extends PaperView {
 
 		this.attachEventHandlers();
 		this.fit();
-
-		PaperView.autosaveIntervalHandle = setInterval(() => {
-			this.blueprint.save();
-		}, 1000);
 	}
 
 	protected createPaper(): dia.Paper {
