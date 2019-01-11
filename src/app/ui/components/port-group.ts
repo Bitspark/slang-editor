@@ -3,6 +3,7 @@ import {dia, g} from "jointjs";
 import {PortModel} from "../../model/port";
 import {TypeIdentifier} from "../../custom/type";
 import {Styles} from "../../../styles/studio";
+import {OperatorModel} from "../../model/operator";
 
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";
 
@@ -23,18 +24,18 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
 		case TypeIdentifier.Stream:
 			portItems.push.apply(portItems, createPortItems(parent, position, port.getStreamSub(), createGhostPorts));
 			break;
-			
+
 		case TypeIdentifier.Generic:
 			break;
 
 		default:
 			portItems.push(new PortComponent(port, parent));
 	}
-	
+
 	if (createGhostPorts && port.isGeneric()) {
 		portItems.push(new PortComponent(port, parent));
 	}
-	
+
 	return portItems;
 }
 
@@ -50,10 +51,10 @@ export class PortGroupComponent {
 	private portGroupElement: dia.Element.PortGroup = {};
 
 	constructor(private readonly name: string,
-	            private readonly port: PortModel,
-	            private readonly groupPosition: PortGroupPosition,
-	            start: number,
-	            width: number) {
+				private readonly port: PortModel,
+				private readonly groupPosition: PortGroupPosition,
+				start: number,
+				width: number) {
 		switch (groupPosition) {
 			case "top":
 				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "top", start, width) as any;
@@ -92,11 +93,11 @@ export class PortGroupComponent {
 		if (!parentElement) {
 			throw new Error(`need parent`);
 		}
-		
+
 		parentElement.removePorts(this.ports.map(port => port.getPortElement()));
 
 		const ports = createPortItems(this, this.getGroupPosition(), this.port, drawGenerics);
-		
+
 		this.ports.length = 0;
 		this.ports.push.apply(this.ports, ports);
 		parentElement.addPorts(this.ports.map(port => port.getPortElement()));
@@ -131,20 +132,23 @@ export class PortGroupComponent {
 
 				let portPosition: g.PlainPoint = {x: 0, y: 0};
 
-				const translate = portComponents[index].getModel().isDirectionIn() ? Styles.PortGroup.TranslationIn : Styles.PortGroup.TranslationOut;
+				const portModel = portComponents[index].getModel();
+				const portOwner = portModel.getOwner();
+				const translate = portModel.isDirectionIn() ? Styles.PortGroup.TranslationIn : Styles.PortGroup.TranslationOut;
+				const factor = portOwner instanceof OperatorModel ? 1 : -1;
 
 				switch (position) {
 					case "top":
-						portPosition = {x: positionAbs, y: -translate};
+						portPosition = {x: positionAbs, y: -factor * translate};
 						break;
 					case "bottom":
-						portPosition = {x: positionAbs, y: elBBox.height + translate};
+						portPosition = {x: positionAbs, y: elBBox.height + factor * translate};
 						break;
 					case "left":
-						portPosition = {x: translate, y: positionAbs};
+						portPosition = {x: factor * translate, y: positionAbs};
 						break;
 					case "right":
-						portPosition = {x: elBBox.width - translate, y: positionAbs};
+						portPosition = {x: elBBox.width - factor * translate, y: positionAbs};
 						break;
 				}
 
