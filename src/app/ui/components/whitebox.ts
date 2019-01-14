@@ -474,7 +474,7 @@ export class WhiteBoxComponent extends CellComponent {
 		const that = this;
 
 		// JointJS -> Model
-		operatorBox.on("pointerup", function (evt: Event, x: number, y: number) {
+		operatorBox.on("pointerclick", function (evt: Event, x: number, y: number) {
 			that.createComponent({x: 0, y: 0, align: "c"})
 				.mount("M", {
 					view: () => m(PropertyForm, {
@@ -484,6 +484,7 @@ export class WhiteBoxComponent extends CellComponent {
 						},
 					})
 				});
+			return true;
 		});
 
 		return operatorBox;
