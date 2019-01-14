@@ -89,24 +89,10 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public getPropertyAssignments(): PropertyAssignments {
-		return this.properties;
+		return this.properties.copy();
 	}
 
 	public setPropertyAssignments(propAssignments: PropertyAssignments) {
-		/*
-		opr.subscribeChanged(() => {
-			const currName = opr.getName();
-			const currBluepr = opr.getBlueprint();
-			const currPropAssign = opr.getPropertyAssignments();
-			const currGenSpeci = opr.getGenericSpecifications();
-
-			opr.destroy();
-			this.createOperator(currName, currBluepr, currPropAssign, currGenSpeci);
-
-		});
-		*/
-
-
 		this.properties = propAssignments;
 		this.removePorts();
 		this.blueprint.instantiateOperator(this);

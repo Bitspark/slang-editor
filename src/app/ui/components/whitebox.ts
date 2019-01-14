@@ -19,6 +19,7 @@ import {Tk} from "./toolkit";
 import Button = Tk.Button;
 import {InputConsole, OutputConsole} from "./console";
 import {PropertyForm} from "./property-form";
+import {PropertyAssignments} from "../../model/property";
 
 export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 120;
@@ -478,10 +479,8 @@ export class WhiteBoxComponent extends CellComponent {
 				.mount("M", {
 					view: () => m(PropertyForm, {
 						operator: operator,
-						onSubmit: () => {
-							// TODO don't store property assignments in operator
-							const p = operator.getPropertyAssignments();
-							operator.setPropertyAssignments(operator.getPropertyAssignments());
+						onSubmit: (propAssigns: PropertyAssignments) => {
+							operator.setPropertyAssignments(propAssigns);
 							comp.destroy();
 						},
 					})

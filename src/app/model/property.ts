@@ -45,6 +45,18 @@ export class PropertyAssignments {
 		this.name2propAssign = new Map<string, PropertyAssignment>();
 	}
 
+	public copy(): PropertyAssignments {
+		const propNamesIter = this.name2Prop.values();
+		const propAssigns = new PropertyAssignments(Array.from(propNamesIter));
+
+		for (const [propName, propAssign] of this.getIterator()) {
+			propAssigns.assign(propName, propAssign.getValue());
+		}
+
+		return propAssigns;
+
+	}
+
 	public getIterator(): IterableIterator<[string, PropertyAssignment]> {
 		return this.name2propAssign.entries();
 	}

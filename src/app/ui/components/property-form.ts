@@ -8,7 +8,7 @@ import {BlueprintModel} from "../../model/blueprint";
 
 interface PropertyFormAttrs {
 	operator: OperatorModel
-	onSubmit: () => void
+	onSubmit: (propertyAssignments: PropertyAssignments) => void
 }
 
 export class PropertyForm implements ClassComponent<PropertyFormAttrs> {
@@ -56,7 +56,7 @@ export class PropertyForm implements ClassComponent<PropertyFormAttrs> {
 					full: true,
 					notAllowed: !that.isValid(),
 					onClick: that.isValid ? (e: MithrilMouseEvent) => {
-						attrs.onSubmit();
+						attrs.onSubmit(this.propAssigns!);
 					} : undefined
 				}, "Save"
 			)
