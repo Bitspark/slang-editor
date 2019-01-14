@@ -18,7 +18,7 @@ import {SlangTypeValue} from "../../custom/type";
 import {Tk} from "./toolkit";
 import Button = Tk.Button;
 import {InputConsole, OutputConsole} from "./console";
-import {GenericSpecifications} from "../../custom/generics";
+import {PropertyForm} from "./property-form";
 
 export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 120;
@@ -28,7 +28,7 @@ export class WhiteBoxComponent extends CellComponent {
 	private readonly buttons: AttachableComponent;
 	private readonly input: AttachableComponent;
 	private readonly output: AttachableComponent;
-	
+
 	private readonly operators: Array<BlackBoxComponent> = [];
 	private readonly connections: Array<ConnectionComponent> = [];
 	private readonly ports = {
@@ -57,7 +57,7 @@ export class WhiteBoxComponent extends CellComponent {
 	private subscribe() {
 		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
 			if (!instance) {
-				this.buttons.mount(" ", {
+				this.buttons.mount("", {
 					view: () => m(Button, {
 						onClick: () => {
 							this.blueprint.requestDeployment();
@@ -69,7 +69,7 @@ export class WhiteBoxComponent extends CellComponent {
 				this.output.unmount();
 
 			} else {
-				this.buttons.mount(" ", {
+				this.buttons.mount("", {
 					view: () => m(".toolbox", [
 						m(Button, {
 							class: "sl-green-pulsing",
@@ -135,7 +135,7 @@ export class WhiteBoxComponent extends CellComponent {
 		this.blueprint.getFakeGenerics().subscribeGenericsChanged(() => {
 			this.ports.top.forEach(p => p.refresh());
 			this.ports.bottom.forEach(p => p.refresh());
-			
+
 			this.connections.forEach(component => {
 				const connection = component.getConnection();
 				if (!connection.source.isConnectedWith(connection.destination)) {
@@ -468,9 +468,25 @@ export class WhiteBoxComponent extends CellComponent {
 	}
 
 	private addOperator(operator: OperatorModel): OperatorBoxComponent {
-		const comp = new OperatorBoxComponent(this.paperView, operator);
-		this.operators.push(comp);
-		return comp;
+		const operatorBox = new OperatorBoxComponent(this.paperView, operator);
+		this.operators.push(operatorBox);
+
+		const that = this;
+
+		// JointJS -> Model
+		operatorBox.on("pointerup", function (evt: Event, x: number, y: number) {
+			that.createComponent({x: 0, y: 0, align: "c"})
+				.mount("M", {
+					view: () => m(PropertyForm, {
+						operator: operator,
+						onSubmit: (values: SlangTypeValue) => {
+							console.log(">>>>", values)
+						},
+					})
+				});
+		});
+
+		return operatorBox;
 	}
 
 	private removeConnection(connection: Connection) {

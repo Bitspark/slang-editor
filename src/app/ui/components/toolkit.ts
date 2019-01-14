@@ -15,6 +15,29 @@ export enum Keypress {
 }
 
 export namespace Tk {
+	interface ModalAttrs {
+		title?: string,
+		onClose?: () => void
+	}
+
+	export class Modal implements ClassComponent<ModalAttrs> {
+		view({children, attrs}: CVnode<ModalAttrs>) {
+			return m(".sl-modal",
+				m(".sl-modal-content",
+					attrs.title ? m("span", attrs.title) : undefined,
+					m(Button, {
+							class: "sl-modal-close",
+							onClick: attrs.onClose ? (e: MithrilMouseEvent) => {
+								e.redraw = false;
+								attrs.onClose!();
+							} : undefined,
+						},
+						"X"
+					),
+					children));
+		}
+	}
+
 	export class Container implements ClassComponent<{}> {
 		view({children}: CVnode<{}>) {
 			return m(".sl-container", children);

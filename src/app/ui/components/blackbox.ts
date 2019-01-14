@@ -23,7 +23,7 @@ export class BlackBoxComponent extends ElementComponent {
 		this.portGroups.forEach(group => {
 			group.setParent(this.shape, this.drawGenerics);
 		});
-		
+
 		this.render();
 	}
 
@@ -66,7 +66,7 @@ export class BlackBoxComponent extends ElementComponent {
 		const widthLeft = 0.5 / countLeft;
 		const stepLeft = 0.5 / countLeft;
 		let posLeft = 0;
-		
+
 		let right = true;
 		for (const delegate of delegates) {
 			if (right) {
@@ -104,7 +104,7 @@ export class BlackBoxComponent extends ElementComponent {
 }
 
 export class BlueprintBoxComponent extends BlackBoxComponent {
-	
+
 	constructor(paperView: PaperView, blueprint: BlueprintModel) {
 		super(paperView, blueprint, false);
 
@@ -128,7 +128,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 			this.updateXY(operator.position);
 		}
 		this.createComponent({x: 0, y: 0, align: "c"})
-			.mount(" ", {
+			.mount("", {
 				view: () => m(Button, {
 					tooltip: "Remove operator",
 					class: "sl-danger sl-btn-icon",
@@ -138,10 +138,10 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 				}, m("i.fas.fa-times"))
 			})
 			.attachTo(this.shape, "tl");
-	
+
 		operator.getGenericSpecifications().subscribeGenericsChanged(() => this.refresh());
 	}
-	
+
 	public refresh(): void {
 		super.refresh();
 		this.getShape().attr("label/text", (this.blackBox as OperatorModel).getDisplayName());

@@ -8,6 +8,7 @@ import {PropertyModel} from "../../model/property";
 
 interface PropertyFormAttrs {
 	operator: OperatorModel
+	onSubmit: (value: SlangTypeValue) => void
 }
 
 export class PropertyForm implements ClassComponent<PropertyFormAttrs> {
@@ -20,7 +21,7 @@ export class PropertyForm implements ClassComponent<PropertyFormAttrs> {
 	private renderPropertyInput(operator: OperatorModel, property: PropertyModel): m.Children {
 		const type = property.getType();
 		return m(Input.ConsoleEntry, {
-			label: "", class: "",
+			label: property.getName(), class: "",
 			type: type!,
 			onInput: (v: any) => {
 				this.value = v;
@@ -37,6 +38,7 @@ export class PropertyForm implements ClassComponent<PropertyFormAttrs> {
 		return m("form.sl-property", {
 				class: (that.isValid() ? "sl-invalid" : "")
 			},
+			m("h4", `Define properties of operator "${blueprint.getShortName()}"`),
 			Array.from(blueprint.getProperties()).map((property) => {
 				return that.renderPropertyInput(operator, property);
 			}),
@@ -44,10 +46,11 @@ export class PropertyForm implements ClassComponent<PropertyFormAttrs> {
 					full: true,
 					notAllowed: !that.isValid(),
 					onClick: that.isValid ? (e: MithrilMouseEvent) => {
-						console.log(">>>>", that.value);
+						attrs.onSubmit(that.value!);
 					} : undefined
-				}, "Push"
+				}, "Save"
 			)
 		);
 	}
 }
+
