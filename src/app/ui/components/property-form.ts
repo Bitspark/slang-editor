@@ -35,7 +35,7 @@ export class PropertyForm implements ClassComponent<PropertyFormAttrs> {
 		const blueprint = operator.getBlueprint();
 		blueprint.getProperties();
 
-		return m("form.sl-property", {
+		return m("form.sl-property.sl-console-in", {
 				class: (that.isValid() ? "sl-invalid" : "")
 			},
 			m("h4", `Define properties of operator "${blueprint.getShortName()}"`),
