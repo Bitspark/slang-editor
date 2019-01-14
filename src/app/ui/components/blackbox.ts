@@ -29,7 +29,7 @@ export class BlackBoxComponent extends ElementComponent {
 
 		if (this.shape) {
 			this.shape.remove();
-			this.shape = new BlackBoxComponent.Rect(this.blackBox, this.portGroups, this.shape.getBBox().center());
+			this.shape = new BlackBoxComponent.Rect(this.blackBox, this.portGroups/*, this.shape.getBBox().center()*/);
 			this.shape.on("pointerclick", () => {
 				this.clicked.next();
 			});
@@ -142,8 +142,8 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 
 		const operator = this.blackBox as OperatorModel;
 
-		if (operator.position) {
-			this.updateXY(operator.position);
+		if (operator.XY) {
+			this.updateXY(operator.XY);
 		}
 
 		if (this.operatorControl) {
@@ -163,7 +163,10 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 			})
 			.attachTo(this.shape, "tl");
 
-		this.getShape().attr("label/text", (this.blackBox as OperatorModel).getDisplayName());
+		this.shape.attr("label/text", (this.blackBox as OperatorModel).getDisplayName());
+		this.shape.on("change:position change:size", () => {
+			operator.XY = this.shape.position()
+		});
 	}
 
 }

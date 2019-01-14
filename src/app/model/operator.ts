@@ -1,12 +1,13 @@
 import {BlueprintModel, BlueprintType} from "./blueprint";
-import {GenericPortModel, OperatorPortModel, PortModelArgs} from "./port";
+import {OperatorPortModel, PortModelArgs} from "./port";
 import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
 import {BlackBox} from "../custom/nodes";
 import {Connections} from "../custom/connections";
-import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../custom/events";
+import {SlangBehaviorSubject, SlangSubjectTrigger} from "../custom/events";
 import {PropertyAssignments} from "./property";
 import {TypeIdentifier} from "../custom/type";
 import {GenericSpecifications} from "../custom/generics";
+import {XY} from "../ui/components/base";
 
 export type OperatorModelArgs = {
 	name: string,
@@ -23,7 +24,7 @@ export type OperatorModelArgs = {
 }
 
 export interface Geometry {
-	position: [number, number]
+	xy: XY
 }
 
 export class OperatorModel extends BlackBox {
@@ -35,7 +36,7 @@ export class OperatorModel extends BlackBox {
 
 	private readonly name: string;
 	private readonly blueprint: BlueprintModel;
-	private readonly geometry: Geometry | undefined;
+	private geometry: Geometry | undefined;
 	private properties: PropertyAssignments;
 	private generics: GenericSpecifications;
 
@@ -150,9 +151,19 @@ export class OperatorModel extends BlackBox {
 		return connections;
 	}
 
-	public get position(): { x: number, y: number } | undefined {
+	public get XY(): XY | undefined {
 		if (this.geometry) {
-			return {x: this.geometry.position[0], y: this.geometry.position[1]};
+			return this.geometry.xy;
+		}
+	}
+
+	public set XY(xy: XY | undefined) {
+		if (xy) {
+			if (!this.geometry) {
+				this.geometry = {xy}
+			} else {
+				this.geometry.xy = xy;
+			}
 		}
 	}
 
