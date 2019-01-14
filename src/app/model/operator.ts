@@ -52,6 +52,11 @@ export class OperatorModel extends BlackBox {
 			this.properties = new PropertyAssignments(Array.from(args.blueprint.getProperties()));
 			this.generics = new GenericSpecifications(Array.from(args.blueprint.getGenericIdentifiers()));
 		}
+
+		// TODO use same method for properties changed
+		this.generics.subscribeGenericsChanged(() => {
+			this.update()
+		});
 	}
 
 	public getName(): string {
@@ -101,6 +106,7 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public getGenericSpecifications(): GenericSpecifications {
+		// TODO return copy to prevent side-effects
 		return this.generics;
 	}
 

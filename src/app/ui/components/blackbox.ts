@@ -134,6 +134,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 
 	constructor(paperView: PaperView, operator: OperatorModel) {
 		super(paperView, operator, true);
+		operator.subscribeChanged(() => this.refresh());
 	}
 
 	public refresh(): void {
@@ -161,9 +162,6 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 				}, m("i.fas.fa-times"))
 			})
 			.attachTo(this.shape, "tl");
-
-		operator.getGenericSpecifications().subscribeGenericsChanged(() => this.refresh());
-		operator.subscribeChanged(() => this.refresh());
 
 		this.getShape().attr("label/text", (this.blackBox as OperatorModel).getDisplayName());
 	}
