@@ -473,13 +473,15 @@ export class WhiteBoxComponent extends CellComponent {
 
 		const that = this;
 
-		// JointJS -> Model
-		operatorBox.on("pointerclick", function (evt: Event, x: number, y: number) {
+		operatorBox.onClick(function (evt: Event, x: number, y: number) {
 			const comp = that.createComponent({x: 0, y: 0, align: "c"})
 				.mount("M", {
 					view: () => m(PropertyForm, {
 						operator: operator,
 						onSubmit: () => {
+							// TODO don't store property assignments in operator
+							const p = operator.getPropertyAssignments();
+							operator.setPropertyAssignments(operator.getPropertyAssignments());
 							comp.destroy();
 						},
 					})

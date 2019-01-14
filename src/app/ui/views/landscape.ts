@@ -260,7 +260,7 @@ export class LandscapeView extends PaperView {
 		this.blueprintRects.set(blueprint.getFullName(), blueprintBox.getShape());
 
 		// JointJS -> Model
-		blueprintBox.on("pointerup", function (evt: Event, x: number, y: number) {
+		blueprintBox.onClick(function (evt: Event, x: number, y: number) {
 			blueprint.open();
 		});
 	}

@@ -1,9 +1,9 @@
 import {BlueprintModel, BlueprintType} from "./blueprint";
-import {OperatorPortModel, PortModelArgs} from "./port";
+import {GenericPortModel, OperatorPortModel, PortModelArgs} from "./port";
 import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
 import {BlackBox} from "../custom/nodes";
 import {Connections} from "../custom/connections";
-import {SlangBehaviorSubject} from "../custom/events";
+import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../custom/events";
 import {PropertyAssignments} from "./property";
 import {TypeIdentifier} from "../custom/type";
 import {GenericSpecifications} from "../custom/generics";
@@ -31,12 +31,13 @@ export class OperatorModel extends BlackBox {
 	// Topics
 	// self
 	private selected = new SlangBehaviorSubject<boolean>("selected", false);
+	private changed = new SlangSubjectTrigger("changed");
 
 	private readonly name: string;
 	private readonly blueprint: BlueprintModel;
 	private readonly geometry: Geometry | undefined;
-	private readonly properties: PropertyAssignments;
-	private readonly generics: GenericSpecifications;
+	private properties: PropertyAssignments;
+	private generics: GenericSpecifications;
 
 	constructor(parent: BlueprintModel, args: OperatorModelArgs) {
 		super(parent, false);
@@ -73,6 +74,12 @@ export class OperatorModel extends BlackBox {
 		return this.createChildNode(OperatorPortModel, args);
 	}
 
+	private removePorts() {
+		for (const port of this.getPorts()) {
+			port.destroy();
+		}
+	}
+
 	public getDelegates(): IterableIterator<OperatorDelegateModel> {
 		return this.getChildNodes(OperatorDelegateModel);
 	}
@@ -83,6 +90,28 @@ export class OperatorModel extends BlackBox {
 
 	public getPropertyAssignments(): PropertyAssignments {
 		return this.properties;
+	}
+
+	public setPropertyAssignments(propAssignments: PropertyAssignments) {
+		/*
+		opr.subscribeChanged(() => {
+			const currName = opr.getName();
+			const currBluepr = opr.getBlueprint();
+			const currPropAssign = opr.getPropertyAssignments();
+			const currGenSpeci = opr.getGenericSpecifications();
+
+			opr.destroy();
+			this.createOperator(currName, currBluepr, currPropAssign, currGenSpeci);
+
+		});
+		*/
+
+
+		this.properties = propAssignments;
+		this.removePorts();
+		this.blueprint.instantiateOperator(this);
+
+		this.update();
 	}
 
 	public getGenericSpecifications(): GenericSpecifications {
@@ -122,15 +151,8 @@ export class OperatorModel extends BlackBox {
 	public getConnectionsTo(): Connections {
 		const connections = new Connections();
 
-		// First, handle operator out-ports
-		const portOut = this.getPortOut();
-		if (portOut) {
-			connections.addConnections(portOut.getConnectionsTo());
-		}
-
-		// Then, handle delegate out-ports
-		for (const delegate of this.getChildNodes(OperatorDelegateModel)) {
-			connections.addConnections(delegate.getConnectionsTo());
+		for (const port of this.getPorts()) {
+			connections.addConnections(port.getConnectionsTo());
 		}
 
 		return connections;
@@ -147,9 +169,17 @@ export class OperatorModel extends BlackBox {
 		return this.createChildNode(OperatorDelegateModel, args);
 	}
 
+	public update() {
+		this.changed.next();
+	}
+
 	public select() {
 		if (!this.selected.getValue()) {
 			this.selected.next(true);
 		}
+	}
+
+	public subscribeChanged(cb: () => void): void {
+		this.changed.subscribe(cb);
 	}
 }

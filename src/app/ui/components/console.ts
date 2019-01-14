@@ -149,15 +149,18 @@ export namespace Input {
 		}
 	}
 
-	interface MapInputAttrs extends Tk.InputAttrs<{}> {
+	interface MapInputAttrs extends Tk.InputAttrs<Map<string, any>> {
 		entries: IterableIterator<[string, SlangType]>
 	}
 
-
 	class MapInputField implements ClassComponent<MapInputAttrs> {
-		private values: { [subName: string]: any } = {};
+		private values = new Map<string, SlangTypeValue>();
 
 		view({attrs}: CVnode<MapInputAttrs>) {
+			if (attrs.initValue) {
+				this.values = attrs.initValue;
+			}
+
 			const labelName = attrs.label;
 			const labelText = (labelName) ? `${attrs.label}:` : "";
 			const values = this.values;
@@ -170,9 +173,10 @@ export namespace Input {
 						.map(([subName, subType]) => m(ConsoleEntry, {
 								label: subName,
 								type: subType,
+								initValue: this.values.get(subName),
 								class: "",
 								onInput: (v: any) => {
-									values[subName] = v;
+									values.set(subName, v);
 									attrs.onInput(values);
 								}
 							})
@@ -182,7 +186,7 @@ export namespace Input {
 		}
 	}
 
-	interface StreamInputAttrs extends Tk.InputAttrs<{}> {
+	interface StreamInputAttrs extends Tk.InputAttrs<Array<any>> {
 		type: SlangType
 	}
 
@@ -197,6 +201,10 @@ export namespace Input {
 			const labelName = attrs.label;
 			const labelText = (labelName) ? `${attrs.label}:` : "";
 			const that = this;
+
+			if (attrs.initValue) {
+				this.values = attrs.initValue;
+			}
 
 			return m(".sl-inp-grp.stream", {class: attrs.class},
 				m("label", {
@@ -216,6 +224,7 @@ export namespace Input {
 								m(ConsoleEntry, {
 									label: "", class: "",
 									type: attrs.type,
+									initValue: entry,
 									onInput: (v: any) => {
 										that.values[index] = v;
 										attrs.onInput(that.getValues());
@@ -305,7 +314,7 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 		return this.value !== undefined;
 	}
 
-	private renderInput(type: SlangType, initValue: SlangTypeValue|undefined): m.Children {
+	private renderInput(type: SlangType, initValue: SlangTypeValue | undefined): m.Children {
 		return m(Input.ConsoleEntry, {
 			label: "", class: "",
 			type: type!,

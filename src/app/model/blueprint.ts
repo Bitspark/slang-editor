@@ -76,7 +76,7 @@ export class BlueprintModel extends BlackBox {
 		return this.fakeGenerics;
 	}
 
-	private instantiateOperator(operator: OperatorModel) {
+	public instantiateOperator(operator: OperatorModel) {
 		const properties = operator.getPropertyAssignments();
 		const generics = operator.getGenericSpecifications();
 

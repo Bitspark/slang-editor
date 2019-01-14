@@ -1,7 +1,6 @@
 import m, {ClassComponent, CVnode} from "mithril";
 import {OperatorModel} from "../../model/operator";
 import {MithrilMouseEvent, Tk} from "./toolkit";
-import {SlangTypeValue} from "../../custom/type";
 import {Input} from "./console";
 import {PropertyAssignments, PropertyModel} from "../../model/property";
 import {BlueprintModel} from "../../model/blueprint";
