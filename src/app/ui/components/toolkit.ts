@@ -173,6 +173,7 @@ export namespace Tk {
 		label: string,
 		class: string,
 		autofocus?: boolean,
+		initValue?: T,
 		onInput: (value: T) => void,
 		onchange?: (file: File) => void,
 	}
@@ -210,13 +211,13 @@ export namespace Tk {
 				{
 					name: attrs.label,
 					type: "text",
+					value: attrs.initValue,
 					oncreate: (v: CVnodeDOM<any>) => {
 						if (v.attrs.autofocus) {
 							(v.dom as HTMLElement).focus();
 						}
 					},
 					oninput: m.withAttr("value", function (v: string) {
-						console.log(">>>", JSON.stringify(v));
 						attrs.onInput(v);
 					}),
 					autofocus: attrs.autofocus
@@ -231,6 +232,7 @@ export namespace Tk {
 				{
 					name: attrs.label,
 					type: "number",
+					value: attrs.initValue,
 					oncreate: (v: CVnodeDOM<any>) => {
 						if (v.attrs.autofocus) {
 							(v.dom as HTMLElement).focus();
@@ -251,6 +253,7 @@ export namespace Tk {
 				{
 					name: attrs.label,
 					type: "checkbox",
+					value: attrs.initValue,
 					oncreate: (v: CVnodeDOM<any>) => {
 						if (v.attrs.autofocus) {
 							(v.dom as HTMLElement).focus();

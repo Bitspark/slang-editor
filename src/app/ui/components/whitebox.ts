@@ -475,12 +475,12 @@ export class WhiteBoxComponent extends CellComponent {
 
 		// JointJS -> Model
 		operatorBox.on("pointerclick", function (evt: Event, x: number, y: number) {
-			that.createComponent({x: 0, y: 0, align: "c"})
+			const comp = that.createComponent({x: 0, y: 0, align: "c"})
 				.mount("M", {
 					view: () => m(PropertyForm, {
 						operator: operator,
-						onSubmit: (values: SlangTypeValue) => {
-							console.log(">>>>", values)
+						onSubmit: () => {
+							comp.destroy();
 						},
 					})
 				});

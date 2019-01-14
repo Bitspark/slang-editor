@@ -98,9 +98,11 @@ export namespace Input {
 
 	export class ConsoleEntry<T> implements ClassComponent<ConsoleEntryAttrs> {
 		private type: SlangType | undefined;
+		private initValue: SlangTypeValue | undefined
 
 		oninit({attrs}: CVnode<ConsoleEntryAttrs>) {
 			this.type = attrs.type;
+			this.initValue = attrs.initValue;
 		}
 
 		private getInputComponent(attrs: ConsoleEntryAttrs): any {
@@ -303,10 +305,11 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 		return this.value !== undefined;
 	}
 
-	private renderInput(type: SlangType): m.Children {
+	private renderInput(type: SlangType, initValue: SlangTypeValue|undefined): m.Children {
 		return m(Input.ConsoleEntry, {
 			label: "", class: "",
 			type: type!,
+			initValue: initValue,
 			onInput: (v: any) => {
 				this.value = v;
 			}
@@ -318,7 +321,7 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 		return m("form.sl-console-in", {
 				class: (that.isValid() ? "sl-invalid" : "")
 			},
-			this.renderInput(this.type!),
+			this.renderInput(this.type!, undefined),
 			m(Tk.Button, {
 				full: true,
 				notAllowed: !that.isValid(),
