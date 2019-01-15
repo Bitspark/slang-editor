@@ -1,4 +1,4 @@
-import {TypeIdentifier} from "../app/custom/type";
+import {TypeIdentifier} from "../slang/custom/type";
 
 export namespace Styles {
 

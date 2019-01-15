@@ -1,8 +1,8 @@
-import {SlangApp} from "../../../app/app";
-import {AppModel} from "../../../app/model/app";
-import {OperatorBoxComponent} from "../../../app/ui/components/blackbox";
-import {ComponentFactory} from "../../../app/ui/components/factory";
-import {LandscapeModel} from "../../../app/model/landscape";
+import {SlangApp} from "../../../slang/app";
+import {AppModel} from "../../../slang/model/app";
+import {OperatorBoxComponent} from "../../../slang/ui/components/blackbox";
+import {ComponentFactory} from "../../../slang/ui/components/factory";
+import {LandscapeModel} from "../../../slang/model/landscape";
 
 export class OperatorEvaluateApp extends SlangApp {
 	protected readonly blueprintName = "slang.data.Evaluate";

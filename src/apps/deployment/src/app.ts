@@ -1,9 +1,9 @@
-import {SlangApp} from "../../../app/app";
-import {ApiService} from "../../../app/custom/api";
-import {AppModel} from "../../../app/model/app";
-import {SlangTypeValue} from "../../../app/custom/type";
-import {BlueprintInstance, BlueprintModel} from "../../../app/model/blueprint";
-import {ComponentFactory} from "../../../app/ui/components/factory";
+import {SlangApp} from "../../../slang/app";
+import {ApiService} from "../../../slang/custom/api";
+import {AppModel} from "../../../slang/model/app";
+import {SlangTypeValue} from "../../../slang/custom/type";
+import {BlueprintInstance, BlueprintModel} from "../../../slang/model/blueprint";
+import {ComponentFactory} from "../../../slang/ui/components/factory";
 
 export class DeploymentApp extends SlangApp {
 	private api: ApiService;

@@ -2,14 +2,14 @@ import "./common";
 
 import "../styles/standalone.scss";
 
-import {AppModel} from "../app/model/app";
-import {Slang} from "../app/slang";
-import {ViewFrame} from "../app/ui/frame";
-import {BlueprintModel} from "../app/model/blueprint";
+import {AppModel} from "../slang/model/app";
+import {Slang} from "../slang/slang";
+import {ViewFrame} from "../slang/ui/frame";
+import {BlueprintModel} from "../slang/model/blueprint";
 import {OperatorEvaluateApp} from "../apps/operator-evaluate/src/app";
 import {APIStorageApp} from "../apps/storage/src/app";
 import {DeploymentApp} from "../apps/deployment/src/app";
-import {componentFactory} from "../app/ui/components/factory";
+import {componentFactory} from "../slang/ui/components/factory";
 import {RouterApp} from "../apps/router/src/app";
 
 function SlangStudioStandalone(el: HTMLElement): Promise<void> {

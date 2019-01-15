@@ -2,12 +2,12 @@ import "./common";
 
 import "../styles/embedded.scss";
 
-import {AppModel} from "../app/model/app";
-import {Slang} from "../app/slang";
-import {ViewFrame} from "../app/ui/frame";
-import {LandscapeModel} from "../app/model/landscape";
+import {AppModel} from "../slang/model/app";
+import {Slang} from "../slang/slang";
+import {ViewFrame} from "../slang/ui/frame";
+import {LandscapeModel} from "../slang/model/landscape";
 import {StaticStorageApp} from "../apps/storage/src/app";
-import {componentFactory} from "../app/ui/components/factory";
+import {componentFactory} from "../slang/ui/components/factory";
 
 export function SlangStudioEmbedded(el: HTMLElement, blueprintFullName: string): Promise<void> {
 	return new Promise<void>(resolve => {
