@@ -38,7 +38,8 @@ interface SlangTypeDefPrimitive {
 
 
 export type SlangTypeDef = SlangTypeDefPrimitive | SlangTypeDefGeneric | SlangTypeDefMap | SlangTypeDefStream;
-export type SlangTypeValue = { [k: string]: any } | [] | string | number | boolean | null;
+interface SlangTypeStream extends Array<SlangTypeValue> {}
+export type SlangTypeValue = { [sub: string]: SlangTypeValue } | SlangTypeStream | string | number | boolean | null;
 
 export namespace SlangTypeDef {
 	export function isEqual(a: SlangTypeDef, b: SlangTypeDef): boolean {

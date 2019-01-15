@@ -2,6 +2,7 @@ import m, {ClassComponent, CVnode} from "mithril";
 
 import {SlangType, SlangTypeDef, SlangTypeValue, TypeIdentifier} from "../../custom/type";
 import {MithrilMouseEvent, Tk} from "./toolkit";
+import {BinaryValueType} from "./console/binary";
 import {FileValueType, ImageValueType} from "./console/file";
 import {GraphValueType} from "./console/graph";
 
@@ -53,7 +54,7 @@ export namespace Input {
 
 	export class ConsoleEntry<T> implements ClassComponent<ConsoleEntryAttrs> {
 		private type: SlangType | undefined;
-		private initValue: SlangTypeValue | undefined
+		private initValue: SlangTypeValue | undefined;
 
 		oninit({attrs}: CVnode<ConsoleEntryAttrs>) {
 			this.type = attrs.type;
@@ -104,16 +105,32 @@ export namespace Input {
 		}
 	}
 
-	interface MapInputAttrs extends Tk.InputAttrs<Map<string, any>> {
+	interface MapInputAttrs extends Tk.InputAttrs<{ [sub: string]: SlangTypeValue }> {
 		entries: IterableIterator<[string, SlangType]>
 	}
 
 	class MapInputField implements ClassComponent<MapInputAttrs> {
 		private values = new Map<string, SlangTypeValue>();
 
+		private pre(objectValue: { [sub: string]: SlangTypeValue }): Map<string, SlangTypeValue> {
+			const mapValue = new Map<string, SlangTypeValue>();
+			for (const sub in objectValue) {
+				mapValue.set(sub, objectValue[sub]);
+			}
+			return mapValue;
+		}
+
+		private post(mapValue: Map<string, SlangTypeValue>): { [sub: string]: SlangTypeValue } {
+			const objectValue: { [sub: string]: SlangTypeValue } = {};
+			mapValue.forEach((value, key) => {
+				objectValue[key] = value;
+			});
+			return objectValue;
+		}
+
 		view({attrs}: CVnode<MapInputAttrs>) {
 			if (attrs.initValue) {
-				this.values = attrs.initValue;
+				this.values = this.pre(attrs.initValue);
 			}
 
 			const labelName = attrs.label;
@@ -132,7 +149,7 @@ export namespace Input {
 								class: "",
 								onInput: (v: any) => {
 									values.set(subName, v);
-									attrs.onInput(values);
+									attrs.onInput(this.post(values));
 								}
 							})
 						)
@@ -324,6 +341,7 @@ export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {
 	}
 }
 
+ConsoleValueTypeManager.register(BinaryValueType);
 ConsoleValueTypeManager.register(FileValueType);
 ConsoleValueTypeManager.register(ImageValueType);
 ConsoleValueTypeManager.register(GraphValueType);
