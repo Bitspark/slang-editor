@@ -207,6 +207,10 @@ export class BlueprintModel extends BlackBox {
 		return this.scanChildNode(BlueprintDelegateModel, delegate => delegate.getName() === name);
 	}
 
+	public hasProperties(): boolean {
+		return this.properties.length !== 0;
+	}
+
 	public getProperties(): IterableIterator<PropertyModel> {
 		return this.properties.values();
 	}

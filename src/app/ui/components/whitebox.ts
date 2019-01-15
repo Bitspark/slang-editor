@@ -474,19 +474,21 @@ export class WhiteBoxComponent extends CellComponent {
 
 		const that = this;
 
-		operatorBox.onClick(function (evt: Event, x: number, y: number) {
-			const comp = that.createComponent({x: 0, y: 0, align: "c"})
-				.mount("M", {
-					view: () => m(PropertyForm, {
-						operator: operator,
-						onSubmit: (propAssigns: PropertyAssignments) => {
-							operator.setPropertyAssignments(propAssigns);
-							comp.destroy();
-						},
-					})
-				});
-			return true;
-		});
+		if (operator.hasProperties()) {
+			operatorBox.onClick(function (evt: Event, x: number, y: number) {
+				const comp = that.createComponent({x: 0, y: 0, align: "c"})
+					.mount("M", {
+						view: () => m(PropertyForm, {
+							operator: operator,
+							onSubmit: (propAssigns: PropertyAssignments) => {
+								operator.setPropertyAssignments(propAssigns);
+								comp.destroy();
+							},
+						})
+					});
+				return true;
+			});
+		}
 
 		return operatorBox;
 	}

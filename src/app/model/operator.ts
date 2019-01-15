@@ -94,6 +94,10 @@ export class OperatorModel extends BlackBox {
 		return this.scanChildNode(OperatorDelegateModel, delegate => delegate.getName() === name);
 	}
 
+	public hasProperties(): boolean {
+		return this.blueprint.hasProperties();
+	}
+
 	public getPropertyAssignments(): PropertyAssignments {
 		return this.properties.copy();
 	}
