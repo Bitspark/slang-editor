@@ -93,14 +93,14 @@ export class BlueprintSelectComponent extends ElementComponent {
 					onSelect: (bp: BlueprintModel) => {
 						const pos = this.shape.position();
 						const geo: Geometry = {
-							position: [pos.x, pos.y]
+							xy: {x: pos.x, y: pos.y}
 						};
 						this.blueprint.createBlankOperator(bp, geo);
 						this.destroy();
 					},
 					onHover: (bp?: BlueprintModel) => {
-						const pos = this.shape.getBBox().center();
-						this.shape = this.placeGhostRect(pos, bp);
+						const xy = this.shape.getBBox().center();
+						this.shape = this.placeGhostRect(xy, bp);
 					}
 				})
 			});

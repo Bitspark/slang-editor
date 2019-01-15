@@ -5,40 +5,48 @@ import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 import {PortGroupComponent} from "./port-group";
 import {Styles} from "../../../styles/studio";
-import {ElementComponent} from "./base";
+import {AttachableComponent, ElementComponent} from "./base";
 import {PaperView} from "../views/paper-view";
 import {Tk} from "./toolkit";
 import Button = Tk.Button;
+import {SlangSubjectTrigger} from "../../custom/events";
 
 export class BlackBoxComponent extends ElementComponent {
-	protected readonly shape: BlackBoxComponent.Rect;
+	protected shape: BlackBoxComponent.Rect;
 	protected portGroups: Array<PortGroupComponent>;
+
+	private clicked = new SlangSubjectTrigger("clicked");
 
 	constructor(paperView: PaperView, protected readonly blackBox: BlackBox, protected readonly drawGenerics: boolean) {
 		super(paperView, {x: 0, y: 0});
 		this.portGroups = BlackBoxComponent.createGroups(this.blackBox);
-
 		this.shape = new BlackBoxComponent.Rect(this.blackBox, this.portGroups);
+		this.refresh();
+	}
+
+	public refresh(): void {
+		this.portGroups = BlackBoxComponent.createGroups(this.blackBox);
+
+		if (this.shape) {
+			this.shape.remove();
+			this.shape = new BlackBoxComponent.Rect(this.blackBox, this.portGroups/*, this.shape.getBBox().center()*/);
+			this.shape.on("pointerclick", () => {
+				this.clicked.next();
+			});
+		}
 
 		this.portGroups.forEach(group => {
 			group.setParent(this.shape, this.drawGenerics);
 		});
-		
 		this.render();
-	}
-
-	public refresh(): void {
-		for (const portGroup of this.portGroups) {
-			portGroup.refreshPorts(this.drawGenerics);
-		}
 	}
 
 	public translate(tx: number, ty: number) {
 		this.shape.translate(tx, ty);
 	}
 
-	public on(event: string, handler: Function) {
-		this.shape.on(event, handler);
+	public onClick(handler: Function) {
+		this.clicked.subscribe(() => handler());
 	}
 
 	private static createGroups(blackBox: BlackBox): Array<PortGroupComponent> {
@@ -66,7 +74,7 @@ export class BlackBoxComponent extends ElementComponent {
 		const widthLeft = 0.5 / countLeft;
 		const stepLeft = 0.5 / countLeft;
 		let posLeft = 0;
-		
+
 		let right = true;
 		for (const delegate of delegates) {
 			if (right) {
@@ -104,7 +112,7 @@ export class BlackBoxComponent extends ElementComponent {
 }
 
 export class BlueprintBoxComponent extends BlackBoxComponent {
-	
+
 	constructor(paperView: PaperView, blueprint: BlueprintModel) {
 		super(paperView, blueprint, false);
 
@@ -122,13 +130,29 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 }
 
 export class OperatorBoxComponent extends BlackBoxComponent {
+	private operatorControl?: AttachableComponent;
+
 	constructor(paperView: PaperView, operator: OperatorModel) {
 		super(paperView, operator, true);
-		if (operator.position) {
-			this.updateXY(operator.position);
+		operator.subscribeChanged(() => this.refresh());
+	}
+
+	public refresh(): void {
+		super.refresh();
+
+		const operator = this.blackBox as OperatorModel;
+
+		if (operator.XY) {
+			this.updateXY(operator.XY);
 		}
-		this.createComponent({x: 0, y: 0, align: "c"})
-			.mount(" ", {
+
+		if (this.operatorControl) {
+			this.operatorControl.destroy();
+		}
+
+		this.operatorControl = this
+			.createComponent({x: 0, y: 0, align: "c"})
+			.mount("", {
 				view: () => m(Button, {
 					tooltip: "Remove operator",
 					class: "sl-danger sl-btn-icon",
@@ -138,13 +162,11 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 				}, m("i.fas.fa-times"))
 			})
 			.attachTo(this.shape, "tl");
-	
-		operator.getGenericSpecifications().subscribeGenericsChanged(() => this.refresh());
-	}
-	
-	public refresh(): void {
-		super.refresh();
-		this.getShape().attr("label/text", (this.blackBox as OperatorModel).getDisplayName());
+
+		this.shape.attr("label/text", (this.blackBox as OperatorModel).getDisplayName());
+		this.shape.on("change:position change:size", () => {
+			operator.XY = this.shape.position()
+		});
 	}
 
 }

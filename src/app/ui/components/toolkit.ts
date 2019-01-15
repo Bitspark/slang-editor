@@ -15,6 +15,29 @@ export enum Keypress {
 }
 
 export namespace Tk {
+	interface ModalAttrs {
+		title?: string,
+		onClose?: () => void
+	}
+
+	export class Modal implements ClassComponent<ModalAttrs> {
+		view({children, attrs}: CVnode<ModalAttrs>) {
+			return m(".sl-modal",
+				m(".sl-modal-content",
+					attrs.title ? m("span", attrs.title) : undefined,
+					m(Button, {
+							class: "sl-modal-close",
+							onClick: attrs.onClose ? (e: MithrilMouseEvent) => {
+								e.redraw = false;
+								attrs.onClose!();
+							} : undefined,
+						},
+						"X"
+					),
+					children));
+		}
+	}
+
 	export class Container implements ClassComponent<{}> {
 		view({children}: CVnode<{}>) {
 			return m(".sl-container", children);
@@ -150,6 +173,7 @@ export namespace Tk {
 		label: string,
 		class: string,
 		autofocus?: boolean,
+		initValue?: T,
 		onInput: (value: T) => void,
 		onchange?: (file: File) => void,
 	}
@@ -187,13 +211,13 @@ export namespace Tk {
 				{
 					name: attrs.label,
 					type: "text",
+					value: attrs.initValue,
 					oncreate: (v: CVnodeDOM<any>) => {
 						if (v.attrs.autofocus) {
 							(v.dom as HTMLElement).focus();
 						}
 					},
 					oninput: m.withAttr("value", function (v: string) {
-						console.log(">>>", JSON.stringify(v));
 						attrs.onInput(v);
 					}),
 					autofocus: attrs.autofocus
@@ -208,6 +232,7 @@ export namespace Tk {
 				{
 					name: attrs.label,
 					type: "number",
+					value: attrs.initValue,
 					oncreate: (v: CVnodeDOM<any>) => {
 						if (v.attrs.autofocus) {
 							(v.dom as HTMLElement).focus();
@@ -228,6 +253,7 @@ export namespace Tk {
 				{
 					name: attrs.label,
 					type: "checkbox",
+					value: attrs.initValue,
 					oncreate: (v: CVnodeDOM<any>) => {
 						if (v.attrs.autofocus) {
 							(v.dom as HTMLElement).focus();

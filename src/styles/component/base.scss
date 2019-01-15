@@ -1,18 +1,19 @@
 .sl-container {
 	@extend %translucent;
 	display: block;
+}
 
-	> .sl-box {
+.sl-box {
+	@extend %rounded;
+	@extend %hovering;
+	padding: 2px;
+	overflow: hidden;
+
+	> * {
 		@extend %rounded;
-		@extend %hovering;
-		padding: 2px;
-		overflow: hidden;
-
-		> * {
-			@extend %rounded;
-		}
 	}
 }
 
 @import "console";
 @import "blueprint-select";
+@import "property-form";

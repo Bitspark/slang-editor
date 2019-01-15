@@ -77,9 +77,9 @@ export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApi
 function operatorModelToJSON(operator: OperatorModel): OperatorApiResponse {
 	return {
 		operator: operator.getBlueprint().getFullName(),
-		properties: iter2map<[string, PropertyAssignment], PropertyAssignmentsApiResponse>(operator.getPropertyAssignments().getIterator(),
-			(result, [name, propAssign]) => {
-				result[name] = propAssign.getValue();
+		properties: iter2map<PropertyAssignment, PropertyAssignmentsApiResponse>(operator.getPropertyAssignments().getIterator(),
+			(result, propAssign) => {
+				result[propAssign.getPropertyName()] = propAssign.getValue();
 			}),
 		generics: iter2map<[string, SlangType], GenericSpecificationsApiResponse>(operator.getGenericSpecifications().getIterator(),
 			(result, [name, type]) => {

@@ -483,7 +483,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		destination.disconnected.next(this);
 	}
 
-	private disconnectAll() {
+	public disconnectAll() {
 		if (this.isSource()) {
 			for (const destination of this.connectedWith) {
 				this.disconnectTo(destination);

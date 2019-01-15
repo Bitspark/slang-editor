@@ -76,7 +76,7 @@ export class BlueprintModel extends BlackBox {
 		return this.fakeGenerics;
 	}
 
-	private instantiateOperator(operator: OperatorModel) {
+	public instantiateOperator(operator: OperatorModel) {
 		const properties = operator.getPropertyAssignments();
 		const generics = operator.getGenericSpecifications();
 
@@ -205,6 +205,10 @@ export class BlueprintModel extends BlackBox {
 
 	public findDelegate(name: string): BlueprintDelegateModel | undefined {
 		return this.scanChildNode(BlueprintDelegateModel, delegate => delegate.getName() === name);
+	}
+
+	public hasProperties(): boolean {
+		return this.properties.length !== 0;
 	}
 
 	public getProperties(): IterableIterator<PropertyModel> {

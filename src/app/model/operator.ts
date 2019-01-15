@@ -3,10 +3,11 @@ import {OperatorPortModel, PortModelArgs} from "./port";
 import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
 import {BlackBox} from "../custom/nodes";
 import {Connections} from "../custom/connections";
-import {SlangBehaviorSubject} from "../custom/events";
+import {SlangBehaviorSubject, SlangSubjectTrigger} from "../custom/events";
 import {PropertyAssignments} from "./property";
 import {TypeIdentifier} from "../custom/type";
 import {GenericSpecifications} from "../custom/generics";
+import {XY} from "../ui/components/base";
 
 export type OperatorModelArgs = {
 	name: string,
@@ -23,7 +24,7 @@ export type OperatorModelArgs = {
 }
 
 export interface Geometry {
-	position: [number, number]
+	xy: XY
 }
 
 export class OperatorModel extends BlackBox {
@@ -31,12 +32,13 @@ export class OperatorModel extends BlackBox {
 	// Topics
 	// self
 	private selected = new SlangBehaviorSubject<boolean>("selected", false);
+	private changed = new SlangSubjectTrigger("changed");
 
 	private readonly name: string;
 	private readonly blueprint: BlueprintModel;
-	private readonly geometry: Geometry | undefined;
-	private readonly properties: PropertyAssignments;
-	private readonly generics: GenericSpecifications;
+	private geometry: Geometry | undefined;
+	private properties: PropertyAssignments;
+	private generics: GenericSpecifications;
 
 	constructor(parent: BlueprintModel, args: OperatorModelArgs) {
 		super(parent, false);
@@ -51,6 +53,11 @@ export class OperatorModel extends BlackBox {
 			this.properties = new PropertyAssignments(Array.from(args.blueprint.getProperties()));
 			this.generics = new GenericSpecifications(Array.from(args.blueprint.getGenericIdentifiers()));
 		}
+
+		// TODO use same method for properties changed
+		this.generics.subscribeGenericsChanged(() => {
+			this.update()
+		});
 	}
 
 	public getName(): string {
@@ -73,6 +80,12 @@ export class OperatorModel extends BlackBox {
 		return this.createChildNode(OperatorPortModel, args);
 	}
 
+	private removePorts() {
+		for (const port of this.getPorts()) {
+			port.destroy();
+		}
+	}
+
 	public getDelegates(): IterableIterator<OperatorDelegateModel> {
 		return this.getChildNodes(OperatorDelegateModel);
 	}
@@ -81,11 +94,27 @@ export class OperatorModel extends BlackBox {
 		return this.scanChildNode(OperatorDelegateModel, delegate => delegate.getName() === name);
 	}
 
+	public hasProperties(): boolean {
+		return this.blueprint.hasProperties();
+	}
+
 	public getPropertyAssignments(): PropertyAssignments {
-		return this.properties;
+		return this.properties.copy();
+	}
+
+	public setPropertyAssignments(propAssignments: PropertyAssignments) {
+		if (this.properties.isEqual(propAssignments))
+			return;
+
+		this.properties = propAssignments;
+		this.removePorts();
+		this.blueprint.instantiateOperator(this);
+
+		this.update();
 	}
 
 	public getGenericSpecifications(): GenericSpecifications {
+		// TODO return copy to prevent side-effects
 		return this.generics;
 	}
 
@@ -122,23 +151,26 @@ export class OperatorModel extends BlackBox {
 	public getConnectionsTo(): Connections {
 		const connections = new Connections();
 
-		// First, handle operator out-ports
-		const portOut = this.getPortOut();
-		if (portOut) {
-			connections.addConnections(portOut.getConnectionsTo());
-		}
-
-		// Then, handle delegate out-ports
-		for (const delegate of this.getChildNodes(OperatorDelegateModel)) {
-			connections.addConnections(delegate.getConnectionsTo());
+		for (const port of this.getPorts()) {
+			connections.addConnections(port.getConnectionsTo());
 		}
 
 		return connections;
 	}
 
-	public get position(): { x: number, y: number } | undefined {
+	public get XY(): XY | undefined {
 		if (this.geometry) {
-			return {x: this.geometry.position[0], y: this.geometry.position[1]};
+			return this.geometry.xy;
+		}
+	}
+
+	public set XY(xy: XY | undefined) {
+		if (xy) {
+			if (!this.geometry) {
+				this.geometry = {xy}
+			} else {
+				this.geometry.xy = xy;
+			}
 		}
 	}
 
@@ -147,9 +179,17 @@ export class OperatorModel extends BlackBox {
 		return this.createChildNode(OperatorDelegateModel, args);
 	}
 
+	public update() {
+		this.changed.next();
+	}
+
 	public select() {
 		if (!this.selected.getValue()) {
 			this.selected.next(true);
 		}
+	}
+
+	public subscribeChanged(cb: () => void): void {
+		this.changed.subscribe(cb);
 	}
 }

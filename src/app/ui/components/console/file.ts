@@ -31,6 +31,7 @@ export const FileValueType: ConsoleValueType<{ file: string, name: string }> = {
 		view({attrs}: CVnode<Input.ValueTypeAttrs<{ file: string, name: string }>>) {
 			const origOnInput = attrs.onInput;
 			return m(Tk.FileInput, Object.assign(attrs, {
+				initValue: undefined,
 				onInput: (file: File) => {
 					selectFile(file, ({content, name}) => {
 						origOnInput({file: content, name: name});
@@ -54,6 +55,7 @@ export const ImageValueType: ConsoleValueType<{ image: string, name: string }> =
 		view({attrs}: CVnode<Input.ValueTypeAttrs<{ image: string, name: string }>>) {
 			const origOnInput = attrs.onInput;
 			return m(Tk.ImageInput, Object.assign(attrs, {
+				initValue: undefined,
 				onInput: (file: File) => {
 					selectFile(file, ({content, name}) => {
 						origOnInput({image: content, name: name});

@@ -2,6 +2,7 @@ import m, {ClassComponent, CVnode} from "mithril";
 
 import {SlangType, SlangTypeDef, SlangTypeValue, TypeIdentifier} from "../../custom/type";
 import {MithrilMouseEvent, Tk} from "./toolkit";
+import {BinaryValueType} from "./console/binary";
 import {FileValueType, ImageValueType} from "./console/file";
 import {GraphValueType} from "./console/graph";
 
@@ -14,51 +15,6 @@ export type ConsoleValueType<T> = {
 export class ConsoleValueTypeManager {
 	private static components: Array<ConsoleValueType<any>> = [];
 
-	private static isEqual(a: SlangTypeDef, b: SlangTypeDef): boolean {
-		if (a.type !== b.type) {
-			return false;
-		}
-
-		switch (a.type) {
-			case TypeIdentifier.Map:
-				const aMap = a.map;
-
-				if (b.type !== TypeIdentifier.Map) {
-					return false;
-				}
-
-				const bMap = b.map;
-
-				for (let propKey in aMap) {
-					if (aMap.hasOwnProperty(propKey)) {
-						if (bMap.hasOwnProperty(propKey)) {
-							if (!ConsoleValueTypeManager.isEqual(aMap[propKey], bMap[propKey])) {
-								return false;
-							}
-						} else {
-							return false;
-						}
-					}
-				}
-				break;
-
-			case TypeIdentifier.Stream:
-				if (b.type !== TypeIdentifier.Stream) {
-					return false;
-				}
-
-				if (!ConsoleValueTypeManager.isEqual(a.stream, b.stream)) {
-					return false;
-				}
-				break;
-
-			case TypeIdentifier.Generic:
-				return false;
-		}
-
-		return true;
-	}
-
 	public static register(comp: ConsoleValueType<any>) {
 		if (comp.input || comp.output) {
 			ConsoleValueTypeManager.components.unshift(comp);
@@ -69,7 +25,7 @@ export class ConsoleValueTypeManager {
 
 	public static findInput(type: SlangType): Input.ValueType<any> | undefined {
 		const foundInpComps = ConsoleValueTypeManager.components
-			.filter((comp: ConsoleValueType<any>) => !!comp.input && ConsoleValueTypeManager.isEqual(comp.typeDef, type.getTypeDef()));
+			.filter((comp: ConsoleValueType<any>) => !!comp.input && SlangTypeDef.isEqual(comp.typeDef, type.getTypeDef()));
 		if (foundInpComps.length) {
 			return foundInpComps[0].input;
 		}
@@ -77,7 +33,7 @@ export class ConsoleValueTypeManager {
 
 	public static findOutput(type: SlangType): Output.ValueType<any> | undefined {
 		const foundOutComps = ConsoleValueTypeManager.components
-			.filter((comp: ConsoleValueType<any>) => !!comp.output && ConsoleValueTypeManager.isEqual(comp.typeDef, type.getTypeDef()));
+			.filter((comp: ConsoleValueType<any>) => !!comp.output && SlangTypeDef.isEqual(comp.typeDef, type.getTypeDef()));
 		if (foundOutComps.length) {
 			return foundOutComps[0].output;
 		}
@@ -98,9 +54,11 @@ export namespace Input {
 
 	export class ConsoleEntry<T> implements ClassComponent<ConsoleEntryAttrs> {
 		private type: SlangType | undefined;
+		private initValue: SlangTypeValue | undefined;
 
 		oninit({attrs}: CVnode<ConsoleEntryAttrs>) {
 			this.type = attrs.type;
+			this.initValue = attrs.initValue;
 		}
 
 		private getInputComponent(attrs: ConsoleEntryAttrs): any {
@@ -147,15 +105,34 @@ export namespace Input {
 		}
 	}
 
-	interface MapInputAttrs extends Tk.InputAttrs<{}> {
+	interface MapInputAttrs extends Tk.InputAttrs<{ [sub: string]: SlangTypeValue }> {
 		entries: IterableIterator<[string, SlangType]>
 	}
 
-
 	class MapInputField implements ClassComponent<MapInputAttrs> {
-		private values: { [subName: string]: any } = {};
+		private values = new Map<string, SlangTypeValue>();
+
+		private pre(objectValue: { [sub: string]: SlangTypeValue }): Map<string, SlangTypeValue> {
+			const mapValue = new Map<string, SlangTypeValue>();
+			for (const sub in objectValue) {
+				mapValue.set(sub, objectValue[sub]);
+			}
+			return mapValue;
+		}
+
+		private post(mapValue: Map<string, SlangTypeValue>): { [sub: string]: SlangTypeValue } {
+			const objectValue: { [sub: string]: SlangTypeValue } = {};
+			mapValue.forEach((value, key) => {
+				objectValue[key] = value;
+			});
+			return objectValue;
+		}
 
 		view({attrs}: CVnode<MapInputAttrs>) {
+			if (attrs.initValue) {
+				this.values = this.pre(attrs.initValue);
+			}
+
 			const labelName = attrs.label;
 			const labelText = (labelName) ? `${attrs.label}:` : "";
 			const values = this.values;
@@ -168,10 +145,11 @@ export namespace Input {
 						.map(([subName, subType]) => m(ConsoleEntry, {
 								label: subName,
 								type: subType,
+								initValue: this.values.get(subName),
 								class: "",
 								onInput: (v: any) => {
-									values[subName] = v;
-									attrs.onInput(values);
+									values.set(subName, v);
+									attrs.onInput(this.post(values));
 								}
 							})
 						)
@@ -180,7 +158,7 @@ export namespace Input {
 		}
 	}
 
-	interface StreamInputAttrs extends Tk.InputAttrs<{}> {
+	interface StreamInputAttrs extends Tk.InputAttrs<Array<any>> {
 		type: SlangType
 	}
 
@@ -195,6 +173,10 @@ export namespace Input {
 			const labelName = attrs.label;
 			const labelText = (labelName) ? `${attrs.label}:` : "";
 			const that = this;
+
+			if (attrs.initValue) {
+				this.values = attrs.initValue;
+			}
 
 			return m(".sl-inp-grp.stream", {class: attrs.class},
 				m("label", {
@@ -214,6 +196,7 @@ export namespace Input {
 								m(ConsoleEntry, {
 									label: "", class: "",
 									type: attrs.type,
+									initValue: entry,
 									onInput: (v: any) => {
 										that.values[index] = v;
 										attrs.onInput(that.getValues());
@@ -303,10 +286,11 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 		return this.value !== undefined;
 	}
 
-	private renderInput(type: SlangType): m.Children {
+	private renderInput(type: SlangType, initValue: SlangTypeValue | undefined): m.Children {
 		return m(Input.ConsoleEntry, {
 			label: "", class: "",
 			type: type!,
+			initValue: initValue,
 			onInput: (v: any) => {
 				this.value = v;
 			}
@@ -318,7 +302,7 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 		return m("form.sl-console-in", {
 				class: (that.isValid() ? "sl-invalid" : "")
 			},
-			this.renderInput(this.type!),
+			this.renderInput(this.type!, undefined),
 			m(Tk.Button, {
 				full: true,
 				notAllowed: !that.isValid(),
@@ -357,6 +341,7 @@ export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {
 	}
 }
 
+ConsoleValueTypeManager.register(BinaryValueType);
 ConsoleValueTypeManager.register(FileValueType);
 ConsoleValueTypeManager.register(ImageValueType);
 ConsoleValueTypeManager.register(GraphValueType);

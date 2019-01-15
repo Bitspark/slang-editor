@@ -38,7 +38,55 @@ interface SlangTypeDefPrimitive {
 
 
 export type SlangTypeDef = SlangTypeDefPrimitive | SlangTypeDefGeneric | SlangTypeDefMap | SlangTypeDefStream;
-export type SlangTypeValue = { [k: string]: any } | [] | string | number | boolean | null;
+interface SlangTypeStream extends Array<SlangTypeValue> {}
+export type SlangTypeValue = { [sub: string]: SlangTypeValue } | SlangTypeStream | string | number | boolean | null;
+
+export namespace SlangTypeDef {
+	export function isEqual(a: SlangTypeDef, b: SlangTypeDef): boolean {
+		if (a.type !== b.type) {
+			return false;
+		}
+
+		switch (a.type) {
+			case TypeIdentifier.Map:
+				const aMap = a.map;
+
+				if (b.type !== TypeIdentifier.Map) {
+					return false;
+				}
+
+				const bMap = b.map;
+
+				for (let propKey in aMap) {
+					if (aMap.hasOwnProperty(propKey)) {
+						if (bMap.hasOwnProperty(propKey)) {
+							if (!isEqual(aMap[propKey], bMap[propKey])) {
+								return false;
+							}
+						} else {
+							return false;
+						}
+					}
+				}
+				break;
+
+			case TypeIdentifier.Stream:
+				if (b.type !== TypeIdentifier.Stream) {
+					return false;
+				}
+
+				if (!isEqual(a.stream, b.stream)) {
+					return false;
+				}
+				break;
+
+			case TypeIdentifier.Generic:
+				return false;
+		}
+
+		return true;
+	}
+}
 
 export class SlangType {
 	private readonly mapSubs: Map<string, SlangType> | undefined;
