@@ -36,27 +36,25 @@ export class PropertyForm implements ClassComponent<PropertyFormAttrs> {
 			onInput: (v: any) => {
 				this.propAssigns!.assign(propName, v);
 			}
-		})
-			;
+		});
 	}
 
 	view({attrs}: CVnode<PropertyFormAttrs>): any {
-		const that = this;
 		const operator = this.operator!;
 		const blueprint = this.blueprint!;
 
 		return m("form.sl-property.sl-console-in", {
-				class: (that.isValid() ? "sl-invalid" : "")
+				class: (this.isValid() ? "sl-invalid" : "")
 			},
 			m("h4", `Properties of "${blueprint.getShortName()}"`),
 			Array.from(blueprint.getProperties()).map((property) => {
-				return that.renderPropertyInput(operator, property);
+				return this.renderPropertyInput(operator, property);
 			}),
 			m(Tk.Button, {
 					full: true,
-					notAllowed: !that.isValid(),
-					onClick: that.isValid ? (e: MithrilMouseEvent) => {
-						attrs.onSubmit(that.propAssigns!);
+					notAllowed: !this.isValid(),
+					onClick: this.isValid ? (e: MithrilMouseEvent) => {
+						attrs.onSubmit(this.propAssigns!);
 					} : undefined
 				}, "Save"
 			)

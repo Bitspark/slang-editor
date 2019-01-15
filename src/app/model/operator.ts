@@ -38,7 +38,7 @@ export class OperatorModel extends BlackBox {
 	private readonly blueprint: BlueprintModel;
 	private geometry: Geometry | undefined;
 	private properties: PropertyAssignments;
-	private generics: GenericSpecifications;
+	private readonly generics: GenericSpecifications;
 
 	constructor(parent: BlueprintModel, args: OperatorModelArgs) {
 		super(parent, false);
@@ -80,7 +80,13 @@ export class OperatorModel extends BlackBox {
 		return this.createChildNode(OperatorPortModel, args);
 	}
 
-	private removePorts() {
+	private removeDelegates() {
+		for (const delegate of this.getDelegates()) {
+			delegate.destroy();
+		}
+	}
+
+	private removeMainPorts() {
 		for (const port of this.getPorts()) {
 			port.destroy();
 		}
@@ -103,11 +109,13 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public setPropertyAssignments(propAssignments: PropertyAssignments) {
-		if (this.properties.isEqual(propAssignments))
+		if (this.properties.isEqual(propAssignments)) {
 			return;
+		}
 
 		this.properties = propAssignments;
-		this.removePorts();
+		this.removeDelegates();
+		this.removeMainPorts();
 		this.blueprint.instantiateOperator(this);
 
 		this.update();
