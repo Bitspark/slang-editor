@@ -103,8 +103,9 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public setPropertyAssignments(propAssignments: PropertyAssignments) {
-		if (this.properties.isEqual(propAssignments))
+		if (this.properties.isEqual(propAssignments)) {
 			return;
+		}
 
 		this.properties = propAssignments;
 		this.removePorts();

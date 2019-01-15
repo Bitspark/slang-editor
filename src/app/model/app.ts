@@ -9,17 +9,19 @@ export class AppModel extends SlangNode {
 
 	private openedBlueprint = new SlangBehaviorSubject<BlueprintModel | null>("opened-blueprint", null);
 	private openedLandscape = new SlangBehaviorSubject<LandscapeModel | null>("opened-landscape", null);
+	private ready = new SlangBehaviorSubject<boolean>("ready", false);
 	private loadRequested = new SlangSubjectTrigger("load-requested");
 	private storeRequested = new SlangSubject<BlueprintModel>("save-requested");
 
 	private readonly name: string;
+	private readonly landscape: LandscapeModel;
 	private loading: Array<Promise<void>> = [];
 
 	public constructor({name}: AppModelArgs) {
 		super(null);
 		this.name = name;
-		const landscape = this.createChildNode(LandscapeModel, {});
-		this.subscribeLandscape(landscape);
+		this.landscape = this.createChildNode(LandscapeModel, {});
+		this.subscribeLandscape(this.landscape);
 	}
 
 	public static create(name: string): AppModel {
@@ -75,6 +77,7 @@ export class AppModel extends SlangNode {
 			const loading = this.loading;
 			this.loading = [];
 			await Promise.all(loading);
+			this.ready.next(true);
 			resolve();
 		});
 	}
@@ -87,6 +90,10 @@ export class AppModel extends SlangNode {
 
 	public subscribeOpenedLandscapeChanged(cb: (landscape: LandscapeModel | null) => void) {
 		this.openedLandscape.subscribe(cb);
+	}
+
+	public subscribeReady(cb: (readyState: boolean) => void) {
+		this.ready.subscribe(cb);
 	}
 
 	public subscribeLoadRequested(cb: () => Promise<void>) {

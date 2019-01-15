@@ -1,17 +1,21 @@
-import {ApiService, BlueprintApiResponse} from "../custom/api";
-import {AppModel} from "../model/app";
-import {blueprintModelToJSON, fillLandscape} from "../custom/mapper";
-import {SlangPlugin} from "./plugin";
-import {LandscapeModel} from "../model/landscape";
-import {BlueprintModel} from "../model/blueprint";
+import {SlangApp} from "../../../app/app";
+import {ApiService, BlueprintApiResponse} from "../../../app/custom/api";
+import {AppModel} from "../../../app/model/app";
+import {BlueprintModel} from "../../../app/model/blueprint";
+import {blueprintModelToJSON, fillLandscape} from "../../../app/custom/mapper";
+import {LandscapeModel} from "../../../app/model/landscape";
+import {ComponentFactory} from "../../../app/ui/components/factory";
 
-export class APIStoragePlugin extends SlangPlugin {
+export class APIStorageApp extends SlangApp {
 	private api: ApiService;
 
-	constructor(app: AppModel, host: string) {
-		super(app);
+	constructor(app: AppModel, componentFactory: ComponentFactory, host: string) {
+		super(app, componentFactory);
 		this.api = new ApiService(host);
 		this.subscribe();
+	}
+
+	protected onReady(): void {
 	}
 
 	private subscribe() {
@@ -21,7 +25,6 @@ export class APIStoragePlugin extends SlangPlugin {
 		this.app.subscribeStoreRequested((blueprint: BlueprintModel) => {
 			return this.store(blueprint);
 		});
-
 	}
 
 	private async load(): Promise<void> {
@@ -37,11 +40,14 @@ export class APIStoragePlugin extends SlangPlugin {
 	}
 }
 
-export class StaticStoragePlugin extends SlangPlugin {
+export class StaticStorageApp extends SlangApp {
 
-	constructor(app: AppModel, private url: string) {
-		super(app);
+	constructor(app: AppModel, componentFactory: ComponentFactory, private url: string) {
+		super(app, componentFactory);
 		this.subscribe();
+	}
+
+	protected onReady(): void {
 	}
 
 	private subscribe() {
@@ -61,5 +67,4 @@ export class StaticStoragePlugin extends SlangPlugin {
 				});
 		});
 	}
-
 }

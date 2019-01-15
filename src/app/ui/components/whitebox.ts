@@ -20,6 +20,7 @@ import Button = Tk.Button;
 import {InputConsole, OutputConsole} from "./console";
 import {PropertyForm} from "./property-form";
 import {PropertyAssignments} from "../../model/property";
+import {componentFactory} from "./factory";
 
 export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 120;
@@ -469,7 +470,9 @@ export class WhiteBoxComponent extends CellComponent {
 	}
 
 	private addOperator(operator: OperatorModel): OperatorBoxComponent {
-		const operatorBox = new OperatorBoxComponent(this.paperView, operator);
+
+		const operatorBox = componentFactory.createOperatorComponent(this.paperView, operator);
+
 		this.operators.push(operatorBox);
 
 		const that = this;
