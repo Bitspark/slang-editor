@@ -15,7 +15,7 @@ export class BlackBoxComponent extends ElementComponent {
 	protected shape: BlackBoxComponent.Rect;
 	protected portGroups: Array<PortGroupComponent>;
 
-	private clicked = new SlangSubjectTrigger("save-changes");
+	private clicked = new SlangSubjectTrigger("clicked");
 
 	constructor(paperView: PaperView, protected readonly blackBox: BlackBox, protected readonly drawGenerics: boolean) {
 		super(paperView, {x: 0, y: 0});

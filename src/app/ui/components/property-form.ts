@@ -32,7 +32,7 @@ export class PropertyForm implements ClassComponent<PropertyFormAttrs> {
 		return m(Input.ConsoleEntry, {
 			label: propName, class: "",
 			type: type!,
-			initValue: this.propAssigns!.has(propName) ? this.propAssigns!.getByName(propName).getValue() : undefined,
+			initValue: this.propAssigns!.has(propName) ? this.propAssigns!.get(property).getValue() : undefined,
 			onInput: (v: any) => {
 				this.propAssigns!.assign(propName, v);
 			}
@@ -56,7 +56,7 @@ export class PropertyForm implements ClassComponent<PropertyFormAttrs> {
 					full: true,
 					notAllowed: !that.isValid(),
 					onClick: that.isValid ? (e: MithrilMouseEvent) => {
-						attrs.onSubmit(this.propAssigns!);
+						attrs.onSubmit(that.propAssigns!);
 					} : undefined
 				}, "Save"
 			)

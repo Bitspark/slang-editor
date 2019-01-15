@@ -14,51 +14,6 @@ export type ConsoleValueType<T> = {
 export class ConsoleValueTypeManager {
 	private static components: Array<ConsoleValueType<any>> = [];
 
-	private static isEqual(a: SlangTypeDef, b: SlangTypeDef): boolean {
-		if (a.type !== b.type) {
-			return false;
-		}
-
-		switch (a.type) {
-			case TypeIdentifier.Map:
-				const aMap = a.map;
-
-				if (b.type !== TypeIdentifier.Map) {
-					return false;
-				}
-
-				const bMap = b.map;
-
-				for (let propKey in aMap) {
-					if (aMap.hasOwnProperty(propKey)) {
-						if (bMap.hasOwnProperty(propKey)) {
-							if (!ConsoleValueTypeManager.isEqual(aMap[propKey], bMap[propKey])) {
-								return false;
-							}
-						} else {
-							return false;
-						}
-					}
-				}
-				break;
-
-			case TypeIdentifier.Stream:
-				if (b.type !== TypeIdentifier.Stream) {
-					return false;
-				}
-
-				if (!ConsoleValueTypeManager.isEqual(a.stream, b.stream)) {
-					return false;
-				}
-				break;
-
-			case TypeIdentifier.Generic:
-				return false;
-		}
-
-		return true;
-	}
-
 	public static register(comp: ConsoleValueType<any>) {
 		if (comp.input || comp.output) {
 			ConsoleValueTypeManager.components.unshift(comp);
@@ -69,7 +24,7 @@ export class ConsoleValueTypeManager {
 
 	public static findInput(type: SlangType): Input.ValueType<any> | undefined {
 		const foundInpComps = ConsoleValueTypeManager.components
-			.filter((comp: ConsoleValueType<any>) => !!comp.input && ConsoleValueTypeManager.isEqual(comp.typeDef, type.getTypeDef()));
+			.filter((comp: ConsoleValueType<any>) => !!comp.input && SlangTypeDef.isEqual(comp.typeDef, type.getTypeDef()));
 		if (foundInpComps.length) {
 			return foundInpComps[0].input;
 		}
@@ -77,7 +32,7 @@ export class ConsoleValueTypeManager {
 
 	public static findOutput(type: SlangType): Output.ValueType<any> | undefined {
 		const foundOutComps = ConsoleValueTypeManager.components
-			.filter((comp: ConsoleValueType<any>) => !!comp.output && ConsoleValueTypeManager.isEqual(comp.typeDef, type.getTypeDef()));
+			.filter((comp: ConsoleValueType<any>) => !!comp.output && SlangTypeDef.isEqual(comp.typeDef, type.getTypeDef()));
 		if (foundOutComps.length) {
 			return foundOutComps[0].output;
 		}

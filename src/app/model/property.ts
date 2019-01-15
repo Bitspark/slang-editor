@@ -1,4 +1,4 @@
-import {TypeIdentifier, SlangType} from "../custom/type";
+import {TypeIdentifier, SlangType, SlangTypeValue} from "../custom/type";
 
 export class PropertyModel {
 	public constructor(private name: string, private type: SlangType) {
@@ -16,13 +16,17 @@ export class PropertyModel {
 		return this.type.getTypeIdentifier();
 	}
 
-	public define(value: any): PropertyAssignment {
+	public define(value: SlangTypeValue): PropertyAssignment {
 		return new PropertyAssignment(this, value);
 	}
 }
 
 export class PropertyAssignment {
 	public constructor(private property: PropertyModel, private value: any) {
+	}
+
+	public getProperty(): PropertyModel {
+		return this.property;
 	}
 
 	public getValue(): any {
@@ -32,10 +36,14 @@ export class PropertyAssignment {
 	public isStream(): boolean {
 		return this.property.getTypeIdentifier() === TypeIdentifier.Stream;
 	}
+
+	public isEqual(other: PropertyAssignment): boolean {
+		return this.property === other.property && this.value == other.value;
+	}
 }
 
 export class PropertyAssignments {
-	private name2Prop: Map<string, PropertyModel>;
+	private readonly name2Prop: Map<string, PropertyModel>;
 	private name2propAssign: Map<string, PropertyAssignment>;
 
 	public constructor(properties: Array<PropertyModel>) {
@@ -54,11 +62,24 @@ export class PropertyAssignments {
 		}
 
 		return propAssigns;
+	}
 
+	public isEqual(other: PropertyAssignments): boolean {
+		for (const propAssign of this.getIterator2()) {
+			const prop = propAssign.getProperty();
+			if (!(other.has(prop) && propAssign.isEqual(other.get(prop)))) {
+				return false;
+			}
+		}
+		return true
 	}
 
 	public getIterator(): IterableIterator<[string, PropertyAssignment]> {
 		return this.name2propAssign.entries();
+	}
+
+	public getIterator2(): IterableIterator<PropertyAssignment> {
+		return this.name2propAssign.values();
 	}
 
 	public assign(propertyName: string, propertyValue: any): PropertyAssignment {
@@ -71,7 +92,14 @@ export class PropertyAssignments {
 		return def;
 	}
 
-	public has(propertyName: string): boolean {
+	public get(property: PropertyModel): PropertyAssignment {
+		return this.getByName(property.getName());
+	}
+
+	public has(propertyName: string | PropertyModel): boolean {
+		if (propertyName instanceof PropertyModel) {
+			propertyName = propertyName.getName();
+		}
 		return this.name2propAssign.has(propertyName);
 	}
 
