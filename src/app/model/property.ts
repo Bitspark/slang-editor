@@ -69,6 +69,10 @@ export class PropertyAssignments {
 	}
 
 	public isEqual(other: PropertyAssignments): boolean {
+		if (this.name2propAssign.size !== other.name2propAssign.size) {
+			return false
+		}
+
 		for (const propAssign of this.getIterator()) {
 			const prop = propAssign.getProperty();
 			if (!(other.has(prop) && propAssign.isEqual(other.get(prop)))) {
