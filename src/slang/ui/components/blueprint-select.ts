@@ -130,7 +130,7 @@ export class BlueprintSelectComponent extends ElementComponent {
 			.map(([bp, _]: [BlueprintModel, number]) => bp);
 
 		for (const bp of this.landscape.getChildNodes(BlueprintModel)) {
-			if (blueprints.length < 20) {
+			if (blueprints.length < 60) {
 				if (this.isFilterExprIncluded(bp)) {
 					if (blueprints.indexOf(bp) < 0) {
 						blueprints.push(bp);
