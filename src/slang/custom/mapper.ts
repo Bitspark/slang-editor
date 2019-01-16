@@ -215,9 +215,9 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
 				if (!blueprint) {
 					throw `unknown blueprint '${opData.operator}'`;
 				}
-				const genSpeci = createGenericSpecifications(blueprint, opData.generics);
-				const propAssigns = createPropertyAssignments(blueprint, opData.properties, genSpeci);
 				try {
+					const genSpeci = createGenericSpecifications(blueprint, opData.generics);
+					const propAssigns = createPropertyAssignments(blueprint, opData.properties, genSpeci);
 					outerBlueprint.createOperator(opName, blueprint, propAssigns, genSpeci);
 				} catch (e) {
 					throw new Error(`${outerBlueprint.getFullName()}: ${e} (${blueprint.getFullName()})`);

@@ -24,7 +24,6 @@ export class PropertyAssignment {
 	public constructor(private property: PropertyModel, private value: SlangTypeValue | undefined, private generics: GenericSpecifications | null) {
 		const propertyType = property.getType();	
 		if (propertyType.getTypeIdentifier() === TypeIdentifier.Generic) {
-			console.log(propertyType);
 			if (generics) {
 				generics.subscribeGenericTypeChanged(propertyType.getGenericIdentifier(), type => {
 					this.type = type;

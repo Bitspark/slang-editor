@@ -23,7 +23,7 @@ export class GenericSpecifications {
 	
 	public specify(identifier: string, type: SlangType): void {
 		if (this.genericIdentifiers.indexOf(identifier) === -1) {
-			throw `unknown generic identifier ${identifier}`;
+			throw new Error(`unknown generic identifier ${identifier}`);
 		}
 		const subject = this.getSubject(identifier, type);
 		if (subject.getValue() !== type) {
@@ -35,11 +35,11 @@ export class GenericSpecifications {
 	public get(identifier: string): SlangType {
 		const generic = this.genericTypes.get(identifier);
 		if (!generic) {
-			throw `generic is not specified: ${identifier}`;
+			throw new Error(`generic is not specified: ${identifier}`);
 		}
 		const type = generic.getValue();
 		if (!type) {
-			throw `generic is not specified: ${identifier}`;
+			throw new Error(`generic is not specified: ${identifier}`);
 		}
 		return type;
 	}
