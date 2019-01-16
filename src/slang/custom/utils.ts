@@ -34,8 +34,8 @@ export class PropertyEvaluator {
 		if (!propAssigns.has(exprPart)) {
 			return [];
 		}
-
-		const propAssign = propAssigns.getByName(exprPart);
+		
+		const propAssign = propAssigns.get(exprPart);
 		const propValue: any = propAssign.getValue();
 
 		if (propAssign.isStream()) {

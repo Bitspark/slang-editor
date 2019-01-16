@@ -1,4 +1,5 @@
-import {TypeIdentifier, SlangType, SlangTypeValue} from "../custom/type";
+import {copySlangTypeValue, SlangType, SlangTypeValue, TypeIdentifier} from "../custom/type";
+import {GenericSpecifications} from "../custom/generics";
 
 export class PropertyModel {
 	public constructor(private name: string, private type: SlangType) {
@@ -15,25 +16,38 @@ export class PropertyModel {
 	public getTypeIdentifier(): TypeIdentifier {
 		return this.type.getTypeIdentifier();
 	}
-
-	public define(value: SlangTypeValue): PropertyAssignment {
-		return new PropertyAssignment(this, value);
-	}
 }
 
 export class PropertyAssignment {
-	public constructor(private property: PropertyModel, private value: any) {
+	private type: SlangType | null = null;
+	
+	public constructor(private property: PropertyModel, private value: SlangTypeValue | undefined, private generics: GenericSpecifications | null) {
+		const propertyType = property.getType();	
+		if (propertyType.getTypeIdentifier() === TypeIdentifier.Generic) {
+			console.log(propertyType);
+			if (generics) {
+				generics.subscribeGenericTypeChanged(propertyType.getGenericIdentifier(), type => {
+					this.type = type;
+				});
+			}
+		} else {
+			this.type = property.getType();
+		}
 	}
 
 	public getProperty(): PropertyModel {
 		return this.property;
 	}
 
-	public getPropertyName(): string {
+	public getName(): string {
 		return this.property.getName();
 	}
+	
+	public getType(): SlangType | null {
+		return this.type;
+	}
 
-	public getValue(): any {
+	public getValue(): SlangTypeValue | undefined {
 		return this.value;
 	}
 
@@ -44,76 +58,75 @@ export class PropertyAssignment {
 	public isEqual(other: PropertyAssignment): boolean {
 		return this.property === other.property && this.value == other.value;
 	}
+	
+	public assign(value: SlangTypeValue | undefined) {
+		this.value = value;
+	}
 }
 
 export class PropertyAssignments {
-	private readonly name2Prop: Map<string, PropertyModel>;
-	private name2propAssign: Map<string, PropertyAssignment>;
+	private readonly assignments: Map<string, PropertyAssignment>;
 
-	public constructor(properties: Array<PropertyModel>) {
-		this.name2Prop = new Map<string, PropertyModel>(
-			properties.map<[string, PropertyModel]>((property: PropertyModel) => [property.getName(), property])
+	public constructor(private properties: Array<PropertyModel>, private generics: GenericSpecifications | null) {
+		this.assignments = new Map<string, PropertyAssignment>(
+			properties.map<[string, PropertyAssignment]>(
+				property => [property.getName(), new PropertyAssignment(property, undefined, generics)]
+			)
 		);
-		this.name2propAssign = new Map<string, PropertyAssignment>();
 	}
 
-	public copy(): PropertyAssignments {
-		const propNamesIter = this.name2Prop.values();
-		const propAssigns = new PropertyAssignments(Array.from(propNamesIter));
-
-		for (const propAssign of this.getIterator()) {
-			propAssigns.assign(propAssign.getProperty(), propAssign.getValue());
+	public copy(generics: GenericSpecifications | null): PropertyAssignments {
+		const propAssigns = new PropertyAssignments(this.properties, generics);
+		for (const propAssign of this.getAssignments()) {
+			let value = propAssign.getValue();
+			if (value) {
+				value = copySlangTypeValue(value);
+			}
+			propAssigns.get(propAssign.getName()).assign(value);
 		}
-
 		return propAssigns;
 	}
 
 	public isEqual(other: PropertyAssignments): boolean {
-		if (this.name2propAssign.size !== other.name2propAssign.size) {
+		if (this.assignments.size !== other.assignments.size) {
 			return false
 		}
 
-		for (const propAssign of this.getIterator()) {
+		for (const propAssign of this.getAssignments()) {
 			const prop = propAssign.getProperty();
 			if (!(other.has(prop) && propAssign.isEqual(other.get(prop)))) {
 				return false;
 			}
 		}
-		return true
+		return true;
 	}
 
-	public getIterator(): IterableIterator<PropertyAssignment> {
-		return this.name2propAssign.values();
+	public getProperties(): IterableIterator<PropertyModel> {
+		return this.properties.values();
 	}
 
-	public assign(propertyName: string | PropertyModel, propertyValue: any): PropertyAssignment {
-		if (propertyName instanceof PropertyModel) {
-			propertyName = propertyName.getName();
+	public getAssignments(): IterableIterator<PropertyAssignment> {
+		return this.assignments.values();
+	}
+
+	public get(property: PropertyModel | string): PropertyAssignment {
+		if (property instanceof PropertyModel) {
+			property = property.getName();
 		}
-		const property = this.name2Prop.get(propertyName);
-		if (!property) {
-			throw `unknown property: ${propertyName}`;
-		}
-		const def = property.define(propertyValue);
-		this.name2propAssign.set(property.getName(), def);
-		return def;
-	}
-
-	public get(property: PropertyModel): PropertyAssignment {
-		return this.getByName(property.getName());
+		return this.getByName(property);
 	}
 
 	public has(propertyName: string | PropertyModel): boolean {
 		if (propertyName instanceof PropertyModel) {
 			propertyName = propertyName.getName();
 		}
-		return this.name2propAssign.has(propertyName);
+		return this.assignments.has(propertyName);
 	}
 
-	public getByName(propertyName: string): PropertyAssignment {
-		const propVal = this.name2propAssign.get(propertyName);
+	private getByName(propertyName: string): PropertyAssignment {
+		const propVal = this.assignments.get(propertyName);
 		if (!propVal) {
-			throw `property not assigned: ${propertyName}`;
+			throw new Error(`property ${propertyName} not assigned: ${propertyName}`);
 		}
 		return propVal;
 	}
