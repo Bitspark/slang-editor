@@ -19,17 +19,21 @@ export class BlackBoxComponent extends ElementComponent {
 
 	constructor(paperView: PaperView, protected readonly blackBox: BlackBox, protected readonly drawGenerics: boolean) {
 		super(paperView, {x: 0, y: 0});
-		this.portGroups = BlackBoxComponent.createGroups(this.blackBox);
-		this.shape = new BlackBoxComponent.Rect(this.blackBox, this.portGroups);
+		this.portGroups = BlackBoxComponent.createPortGroups(this.blackBox);
+		this.shape = this.createShape(this.blackBox, this.portGroups);
 		this.refresh();
 	}
 
+	protected createShape(blackBox: BlackBox, portGroups: Array<PortGroupComponent>): BlackBoxComponent.Rect {
+		return new BlackBoxComponent.Rect(blackBox, portGroups)
+	}
+
 	public refresh(): void {
-		this.portGroups = BlackBoxComponent.createGroups(this.blackBox);
+		this.portGroups = BlackBoxComponent.createPortGroups(this.blackBox);
 
 		if (this.shape) {
 			this.shape.remove();
-			this.shape = new BlackBoxComponent.Rect(this.blackBox, this.portGroups/*, this.shape.getBBox().center()*/);
+			this.shape = this.createShape(this.blackBox, this.portGroups);
 			this.shape.on("pointerclick", () => {
 				this.clicked.next();
 			});
@@ -49,7 +53,7 @@ export class BlackBoxComponent extends ElementComponent {
 		this.clicked.subscribe(() => handler());
 	}
 
-	private static createGroups(blackBox: BlackBox): Array<PortGroupComponent> {
+	private static createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
 		const portGroups: Array<PortGroupComponent> = [];
 
 		const portIn = blackBox.getPortIn();
