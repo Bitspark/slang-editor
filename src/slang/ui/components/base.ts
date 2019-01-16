@@ -165,7 +165,7 @@ abstract class HtmlComponent extends Component {
 		this.htmlRoot.style.left = `${left}px`;
 	}
 
-	public mount(wrapped: "[]" | "M" | "", component: m.Component): this {
+	public mount(wrapped: "[]" | "", component: m.Component): this {
 		this.unmount();
 
 		if (wrapped === "[]") {
@@ -178,22 +178,6 @@ abstract class HtmlComponent extends Component {
 				},
 				view: () => {
 					return m(Container, m(Box, m(component)));
-				}
-			});
-		} else if (wrapped === "M") {
-			m.mount(this.htmlRoot, {
-				oncreate: () => {
-					this.draw();
-				},
-				onupdate: () => {
-					this.draw();
-				},
-				view: () => {
-					return m(Modal, {
-						onClose: () => {
-							this.unmount();
-						}
-					}, m(component));
 				}
 			});
 		} else {

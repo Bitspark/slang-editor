@@ -18,9 +18,9 @@ import {SlangTypeValue} from "../../custom/type";
 import {Tk} from "./toolkit";
 import Button = Tk.Button;
 import {InputConsole, OutputConsole} from "./console";
-import {PropertyForm} from "./property-form";
-import {PropertyAssignments} from "../../model/property";
 import {componentFactory} from "./factory";
+import {DashboardComponent} from "./dashboard";
+import Modal = Tk.Modal;
 
 export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 120;
@@ -471,29 +471,33 @@ export class WhiteBoxComponent extends CellComponent {
 
 	private addOperator(operator: OperatorModel): OperatorBoxComponent {
 
-		const operatorBox = componentFactory.createOperatorComponent(this.paperView, operator);
+		const operatorComp = componentFactory.createOperatorComponent(this.paperView, operator);
 
-		this.operators.push(operatorBox);
+		this.operators.push(operatorComp);
 
 		const that = this;
 
-		if (operator.hasProperties()) {
-			operatorBox.onClick(function (evt: Event, x: number, y: number) {
-				const comp = that.createComponent({x: 0, y: 0, align: "c"})
-					.mount("M", {
-						view: () => m(PropertyForm, {
-							operator: operator,
-							onSubmit: (propAssigns: PropertyAssignments) => {
-								operator.setPropertyAssignments(propAssigns);
+		operatorComp.onClick(function (evt: Event, x: number, y: number) {
+			const comp = that
+				.createComponent({x: 0, y: 0, align: "c"})
+				.mount("", {
+					view: () => m(Modal, {
+							onClose: () => {
 								comp.destroy();
-							},
+							}
+						},
+						m(DashboardComponent, {
+							operator: operator,
+							onSave: () => {
+								comp.destroy();
+							}
 						})
-					});
-				return true;
-			});
-		}
+					)
+				});
+			return true;
+		});
 
-		return operatorBox;
+		return operatorComp;
 	}
 
 	private removeConnection(connection: Connection) {
