@@ -2,18 +2,20 @@ import "./common";
 
 import "../styles/standalone.scss";
 
-import {AppModel} from "../app/model/app";
-import {SlangApp} from "../app/app";
-import {APIStoragePlugin} from "../app/plugins/storage";
-import {RouterPlugin} from "../app/plugins/router";
-import {ViewFrame} from "../app/ui/frame";
-import {DeploymentPlugin} from "../app/plugins/deployment";
-import {BlueprintModel} from "../app/model/blueprint";
+import {AppModel} from "../slang/model/app";
+import {Slang} from "../slang/slang";
+import {ViewFrame} from "../slang/ui/frame";
+import {BlueprintModel} from "../slang/model/blueprint";
+import {OperatorEvaluateApp} from "../apps/operator-evaluate/src/app";
+import {APIStorageApp} from "../apps/storage/src/app";
+import {DeploymentApp} from "../apps/deployment/src/app";
+import {componentFactory} from "../slang/ui/components/factory";
+import {RouterApp} from "../apps/router/src/app";
 
 function SlangStudioStandalone(el: HTMLElement): Promise<void> {
 	return new Promise<void>(resolve => {
 		const appModel = AppModel.create("slang");
-		const app = new SlangApp(appModel);
+		const app = new Slang(appModel);
 		const frame = new ViewFrame(el);
 		app.addFrame(frame, true);
 
@@ -30,11 +32,12 @@ function SlangStudioStandalone(el: HTMLElement): Promise<void> {
 			});
 		});
 
-		new APIStoragePlugin(appModel, "http://localhost:5149/");
-		new DeploymentPlugin(appModel, "http://localhost:5149/");
+		new APIStorageApp(appModel, componentFactory, "http://localhost:5149/");
+		new DeploymentApp(appModel, componentFactory, "http://localhost:5149/");
+		new OperatorEvaluateApp(appModel, componentFactory);
 
 		app.load().then(() => {
-			const router = new RouterPlugin(appModel);
+			const router = new RouterApp(appModel, componentFactory);
 			router.checkRoute();
 			resolve();
 		});

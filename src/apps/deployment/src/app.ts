@@ -1,19 +1,19 @@
-import {ApiService} from "../custom/api";
-import {AppModel} from "../model/app";
-import {SlangPlugin} from "./plugin";
-import {BlueprintInstance, BlueprintModel} from "../model/blueprint";
-import {SlangTypeValue} from "../custom/type";
+import {SlangApp} from "../../../slang/app";
+import {ApiService} from "../../../slang/custom/api";
+import {AppModel} from "../../../slang/model/app";
+import {SlangTypeValue} from "../../../slang/custom/type";
+import {BlueprintInstance, BlueprintModel} from "../../../slang/model/blueprint";
+import {ComponentFactory} from "../../../slang/ui/components/factory";
 
-export class DeploymentPlugin extends SlangPlugin {
+export class DeploymentApp extends SlangApp {
 	private api: ApiService;
 
-	constructor(app: AppModel, host: string) {
-		super(app);
+	constructor(app: AppModel, componentFactory: ComponentFactory, host: string) {
+		super(app, componentFactory);
 		this.api = new ApiService(host);
-		this.subscribe();
 	}
 
-	private subscribe() {
+	protected onReady(): void {
 		this.app.subscribeOpenedBlueprintChanged(blueprint => {
 			if (blueprint !== null) {
 				blueprint.subscribeDeploymentRequested(() => {

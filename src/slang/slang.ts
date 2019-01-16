@@ -5,11 +5,9 @@ import {AppModel} from "./model/app";
 import {BlueprintModel, BlueprintType} from "./model/blueprint";
 import {BlueprintView} from "./ui/views/blueprint";
 import {LandscapeView} from "./ui/views/landscape";
-import {SlangPlugin} from "./plugins/plugin";
 
-export class SlangApp {
+export class Slang {
 
-	private readonly plugins: Array<SlangPlugin> = [];
 	private readonly frames: Array<ViewFrame> = [];
 	private outlet: ViewFrame | null = null;
 
@@ -33,10 +31,6 @@ export class SlangApp {
 				this.outlet.setView(view);
 			}
 		});
-	}
-
-	public addPlugin(plugin: SlangPlugin): void {
-		this.plugins.push(plugin);
 	}
 
 	public addFrame(frame: ViewFrame, outlet: boolean = false): void {

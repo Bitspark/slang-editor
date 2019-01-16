@@ -1,11 +1,12 @@
-import {AppModel} from "../model/app";
-import {SlangPlugin} from "./plugin";
-import {LandscapeModel} from "../model/landscape";
+import {SlangApp} from "../../../slang/app";
+import {AppModel} from "../../../slang/model/app";
+import {LandscapeModel} from "../../../slang/model/landscape";
+import {ComponentFactory} from "../../../slang/ui/components/factory";
 
-export class RouterPlugin extends SlangPlugin {
+export class RouterApp extends SlangApp {
 
-	constructor(app: AppModel) {
-		super(app);
+	constructor(app: AppModel, componentFactory: ComponentFactory) {
+		super(app, componentFactory);
 		this.subscribe();
 		this.addEventListeners();
 	}
@@ -22,6 +23,9 @@ export class RouterPlugin extends SlangPlugin {
 					this.openBlueprint(paths[2]);
 			}
 		}
+	}
+
+	protected onReady(): void {
 	}
 
 	private openBlueprint(fullName: string) {
@@ -64,5 +68,5 @@ export class RouterPlugin extends SlangPlugin {
 			that.checkRoute();
 		});
 	}
-
 }
+
