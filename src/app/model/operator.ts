@@ -50,8 +50,8 @@ export class OperatorModel extends BlackBox {
 			this.properties = args.properties;
 			this.generics = args.generics;
 		} else {
-			this.properties = new PropertyAssignments(Array.from(args.blueprint.getProperties()));
 			this.generics = new GenericSpecifications(Array.from(args.blueprint.getGenericIdentifiers()));
+			this.properties = new PropertyAssignments(Array.from(args.blueprint.getProperties()), this.generics);
 		}
 
 		// TODO use same method for properties changed
@@ -105,7 +105,7 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public getPropertyAssignments(): PropertyAssignments {
-		return this.properties.copy();
+		return this.properties.copy(this.generics);
 	}
 
 	public setPropertyAssignments(propAssignments: PropertyAssignments) {
@@ -130,19 +130,17 @@ export class OperatorModel extends BlackBox {
 		if (this.properties) {
 			switch (this.blueprint.getFullName()) {
 				case "slang.data.Value":
-					const value = this.properties.has("value")
-						? this.properties.getByName("value").getValue()
-						: "value?";
+					const value = this.properties.get("value").getValue();
+					const display = (typeof value !== "undefined") ? JSON.stringify(value) : "value?";
 					const maxLength = 13;
-					if (value.length > maxLength) {
-						return `"${value.substr(0, maxLength - 2)}..."`;
+					if (display.length > maxLength) {
+						return `"${display.substr(0, maxLength - 2)}..."`;
 					} else {
-						return `"${value}"`;
+						return `"${display}"`;
 					}
 				case "slang.data.Evaluate":
-					return this.properties.has("expression")
-						? this.properties.getByName("expression").getValue()
-						: "expression?";
+					const expression = this.properties.get("expression").getValue();
+					return expression ? expression as string : "expression?";
 				case "slang.data.Convert":
 					const portIn = this.getPortIn();
 					const portOut = this.getPortOut();

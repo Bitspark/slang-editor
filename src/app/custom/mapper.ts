@@ -77,9 +77,9 @@ export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApi
 function operatorModelToJSON(operator: OperatorModel): OperatorApiResponse {
 	return {
 		operator: operator.getBlueprint().getFullName(),
-		properties: iter2map<PropertyAssignment, PropertyAssignmentsApiResponse>(operator.getPropertyAssignments().getIterator(),
+		properties: iter2map<PropertyAssignment, PropertyAssignmentsApiResponse>(operator.getPropertyAssignments().getAssignments(),
 			(result, propAssign) => {
-				result[propAssign.getPropertyName()] = propAssign.getValue();
+				result[propAssign.getName()] = propAssign.getValue();
 			}),
 		generics: iter2map<[string, SlangType], GenericSpecificationsApiResponse>(operator.getGenericSpecifications().getIterator(),
 			(result, [name, type]) => {
@@ -215,8 +215,8 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
 				if (!blueprint) {
 					throw `unknown blueprint '${opData.operator}'`;
 				}
-				const propAssigns = createPropertyAssignments(blueprint, opData.properties);
 				const genSpeci = createGenericSpecifications(blueprint, opData.generics);
+				const propAssigns = createPropertyAssignments(blueprint, opData.properties, genSpeci);
 				try {
 					outerBlueprint.createOperator(opName, blueprint, propAssigns, genSpeci);
 				} catch (e) {
@@ -320,11 +320,11 @@ function setBlueprintProperties(blueprint: BlueprintModel, properties: PropertyA
 	});
 }
 
-function createPropertyAssignments(blueprint: BlueprintModel, propDefs: PropertyAssignmentsApiResponse): PropertyAssignments {
-	const propAssigns = new PropertyAssignments(Array.from(blueprint.getProperties()));
+function createPropertyAssignments(blueprint: BlueprintModel, propDefs: PropertyAssignmentsApiResponse, genSpeci: GenericSpecifications): PropertyAssignments {
+	const propAssigns = new PropertyAssignments(Array.from(blueprint.getProperties()), genSpeci);
 	if (propDefs) {
 		Object.keys(propDefs).forEach((propName: string) => {
-			propAssigns.assign(propName, propDefs[propName]);
+			propAssigns.get(propName).assign(propDefs[propName]);
 		});
 	}
 	return propAssigns;
