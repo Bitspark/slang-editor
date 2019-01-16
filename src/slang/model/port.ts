@@ -590,6 +590,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		}
 	}
 
+	public isConnected(): boolean {
+		return this.connectedWith.length > 0;
+	}
+
 	public isConnectedWith(other: PortModel): boolean {
 		return this.connectedWith.indexOf(other) !== -1;
 	}

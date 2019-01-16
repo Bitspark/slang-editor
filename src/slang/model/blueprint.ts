@@ -124,12 +124,16 @@ export class BlueprintModel extends BlackBox {
 		}
 	}
 
-	public createOperator(name: string, blueprint: BlueprintModel, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications): OperatorModel {
+	public createOperator(name: string | null, blueprint: BlueprintModel, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications, geometry?: Geometry): OperatorModel {
+		if (!name) {
+			name = this.getRandomOperatorName(blueprint);
+		}
 		return this.createChildNode(OperatorModel, {
 			name,
 			blueprint,
 			properties: propAssigns,
-			generics: genSpeci
+			generics: genSpeci,
+			geometry: geometry
 		}, operator => {
 			blueprint.instantiateOperator(operator);
 		});
