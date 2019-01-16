@@ -161,6 +161,10 @@ export class OperatorModel extends BlackBox {
 			connections.addConnections(port.getConnectionsTo());
 		}
 
+		for (const delegate of this.getDelegates()) {
+			connections.addConnections(delegate.getConnectionsTo());
+		}
+
 		return connections;
 	}
 

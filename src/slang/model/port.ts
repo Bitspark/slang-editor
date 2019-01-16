@@ -70,7 +70,11 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 			generics.subscribeGenericTypeChanged(identifier, type => {
 				if (type) {
-					this.reconstructPort(type, P, this.direction);
+					try {
+						this.reconstructPort(type, P, this.direction);
+					} catch (e) {
+						console.error(`${this.getOwner()}: ${e.stack}`);
+					}
 				}
 			});
 		}
@@ -547,7 +551,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	 * This has to be a source port and destination a destination port.
 	 * @param destination
 	 */
-	private connectTo(destination: PortModel) {
+	private connectTo(destination: PortModel) {		
 		if (!canConnectTo(this, destination)) {
 			throw new Error(`cannot connect: ${this.getIdentity()} --> ${destination.getIdentity()}`);
 		}
