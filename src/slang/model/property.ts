@@ -20,9 +20,9 @@ export class PropertyModel {
 
 export class PropertyAssignment {
 	private type: SlangType | null = null;
-	
+
 	public constructor(private property: PropertyModel, private value: SlangTypeValue | undefined, private generics: GenericSpecifications | null) {
-		const propertyType = property.getType();	
+		const propertyType = property.getType();
 		if (propertyType.getTypeIdentifier() === TypeIdentifier.Generic) {
 			if (generics) {
 				generics.subscribeGenericTypeChanged(propertyType.getGenericIdentifier(), type => {
@@ -41,7 +41,7 @@ export class PropertyAssignment {
 	public getName(): string {
 		return this.property.getName();
 	}
-	
+
 	public getType(): SlangType | null {
 		return this.type;
 	}
@@ -57,7 +57,7 @@ export class PropertyAssignment {
 	public isEqual(other: PropertyAssignment): boolean {
 		return this.property === other.property && this.value == other.value;
 	}
-	
+
 	public assign(value: SlangTypeValue | undefined) {
 		this.value = value;
 	}
@@ -93,7 +93,7 @@ export class PropertyAssignments {
 
 		for (const propAssign of this.getAssignments()) {
 			const prop = propAssign.getProperty();
-			if (!(other.has(prop) && propAssign.isEqual(other.get(prop)))) {
+			if (!(other.isDefined(prop) && propAssign.isEqual(other.get(prop)))) {
 				return false;
 			}
 		}
@@ -115,11 +115,12 @@ export class PropertyAssignments {
 		return this.getByName(property);
 	}
 
-	public has(propertyName: string | PropertyModel): boolean {
+	public isDefined(propertyName: string | PropertyModel): boolean {
 		if (propertyName instanceof PropertyModel) {
 			propertyName = propertyName.getName();
 		}
-		return this.assignments.has(propertyName);
+		const propAssign = this.assignments.get(propertyName);
+		return !!propAssign && !!propAssign.getValue();
 	}
 
 	private getByName(propertyName: string): PropertyAssignment {

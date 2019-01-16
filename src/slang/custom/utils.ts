@@ -31,7 +31,7 @@ export class PropertyEvaluator {
 	private static expandExpr(exprPart: string, propAssigns: PropertyAssignments): Array<string> {
 		const vals: Array<string> = [];
 
-		if (!propAssigns.has(exprPart)) {
+		if (!propAssigns.isDefined(exprPart)) {
 			return [];
 		}
 		
