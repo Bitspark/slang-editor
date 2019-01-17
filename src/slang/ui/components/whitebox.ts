@@ -477,25 +477,27 @@ export class WhiteBoxComponent extends CellComponent {
 
 		const that = this;
 
-		operatorComp.onClick(function (evt: Event, x: number, y: number) {
-			const comp = that
-				.createComponent({x: 0, y: 0, align: "c"})
-				.mount("", {
-					view: () => m(Modal, {
-							onClose: () => {
-								comp.destroy();
-							}
-						},
-						m(DashboardComponent, {
-							operator: operator,
-							onSave: () => {
-								comp.destroy();
-							}
-						})
-					)
-				});
-			return true;
-		});
+		if (operator.hasProperties()) {
+			operatorComp.onClick(function (evt: Event, x: number, y: number) {
+				const comp = that
+					.createComponent({x: 0, y: 0, align: "c"})
+					.mount("", {
+						view: () => m(Modal, {
+								onClose: () => {
+									comp.destroy();
+								}
+							},
+							m(DashboardComponent, {
+								operator: operator,
+								onSave: () => {
+									comp.destroy();
+								}
+							})
+						)
+					});
+				return true;
+			});
+		}
 
 		return operatorComp;
 	}
