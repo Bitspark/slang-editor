@@ -1,10 +1,12 @@
-import {OperatorBoxComponent} from "./blackbox";
+import {BlackBoxShape, OperatorBoxComponent} from "./blackbox";
 import {PaperView} from "../views/paper-view";
 import {OperatorModel} from "../../model/operator";
 import {BlueprintModel} from "../../model/blueprint";
 import {DashboardModuleComponent, PropertyFormDashboardModuleComponent,} from "./dashboard";
 
+
 export class ComponentFactory {
+	private readonly blackBoxShape = new Map<BlueprintModel, typeof BlackBoxShape>();
 	private readonly opCompClasses = new Map<BlueprintModel, new (pv: PaperView, op: OperatorModel) => OperatorBoxComponent>();
 	private readonly opDashboardModuleClasses = new Map<BlueprintModel, Array<new() => DashboardModuleComponent>>();
 
@@ -26,6 +28,19 @@ export class ComponentFactory {
 			return [PropertyFormDashboardModuleComponent];
 		}
 		return dashboardCompClass
+	}
+
+	public getBlackBoxShape(blueprint: BlueprintModel): typeof BlackBoxShape {
+		const newBlackBoxShape = this.blackBoxShape.get(blueprint);
+		if (!newBlackBoxShape) {
+			return BlackBoxShape;
+		}
+		return newBlackBoxShape
+
+	}
+
+	public registerBlackBoxShape(blueprint: BlueprintModel, ctr: typeof BlackBoxShape) {
+		this.blackBoxShape.set(blueprint, ctr);
 	}
 
 	public registerOperatorComponent(blueprint: BlueprintModel, ctr: new (pv: PaperView, op: OperatorModel) => OperatorBoxComponent) {

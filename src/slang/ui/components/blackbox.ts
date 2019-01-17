@@ -10,37 +10,105 @@ import {PaperView} from "../views/paper-view";
 import {Tk} from "./toolkit";
 import Button = Tk.Button;
 import {SlangSubjectTrigger} from "../../custom/events";
+import RectangleSelectors = shapes.standard.RectangleSelectors;
+import {componentFactory} from "./factory";
 
-export class BlackBoxComponent extends ElementComponent {
-	protected shape: BlackBoxComponent.Rect;
-	protected portGroups: Array<PortGroupComponent>;
 
-	private clicked = new SlangSubjectTrigger("clicked");
+function getBlackBoxShape(blueprint: BlueprintModel): typeof BlackBoxShape {
+	return componentFactory.getBlackBoxShape(blueprint);
+}
 
-	constructor(paperView: PaperView, protected readonly blackBox: BlackBox, protected readonly drawGenerics: boolean) {
-		super(paperView, {x: 0, y: 0});
-		this.portGroups = BlackBoxComponent.createPortGroups(this.blackBox);
-		this.shape = this.createShape(this.blackBox, this.portGroups);
-		this.refresh();
+function createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
+	const portGroups: Array<PortGroupComponent> = [];
+
+	const portIn = blackBox.getPortIn();
+	if (portIn) {
+		portGroups.push(new PortGroupComponent("MainIn", portIn, "top", 0.0, 1.0));
 	}
 
-	protected createShape(blackBox: BlackBox, portGroups: Array<PortGroupComponent>): BlackBoxComponent.Rect {
-		return new BlackBoxComponent.Rect(blackBox, portGroups)
+	const portOut = blackBox.getPortOut();
+	if (portOut) {
+		portGroups.push(new PortGroupComponent("MainOut", portOut, "bottom", 0.0, 1.0));
 	}
 
-	public refresh(): void {
-		this.portGroups = BlackBoxComponent.createPortGroups(this.blackBox);
+	const delegates = Array.from(blackBox.getDelegates());
 
-		if (this.shape) {
-			this.shape.remove();
-			this.shape = this.createShape(this.blackBox, this.portGroups);
-			this.shape.on("pointerclick", () => {
-				this.clicked.next();
-			});
+// const countRight = Math.ceil(delegates.length / 2);
+	const countRight = delegates.length;
+	const widthRight = 0.5 / countRight;
+	const stepRight = 0.5 / countRight;
+	let posRight = 0;
+
+	const countLeft = Math.floor(delegates.length / 2);
+	const widthLeft = 0.5 / countLeft;
+	const stepLeft = 0.5 / countLeft;
+	let posLeft = 0;
+
+	let right = true;
+	for (const delegate of delegates) {
+		if (right) {
+			const portOut = delegate.getPortOut();
+			if (portOut) {
+				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "right", posRight, widthRight));
+			}
+			posRight += stepRight;
+
+			const portIn = delegate.getPortIn();
+			if (portIn) {
+				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "right", posRight, widthRight));
+			}
+			posRight += stepRight;
+		} else {
+			const portOut = delegate.getPortOut();
+			if (portOut) {
+				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "left", posLeft, widthLeft));
+			}
+			posLeft += stepLeft;
+
+			const portIn = delegate.getPortIn();
+			if (portIn) {
+				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "left", posLeft, widthLeft));
+			}
+			posLeft += stepLeft;
 		}
 
+		// right = !right;
+	}
+
+	return portGroups;
+}
+
+
+export abstract class BlackBoxComponent extends ElementComponent {
+	protected shape!: BlackBoxComponent.Rect;
+	protected portGroups!: Array<PortGroupComponent>;
+
+	private clicked = new SlangSubjectTrigger("clicked");
+	private dblclicked = new SlangSubjectTrigger("dblclicked");
+
+	protected constructor(paperView: PaperView, private readonly drawGenerics: boolean) {
+		super(paperView, {x: 0, y: 0});
+	}
+
+	protected abstract createPortGroups(): Array<PortGroupComponent>;
+
+	protected abstract createShape(): BlackBoxShape;
+
+	public refresh(): void {
+		this.portGroups = this.createPortGroups();
+		if (this.shape) {
+			this.shape.remove();
+		}
+		this.shape = this.createShape();
 		this.portGroups.forEach(group => {
 			group.setParent(this.shape, this.drawGenerics);
+		});
+
+		this.shape.on("pointerclick", () => {
+			this.clicked.next();
+		});
+		this.shape.on("pointerdblclick", () => {
+			this.dblclicked.next();
 		});
 		this.render();
 	}
@@ -53,72 +121,22 @@ export class BlackBoxComponent extends ElementComponent {
 		this.clicked.subscribe(() => handler());
 	}
 
-	private static createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
-		const portGroups: Array<PortGroupComponent> = [];
-
-		const portIn = blackBox.getPortIn();
-		if (portIn) {
-			portGroups.push(new PortGroupComponent("MainIn", portIn, "top", 0.0, 1.0));
-		}
-
-		const portOut = blackBox.getPortOut();
-		if (portOut) {
-			portGroups.push(new PortGroupComponent("MainOut", portOut, "bottom", 0.0, 1.0));
-		}
-
-		const delegates = Array.from(blackBox.getDelegates());
-
-		// const countRight = Math.ceil(delegates.length / 2);
-		const countRight = delegates.length;
-		const widthRight = 0.5 / countRight;
-		const stepRight = 0.5 / countRight;
-		let posRight = 0;
-
-		const countLeft = Math.floor(delegates.length / 2);
-		const widthLeft = 0.5 / countLeft;
-		const stepLeft = 0.5 / countLeft;
-		let posLeft = 0;
-
-		let right = true;
-		for (const delegate of delegates) {
-			if (right) {
-				const portOut = delegate.getPortOut();
-				if (portOut) {
-					portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "right", posRight, widthRight));
-				}
-				posRight += stepRight;
-
-				const portIn = delegate.getPortIn();
-				if (portIn) {
-					portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "right", posRight, widthRight));
-				}
-				posRight += stepRight;
-			} else {
-				const portOut = delegate.getPortOut();
-				if (portOut) {
-					portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "left", posLeft, widthLeft));
-				}
-				posLeft += stepLeft;
-
-				const portIn = delegate.getPortIn();
-				if (portIn) {
-					portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "left", posLeft, widthLeft));
-				}
-				posLeft += stepLeft;
-			}
-
-			// right = !right;
-		}
-
-		return portGroups;
+	public onDblclick(handler: Function) {
+		this.dblclicked.subscribe(() => handler());
 	}
-
 }
 
 export class BlueprintBoxComponent extends BlackBoxComponent {
+	constructor(paperView: PaperView, protected blueprint: BlueprintModel) {
+		super(paperView, false);
+		this.refresh();
+	}
 
-	constructor(paperView: PaperView, blueprint: BlueprintModel) {
-		super(paperView, blueprint, false);
+	public refresh(): void {
+		super.refresh();
+
+		this.shape.attr("draggable", false);
+		this.shape.set("obstacle", true);
 
 		this.shape.attr({
 			body: {
@@ -128,7 +146,20 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 				cursor: "pointer",
 			}
 		});
-		this.shape.attr("draggable", false);
+	}
+
+	protected createShape(): BlackBoxShape {
+		const blackBoxShapeType = componentFactory.getBlackBoxShape(this.blueprint);
+		const shape = new blackBoxShapeType({
+			id: this.blueprint.getIdentity(),
+			portGroups: this.portGroups,
+		});
+		shape.setupForBlueprint(this.blueprint);
+		return shape;
+	}
+
+	protected createPortGroups(): Array<PortGroupComponent> {
+		return createPortGroups(this.blueprint);
 	}
 
 }
@@ -136,15 +167,15 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 export class OperatorBoxComponent extends BlackBoxComponent {
 	private operatorControl?: AttachableComponent;
 
-	constructor(paperView: PaperView, operator: OperatorModel) {
-		super(paperView, operator, true);
+	constructor(paperView: PaperView, protected readonly operator: OperatorModel) {
+		super(paperView, true);
 		operator.subscribeChanged(() => this.refresh());
+		this.refresh();
 	}
 
 	public refresh(): void {
 		super.refresh();
-
-		const operator = this.blackBox as OperatorModel;
+		const operator = this.operator;
 
 		if (operator.XY) {
 			this.updateXY(operator.XY);
@@ -167,13 +198,81 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 			})
 			.attachTo(this.shape, "tl");
 
-		this.shape.attr("label/text", (this.blackBox as OperatorModel).getDisplayName());
 		this.shape.on("change:position change:size", () => {
 			operator.XY = this.shape.position()
 		});
+
+		this.shape.set("obstacle", true);
+		this.shape.attr("draggable", true);
 	}
 
+	protected createShape(): BlackBoxShape {
+		const blackBoxShapeType = componentFactory.getBlackBoxShape(this.operator.getBlueprint());
+		const shape = new blackBoxShapeType({
+			id: this.operator.getIdentity(),
+			position: this.operator.XY,
+			portGroups: this.portGroups,
+		});
+		shape.setupForOperator(this.operator);
+		return shape;
+	}
+
+	protected createPortGroups(): Array<PortGroupComponent> {
+		return createPortGroups(this.operator);
+	}
 }
+
+export interface BlackBoxShapeAttrs {
+	id?: string
+	label?: string
+	portGroups?: Array<PortGroupComponent>
+	cssClass?: string
+	position?: { x: number, y: number }
+}
+
+function constructRectAttrs(attrs: BlackBoxShapeAttrs): dia.Element.GenericAttributes<RectangleSelectors> {
+	let pos = attrs.position;
+	if (pos) {
+		const {width, height} = Styles.BlackBox.size;
+		pos = {x: pos.x - width / 2, y: pos.y - height / 2};
+	}
+
+	return {
+		id: attrs.id,
+		position: pos,
+		attrs: {
+			root: {
+				class: "joint-cell joint-element sl-blackbox",
+			},
+			label: {
+				text: attrs.label,
+			},
+		},
+		ports: !attrs.portGroups ? undefined : {
+			groups: attrs.portGroups!
+				.reduce((result: { [key: string]: dia.Element.PortGroup }, group) => {
+					result[group.getName()] = group.getPortGroupElement();
+					return result;
+				}, {})
+		}
+	};
+}
+
+
+export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", Styles.Defaults.BlackBox) {
+	constructor(attrs: BlackBoxShapeAttrs) {
+		super(constructRectAttrs(attrs) as any);
+	}
+
+	public setupForBlueprint(blueprint: BlueprintModel) {
+		this.attr("label/text", blueprint.getShortName());
+	}
+
+	public setupForOperator(operator: OperatorModel) {
+		this.attr("label/text", operator.getBlueprint().getShortName());
+	}
+}
+
 
 export namespace BlackBoxComponent {
 	import RectangleSelectors = shapes.standard.RectangleSelectors;
