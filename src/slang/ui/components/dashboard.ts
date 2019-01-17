@@ -72,7 +72,7 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 	private getFormSubmitData(formData: Map<string, { value: SlangTypeValue }>): PropertyAssignments {
 		const op = this.operator!;
 		const propAssigns = op.getPropertyAssignments();
-		formData.forEach(({value}, propertyName) => {
+		formData.forEach((value, propertyName) => {
 			propAssigns.get(propertyName).assign(value);
 		});
 		return propAssigns
