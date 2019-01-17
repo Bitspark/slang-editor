@@ -78,7 +78,8 @@ export abstract class ElementComponent extends CellComponent {
 
 	protected updateXY({x, y}: XY) {
 		super.updateXY({x, y});
-		this.shape.position(x, y);
+		const {width, height} = this.shape.size();
+		this.shape.position(x - width / 2, y - height / 2);
 	}
 
 	public get bbox(): g.Rect {

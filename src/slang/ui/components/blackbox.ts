@@ -198,7 +198,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 			.attachTo(this.shape, "tl");
 
 		this.shape.on("change:position change:size", () => {
-			operator.XY = this.shape.position()
+			operator.XY = this.shape.getBBox().center();
 		});
 
 		this.shape.set("obstacle", true);
