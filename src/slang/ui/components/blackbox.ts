@@ -14,10 +14,6 @@ import RectangleSelectors = shapes.standard.RectangleSelectors;
 import {componentFactory} from "./factory";
 
 
-function getBlackBoxShape(blueprint: BlueprintModel): typeof BlackBoxShape {
-	return componentFactory.getBlackBoxShape(blueprint);
-}
-
 function createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
 	const portGroups: Array<PortGroupComponent> = [];
 
@@ -78,9 +74,8 @@ function createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
 	return portGroups;
 }
 
-
 export abstract class BlackBoxComponent extends ElementComponent {
-	protected shape!: BlackBoxComponent.Rect;
+	protected shape!: BlackBoxShape;
 	protected portGroups!: Array<PortGroupComponent>;
 
 	private clicked = new SlangSubjectTrigger("clicked");
@@ -160,6 +155,10 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 
 	protected createPortGroups(): Array<PortGroupComponent> {
 		return createPortGroups(this.blueprint);
+	}
+
+	public getShape(): BlackBoxShape {
+		return this.shape;
 	}
 
 }
@@ -258,8 +257,34 @@ function constructRectAttrs(attrs: BlackBoxShapeAttrs): dia.Element.GenericAttri
 	};
 }
 
-
 export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", Styles.Defaults.BlackBox) {
+	public static place(paperView: PaperView, blueprint: BlueprintModel, position?: g.PlainPoint): BlackBoxShape {
+		const shape = new BlueprintBoxComponent(paperView, blueprint).getShape();
+		if (position) {
+			const {width, height} = shape.size();
+			shape.position(position.x - width / 2, position.y - height / 2);
+		}
+
+		shape.set("obstacle", true);
+		shape.attr("draggable", true);
+
+		return shape;
+	}
+
+	public static placeGhost(paperView: PaperView, label: string, position?: g.PlainPoint): BlackBoxShape {
+		const shape = new BlackBoxShape({
+			id: "",
+			label: label,
+			position: position,
+		});
+
+		shape.set("obstacle", true);
+		shape.attr("draggable", false);
+
+		paperView.renderCell(shape);
+		return shape;
+	}
+
 	constructor(attrs: BlackBoxShapeAttrs) {
 		super(constructRectAttrs(attrs) as any);
 	}
@@ -273,84 +298,3 @@ export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", 
 	}
 }
 
-
-export namespace BlackBoxComponent {
-	import RectangleSelectors = shapes.standard.RectangleSelectors;
-
-	interface BasicAttrs {
-		id?: string
-		label: string
-		portGroups?: Array<PortGroupComponent>
-		cssClass?: string
-		position?: { x: number, y: number }
-	}
-
-	function constructRectAttrs(attrs: BasicAttrs): dia.Element.GenericAttributes<RectangleSelectors> {
-		let pos = attrs.position;
-		if (pos) {
-			const {width, height} = Styles.BlackBox.size;
-			pos = {x: pos.x - width / 2, y: pos.y - height / 2};
-		}
-
-		return {
-			id: attrs.id,
-			position: pos,
-			attrs: {
-				root: {
-					class: "joint-cell joint-element sl-blackbox",
-				},
-				label: {
-					text: attrs.label,
-				},
-			},
-			ports: !attrs.portGroups ? undefined : {
-				groups: attrs.portGroups!
-					.reduce((result: { [key: string]: dia.Element.PortGroup }, group) => {
-						result[group.getName()] = group.getPortGroupElement();
-						return result;
-					}, {})
-			}
-		};
-	}
-
-	export class Rect extends shapes.standard.Rectangle.define("BlackBoxRect", Styles.Defaults.BlackBox) {
-		public static place(paperView: PaperView, blueprint: BlueprintModel, position?: g.PlainPoint): Rect {
-			const bbRect = new BlueprintBoxComponent(paperView, blueprint).getShape();
-			if (position) {
-				const {width, height} = bbRect.size();
-				bbRect.position(position.x - width / 2, position.y - height / 2);
-			}
-			return bbRect;
-		}
-
-		constructor(blackBox: BlackBox, portGroups: Array<PortGroupComponent>, position?: g.PlainPoint) {
-			super(constructRectAttrs({
-				id: blackBox.getIdentity(),
-				label: blackBox.getDisplayName(),
-				position,
-				portGroups
-			}) as any);
-			this.set("obstacle", true);
-			this.attr("draggable", true);
-		}
-	}
-
-	export namespace Rect {
-		export class Ghost extends shapes.standard.Rectangle.define("BlackBoxGhost", Styles.Defaults.BlackBox) {
-			public static place(paperView: PaperView, label: string, position?: g.PlainPoint): Rect.Ghost {
-				const ghost = new Ghost(label, position);
-				paperView.renderCell(ghost);
-				return ghost;
-			}
-
-			constructor(label: string, position?: g.PlainPoint) {
-				super(constructRectAttrs({
-					label,
-					position,
-				}) as any);
-				this.set("obstacle", true);
-				this.attr("draggable", false);
-			}
-		}
-	}
-}

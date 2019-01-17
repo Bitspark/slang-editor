@@ -5,13 +5,13 @@ import {BlueprintModel} from "../../model/blueprint";
 import {ClassComponent, CVnode} from "mithril";
 import {BlueprintView} from "../views/blueprint";
 import {Geometry} from "../../model/operator";
-import {BlackBoxComponent} from "./blackbox";
 import {AttachableComponent, XY, ElementComponent} from "./base";
 import {MithrilMouseEvent, Tk} from "./toolkit";
 import ListHead = Tk.ListHead;
 import StringInput = Tk.StringInput;
 import ListItem = Tk.ListItem;
 import List = Tk.List;
+import {BlackBoxShape} from "./blackbox";
 
 export interface Attrs {
 	onSelect: (bp: BlueprintModel) => void,
@@ -74,7 +74,7 @@ export class BlueprintSelectComponent extends ElementComponent {
 	private readonly blueprint: BlueprintModel;
 	private readonly landscape: LandscapeModel;
 	private readonly menu: AttachableComponent;
-	protected shape: BlackBoxComponent.Rect | BlackBoxComponent.Rect.Ghost;
+	protected shape: BlackBoxShape;
 	private filterExpr: string = "";
 
 	constructor(blueprintView: BlueprintView, {x, y}: XY) {
@@ -143,17 +143,17 @@ export class BlueprintSelectComponent extends ElementComponent {
 		return blueprints;
 	}
 
-	private placeGhostRect({x, y}: XY, blueprint?: BlueprintModel): BlackBoxComponent.Rect | BlackBoxComponent.Rect.Ghost {
+	private placeGhostRect({x, y}: XY, blueprint?: BlueprintModel): BlackBoxShape {
 		if (this.shape) {
 			this.shape.remove();
 		}
 
-		let ghostRect: BlackBoxComponent.Rect | BlackBoxComponent.Rect.Ghost;
+		let ghostRect: BlackBoxShape;
 
 		if (!blueprint) {
-			ghostRect = BlackBoxComponent.Rect.Ghost.place(this.paperView, "• • •", this.XY);
+			ghostRect = BlackBoxShape.placeGhost(this.paperView, "• • •", this.XY);
 		} else {
-			ghostRect = BlackBoxComponent.Rect.place(this.paperView, blueprint, this.XY);
+			ghostRect = BlackBoxShape.place(this.paperView, blueprint, this.XY);
 		}
 		return ghostRect;
 	}

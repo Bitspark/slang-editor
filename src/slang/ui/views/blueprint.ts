@@ -1,4 +1,4 @@
-import {BlackBoxComponent} from "../components/blackbox";
+import {BlackBoxComponent, BlackBoxShape} from "../components/blackbox";
 import {BlueprintModel} from "../../model/blueprint";
 import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";
@@ -122,7 +122,7 @@ export class BlueprintView extends PaperView {
 		const that = this;
 		this.graph.on("change:position change:size", function (cell: dia.Cell) {
 			// Moving around inner operators
-			if (!(cell instanceof BlackBoxComponent.Rect)) {
+			if (!(cell instanceof BlackBoxShape)) {
 				return;
 			}
 			that.fitOuter(false);
