@@ -6,12 +6,11 @@ import {AppModel} from "../slang/model/app";
 import {Slang} from "../slang/slang";
 import {ViewFrame} from "../slang/ui/frame";
 import {BlueprintModel} from "../slang/model/blueprint";
-import {OperatorEvaluateApp} from "../apps/operator-evaluate/src/app";
 import {APIStorageApp} from "../apps/storage/src/app";
 import {DeploymentApp} from "../apps/deployment/src/app";
 import {componentFactory} from "../slang/ui/components/factory";
 import {RouterApp} from "../apps/router/src/app";
-import {OperatorValueApp} from "../apps/operator-value/src/app";
+import {OperatorDataApp} from "../apps/operators/src/app";
 
 function SlangStudioStandalone(el: HTMLElement): Promise<void> {
 	return new Promise<void>(resolve => {
@@ -35,8 +34,7 @@ function SlangStudioStandalone(el: HTMLElement): Promise<void> {
 
 		new APIStorageApp(appModel, componentFactory, "http://localhost:5149/");
 		new DeploymentApp(appModel, componentFactory, "http://localhost:5149/");
-		new OperatorEvaluateApp(appModel, componentFactory);
-		new OperatorValueApp(appModel, componentFactory);
+		new OperatorDataApp(appModel, componentFactory);
 
 		app.load().then(() => {
 			const router = new RouterApp(appModel, componentFactory);

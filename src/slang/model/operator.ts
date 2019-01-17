@@ -131,6 +131,7 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public getDisplayName(): string {
+		/*
 		if (this.properties) {
 			switch (this.blueprint.getFullName()) {
 				case "slang.data.Value":
@@ -155,6 +156,7 @@ export class OperatorModel extends BlackBox {
 					}
 			}
 		}
+		*/
 		return this.blueprint.getDisplayName();
 	}
 
