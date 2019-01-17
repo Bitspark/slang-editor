@@ -210,8 +210,8 @@ export class WhiteBoxComponent extends CellComponent {
 				...this.ports.left.map(p => p.getElement()),
 				...this.ports.right.map(p => p.getElement()),
 			], {
-				nodeSep: 120,
-				rankSep: 120,
+				nodeSep: 40,
+				rankSep: 60,
 				edgeSep: 0,
 				rankDir: "TB",
 				resizeClusters: false,
