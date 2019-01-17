@@ -9,7 +9,7 @@ import {
 	TypeDefApiResponse
 } from "./api";
 import {LandscapeModel} from "../model/landscape";
-import {BlueprintDelegateModel, DelegateModel, GenericDelegateModel, OperatorDelegateModel} from "../model/delegate";
+import {BlueprintDelegateModel, OperatorDelegateModel} from "../model/delegate";
 import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel} from "../model/port";
 import {PropertyAssignment, PropertyAssignments, PropertyModel} from "../model/property";
 import {TypeIdentifier, SlangType} from "./type";
@@ -119,7 +119,7 @@ function getFullPortRef(port: PortModel): string {
 	} else if (port instanceof OperatorPortModel) {
 		return operatorPortDef(port);
 	} else {
-		throw("unexpected port model");
+		throw new Error("unexpected port model");
 	}
 }
 
@@ -134,26 +134,25 @@ function blueprintPortRef(port: BlueprintPortModel): string {
 	}
 
 	if (port.isDirectionIn()) {
-		return `${portRef}(`;
+		return `${portRef}(${ownerRefParts.join(".")}`;
 	} else {
-		return `)${portRef}`;
+		return `${ownerRefParts.join(".")})${portRef}`;
 	}
 }
 
 function operatorPortDef(port: OperatorPortModel): string {
 	const portRef = port.getPortReference();
-	const ownerRefParts = [];
 	const owner = port.getOwner();
-
+	const ownerRefParts = [];
 
 	if (owner instanceof OperatorDelegateModel) {
-		const delegate = owner as OperatorDelegateModel;
-		const operator = delegate.getParentNode() as OperatorModel;
+		const operator = owner.getParentNode() as OperatorModel;
 		ownerRefParts.push(operator.getName());
-		ownerRefParts.push(delegate.getName());
+		ownerRefParts.push(owner.getName());
+	} else if (owner instanceof OperatorModel)  {
+		ownerRefParts.push(owner.getName());
 	} else {
-		const operator = owner as OperatorModel;
-		ownerRefParts.push(operator.getName());
+		// ...
 	}
 
 	const ownerRef = ownerRefParts.join(".");
@@ -186,10 +185,8 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
 		} as any)[bpData.type];
 
 		if (type === null) {
-			throw `unknown blueprint type '${bpData.type}'`;
+			throw new Error(`unknown blueprint type '${bpData.type}'`);
 		}
-
-		const generics = new GenericSpecifications([]);
 
 		const blueprint = landscape.createBlueprint({fullName: bpData.name, type});
 		if (bpData.def.services) {
@@ -213,14 +210,14 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
 				const opData = operators[opName];
 				const blueprint = landscape.findBlueprint(opData.operator);
 				if (!blueprint) {
-					throw `unknown blueprint '${opData.operator}'`;
+					throw new Error(`unknown blueprint '${opData.operator}'`);
 				}
 				try {
 					const genSpeci = createGenericSpecifications(blueprint, opData.generics);
 					const propAssigns = createPropertyAssignments(blueprint, opData.properties, genSpeci);
 					outerBlueprint.createOperator(opName, blueprint, propAssigns, genSpeci);
 				} catch (e) {
-					throw new Error(`${outerBlueprint.getFullName()}: ${e} (${blueprint.getFullName()})`);
+					console.error(`${outerBlueprint.getFullName()} (${blueprint.getFullName()}): ${e.stack}`);
 				}
 			});
 		}
@@ -245,7 +242,7 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
 						}
 						sourcePort.connect(destinationPort);
 					} catch (e) {
-						console.error(e);
+						console.error(`${outerBlueprint.getFullName()}: ${e.stack}`);
 					}
 				}
 			});

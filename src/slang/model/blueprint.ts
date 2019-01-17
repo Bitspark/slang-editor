@@ -1,6 +1,6 @@
 import {Geometry, OperatorModel} from "./operator";
 import {BlueprintPortModel, PortDirection, PortModel, PortModelArgs} from "./port";
-import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
+import {BlueprintDelegateModel, BlueprintDelegateModelArgs, OperatorDelegateModel} from "./delegate";
 import {SlangParsing} from "../custom/parsing";
 import {PropertyEvaluator} from "../custom/utils";
 import {BlackBox} from "../custom/nodes";
@@ -338,7 +338,7 @@ export class BlueprintModel extends BlackBox {
 			connections.addConnections(delegate.getConnectionsTo());
 		}
 
-		for (const operator of this.getOperators()) {
+		for (const operator of this.getChildNodes(OperatorModel)) {
 			connections.addConnections(operator.getConnectionsTo());
 		}
 
