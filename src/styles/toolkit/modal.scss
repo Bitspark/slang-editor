@@ -19,6 +19,7 @@
 	@extend %rounded;
 	@extend %hovering;
 	overflow: hidden;
+	position: relative;
 
 	> * {
 		@extend %rounded;
@@ -38,6 +39,9 @@
 	float: right;
 	font-size: 14px;
 	font-weight: bold;
+	position: absolute;
+	top: 4px;
+	right: 4px;
 
 	&:hover, &:focus {
 		color: black;

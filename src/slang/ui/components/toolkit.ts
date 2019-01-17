@@ -297,4 +297,33 @@ export namespace Tk {
 			this.accept = "image/*";
 		}
 	}
+
+	export interface SelectInputAttrs extends InputAttrs<string> {
+		options: Array<string>
+	}
+
+	export class SelectInput implements ClassComponent<SelectInputAttrs> {
+		view({attrs}: CVnode<SelectInputAttrs>) {
+			return wrapInput(attrs, m("select",
+				{
+					name: attrs.label,
+					oncreate: (v: CVnodeDOM<any>) => {
+						if (v.attrs.autofocus) {
+							(v.dom as HTMLElement).focus();
+						}
+					},
+					oninput: m.withAttr("value", function (v: string) {
+						attrs.onInput(v);
+					}),
+					autofocus: attrs.autofocus
+				},
+				attrs.options.map((opt) => {
+					return m("option", {
+						value: opt,
+					}, opt)
+				})
+			));
+		}
+	}
+
 }
