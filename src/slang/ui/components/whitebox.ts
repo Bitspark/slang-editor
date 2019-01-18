@@ -1,4 +1,4 @@
-import m from "mithril";
+import m, {ClassComponent, CVnode} from "mithril";
 
 import {AttachableComponent, CellComponent} from "./base";
 import {Styles} from "../../../styles/studio";
@@ -8,19 +8,20 @@ import {BlueprintInstance, BlueprintModel} from "../../model/blueprint";
 import {BlackBoxComponent, OperatorBoxComponent} from "./blackbox";
 import {PaperView} from "../views/paper-view";
 import {ConnectionComponent} from "./connection";
-import {BlueprintPortModel, GenericPortModel} from "../../model/port";
+import {BlueprintPortModel, GenericPortModel, PortModel} from "../../model/port";
 import {PortGroupPosition} from "./port-group";
 import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {Connection} from "../../custom/connections";
 import {OperatorModel} from "../../model/operator";
 import {BlueprintDelegateModel} from "../../model/delegate";
-import {SlangTypeValue} from "../../custom/type";
+import {SlangTypeValue, TypeIdentifier} from "../../custom/type";
 import {Tk} from "./toolkit";
 import Button = Tk.Button;
 import {InputConsole, OutputConsole} from "./console";
 import {componentFactory} from "./factory";
 import {DashboardComponent} from "./dashboard";
 import Modal = Tk.Modal;
+import {SlangSubject} from "../../custom/events";
 
 export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 120;
@@ -512,6 +513,18 @@ export class WhiteBoxComponent extends CellComponent {
 			});
 		}
 
+		let portInfo: AttachableComponent;
+		operatorComp.onPortMouseEnter((port: PortModel, x: number, y: number) => {
+			portInfo = that
+				.createComponent({x: x + 2, y: y + 2, align: "tl"})
+				.mount("", {
+					view: () => m(PortInfo, {port})
+				});
+		});
+		operatorComp.onPortMouseLeave((port: PortModel, x: number, y: number) => {
+			portInfo.destroy();
+		});
+
 		return operatorComp;
 	}
 
@@ -526,6 +539,41 @@ export class WhiteBoxComponent extends CellComponent {
 		if (idx !== -1) {
 			this.connections.splice(idx, 1);
 		}
+	}
+
+	public onClick(cb: (event: MouseEvent, x: number, y: number) => void) {
+		this.clicked.subscribe(({event, x, y}) => {
+			cb(event, x, y);
+		});
+	}
+
+	public onDblClick(cb: (event: MouseEvent, x: number, y: number) => void) {
+		this.dblclicked.subscribe(({event, x, y}) => {
+			cb(event, x, y);
+		});
+	}
+}
+
+export interface Attrs {
+	port: PortModel,
+}
+
+class PortInfo implements ClassComponent<Attrs> {
+	// Note that class methods cannot infer parameter types
+	oninit({attrs}: CVnode<Attrs>) {
+	}
+
+	view({attrs}: CVnode<Attrs>) {
+		const port = attrs.port;
+		const portType = TypeIdentifier[port.getTypeIdentifier()].toLowerCase();
+
+		return m(".sl-port-info",
+			m(".sl-port-type", {
+					class: `sl-type-${portType}`,
+				},
+				portType),
+			m(".sl-port-name", port.getName())
+		);
 	}
 }
 
