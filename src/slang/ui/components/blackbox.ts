@@ -5,13 +5,14 @@ import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 import {PortGroupComponent} from "./port-group";
 import {Styles} from "../../../styles/studio";
-import {AttachableComponent, ElementComponent} from "./base";
+import {AttachableComponent, ElementComponent, XY} from "./base";
 import {PaperView} from "../views/paper-view";
 import {Tk} from "./toolkit";
 import Button = Tk.Button;
-import {SlangSubjectTrigger} from "../../custom/events";
+import {SlangSubject, SlangSubjectTrigger} from "../../custom/events";
 import RectangleSelectors = shapes.standard.RectangleSelectors;
 import {componentFactory} from "./factory";
+import {PortModel} from "../../model/port";
 
 
 function createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
@@ -172,6 +173,8 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 
 export class OperatorBoxComponent extends BlackBoxComponent {
 	private operatorControl?: AttachableComponent;
+	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
+	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
 
 	constructor(paperView: PaperView, protected readonly operator: OperatorModel) {
 		super(paperView, true);
@@ -210,6 +213,24 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 
 		this.shape.set("obstacle", true);
 		this.shape.attr("draggable", true);
+
+		const portElems = this.paperView.getFrame().getHTMLElement().querySelectorAll(".joint-port-body");
+		const that = this;
+		portElems.forEach((portElem: Element) => {
+			const port = (operator.findNodeById(portElem.getAttribute("port")!) as PortModel);
+			if (!port) {
+				return;
+			}
+			portElem.addEventListener("mouseenter", (event: Event) => {
+				const {clientX, clientY} = (event as MouseEvent);
+				const {x, y} = this.paperView.toLocalXY({x: clientX, y: clientY});
+				that.portMouseEntered.next({port, x, y});
+			});
+			portElem.addEventListener("mouseleave", (event: Event) => {
+				const {x, y} = (event as MouseEvent);
+				that.portMouseLeft.next({port, x, y});
+			});
+		});
 	}
 
 	protected createShape(): BlackBoxShape {
@@ -226,6 +247,19 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 	protected createPortGroups(): Array<PortGroupComponent> {
 		return createPortGroups(this.operator);
 	}
+
+	public onPortMouseEnter(cb: (port: PortModel, x: number, y: number) => void) {
+		this.portMouseEntered.subscribe(({port, x, y}) => {
+			cb(port, x, y);
+		});
+	}
+
+	public onPortMouseLeave(cb: (port: PortModel, x: number, y: number) => void) {
+		this.portMouseLeft.subscribe(({port, x, y}) => {
+			cb(port, x, y);
+		});
+	}
+
 }
 
 export interface BlackBoxShapeAttrs {

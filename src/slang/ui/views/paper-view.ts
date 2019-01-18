@@ -223,6 +223,10 @@ export abstract class PaperView extends View {
 		return this.paper.localToClientPoint(xy);
 	}
 
+	public toLocalXY(xy: XY): XY {
+		return this.paper.clientToLocalPoint(xy);
+	}
+
 	public getPaper(): dia.Paper {
 		return this.paper;
 	}
