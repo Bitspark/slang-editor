@@ -26,6 +26,9 @@ export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 120;
 	private static readonly minimumSpace = 10;
 
+	private clicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("clicked");
+	private dblclicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("dblclicked");
+
 	protected readonly shape: WhiteBoxComponent.Rect;
 	private readonly buttons: AttachableComponent;
 	private readonly input: AttachableComponent;
@@ -52,6 +55,16 @@ export class WhiteBoxComponent extends CellComponent {
 			height: WhiteBoxComponent.padding * 2 + WhiteBoxComponent.minimumSpace,
 		};
 		this.shape = new WhiteBoxComponent.Rect(this.blueprint, size);
+
+		this.shape.on("pointerclick",
+			(cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
+				this.clicked.next({event, x, y});
+			});
+		this.shape.on("pointerdblclick",
+			(cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
+				this.dblclicked.next({event, x, y});
+			});
+
 		this.render();
 		this.autoLayout();
 	}
@@ -478,7 +491,7 @@ export class WhiteBoxComponent extends CellComponent {
 		const that = this;
 
 		if (operator.hasProperties()) {
-			operatorComp.onClick(function (evt: Event, x: number, y: number) {
+			operatorComp.onClick((event: Event, x: number, y: number) => {
 				const comp = that
 					.createComponent({x: 0, y: 0, align: "c"})
 					.mount("", {

@@ -78,8 +78,8 @@ export abstract class BlackBoxComponent extends ElementComponent {
 	protected shape!: BlackBoxShape;
 	protected portGroups!: Array<PortGroupComponent>;
 
-	private clicked = new SlangSubjectTrigger("clicked");
-	private dblclicked = new SlangSubjectTrigger("dblclicked");
+	private clicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("clicked");
+	private dblclicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("dblclicked");
 
 	protected constructor(paperView: PaperView, private readonly drawGenerics: boolean) {
 		super(paperView, {x: 0, y: 0});
@@ -99,12 +99,15 @@ export abstract class BlackBoxComponent extends ElementComponent {
 			group.setParent(this.shape, this.drawGenerics);
 		});
 
-		this.shape.on("pointerclick", () => {
-			this.clicked.next();
-		});
-		this.shape.on("pointerdblclick", () => {
-			this.dblclicked.next();
-		});
+		this.shape.on("pointerclick",
+			(cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
+				this.clicked.next({event, x, y});
+			});
+		this.shape.on("pointerdblclick",
+			(cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
+				this.dblclicked.next({event, x, y});
+			});
+
 		this.render();
 	}
 
@@ -112,12 +115,16 @@ export abstract class BlackBoxComponent extends ElementComponent {
 		this.shape.translate(tx, ty);
 	}
 
-	public onClick(handler: Function) {
-		this.clicked.subscribe(() => handler());
+	public onClick(cb: (event: MouseEvent, x: number, y: number) => void) {
+		this.clicked.subscribe(({event, x, y}) => {
+			cb(event, x, y);
+		});
 	}
 
-	public onDblclick(handler: Function) {
-		this.dblclicked.subscribe(() => handler());
+	public onDblClick(cb: (event: MouseEvent, x: number, y: number) => void) {
+		this.dblclicked.subscribe(({event, x, y}) => {
+			cb(event, x, y);
+		});
 	}
 }
 

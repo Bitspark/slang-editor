@@ -120,6 +120,11 @@ export class BlueprintView extends PaperView {
 
 	private attachEventHandlers() {
 		const that = this;
+
+		this.whiteBox.onDblClick((event: Event, x: number, y: number) => {
+			that.blueprintSelect = new BlueprintSelectComponent(that, {x, y});
+		});
+
 		this.graph.on("change:position change:size", function (cell: dia.Cell) {
 			// Moving around inner operators
 			if (!(cell instanceof BlackBoxShape)) {
@@ -127,15 +132,14 @@ export class BlueprintView extends PaperView {
 			}
 			that.fitOuter(false);
 		});
-		this.getPaper().on("cell:pointerdblclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
-			that.blueprintSelect = new BlueprintSelectComponent(that, {x, y});
-		});
+
 		this.getPaper().on("blank:pointerclick cell:pointerclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
 			if (that.blueprintSelect) {
 				that.blueprintSelect.destroy();
 				that.blueprintSelect = null;
 			}
 		});
+
 	}
 
 	private fitOuter(animation: boolean) {
