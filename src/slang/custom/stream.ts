@@ -427,7 +427,7 @@ export class StreamPort {
 			const sub = this.port.getStreamSub();
 			if (sub) {
 				if (this.port.isSource()) {
-					sub.getStreamPort().setStreamTypeParentToChild(stream.createSubStream(this.port.getStreamParent()), override);
+					sub.getStreamPort().setStreamTypeParentToChild(stream.createSubStream(sub), override);
 				} else {
 					sub.getStreamPort().setStreamTypeParentToChild(stream.createSubStream(null), override);
 				}

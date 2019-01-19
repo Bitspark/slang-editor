@@ -47,7 +47,11 @@ export class AutoTriggerApp extends SlangApp {
 						if (!port.isConnected()) {
 							const sourcePort = streamType.getSource();
 							if (sourcePort !== null) {
-								AutoTriggerApp.connectPorts(sourcePort, port);
+								try {
+									AutoTriggerApp.connectPorts(sourcePort, port);
+								} catch (e) {
+									console.error(e);
+								}
 							}
 						}
 					}
