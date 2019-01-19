@@ -122,7 +122,11 @@ export class ConnectionComponent extends CellComponent {
 		if (sourcePort.isGeneric()) {
 			link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(TypeIdentifier.Generic));
 		} else {
-			link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(sourcePort.getTypeIdentifier()));
+			if (destinationPort && destinationPort.getTypeIdentifier() === TypeIdentifier.Trigger) {
+				link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(TypeIdentifier.Trigger));
+			} else {
+				link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(sourcePort.getTypeIdentifier()));
+			}
 		}
 		link.attr(".connection/stroke-width", lines === 1 ? 2 : 1);
 		link.attr(".connection/vector-effect", Styles.Connection.Ordinary.vectorEffect);
