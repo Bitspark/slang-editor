@@ -11,6 +11,7 @@ import {XY} from "../components/base";
 import {LandscapeModel} from "../../model/landscape";
 import {PropertyAssignments} from "../../model/property";
 import {GenericSpecifications} from "../../custom/generics";
+import {TypeIdentifier} from "../../custom/type";
 
 export class BlueprintView extends PaperView {
 	private readonly whiteBox: WhiteBoxComponent;
@@ -43,7 +44,6 @@ export class BlueprintView extends PaperView {
 
 				const magnetT = linkView.getEndMagnet("target");
 				if (magnetT) {
-
 					const portT = that.getPortFromMagnet(magnetT);
 					if (portT) {
 						if (portS.canConnect(portT)) {
@@ -55,7 +55,10 @@ export class BlueprintView extends PaperView {
 						}
 					}
 				} else {
-					if (portS.isDirectionIn() && !portS.isConnected()) {
+					if (portS.isDirectionIn() && 
+						!portS.isConnected() && 
+						portS.getType().isPrimitive() && 
+						portS.getTypeIdentifier() !== TypeIdentifier.Trigger) {
 						that.createValueOperator(linkView.getEndAnchor("target"), portS);
 					}
 				}
