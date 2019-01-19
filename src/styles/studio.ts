@@ -9,8 +9,8 @@ export namespace Styles {
 		[TypeIdentifier.Boolean]: "#cb8000",
 		[TypeIdentifier.Binary]: "#83a91d",
 		[TypeIdentifier.Primitive]: "#018b8a",
-		[TypeIdentifier.Trigger]: "#979797",
-		[TypeIdentifier.Generic]: "#b25db2",
+		[TypeIdentifier.Trigger]: "rgba(151, 151, 151, 0.5)",
+		[TypeIdentifier.Generic]: "rgba(178, 93, 178, 0.5)",
 		[TypeIdentifier.Stream]: "transparent",
 		[TypeIdentifier.Map]: "transparent",
 	};

@@ -7,8 +7,8 @@ $type-color-string: $brown;
 $type-color-boolean: $orange;
 $type-color-binary: $green;
 $type-color-primitive: $cyan;
-$type-color-trigger: $gray;
-$type-color-generic: $purple;
+$type-color-trigger: rgba($gray, 0.5);
+$type-color-generic: rgba($purple, 0.5);
 
 $port-color-stroke: $black;
 $port-color-valid: $green;
