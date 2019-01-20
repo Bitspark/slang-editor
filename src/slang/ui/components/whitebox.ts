@@ -29,6 +29,8 @@ export class WhiteBoxComponent extends CellComponent {
 
 	private clicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("clicked");
 	private dblclicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("dblclicked");
+	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
+	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
 
 	protected readonly shape: WhiteBoxComponent.Rect;
 	private readonly buttons: AttachableComponent;
@@ -66,6 +68,26 @@ export class WhiteBoxComponent extends CellComponent {
 				this.dblclicked.next({event, x, y});
 			});
 
+		const portElems = this.paperView.getFrame().getHTMLElement().querySelectorAll(".joint-port-body");
+		const that = this;
+		portElems.forEach((portElem: Element) => {
+			const port = (blueprint.findNodeById(portElem.getAttribute("port")!) as PortModel);
+			if (!port) {
+				return;
+			}
+			portElem.addEventListener("mouseenter", (event: Event) => {
+				const {clientX, clientY} = (event as MouseEvent);
+				const {x, y} = this.paperView.toLocalXY({x: clientX, y: clientY});
+
+				that.portMouseEntered.next({port, x, y});
+			});
+			portElem.addEventListener("mouseleave", (event: Event) => {
+				const {x, y} = (event as MouseEvent);
+				that.portMouseLeft.next({port, x, y});
+			});
+		});
+
+		this.attachPortInfo(this);
 		this.render();
 		this.autoLayout();
 	}
@@ -512,7 +534,13 @@ export class WhiteBoxComponent extends CellComponent {
 				return true;
 			});
 		}
+		this.attachPortInfo(operatorComp);
 
+		return operatorComp;
+	}
+
+	private attachPortInfo(operatorComp: OperatorBoxComponent | WhiteBoxComponent) {
+		const that = this;
 		let portInfo: AttachableComponent;
 		operatorComp.onPortMouseEnter((port: PortModel, x: number, y: number) => {
 			portInfo = that
@@ -524,8 +552,6 @@ export class WhiteBoxComponent extends CellComponent {
 		operatorComp.onPortMouseLeave((port: PortModel, x: number, y: number) => {
 			portInfo.destroy();
 		});
-
-		return operatorComp;
 	}
 
 	private removeConnection(connection: Connection) {
@@ -550,6 +576,18 @@ export class WhiteBoxComponent extends CellComponent {
 	public onDblClick(cb: (event: MouseEvent, x: number, y: number) => void) {
 		this.dblclicked.subscribe(({event, x, y}) => {
 			cb(event, x, y);
+		});
+	}
+
+	public onPortMouseEnter(cb: (port: PortModel, x: number, y: number) => void) {
+		this.portMouseEntered.subscribe(({port, x, y}) => {
+			cb(port, x, y);
+		});
+	}
+
+	public onPortMouseLeave(cb: (port: PortModel, x: number, y: number) => void) {
+		this.portMouseLeft.subscribe(({port, x, y}) => {
+			cb(port, x, y);
 		});
 	}
 }

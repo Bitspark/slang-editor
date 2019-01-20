@@ -9,7 +9,7 @@ import {AttachableComponent, ElementComponent, XY} from "./base";
 import {PaperView} from "../views/paper-view";
 import {Tk} from "./toolkit";
 import Button = Tk.Button;
-import {SlangSubject, SlangSubjectTrigger} from "../../custom/events";
+import {SlangSubject} from "../../custom/events";
 import RectangleSelectors = shapes.standard.RectangleSelectors;
 import {componentFactory} from "./factory";
 import {PortModel} from "../../model/port";
@@ -217,6 +217,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 		const portElems = this.paperView.getFrame().getHTMLElement().querySelectorAll(".joint-port-body");
 		const that = this;
 		portElems.forEach((portElem: Element) => {
+			/* XXX this also selects inner operator ports */
 			const port = (operator.findNodeById(portElem.getAttribute("port")!) as PortModel);
 			if (!port) {
 				return;
