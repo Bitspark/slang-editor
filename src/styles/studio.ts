@@ -55,7 +55,7 @@ export namespace Styles {
 	export class BlackBox {
 		public static rx = 6;
 		public static ry = 6;
-		public static size = {width: 120, height: 74};
+		public static size = {width: 80, height: 49};
 		public static filter = {
 			name: "dropShadow",
 			args: {
