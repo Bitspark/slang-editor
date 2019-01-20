@@ -185,6 +185,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 	public refresh(): void {
 		super.refresh();
 		const operator = this.operator;
+		const blueprint = operator.getBlueprint();
 
 		if (operator.XY) {
 			this.updateXY(operator.XY);
@@ -195,15 +196,28 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 		}
 
 		this.operatorControl = this
-			.createComponent({x: 0, y: 0, align: "c"})
+			.createComponent({x: 0, y: 0, align: "t"})
 			.mount("", {
-				view: () => m(Button, {
-					tooltip: "Remove operator",
-					class: "sl-danger sl-btn-icon",
-					onClick: () => {
-						operator.destroy();
-					},
-				}, m("i.fas.fa-times"))
+				view: () => [
+					m("", m(Button, {
+						tooltip: "Remove operator",
+						class: "sl-danger sl-btn-icon",
+						onClick: () => {
+							operator.destroy();
+						},
+					}, m("i.fas.fa-times"))),
+
+					!blueprint.isLocal() ? undefined :
+						m("", m(Button, {
+							tooltip: "Open blueprint",
+							class: "sl-btn-icon",
+							onClick: () => {
+								if (blueprint.isLocal()) {
+									operator.getBlueprint().open()
+								}
+							}
+						}, m("i.fas.fa-project-diagram")))
+				]
 			})
 			.attachTo(this.shape, "tl");
 

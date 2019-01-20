@@ -191,6 +191,10 @@ export class BlueprintModel extends BlackBox {
 		return this.instance.getValue() !== null;
 	}
 
+	public isLocal(): boolean {
+		return this.type == BlueprintType.Local;
+	}
+
 	public getType(): BlueprintType {
 		return this.type;
 	}
