@@ -18,7 +18,19 @@ export abstract class GenericDelegateModel<B extends BlackBox> extends PortOwner
 
 		// First, handle operator out-ports
 		if (this.getPortOut()) {
-			connections.addConnections(this.getPortOut()!.getConnectionsTo());
+			connections.addAll(this.getPortOut()!.getConnectionsTo());
+		}
+
+		return connections;
+	}
+	
+	public getConnections(): Connections {
+		const connections = new Connections();
+
+		// First, handle operator out-ports
+		if (this.getPortOut()) {
+			connections.addAll(this.getPortOut()!.getConnections());
+			connections.addAll(this.getPortIn()!.getConnections());
 		}
 
 		return connections;

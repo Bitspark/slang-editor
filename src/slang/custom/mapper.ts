@@ -23,7 +23,7 @@ import {OperatorModel} from "../model/operator";
   \
  */
 
-function iter2map<S, T>(iter: IterableIterator<S>, process: (result: T, curr: S) => void): T {
+function iter2map<S, T>(iter: Iterable<S>, process: (result: T, curr: S) => void): T {
 	return Array.from(iter).reduce((result, curr) => {
 		process(result, curr);
 		return result;
@@ -67,7 +67,7 @@ export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApi
 			(result, property) => {
 				result[property.getName()] = typeModelToJSON(property.getType());
 			}),
-		connections: iter2map<Connection, ConnectionsApiResponse>(blueprint.getConnectionsTo().getIterator(),
+		connections: iter2map<Connection, ConnectionsApiResponse>(blueprint.getConnectionsTo(),
 			(result: ConnectionsApiResponse, connection) => {
 				const srcPortRef = getFullPortRef(connection.source);
 				const dstPortRef = getFullPortRef(connection.destination);
@@ -120,7 +120,7 @@ function typeModelToJSON(type: SlangType): TypeDefApiResponse {
 	}
 }
 
-function getFullPortRef(port: PortModel): string {
+export function getFullPortRef(port: PortModel): string {
 	if (port instanceof BlueprintPortModel) {
 		return blueprintPortRef(port);
 	} else if (port instanceof OperatorPortModel) {

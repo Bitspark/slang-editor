@@ -5,22 +5,18 @@ export interface Connection {
 	destination: PortModel
 }
 
-export class Connections {
+export class Connections implements Iterable<Connection> {
 	private connections: Array<Connection> = [];
 
 	constructor() {
 	}
 
-	public getIterator(): IterableIterator<Connection> {
-		return this.connections.values();
-	}
-
-	public addConnection(connection: Connection) {
+	public add(connection: Connection) {
 		this.connections.push(connection);
 	}
 
-	public addConnections(connections: Connections) {
-		for (const connection of connections.getIterator()) {
+	public addAll(connections: Iterable<Connection>) {
+		for (const connection of connections) {
 			this.connections.push(connection);
 		}
 	}
@@ -29,6 +25,10 @@ export class Connections {
 		for (const connection of this.connections) {
 			cb(connection);
 		}
+	}
+
+	[Symbol.iterator](): IterableIterator<Connection> {
+		return this.connections.values();
 	}
 
 }

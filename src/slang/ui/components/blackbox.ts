@@ -30,8 +30,8 @@ function createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
 
 	const delegates = Array.from(blackBox.getDelegates());
 
-// const countRight = Math.ceil(delegates.length / 2);
-	const countRight = delegates.length;
+	const countRight = Math.ceil(delegates.length / 2);
+	// const countRight = delegates.length;
 	const widthRight = 0.5 / countRight;
 	const stepRight = 0.5 / countRight;
 	let posRight = 0;
@@ -69,7 +69,7 @@ function createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
 			posLeft += stepLeft;
 		}
 
-		// right = !right;
+		right = !right;
 	}
 
 	return portGroups;

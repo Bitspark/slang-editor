@@ -391,16 +391,16 @@ export class BlueprintModel extends BlackBox {
 		// First, handle operator in-ports
 		const portIn = this.getPortIn();
 		if (portIn) {
-			connections.addConnections(portIn.getConnectionsTo());
+			connections.addAll(portIn.getConnectionsTo());
 		}
 
 		// Then, handle delegate in-ports
 		for (const delegate of this.getChildNodes(BlueprintDelegateModel)) {
-			connections.addConnections(delegate.getConnectionsTo());
+			connections.addAll(delegate.getConnectionsTo());
 		}
 
 		for (const operator of this.getChildNodes(OperatorModel)) {
-			connections.addConnections(operator.getConnectionsTo());
+			connections.addAll(operator.getConnectionsTo());
 		}
 
 		return connections;

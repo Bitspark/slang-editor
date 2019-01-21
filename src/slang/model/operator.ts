@@ -6,6 +6,7 @@ import {BlackBox} from "../custom/nodes";
 import {Connections} from "../custom/connections";
 import {SlangBehaviorSubject, SlangSubjectTrigger} from "../custom/events";
 import {GenericSpecifications} from "../custom/generics";
+import {getFullPortRef} from "../custom/mapper";
 
 export interface XY {
 	x: number;
@@ -59,7 +60,7 @@ export class OperatorModel extends BlackBox {
 
 		// TODO use same method for properties changed
 		this.generics.subscribeGenericsChanged(() => {
-			this.update()
+			this.update();
 		});
 	}
 
@@ -125,9 +126,50 @@ export class OperatorModel extends BlackBox {
 		}
 
 		this.properties = propAssignments;
-		this.removeDelegates();
-		this.removeMainPorts();
-		this.blueprint.instantiateOperator(this);
+
+		const parentBlueprint = this.getParentNode() as BlueprintModel;
+		
+		// Create virtual operator
+		const virtualOperator = parentBlueprint.createOperator("virtual", this.blueprint, this.properties.copy(this.generics), this.generics);
+		
+		for (const virtualDelegate of virtualOperator.getDelegates()) {
+
+		}
+
+		for (const virtualDelegate of virtualOperator.getDelegates()) {
+
+		}
+		
+		if (false) {
+			const connections = new Connections();
+			for (const delegate of this.getDelegates()) {
+				connections.addAll(delegate.getConnections());
+			}
+			for (const port of this.getPorts()) {
+				connections.addAll(port.getConnections());
+			}
+
+			const savedConnections = Array.from(connections).map(connection => ({
+				source: getFullPortRef(connection.source),
+				destination: getFullPortRef(connection.destination),
+			}));
+
+			this.removeDelegates();
+			this.removeMainPorts();
+			this.blueprint.instantiateOperator(this);
+
+			savedConnections.forEach(savedConnection => {
+				try {
+					const source = parentBlueprint.resolvePortReference(savedConnection.source);
+					const destination = parentBlueprint.resolvePortReference(savedConnection.destination);
+					if (source && destination) {
+						source.connect(destination);
+					}
+				} catch (e) {
+					console.error(`${e}, ${savedConnection.source} -> ${savedConnection.destination}`);
+				}
+			});
+		}
 
 		this.update();
 	}
@@ -145,11 +187,11 @@ export class OperatorModel extends BlackBox {
 		const connections = new Connections();
 
 		for (const port of this.getPorts()) {
-			connections.addConnections(port.getConnectionsTo());
+			connections.addAll(port.getConnectionsTo());
 		}
 
 		for (const delegate of this.getDelegates()) {
-			connections.addConnections(delegate.getConnectionsTo());
+			connections.addAll(delegate.getConnectionsTo());
 		}
 
 		return connections;
@@ -165,7 +207,7 @@ export class OperatorModel extends BlackBox {
 	public set XY(xy: XY | undefined) {
 		if (xy) {
 			if (!this.geometry) {
-				this.geometry = {position: xy}
+				this.geometry = {position: xy};
 			} else {
 				this.geometry.position = xy;
 			}
