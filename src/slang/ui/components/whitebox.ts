@@ -96,12 +96,21 @@ export class WhiteBoxComponent extends CellComponent {
 		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
 			if (!instance) {
 				this.buttons.mount("", {
-					view: () => m(Button, {
-						onClick: () => {
-							this.blueprint.requestDeployment();
-						},
-						class: "sl-blupr-deploy",
-					}, "Deploy")
+					view: () => m(".toolbox", [
+						m(Button, {
+							onClick: () => {
+								this.blueprint.save();
+								this.blueprint.requestDeployment();
+							},
+							class: "sl-blupr-deploy",
+						}, "Deploy"),
+						m(Button, {
+							onClick: () => {
+								this.blueprint.save();
+							},
+							class: "sl-blupr-deploy",
+						}, "Save"),
+					])
 				});
 				this.input.unmount();
 				this.output.unmount();

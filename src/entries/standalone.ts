@@ -5,7 +5,6 @@ import "../styles/standalone.scss";
 import {AppModel} from "../slang/model/app";
 import {Slang} from "../slang/slang";
 import {ViewFrame} from "../slang/ui/frame";
-import {BlueprintModel} from "../slang/model/blueprint";
 import {APIStorageApp} from "../apps/storage/src/app";
 import {DeploymentApp} from "../apps/deployment/src/app";
 import {componentFactory} from "../slang/ui/components/factory";
@@ -19,19 +18,6 @@ function SlangStudioStandalone(el: HTMLElement): Promise<void> {
 		const app = new Slang(appModel);
 		const frame = new ViewFrame(el);
 		app.addFrame(frame, true);
-
-		appModel.subscribeDescendantCreated(BlueprintModel, bp => {
-			let saveInterval: number | null;
-			bp.subscribeOpenedChanged(open => {
-				if (open) {
-					saveInterval = setInterval(() => {
-						bp.save();
-					}, 1000);
-				} else if (saveInterval) {
-					clearInterval(saveInterval);
-				}
-			});
-		});
 
 		new APIStorageApp(appModel, componentFactory, "http://localhost:5149/");
 		new DeploymentApp(appModel, componentFactory, "http://localhost:5149/");
