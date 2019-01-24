@@ -22,6 +22,7 @@ import {componentFactory} from "./factory";
 import {DashboardComponent} from "./dashboard";
 import Modal = Tk.Modal;
 import {SlangSubject} from "../../custom/events";
+import Box = Tk.Box;
 
 export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 120;
@@ -95,7 +96,7 @@ export class WhiteBoxComponent extends CellComponent {
 	private subscribe() {
 		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
 			if (!instance) {
-				this.buttons.mount("", {
+				this.buttons.mount({
 					view: () => m(".toolbox", [
 						m(Button, {
 							onClick: () => {
@@ -116,7 +117,7 @@ export class WhiteBoxComponent extends CellComponent {
 				this.output.unmount();
 
 			} else {
-				this.buttons.mount("", {
+				this.buttons.mount({
 					view: () => m(".toolbox", [
 						m(Button, {
 							class: "sl-green-pulsing",
@@ -133,13 +134,13 @@ export class WhiteBoxComponent extends CellComponent {
 				const portIn = this.blueprint.getPortIn();
 
 				if (portIn) {
-					this.input.mount("[]", {
-						view: () => m(InputConsole, {
+					this.input.mount({
+						view: () => m(Box, m(InputConsole, {
 							onSubmit: (values: SlangTypeValue) => {
 								this.blueprint.pushInput(values);
 							},
 							type: portIn.getType()
-						})
+						}))
 					});
 				}
 
@@ -153,13 +154,13 @@ export class WhiteBoxComponent extends CellComponent {
 						m.redraw();
 					}, this.blueprint.shutdownRequested);
 
-					this.output.mount("[]", {
-						view: () => m(OutputConsole, {
+					this.output.mount({
+						view: () => m(Box, m(OutputConsole, {
 							onLoad: () => {
 								return outputValues;
 							},
 							type: portOut.getType()
-						})
+						}))
 					});
 				}
 			}
@@ -526,7 +527,7 @@ export class WhiteBoxComponent extends CellComponent {
 			operatorComp.onClick((event: Event, x: number, y: number) => {
 				const comp = that
 					.createComponent({x: 0, y: 0, align: "c"})
-					.mount("", {
+					.mount({
 						view: () => m(Modal, {
 								onClose: () => {
 									comp.destroy();
@@ -554,7 +555,7 @@ export class WhiteBoxComponent extends CellComponent {
 		operatorComp.onPortMouseEnter((port: PortModel, x: number, y: number) => {
 			portInfo = that
 				.createComponent({x: x + 2, y: y + 2, align: "tl"})
-				.mount("", {
+				.mount({
 					view: () => m(PortInfo, {port})
 				});
 		});

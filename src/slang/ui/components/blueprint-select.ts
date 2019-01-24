@@ -12,6 +12,7 @@ import StringInput = Tk.StringInput;
 import ListItem = Tk.ListItem;
 import List = Tk.List;
 import {BlackBoxShape} from "./blackbox";
+import Box = Tk.Box;
 
 export interface Attrs {
 	onSelect: (bp: BlueprintModel) => void,
@@ -84,8 +85,8 @@ export class BlueprintSelectComponent extends ElementComponent {
 		this.shape = this.placeGhostRect({x, y});
 		this.menu = this.createComponent({x: 0, y: 0, align: "tl"})
 			.attachTo(this.shape, "c")
-			.mount("[]", {
-				view: () => m(BlueprintMenuComponent, {
+			.mount({
+				view: () => m(Box, m(BlueprintMenuComponent, {
 					onLoad: () => this.getBlueprints(),
 					onFilter: (fltrExpr: string) => {
 						this.filterExpr = fltrExpr;
@@ -102,7 +103,7 @@ export class BlueprintSelectComponent extends ElementComponent {
 						const xy = this.shape.getBBox().center();
 						this.shape = this.placeGhostRect(xy, bp);
 					}
-				})
+				}))
 			});
 	}
 
