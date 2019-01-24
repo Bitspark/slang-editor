@@ -364,15 +364,13 @@ export class StreamPort {
 		});
 
 		this.port.subscribeConnected(other => {
-			setTimeout(() => {
-				const subscription = other.getStreamPort().subscribeStreamTypeChanged(streamType => {
-					if (!streamType || this.port.getOwner().getStreamPortOwner().isMarkedForReset()) {
-						return;
-					}
-					this.setStreamTypeChildToParent(streamType);
-				});
-				this.connectionSubscriptions.set(other as any, subscription);
-			}, 100);
+			const subscription = other.getStreamPort().subscribeStreamTypeChanged(streamType => {
+				if (!streamType || this.port.getOwner().getStreamPortOwner().isMarkedForReset()) {
+					return;
+				}
+				this.setStreamTypeChildToParent(streamType);
+			});
+			this.connectionSubscriptions.set(other as any, subscription);
 		});
 
 		this.port.subscribeDisconnected(other => {
@@ -386,9 +384,7 @@ export class StreamPort {
 			if (this.port.isDestination()) {
 				const stream = this.getStreamType();
 				if (stream) {
-					setTimeout(() => {
-						stream.resetStreamType();
-					}, 100);
+					stream.resetStreamType();
 				}
 			}
 		});
