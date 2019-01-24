@@ -5,7 +5,7 @@ import {BlueprintModel} from "../../model/blueprint";
 import {OperatorModel} from "../../model/operator";
 import {PortGroupComponent} from "./port-group";
 import {Styles} from "../../../styles/studio";
-import {AttachableComponent, ElementComponent, XY} from "./base";
+import {AttachableComponent, CellComponent, XY} from "./base";
 import {PaperView} from "../views/paper-view";
 import {Tk} from "./toolkit";
 import Button = Tk.Button;
@@ -75,7 +75,7 @@ function createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
 	return portGroups;
 }
 
-export abstract class BlackBoxComponent extends ElementComponent {
+export abstract class BlackBoxComponent extends CellComponent {
 	protected shape!: BlackBoxShape;
 	protected portGroups!: Array<PortGroupComponent>;
 
@@ -126,6 +126,16 @@ export abstract class BlackBoxComponent extends ElementComponent {
 		this.dblclicked.subscribe(({event, x, y}) => {
 			cb(event, x, y);
 		});
+	}
+
+	protected updateXY({x, y}: XY) {
+		super.updateXY({x, y});
+		const {width, height} = this.shape.size();
+		this.shape.position(x - width / 2, y - height / 2);
+	}
+
+	public get bbox(): g.Rect {
+		return this.shape.getBBox();
 	}
 }
 

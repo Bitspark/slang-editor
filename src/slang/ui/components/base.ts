@@ -67,28 +67,6 @@ export abstract class CellComponent extends Component {
 	}
 }
 
-export abstract class ElementComponent extends CellComponent {
-	protected abstract readonly shape: dia.Element;
-
-	protected constructor(paperView: PaperView, xy: XY) {
-		super(paperView, xy);
-	}
-
-	protected updateXY({x, y}: XY) {
-		super.updateXY({x, y});
-		const {width, height} = this.shape.size();
-		this.shape.position(x - width / 2, y - height / 2);
-	}
-
-	public get bbox(): g.Rect {
-		return this.shape.getBBox();
-	}
-
-	public getShape(): dia.Element {
-		return this.shape;
-	}
-}
-
 abstract class HtmlComponent extends Component {
 	protected readonly htmlRoot: HTMLElement;
 	protected readonly align: Alignment;

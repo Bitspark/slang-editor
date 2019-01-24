@@ -5,13 +5,13 @@ import {BlueprintModel} from "../../model/blueprint";
 import {ClassComponent, CVnode} from "mithril";
 import {BlueprintView} from "../views/blueprint";
 import {Geometry} from "../../model/operator";
-import {AttachableComponent, XY, ElementComponent} from "./base";
+import {AttachableComponent, CellComponent, XY} from "./base";
 import {MithrilMouseEvent, Tk} from "./toolkit";
 import ListHead = Tk.ListHead;
 import StringInput = Tk.StringInput;
 import ListItem = Tk.ListItem;
 import List = Tk.List;
-import {BlackBoxShape} from "./blackbox";
+import {BlackBoxComponent, BlackBoxShape} from "./blackbox";
 import Box = Tk.Box;
 
 export interface Attrs {
@@ -71,7 +71,7 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 	}
 }
 
-export class BlueprintSelectComponent extends ElementComponent {
+export class BlueprintSelectComponent extends CellComponent {
 	private readonly blueprint: BlueprintModel;
 	private readonly landscape: LandscapeModel;
 	private readonly menu: AttachableComponent;
