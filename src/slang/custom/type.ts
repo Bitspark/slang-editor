@@ -62,6 +62,10 @@ export function copySlangTypeValue(v: SlangTypeValue): SlangTypeValue {
 	return vcp;
 }
 
+export function isUndefined(value: SlangTypeValue | undefined): boolean {
+	return typeof value === "undefined";
+}
+
 export namespace SlangTypeDef {
 	export function isEqual(a: SlangTypeDef, b: SlangTypeDef): boolean {
 		if (a.type !== b.type) {
