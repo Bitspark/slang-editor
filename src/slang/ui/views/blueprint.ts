@@ -1,4 +1,5 @@
-import {BlackBoxComponent, BlackBoxShape} from "../components/blackbox";
+import m, {ClassComponent, CVnode} from "mithril";
+import {BlackBoxShape} from "../components/blackbox";
 import {BlueprintModel} from "../../model/blueprint";
 import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";
@@ -7,7 +8,7 @@ import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {WhiteBoxComponent} from "../components/whitebox";
 import {dia} from "jointjs";
-import {XY} from "../components/base";
+import {AttachableComponent, XY} from "../components/base";
 import {LandscapeModel} from "../../model/landscape";
 import {PropertyAssignments} from "../../model/property";
 import {GenericSpecifications} from "../../custom/generics";
@@ -55,9 +56,9 @@ export class BlueprintView extends PaperView {
 						}
 					}
 				} else {
-					if (portS.isDirectionIn() && 
-						!portS.isConnected() && 
-						portS.getType().isPrimitive() && 
+					if (portS.isDirectionIn() &&
+						!portS.isConnected() &&
+						portS.getType().isPrimitive() &&
 						portS.getTypeIdentifier() !== TypeIdentifier.Trigger) {
 						that.createValueOperator(linkView.getEndAnchor("target"), portS);
 					}
@@ -127,6 +128,17 @@ export class BlueprintView extends PaperView {
 		this.whiteBox.onDblClick((event: Event, x: number, y: number) => {
 			that.blueprintSelect = new BlueprintSelectComponent(that, {x, y});
 		});
+		let portInfo: AttachableComponent;
+		this.whiteBox.onPortMouseEnter((port: PortModel, x: number, y: number) => {
+			portInfo = that.whiteBox
+				.createComponent({x: x + 2, y: y + 2, align: "tl"})
+				.mount({
+					view: () => m(PortInfo, {port})
+				});
+		});
+		this.whiteBox.onPortMouseLeave((port: PortModel, x: number, y: number) => {
+			portInfo.destroy();
+		});
 
 		this.graph.on("change:position change:size", function (cell: dia.Cell) {
 			// Moving around inner operators
@@ -142,7 +154,6 @@ export class BlueprintView extends PaperView {
 				that.blueprintSelect = null;
 			}
 		});
-
 	}
 
 	private fitOuter(animation: boolean) {
@@ -182,3 +193,27 @@ export class BlueprintView extends PaperView {
 		return this.blueprint;
 	}
 }
+
+export interface Attrs {
+	port: PortModel,
+}
+
+class PortInfo implements ClassComponent<Attrs> {
+	// Note that class methods cannot infer parameter types
+	oninit({attrs}: CVnode<Attrs>) {
+	}
+
+	view({attrs}: CVnode<Attrs>) {
+		const port = attrs.port;
+		const portType = TypeIdentifier[port.getTypeIdentifier()].toLowerCase();
+
+		return m(".sl-port-info",
+			m(".sl-port-type", {
+					class: `sl-type-${portType}`,
+				},
+				portType),
+			m(".sl-port-name", port.getName())
+		);
+	}
+}
+

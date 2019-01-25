@@ -71,27 +71,38 @@ export abstract class PaperView extends View {
 
 	protected redirectPaperEvents() {
 		const paper = this.paper;
+		const that = this;
 
-		["mousewheel"].forEach(event => {
-			(function (event) {
-				paper.on("cell:" + event, function (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) {
-					cellView.model.trigger(event, cellView, evt, x, y, delta);
+		["mousewheel"].forEach(eventName => {
+			(function (eventName) {
+				paper.on("cell:" + eventName, function (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) {
+					cellView.model.trigger(eventName, cellView, evt, x, y, delta);
 				});
-			})(event);
+			})(eventName);
 		});
-		["pointerdblclick", "pointerclick", "contextmenu", "pointerdown", "pointermove", "pointerup"].forEach(event => {
-			(function (event) {
-				paper.on("cell:" + event, function (cellView: dia.CellView, evt: Event, x: number, y: number) {
-					cellView.model.trigger(event, cellView, evt, x, y);
+		["pointerdblclick", "pointerclick", "contextmenu", "pointerdown", "pointermove", "pointerup"].forEach(eventName => {
+			(function (eventName) {
+				paper.on("cell:" + eventName, function (cellView: dia.CellView, evt: Event, x: number, y: number) {
+					cellView.model.trigger(eventName, cellView, evt, x, y);
 				});
-			})(event);
+			})(eventName);
 		});
-		["mouseover", "mouseout", "mouseenter", "mouseleave"].forEach(event => {
-			(function (event) {
-				paper.on("cell:" + event, function (cellView: dia.CellView, evt: Event) {
-					cellView.model.trigger(event, cellView, evt);
+		["mouseover", "mouseout", "mouseenter", "mouseleave"].forEach(eventName => {
+			(function (eventName) {
+				paper.on("cell:" + eventName, function (cellView: dia.CellView, evt: MouseEvent, x: number, y: number) {
+					const evTarget = (evt.target as Node);
+					if (evTarget && evTarget.parentElement) {
+						const portId = evTarget.parentElement.getAttribute("port");
+						if (portId) {
+							const {clientX, clientY} = evt;
+							const {x, y} = that.toLocalXY({x: clientX, y: clientY});
+							cellView.model.trigger("port:" + eventName, cellView, evt, x, y, portId);
+							return;
+						}
+					}
+					cellView.model.trigger(eventName, cellView, evt);
 				});
-			})(event);
+			})(eventName);
 		});
 	}
 

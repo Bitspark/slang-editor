@@ -15,17 +15,17 @@ import {componentFactory} from "./factory";
 import {PortModel} from "../../model/port";
 
 
-function createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
+function createPortGroups(paperView: PaperView, blackBox: BlackBox): Array<PortGroupComponent> {
 	const portGroups: Array<PortGroupComponent> = [];
 
 	const portIn = blackBox.getPortIn();
 	if (portIn) {
-		portGroups.push(new PortGroupComponent("MainIn", portIn, "top", 0.0, 1.0));
+		portGroups.push(new PortGroupComponent(paperView, "MainIn", portIn, "top", 0.0, 1.0));
 	}
 
 	const portOut = blackBox.getPortOut();
 	if (portOut) {
-		portGroups.push(new PortGroupComponent("MainOut", portOut, "bottom", 0.0, 1.0));
+		portGroups.push(new PortGroupComponent(paperView, "MainOut", portOut, "bottom", 0.0, 1.0));
 	}
 
 	const delegates = Array.from(blackBox.getDelegates());
@@ -46,25 +46,25 @@ function createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
 		if (right) {
 			const portOut = delegate.getPortOut();
 			if (portOut) {
-				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "right", posRight, widthRight));
+				portGroups.push(new PortGroupComponent(paperView, `Delegate${delegate.getName()}Out`, portOut, "right", posRight, widthRight));
 			}
 			posRight += stepRight;
 
 			const portIn = delegate.getPortIn();
 			if (portIn) {
-				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "right", posRight, widthRight));
+				portGroups.push(new PortGroupComponent(paperView, `Delegate${delegate.getName()}In`, portIn, "right", posRight, widthRight));
 			}
 			posRight += stepRight;
 		} else {
 			const portOut = delegate.getPortOut();
 			if (portOut) {
-				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "left", posLeft, widthLeft));
+				portGroups.push(new PortGroupComponent(paperView, `Delegate${delegate.getName()}Out`, portOut, "left", posLeft, widthLeft));
 			}
 			posLeft += stepLeft;
 
 			const portIn = delegate.getPortIn();
 			if (portIn) {
-				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "left", posLeft, widthLeft));
+				portGroups.push(new PortGroupComponent(paperView, `Delegate${delegate.getName()}In`, portIn, "left", posLeft, widthLeft));
 			}
 			posLeft += stepLeft;
 		}
@@ -79,6 +79,9 @@ export abstract class BlackBoxComponent extends CellComponent {
 	protected shape!: BlackBoxShape;
 	protected portGroups!: Array<PortGroupComponent>;
 
+	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
+	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
+
 	private clicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("clicked");
 	private dblclicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("dblclicked");
 
@@ -89,6 +92,24 @@ export abstract class BlackBoxComponent extends CellComponent {
 	protected abstract createPortGroups(): Array<PortGroupComponent>;
 
 	protected abstract createShape(): BlackBoxShape;
+
+	protected attachPortEvents(blackbox: BlackBox) {
+		this.shape.on("port:mouseover",
+			(cellView: dia.CellView, event: MouseEvent, x: number, y: number, portId: string) => {
+				const port = blackbox.findNodeById(portId);
+				if (port) {
+					this.portMouseEntered.next({port: port as PortModel, x, y});
+				}
+			});
+		this.shape.on("port:mouseout",
+			(cellView: dia.CellView, event: MouseEvent, x: number, y: number, portId: string) => {
+				const port = blackbox.findNodeById(portId);
+				if (port) {
+					this.portMouseLeft.next({port: port as PortModel, x, y});
+				}
+			});
+	}
+
 
 	public refresh(): void {
 		this.portGroups = this.createPortGroups();
@@ -108,7 +129,6 @@ export abstract class BlackBoxComponent extends CellComponent {
 			(cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
 				this.dblclicked.next({event, x, y});
 			});
-
 		this.render();
 	}
 
@@ -137,6 +157,23 @@ export abstract class BlackBoxComponent extends CellComponent {
 	public get bbox(): g.Rect {
 		return this.shape.getBBox();
 	}
+
+	public onPortMouseEnter(cb: (port: PortModel, x: number, y: number) => void) {
+		this.portMouseEntered.subscribe(({port, x, y}) => {
+			cb(port, x, y);
+		});
+	}
+
+	public onPortMouseLeave(cb: (port: PortModel, x: number, y: number) => void) {
+		this.portMouseLeft.subscribe(({port, x, y}) => {
+			cb(port, x, y);
+		});
+	}
+
+	public getShape(): dia.Element {
+		return super.getShape() as dia.Element;
+	}
+
 }
 
 export class BlueprintBoxComponent extends BlackBoxComponent {
@@ -159,6 +196,7 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 				cursor: "pointer",
 			}
 		});
+		this.attachPortEvents(this.blueprint);
 	}
 
 	protected createShape(): BlackBoxShape {
@@ -172,7 +210,7 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 	}
 
 	protected createPortGroups(): Array<PortGroupComponent> {
-		return createPortGroups(this.blueprint);
+		return createPortGroups(this.paperView, this.blueprint);
 	}
 
 	public getShape(): BlackBoxShape {
@@ -183,8 +221,6 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 
 export class OperatorBoxComponent extends BlackBoxComponent {
 	private operatorControl?: AttachableComponent;
-	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
-	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
 
 	constructor(paperView: PaperView, protected readonly operator: OperatorModel) {
 		super(paperView, true);
@@ -237,25 +273,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 
 		this.shape.set("obstacle", true);
 		this.shape.attr("draggable", true);
-
-		const portElems = this.paperView.getFrame().getHTMLElement().querySelectorAll(".joint-port-body");
-		const that = this;
-		portElems.forEach((portElem: Element) => {
-			/* XXX this also selects inner operator ports */
-			const port = (operator.findNodeById(portElem.getAttribute("port")!) as PortModel);
-			if (!port) {
-				return;
-			}
-			portElem.addEventListener("mouseenter", (event: Event) => {
-				const {clientX, clientY} = (event as MouseEvent);
-				const {x, y} = this.paperView.toLocalXY({x: clientX, y: clientY});
-				that.portMouseEntered.next({port, x, y});
-			});
-			portElem.addEventListener("mouseleave", (event: Event) => {
-				const {x, y} = (event as MouseEvent);
-				that.portMouseLeft.next({port, x, y});
-			});
-		});
+		this.attachPortEvents(operator);
 	}
 
 	protected createShape(): BlackBoxShape {
@@ -270,21 +288,8 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 	}
 
 	protected createPortGroups(): Array<PortGroupComponent> {
-		return createPortGroups(this.operator);
+		return createPortGroups(this.paperView, this.operator);
 	}
-
-	public onPortMouseEnter(cb: (port: PortModel, x: number, y: number) => void) {
-		this.portMouseEntered.subscribe(({port, x, y}) => {
-			cb(port, x, y);
-		});
-	}
-
-	public onPortMouseLeave(cb: (port: PortModel, x: number, y: number) => void) {
-		this.portMouseLeft.subscribe(({port, x, y}) => {
-			cb(port, x, y);
-		});
-	}
-
 }
 
 export interface BlackBoxShapeAttrs {

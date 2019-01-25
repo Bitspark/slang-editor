@@ -4,6 +4,7 @@ import {PortModel} from "../../model/port";
 import {TypeIdentifier} from "../../custom/type";
 import {Styles} from "../../../styles/studio";
 import {OperatorModel} from "../../model/operator";
+import {PaperView} from "../views/paper-view";
 
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";
 
@@ -50,11 +51,13 @@ export class PortGroupComponent {
 	private parentElement: dia.Element | null = null;
 	private portGroupElement: dia.Element.PortGroup = {};
 
-	constructor(private readonly name: string,
-				private readonly port: PortModel,
-				private readonly groupPosition: PortGroupPosition,
-				start: number,
-				width: number) {
+	constructor(
+		private readonly paperView: PaperView,
+		private readonly name: string,
+		private readonly port: PortModel,
+		private readonly groupPosition: PortGroupPosition,
+		start: number,
+		width: number) {
 		switch (groupPosition) {
 			case "top":
 				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "top", start, width) as any;

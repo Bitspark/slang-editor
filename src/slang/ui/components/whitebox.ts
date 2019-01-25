@@ -69,26 +69,6 @@ export class WhiteBoxComponent extends CellComponent {
 				this.dblclicked.next({event, x, y});
 			});
 
-		const portElems = this.paperView.getFrame().getHTMLElement().querySelectorAll(".joint-port-body");
-		const that = this;
-		portElems.forEach((portElem: Element) => {
-			const port = (blueprint.findNodeById(portElem.getAttribute("port")!) as PortModel);
-			if (!port) {
-				return;
-			}
-			portElem.addEventListener("mouseenter", (event: Event) => {
-				const {clientX, clientY} = (event as MouseEvent);
-				const {x, y} = this.paperView.toLocalXY({x: clientX, y: clientY});
-
-				that.portMouseEntered.next({port, x, y});
-			});
-			portElem.addEventListener("mouseleave", (event: Event) => {
-				const {x, y} = (event as MouseEvent);
-				that.portMouseLeft.next({port, x, y});
-			});
-		});
-
-		this.attachPortInfo(this);
 		this.render();
 		this.autoLayout();
 	}
@@ -198,11 +178,11 @@ export class WhiteBoxComponent extends CellComponent {
 		this.blueprint.subscribeChildCreated(BlueprintPortModel, port => {
 			if (port.isDirectionIn()) {
 				const p = this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
-				this.buttons.attachTo(p.getElement(), "br");
-				this.input.attachTo(p.getElement(), "c");
+				this.buttons.attachTo(p.getShape(), "br");
+				this.input.attachTo(p.getShape(), "c");
 			} else {
 				const p = this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
-				this.output.attachTo(p.getElement(), "c");
+				this.output.attachTo(p.getShape(), "c");
 			}
 		});
 
@@ -251,10 +231,10 @@ export class WhiteBoxComponent extends CellComponent {
 			[
 				...operatorRectangles,
 				...connectionLinks,
-				...this.ports.top.map(p => p.getElement()),
-				...this.ports.bottom.map(p => p.getElement()),
-				...this.ports.left.map(p => p.getElement()),
-				...this.ports.right.map(p => p.getElement()),
+				...this.ports.top.map(p => p.getShape()),
+				...this.ports.bottom.map(p => p.getShape()),
+				...this.ports.left.map(p => p.getShape()),
+				...this.ports.right.map(p => p.getShape()),
 			], {
 				nodeSep: 80,
 				rankSep: 80,
@@ -282,7 +262,7 @@ export class WhiteBoxComponent extends CellComponent {
 		const padding = WhiteBoxComponent.padding;
 
 		for (const port of this.ports.top) {
-			port.getElement().set({
+			port.getShape().set({
 				position: {
 					x: boundingBox.x - 50 + boundingBox.width / 2,
 					y: boundingBox.y - 100 - padding,
@@ -291,7 +271,7 @@ export class WhiteBoxComponent extends CellComponent {
 		}
 
 		for (const port of this.ports.bottom) {
-			port.getElement().set({
+			port.getShape().set({
 				position: {
 					x: boundingBox.x - 50 + boundingBox.width / 2,
 					y: boundingBox.y + boundingBox.height + padding,
@@ -301,7 +281,7 @@ export class WhiteBoxComponent extends CellComponent {
 
 		const offset = boundingBox.y + (boundingBox.height - this.ports.right.length * 100) / 2;
 		this.ports.right.forEach((port, index) => {
-			port.getElement().set({
+			port.getShape().set({
 				position: {
 					x: boundingBox.x + boundingBox.width + padding,
 					y: offset + index * 100,
@@ -397,7 +377,7 @@ export class WhiteBoxComponent extends CellComponent {
 				}
 			}
 
-			this.ports.top.map(p => p.getElement()).forEach(port => {
+			this.ports.top.map(p => p.getShape()).forEach(port => {
 				const currentPortPosition = port.get("position");
 				const targetPosition = {
 					x: currentPortPosition.x,
@@ -411,7 +391,7 @@ export class WhiteBoxComponent extends CellComponent {
 				}
 			});
 
-			this.ports.bottom.map(p => p.getElement()).forEach(port => {
+			this.ports.bottom.map(p => p.getShape()).forEach(port => {
 				const currentPortPosition = port.get("position");
 				const targetPosition = {
 					x: currentPortPosition.x,
@@ -425,7 +405,7 @@ export class WhiteBoxComponent extends CellComponent {
 				}
 			});
 
-			this.ports.right.map(p => p.getElement()).forEach(port => {
+			this.ports.right.map(p => p.getShape()).forEach(port => {
 				const currentPortPosition = port.get("position");
 				const targetPosition = {
 					x: newPosition.x + newSize.width,
@@ -450,8 +430,8 @@ export class WhiteBoxComponent extends CellComponent {
 		};
 
 		const that = this;
-		const portComponent = new IsolatedBlueprintPortComponent(name, id, port, invertedPosition[position]);
-		const portElement = portComponent.getElement();
+		const portComponent = new IsolatedBlueprintPortComponent(this.paperView, name, id, port, invertedPosition[position]);
+		const portElement = portComponent.getShape();
 		this.paperView.renderCell(portElement);
 
 		let calculateRestrictedRect: (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => g.PlainRect;
@@ -507,6 +487,8 @@ export class WhiteBoxComponent extends CellComponent {
 			return calculateRestrictedRect(outerPosition, outerSize);
 		});
 
+		this.attachPortInfo(portComponent);
+
 		return portComponent;
 	}
 
@@ -549,17 +531,17 @@ export class WhiteBoxComponent extends CellComponent {
 		return operatorComp;
 	}
 
-	private attachPortInfo(operatorComp: OperatorBoxComponent | WhiteBoxComponent) {
+	private attachPortInfo(portOwnerComp: OperatorBoxComponent | IsolatedBlueprintPortComponent) {
 		const that = this;
 		let portInfo: AttachableComponent;
-		operatorComp.onPortMouseEnter((port: PortModel, x: number, y: number) => {
+		portOwnerComp.onPortMouseEnter((port: PortModel, x: number, y: number) => {
 			portInfo = that
-				.createComponent({x: x + 2, y: y + 2, align: "tl"})
+				.createComponent({x: x, y: y + 2, align: "tl"})
 				.mount({
 					view: () => m(PortInfo, {port})
 				});
 		});
-		operatorComp.onPortMouseLeave((port: PortModel, x: number, y: number) => {
+		portOwnerComp.onPortMouseLeave((port: PortModel, x: number, y: number) => {
 			portInfo.destroy();
 		});
 	}
