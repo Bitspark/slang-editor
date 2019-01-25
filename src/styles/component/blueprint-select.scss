@@ -1,7 +1,6 @@
 .sl-blupr-menu {
 	overflow-y: scroll;
 	width: $container-width;
-	max-height: 384px;
 	background: $white;
 
 	@import "../toolkit/list";
@@ -10,7 +9,7 @@
 		cursor: pointer;
 		background: $white;
 
-		&:hover {
+		&.highlighted {
 			background-color: $black;
 			color: $white;
 		}
