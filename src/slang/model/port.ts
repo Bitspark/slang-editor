@@ -8,6 +8,7 @@ import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
 import {StreamPort} from "../custom/stream";
 import {canConnectTo} from "../custom/connection-check";
 import {GenericSpecifications} from "../custom/generics";
+import {Subscription} from "rxjs";
 
 export enum PortDirection {
 	In, // 0
@@ -590,6 +591,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		}
 	}
 
+	public isConnected(): boolean {
+		return this.connectedWith.length > 0;
+	}
+
 	public isConnectedWith(other: PortModel): boolean {
 		return this.connectedWith.indexOf(other) !== -1;
 	}
@@ -600,11 +605,11 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		this.collapsed.subscribe(cb);
 	}
 
-	public subscribeConnected(cb: (other: PortModel) => void): void {
+	public subscribeConnected(cb: (other: PortModel) => void): Subscription {
 		this.connectedWith.forEach(port => {
 			cb(port);
 		});
-		this.connected.subscribe(cb);
+		return this.connected.subscribe(cb);
 	}
 
 	public subscribeDisconnected(cb: (other: PortModel) => void): void {

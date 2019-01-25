@@ -38,7 +38,10 @@ interface SlangTypeDefPrimitive {
 
 
 export type SlangTypeDef = SlangTypeDefPrimitive | SlangTypeDefGeneric | SlangTypeDefMap | SlangTypeDefStream;
-interface SlangTypeStream extends Array<SlangTypeValue> {}
+
+interface SlangTypeStream extends Array<SlangTypeValue> {
+}
+
 type SlangTypeMap = { [sub: string]: SlangTypeValue };
 export type SlangTypeValue = SlangTypeMap | SlangTypeStream | string | number | boolean | null;
 
@@ -46,11 +49,11 @@ export function copySlangTypeValue(v: SlangTypeValue): SlangTypeValue {
 	if (["string", "number", "boolean", "null", "undefined"].indexOf(typeof v) !== -1) {
 		return v;
 	}
-	
+
 	if (Array.isArray(v)) {
 		return Array.from(v.values())
 	}
-	
+
 	const vcp: SlangTypeMap = {};
 	const vmp = v as SlangTypeMap;
 	for (const sub in vmp) {
@@ -375,5 +378,17 @@ export class SlangType {
 		}
 
 		return str;
+	}
+
+	public static Number(): SlangType {
+		return new SlangType(null, TypeIdentifier.Number);
+	}
+
+	public static String(): SlangType {
+		return new SlangType(null, TypeIdentifier.String);
+	}
+
+	public static Boolean(): SlangType {
+		return new SlangType(null, TypeIdentifier.Boolean);
 	}
 }

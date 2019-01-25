@@ -1,4 +1,5 @@
-import {BlackBoxComponent} from "../components/blackbox";
+import m, {ClassComponent, CVnode} from "mithril";
+import {BlackBoxShape} from "../components/blackbox";
 import {BlueprintModel} from "../../model/blueprint";
 import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";
@@ -7,18 +8,23 @@ import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {WhiteBoxComponent} from "../components/whitebox";
 import {dia} from "jointjs";
+import {AttachableComponent, XY} from "../components/base";
+import {LandscapeModel} from "../../model/landscape";
+import {PropertyAssignments} from "../../model/property";
+import {GenericSpecifications} from "../../custom/generics";
+import {TypeIdentifier} from "../../custom/type";
 
 export class BlueprintView extends PaperView {
 	private readonly whiteBox: WhiteBoxComponent;
+	private readonly landscape: LandscapeModel;
 	private blueprintSelect: BlueprintSelectComponent | null = null;
 
 	constructor(frame: ViewFrame, private blueprint: BlueprintModel) {
 		super(frame);
 		this.addZooming();
 		this.addPanning();
-
+		this.landscape = this.blueprint.getAncestorNode(LandscapeModel)!;
 		this.whiteBox = new WhiteBoxComponent(this, blueprint);
-
 		this.attachEventHandlers();
 		this.fit();
 	}
@@ -26,30 +32,35 @@ export class BlueprintView extends PaperView {
 	protected createPaper(): dia.Paper {
 		const that = this;
 		const paper = super.createPaper({
+			linkPinning: true,
 			allowLink: function (linkView: dia.LinkView): boolean {
 				const magnetS = linkView.getEndMagnet("source");
 				if (!magnetS) {
 					return false;
 				}
-				const magnetT = linkView.getEndMagnet("target");
-				if (!magnetT) {
-					return false;
-				}
-
 				const portS = that.getPortFromMagnet(magnetS);
 				if (!portS) {
 					return false;
 				}
-				const portT = that.getPortFromMagnet(magnetT);
-				if (!portT) {
-					return false;
-				}
 
-				if (portS.canConnect(portT)) {
-					try {
-						portS.connect(portT);
-					} catch (e) {
-						console.error(e);
+				const magnetT = linkView.getEndMagnet("target");
+				if (magnetT) {
+					const portT = that.getPortFromMagnet(magnetT);
+					if (portT) {
+						if (portS.canConnect(portT)) {
+							try {
+								portS.connect(portT);
+							} catch (e) {
+								console.error(e);
+							}
+						}
+					}
+				} else {
+					if (portS.isDirectionIn() &&
+						!portS.isConnected() &&
+						portS.getType().isPrimitive() &&
+						portS.getTypeIdentifier() !== TypeIdentifier.Trigger) {
+						that.createValueOperator(linkView.getEndAnchor("target"), portS);
 					}
 				}
 
@@ -81,7 +92,6 @@ export class BlueprintView extends PaperView {
 				if (!portT) {
 					return false;
 				}
-
 				return portS.canConnect(portT);
 			},
 			snapLinks: {radius: 75,},
@@ -114,16 +124,30 @@ export class BlueprintView extends PaperView {
 
 	private attachEventHandlers() {
 		const that = this;
+
+		this.whiteBox.onDblClick((event: Event, x: number, y: number) => {
+			that.blueprintSelect = new BlueprintSelectComponent(that, {x, y});
+		});
+		let portInfo: AttachableComponent;
+		this.whiteBox.onPortMouseEnter((port: PortModel, x: number, y: number) => {
+			portInfo = that.whiteBox
+				.createComponent({x: x + 2, y: y + 2, align: "tl"})
+				.mount({
+					view: () => m(PortInfo, {port})
+				});
+		});
+		this.whiteBox.onPortMouseLeave((port: PortModel, x: number, y: number) => {
+			portInfo.destroy();
+		});
+
 		this.graph.on("change:position change:size", function (cell: dia.Cell) {
 			// Moving around inner operators
-			if (!(cell instanceof BlackBoxComponent.Rect)) {
+			if (!(cell instanceof BlackBoxShape)) {
 				return;
 			}
 			that.fitOuter(false);
 		});
-		this.getPaper().on("cell:pointerdblclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
-			that.blueprintSelect = new BlueprintSelectComponent(that, {x, y});
-		});
+
 		this.getPaper().on("blank:pointerclick cell:pointerclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
 			if (that.blueprintSelect) {
 				that.blueprintSelect.destroy();
@@ -154,7 +178,42 @@ export class BlueprintView extends PaperView {
 		return port;
 	}
 
+	private createValueOperator(xy: XY, portDst: PortModel) {
+		const valueBlueprint = this.landscape.findBlueprint("slang.data.Value")!;
+
+		const genSpeci = new GenericSpecifications(Array.from(valueBlueprint.getGenericIdentifiers()));
+		genSpeci.specify("valueType", portDst.getType());
+		const propAssigns = new PropertyAssignments(Array.from(valueBlueprint.getProperties()), genSpeci);
+
+		const valueOperator = this.blueprint.createOperator(null, valueBlueprint, propAssigns, genSpeci, {xy});
+		valueOperator.getPortOut()!.connect(portDst);
+	}
+
 	public getBlueprint(): BlueprintModel {
 		return this.blueprint;
 	}
 }
+
+export interface Attrs {
+	port: PortModel,
+}
+
+class PortInfo implements ClassComponent<Attrs> {
+	// Note that class methods cannot infer parameter types
+	oninit({attrs}: CVnode<Attrs>) {
+	}
+
+	view({attrs}: CVnode<Attrs>) {
+		const port = attrs.port;
+		const portType = TypeIdentifier[port.getTypeIdentifier()].toLowerCase();
+
+		return m(".sl-port-info",
+			m(".sl-port-type", {
+					class: `sl-type-${portType}`,
+				},
+				portType),
+			m(".sl-port-name", port.getName())
+		);
+	}
+}
+

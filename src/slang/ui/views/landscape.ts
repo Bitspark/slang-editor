@@ -1,11 +1,11 @@
 import {dia, shapes} from "jointjs";
 import {BlueprintModel, BlueprintType} from "../../model/blueprint";
 import {LandscapeModel} from "../../model/landscape";
-import {BlackBoxComponent, BlueprintBoxComponent} from "../components/blackbox";
 import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";
 import {PortDirection} from "../../model/port";
 import {SlangType, TypeIdentifier} from "../../custom/type";
+import {BlackBoxShape, BlueprintBoxComponent} from "../components/blackbox";
 
 export class LandscapeView extends PaperView {
 
@@ -206,8 +206,8 @@ export class LandscapeView extends PaperView {
 		if (!this.graph) {
 			throw `no graph`;
 		}
-		
-		const rect = BlackBoxComponent.Rect.Ghost.place(this, "＋");
+
+		const rect = BlackBoxShape.placeGhost(this, "＋");
 		rect.attr("draggable", false);
 		rect.attr("label/cursor", "pointer");
 		rect.attr("label/font-size", "28");
@@ -218,8 +218,16 @@ export class LandscapeView extends PaperView {
 				fullName: `Unnamed${new Date().getTime()}`,
 				type: BlueprintType.Local,
 			});
-			newBlueprint.createPort({ name: "", type: new SlangType(null, TypeIdentifier.Map), direction: PortDirection.In, });
-			newBlueprint.createPort({ name: "", type: new SlangType(null, TypeIdentifier.Map), direction: PortDirection.Out, });
+			newBlueprint.createPort({
+				name: "",
+				type: new SlangType(null, TypeIdentifier.Map),
+				direction: PortDirection.In,
+			});
+			newBlueprint.createPort({
+				name: "",
+				type: new SlangType(null, TypeIdentifier.Map),
+				direction: PortDirection.Out,
+			});
 			newBlueprint.open();
 		});
 

@@ -3,9 +3,7 @@ import m from "mithril";
 import {dia, g} from "jointjs";
 import {PaperView} from "../views/paper-view";
 import {Tk} from "./toolkit";
-import Box = Tk.Box;
 import Container = Tk.Container;
-import Modal = Tk.Modal;
 
 export type Alignment =
 	"tl" | "t" | "tr" |
@@ -65,27 +63,6 @@ export abstract class CellComponent extends Component {
 	}
 
 	public getShape(): dia.Cell {
-		return this.shape;
-	}
-}
-
-export abstract class ElementComponent extends CellComponent {
-	protected abstract readonly shape: dia.Element;
-
-	protected constructor(paperView: PaperView, xy: XY) {
-		super(paperView, xy);
-	}
-
-	protected updateXY({x, y}: XY) {
-		super.updateXY({x, y});
-		this.shape.position(x, y);
-	}
-
-	public get bbox(): g.Rect {
-		return this.shape.getBBox();
-	}
-
-	public getShape(): dia.Element {
 		return this.shape;
 	}
 }
@@ -165,50 +142,20 @@ abstract class HtmlComponent extends Component {
 		this.htmlRoot.style.left = `${left}px`;
 	}
 
-	public mount(wrapped: "[]" | "M" | "", component: m.Component): this {
+	public mount(component: m.Component): this {
 		this.unmount();
 
-		if (wrapped === "[]") {
-			m.mount(this.htmlRoot, {
-				oncreate: () => {
-					this.draw();
-				},
-				onupdate: () => {
-					this.draw();
-				},
-				view: () => {
-					return m(Container, m(Box, m(component)));
-				}
-			});
-		} else if (wrapped === "M") {
-			m.mount(this.htmlRoot, {
-				oncreate: () => {
-					this.draw();
-				},
-				onupdate: () => {
-					this.draw();
-				},
-				view: () => {
-					return m(Modal, {
-						onClose: () => {
-							this.unmount();
-						}
-					}, m(component));
-				}
-			});
-		} else {
-			m.mount(this.htmlRoot, {
-				oncreate: () => {
-					this.draw();
-				},
-				onupdate: () => {
-					this.draw();
-				},
-				view: () => {
-					return m(Container, m(component));
-				}
-			});
-		}
+		m.mount(this.htmlRoot, {
+			oncreate: () => {
+				this.draw();
+			},
+			onupdate: () => {
+				this.draw();
+			},
+			view: () => {
+				return m(Container, m(component));
+			}
+		});
 		return this;
 	}
 

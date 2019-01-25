@@ -4,7 +4,7 @@ import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
 import {BlackBox} from "../custom/nodes";
 import {Connections} from "../custom/connections";
 import {SlangBehaviorSubject, SlangSubjectTrigger} from "../custom/events";
-import {PropertyAssignments} from "./property";
+import {PropertyAssignment, PropertyAssignments, PropertyModel} from "./property";
 import {TypeIdentifier} from "../custom/type";
 import {GenericSpecifications} from "../custom/generics";
 import {XY} from "../ui/components/base";
@@ -104,6 +104,10 @@ export class OperatorModel extends BlackBox {
 		return this.blueprint.hasProperties();
 	}
 
+	public getPropertyAssignment(property: string | PropertyModel): PropertyAssignment {
+		return this.properties.get(property);
+	}
+
 	public getPropertyAssignments(): PropertyAssignments {
 		return this.properties.copy(this.generics);
 	}
@@ -127,6 +131,7 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public getDisplayName(): string {
+		/*
 		if (this.properties) {
 			switch (this.blueprint.getFullName()) {
 				case "slang.data.Value":
@@ -151,6 +156,7 @@ export class OperatorModel extends BlackBox {
 					}
 			}
 		}
+		*/
 		return this.blueprint.getDisplayName();
 	}
 

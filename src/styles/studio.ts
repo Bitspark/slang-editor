@@ -9,8 +9,8 @@ export namespace Styles {
 		[TypeIdentifier.Boolean]: "#cb8000",
 		[TypeIdentifier.Binary]: "#83a91d",
 		[TypeIdentifier.Primitive]: "#018b8a",
-		[TypeIdentifier.Trigger]: "#979797",
-		[TypeIdentifier.Generic]: "#b25db2",
+		[TypeIdentifier.Trigger]: "rgba(151, 151, 151, 0.5)",
+		[TypeIdentifier.Generic]: "rgba(178, 93, 178, 0.5)",
 		[TypeIdentifier.Stream]: "transparent",
 		[TypeIdentifier.Map]: "transparent",
 	};
@@ -55,7 +55,7 @@ export namespace Styles {
 	export class BlackBox {
 		public static rx = 6;
 		public static ry = 6;
-		public static size = {width: 120, height: 74};
+		public static size = {width: 80, height: 49};
 		public static filter = {
 			name: "dropShadow",
 			args: {

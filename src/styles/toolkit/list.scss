@@ -7,7 +7,9 @@
 
 .sl-list-item, .sl-list-head {
 	@extend %transition;
-	padding: 18px 32px 16px 32px;
+	//padding: 18px 32px 16px 32px;
+	font-size: .9rem;
+	padding: 4px 32px 2px 32px;
 	border-bottom: 1px solid transparentize($black, .85);
 	transition: background-color, color;
 	background: $white;

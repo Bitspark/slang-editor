@@ -1,5 +1,4 @@
 .sl-container {
-	@extend %translucent;
 	display: block;
 }
 
@@ -17,3 +16,4 @@
 @import "console";
 @import "blueprint-select";
 @import "property-form";
+@import "port-info";

@@ -1,0 +1,46 @@
+.sl-port-info {
+	background: $dim;
+	padding: 1px;
+	margin: 0;
+	border-radius: 8px;
+	font-size: .75rem;
+
+	.sl-port-name {
+		text-decoration: underline;
+		padding: 0 6px;
+	}
+
+	.sl-port-type {
+		color: $light;
+		padding: 0 6px;
+		border-radius: 15px;
+
+		&.sl-type-number {
+			background-color: $type-color-number;
+		}
+
+		&.sl-type-string {
+			background-color: $type-color-string;
+		}
+
+		&.sl-type-boolean {
+			background-color: $type-color-boolean;
+		}
+
+		&.sl-type-binary {
+			background-color: $type-color-binary;
+		}
+
+		&.sl-type-primitive {
+			background-color: $type-color-primitive;
+		}
+
+		&.sl-type-trigger {
+			background-color: $type-color-trigger;
+		}
+
+		&.sl-type-generic {
+			background-color: $type-color-generic;
+		}
+	}
+}
