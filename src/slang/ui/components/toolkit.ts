@@ -253,7 +253,7 @@ export namespace Tk {
 				{
 					name: attrs.label,
 					type: "checkbox",
-					value: attrs.initValue,
+					checked: attrs.initValue,
 					oncreate: (v: CVnodeDOM<any>) => {
 						if (v.attrs.autofocus) {
 							(v.dom as HTMLElement).focus();

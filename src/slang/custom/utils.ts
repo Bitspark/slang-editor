@@ -34,7 +34,7 @@ export class PropertyEvaluator {
 		if (!propAssigns.isDefined(exprPart)) {
 			return [];
 		}
-		
+
 		const propAssign = propAssigns.get(exprPart);
 		const propValue: any = propAssign.getValue();
 

@@ -4,7 +4,7 @@ import {MithrilMouseEvent, Tk} from "./toolkit";
 import {Input} from "./console";
 import {PropertyAssignments} from "../../model/property";
 import {BlueprintModel} from "../../model/blueprint";
-import {SlangType, SlangTypeValue} from "../../custom/type";
+import {isUndefined, SlangType, SlangTypeValue} from "../../custom/type";
 import {componentFactory} from "./factory";
 
 
@@ -61,7 +61,7 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 				return m;
 			}
 			const initValue = propAssign.getValue();
-			return m.set(propAssign.getName(), initValue ? {initValue, type} : {type});
+			return m.set(propAssign.getName(), !isUndefined(initValue) ? {initValue, type} : {type});
 		}, new Map<string, { initValue?: SlangTypeValue, type: SlangType }>());
 	}
 
