@@ -11,18 +11,18 @@ export class AutoTriggerApp extends SlangApp {
 	}
 
 	private static connectPorts(sourcePort: PortModel, triggerPort: PortModel) {
-		if (sourcePort.getType().isPrimitive() || sourcePort.getTypeIdentifier() === TypeIdentifier.Trigger) {
-			sourcePort.connect(triggerPort);
+		if (sourcePort.getOriginalType().isPrimitive() || sourcePort.getTypeIdentifier() === TypeIdentifier.Trigger) {
+			sourcePort.connect(triggerPort, false);
 		} else if (sourcePort.getTypeIdentifier() === TypeIdentifier.Map) {
 			for (const sub of sourcePort.getMapSubs()) {
 				if (sub.getTypeIdentifier() === TypeIdentifier.Trigger) {
-					sub.connect(triggerPort);
+					sub.connect(triggerPort, false);
 					return;
 				}
 			}
 			for (const sub of sourcePort.getMapSubs()) {
-				if (sub.getType().isPrimitive()) {
-					sub.connect(triggerPort);
+				if (sub.getOriginalType().isPrimitive()) {
+					sub.connect(triggerPort, false);
 					return;
 				}
 			}
@@ -35,7 +35,7 @@ export class AutoTriggerApp extends SlangApp {
 				}
 			}
 		} else {
-			console.error(`source port is of type ${sourcePort.getTypeIdentifier()} ${sourcePort.getType()} ${sourcePort.getType().isPrimitive()}`)
+			console.error(`source port is of type ${sourcePort.getTypeIdentifier()} ${sourcePort.getOriginalType()} ${sourcePort.getOriginalType().isPrimitive()}`)
 		}
 	}
 

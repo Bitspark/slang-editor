@@ -1,7 +1,8 @@
-import {SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "./events";
-import {StreamPortOwner} from "./stream";
 import {GenericPortModel, PortModel, PortModelArgs} from "../model/port";
 import {DelegateModel} from "../model/delegate";
+import {SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "./events";
+import {StreamPortOwner} from "./stream";
+import {GenericSpecifications} from "./generics";
 
 type Type<T> = Function & { prototype: T };
 
@@ -206,7 +207,7 @@ export abstract class PortOwner extends SlangNode {
 	}
 
 	protected abstract createPort(args: PortModelArgs): PortModel;
-
+	
 	public getPortIn(): PortModel | null {
 		return this.scanChildNode(GenericPortModel, p => p.isDirectionIn()) || null;
 	}
@@ -222,7 +223,7 @@ export abstract class PortOwner extends SlangNode {
 	public getStreamPortOwner(): StreamPortOwner {
 		return this.streamPortOwner;
 	}
-
+	
 }
 
 export abstract class BlackBox extends PortOwner {
@@ -232,5 +233,7 @@ export abstract class BlackBox extends PortOwner {
 	abstract findDelegate(name: string): DelegateModel | undefined;
 
 	abstract getDelegates(): IterableIterator<DelegateModel>;
-
+	
+	abstract getGenerics(): GenericSpecifications;
+	
 }

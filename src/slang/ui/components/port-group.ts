@@ -13,7 +13,7 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
 	switch (port.getTypeIdentifier()) {
 		case TypeIdentifier.Map:
 			if (port.isCollapsed()) {
-				portItems.push(new PortComponent(port, parent));
+				portItems.push(new PortComponent(port, parent, false));
 				break;
 			}
 			for (const sub of port.getMapSubs()) {
@@ -29,11 +29,11 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
 			break;
 
 		default:
-			portItems.push(new PortComponent(port, parent));
+			portItems.push(new PortComponent(port, parent, false));
 	}
 
-	if (createGhostPorts && port.isGeneric()) {
-		portItems.push(new PortComponent(port, parent));
+	if (createGhostPorts && port.getGenericIdentifier()) {
+		portItems.push(new PortComponent(port, parent, true));
 	}
 
 	return portItems;
@@ -94,13 +94,14 @@ export class PortGroupComponent {
 		if (!parentElement) {
 			throw new Error(`need parent`);
 		}
-
+		
 		parentElement.removePorts(this.ports.map(port => port.getPortElement()));
 
 		const ports = createPortItems(this, this.getGroupPosition(), this.port, drawGenerics);
-
+		
 		this.ports.length = 0;
 		this.ports.push.apply(this.ports, ports);
+		
 		parentElement.addPorts(this.ports.map(port => port.getPortElement()));
 	}
 

@@ -35,6 +35,10 @@ export abstract class GenericDelegateModel<B extends BlackBox> extends PortOwner
 
 		return connections;
 	}
+	
+	public reconstruct(): void {
+		
+	}
 }
 
 export type DelegateModel = GenericDelegateModel<BlackBox>;

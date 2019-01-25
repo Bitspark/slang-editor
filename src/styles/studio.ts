@@ -3,7 +3,6 @@ import {TypeIdentifier} from "../slang/custom/type";
 export namespace Styles {
 
 	const TypeColors: { [key in TypeIdentifier]: string } = {
-		// [TypeIdentifier.Unspecified]: "#ffeff2",
 		[TypeIdentifier.Number]: "#2e49b3",
 		[TypeIdentifier.String]: "#a52e2e",
 		[TypeIdentifier.Boolean]: "#cb8000",
@@ -13,6 +12,7 @@ export namespace Styles {
 		[TypeIdentifier.Generic]: "rgba(178, 93, 178, 0.5)",
 		[TypeIdentifier.Stream]: "transparent",
 		[TypeIdentifier.Map]: "transparent",
+		[TypeIdentifier.Unspecified]: "#ffeff2",
 	};
 
 	export class Port {

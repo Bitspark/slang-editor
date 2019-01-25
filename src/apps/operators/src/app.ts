@@ -49,7 +49,7 @@ class ValueBlackBoxShape extends DataBlackBoxShape {
 	public setupForOperator(operator: OperatorModel) {
 		super.setupForOperator(operator);
 
-		const value = operator.getPropertyAssignment("value").getValue();
+		const value = operator.getPropertyValue("value");
 		const label = (typeof value !== "undefined") ? JSON.stringify(value) : "value?";
 		const maxLength = 24;
 
@@ -64,8 +64,8 @@ class EvalBlackBoxShape extends DataBlackBoxShape {
 	public setupForOperator(operator: OperatorModel) {
 		super.setupForOperator(operator);
 
-		const expr = operator.getPropertyAssignment("expression").getValue();
-		const label = (typeof expr !== "undefined") ? JSON.stringify(expr) : "expression?";
+		const expr = operator.getPropertyValue("expression");
+		const label = (typeof expr !== "undefined") ? (expr as string) : "expression?";
 		const maxLength = 24;
 
 		this.attr("label/text",

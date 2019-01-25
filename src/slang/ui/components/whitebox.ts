@@ -123,7 +123,7 @@ export class WhiteBoxComponent extends CellComponent {
 							onSubmit: (values: SlangTypeValue) => {
 								this.blueprint.pushInput(values);
 							},
-							type: portIn.getType()
+							type: portIn.getOriginalType()
 						}))
 					});
 				}
@@ -143,7 +143,7 @@ export class WhiteBoxComponent extends CellComponent {
 							onLoad: () => {
 								return outputValues;
 							},
-							type: portOut.getType()
+							type: portOut.getOriginalType()
 						}))
 					});
 				}
@@ -213,7 +213,7 @@ export class WhiteBoxComponent extends CellComponent {
 		});
 
 		this.blueprint.subscribeChildCreated(OperatorModel, operator => {
-			operator.getGenericSpecifications().subscribeGenericsChanged(() => {
+			operator.getGenerics().subscribeGenericsChanged(() => {
 				this.connections.forEach(component => {
 					const connection = component.getConnection();
 					if (!connection.source.isConnectedWith(connection.destination)) {
@@ -520,11 +520,9 @@ export class WhiteBoxComponent extends CellComponent {
 
 		this.operators.push(operatorComp);
 
-		const that = this;
-
-		if (operator.hasProperties()) {
+		//if (operator.hasProperties()) {
 			operatorComp.onClick(() => {
-				const comp = that
+				const comp = this
 					.createComponent({x: 0, y: 0, align: "c"})
 					.mount({
 						view: () => m(Modal, {
@@ -542,7 +540,8 @@ export class WhiteBoxComponent extends CellComponent {
 					});
 				return true;
 			});
-		}
+		//}
+		
 		this.attachPortInfo(operatorComp);
 
 		return operatorComp;

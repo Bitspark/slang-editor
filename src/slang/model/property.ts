@@ -24,11 +24,12 @@ export class PropertyAssignment {
 	public constructor(private property: PropertyModel, private value: SlangTypeValue | undefined, generics: GenericSpecifications | null) {
 		const propertyType = property.getType();
 		if (propertyType.getTypeIdentifier() === TypeIdentifier.Generic) {
-			if (generics) {
-				generics.subscribeGenericTypeChanged(propertyType.getGenericIdentifier(), type => {
-					this.type = type;
-				});
+			if (!generics) {
+				throw new Error(`need generic specifications when having generic properties`);
 			}
+			generics.subscribeGenericTypeChanged(propertyType.getGenericIdentifier(), type => {
+				this.type = type;
+			});
 		} else {
 			this.type = property.getType();
 		}

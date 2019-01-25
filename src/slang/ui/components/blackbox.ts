@@ -8,12 +8,12 @@ import {Styles} from "../../../styles/studio";
 import {AttachableComponent, CellComponent} from "./base";
 import {PaperView} from "../views/paper-view";
 import {Tk} from "./toolkit";
-import Button = Tk.Button;
 import {SlangSubject} from "../../custom/events";
-import RectangleSelectors = shapes.standard.RectangleSelectors;
 import {componentFactory} from "./factory";
 import {PortModel} from "../../model/port";
 
+import Button = Tk.Button;
+import RectangleSelectors = shapes.standard.RectangleSelectors;
 
 function createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
 	const portGroups: Array<PortGroupComponent> = [];
@@ -223,7 +223,13 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 
 	constructor(paperView: PaperView, protected readonly operator: OperatorModel) {
 		super(paperView, true);
-		operator.subscribeChanged(() => this.refresh());
+		
+		operator.getGenerics().subscribeGenericsChanged(() => {
+			this.refresh();
+		});
+		
+		// TODO: Properties
+		
 		this.refresh();
 	}
 

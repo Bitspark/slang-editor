@@ -1,7 +1,7 @@
+import {PortModel} from "../model/port";
 import {SlangType, TypeIdentifier} from "./type";
 import {containsMisplacedStreamTypeTo, StreamType} from "./stream";
 import {PortOwner} from "./nodes";
-import {PortModel} from "../model/port";
 import {OperatorDelegateModel} from "../model/delegate";
 import {OperatorModel} from "../model/operator";
 
@@ -160,15 +160,15 @@ function cycleCompatibleTo(source: PortModel, destination: PortModel): boolean {
 	return !ancestorOwners.has(destination.getOwner());
 }
 
-function genericCompatible(streamTypeA: PortModel, streamTypeB: PortModel): boolean {
-	if (streamTypeA.isGeneric()) {
-		return genericCompatibleTo(streamTypeB.getStreamPort().getStreamType(), streamTypeA.getStreamPort().getStreamType());
+function streamsGenericCompatible(portA: PortModel, portB: PortModel): boolean {
+	if (portA.isGeneric()) {
+		return streamsGenericCompatibleTo(portB.getStreamPort().getStreamType(), portA.getStreamPort().getStreamType());
 	} else {
-		return genericCompatibleTo(streamTypeA.getStreamPort().getStreamType(), streamTypeB.getStreamPort().getStreamType());
+		return streamsGenericCompatibleTo(portA.getStreamPort().getStreamType(), portB.getStreamPort().getStreamType());
 	}
 }
 
-function genericCompatibleTo(streamType: StreamType, genericStreamType: StreamType): boolean {
+function streamsGenericCompatibleTo(streamType: StreamType, genericStreamType: StreamType): boolean {
 	return genericStreamType.getStreamStep(streamType)[1] !== -1;
 }
 
@@ -190,8 +190,10 @@ export function canConnectTo(source: PortModel, destination: PortModel): boolean
 		throw new Error(`${source.getIdentity()}: asymmetric connection found`);
 	}
 	
-	if (source.isGeneric() && destination.isGeneric()) {
-		return false;
+	if (source.getGenericIdentifier() && destination.getGenericIdentifier()) {
+		if (source.getGenericIdentifier() !== destination.getGenericIdentifier()) {
+			return false;
+		}
 	}
 
 	if (!cycleCompatibleTo(source, destination)) {
@@ -206,7 +208,7 @@ export function canConnectTo(source: PortModel, destination: PortModel): boolean
 	}
 	
 	if (!source.isGeneric() && !destination.isGeneric()) {
-		if (!typesCompatibleTo(source.getType(), destination.getType())) {
+		if (!typesCompatibleTo(source.getOriginalType(), destination.getOriginalType())) {
 			return false;
 		}
 
@@ -214,7 +216,7 @@ export function canConnectTo(source: PortModel, destination: PortModel): boolean
 			return false;
 		}
 	} else {
-		if (!genericCompatible(source, destination)) {
+		if (!streamsGenericCompatible(source, destination)) {
 			return false;
 		}
 	}
