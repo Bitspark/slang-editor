@@ -87,7 +87,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				if (this.connectedWith.length === 0) {
 					const newType = specifications.getUnifiedType(identifier);
 					if (newType && !specifications.get(identifier).equals(newType)) {
-						// specifications.specify(identifier, newType);
+						specifications.specify(identifier, newType);
 					}
 				}
 			});
@@ -531,36 +531,36 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		}
 	}
 
-	// private createDescendingGenericPort(other: PortModel): PortModel {
-	// 	if (!this.isGenericLike()) {
-	// 		throw new Error(`not a generic-like port`);
-	// 	}
-	//
-	// 	const generics = this.fetchGenerics();
-	// 	const specifications = generics.specifications;
-	// 	const identifier = generics.identifier;
-	//
-	// 	if (this.typeIdentifier !== TypeIdentifier.Map) {
-	// 		// TODO: Replace this legacy solution once all specifications are ensured to be maps
-	// 		specifications.specify(identifier, other.getType());
-	// 		return this;
-	// 	}
-	//
-	// 	const {type, portId} = this.streamPort.createGenericType(other);
-	//
-	// 	specifications.specify(identifier, type);
-	// 	return this.findGenericPort(portId);
-	// }
+	private createDescendingGenericPort(other: PortModel): PortModel {
+		if (!this.isGenericLike()) {
+			throw new Error(`not a generic-like port`);
+		}
+
+		const generics = this.fetchGenerics();
+		const specifications = generics.specifications;
+		const identifier = generics.identifier;
+
+		if (this.typeIdentifier !== TypeIdentifier.Map) {
+			// TODO: Replace this legacy solution once all specifications are ensured to be maps
+			specifications.specify(identifier, other.getType());
+			return this;
+		}
+
+		const {type, portId} = this.streamPort.createGenericType(other);
+
+		specifications.specify(identifier, type);
+		return this.findGenericPort(portId);
+	}
 
 	private connectDirectlyTo(destination: PortModel, createGenerics: boolean): void {
 		let thisPort: PortModel = this;
 		let otherPort: PortModel = destination;
 		if (createGenerics) {
 			if (thisPort.isGenericLike()) {
-				// thisPort = thisPort.createDescendingGenericPort(otherPort);
+				thisPort = thisPort.createDescendingGenericPort(otherPort);
 			}
 			if (otherPort.isGenericLike()) {
-				// otherPort = otherPort.createDescendingGenericPort(thisPort);
+				otherPort = otherPort.createDescendingGenericPort(thisPort);
 			}
 		}
 		otherPort.connected.next(thisPort);
