@@ -70,7 +70,8 @@ export class WhiteBoxComponent extends CellComponent {
 			});
 
 		this.render();
-		this.autoLayout();
+		//this.autoLayout();
+		this.fitOuter(false);
 	}
 
 	private subscribe() {
@@ -288,7 +289,6 @@ export class WhiteBoxComponent extends CellComponent {
 				}
 			});
 		});
-
 		this.fitOuter(false);
 	}
 
