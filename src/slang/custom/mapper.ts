@@ -42,7 +42,7 @@ export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApi
 			main: iter2map<PortModel, PortGroupApiResponse>(blueprint.getPorts(),
 				(result, port) => {
 					const portDir = port.isDirectionIn() ? "in" : "out";
-					result[portDir] = typeModelToJSON(port.getOriginalType());
+					result[portDir] = typeModelToJSON(port.getType());
 					if (!result.geometry) {
 						result.geometry = blueprintGeometry.port;
 					}
@@ -55,11 +55,11 @@ export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApi
 				const portOut = delegate.getPortOut();
 
 				if (portIn) {
-					portDef.in = typeModelToJSON(portIn.getOriginalType());
+					portDef.in = typeModelToJSON(portIn.getType());
 				}
 
 				if (portOut) {
-					portDef.out = typeModelToJSON(portOut.getOriginalType());
+					portDef.out = typeModelToJSON(portOut.getType());
 				}
 				result[delegate.getName()] = portDef;
 			}),
@@ -293,7 +293,7 @@ function setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupsA
 }
 
 function createPort(typeDef: TypeDefApiResponse, owner: BlueprintModel | BlueprintDelegateModel, direction: PortDirection): BlueprintPortModel {
-	return owner.createPort({name: "", type: createTypeModel(typeDef), direction, reconstruction: false,});
+	return owner.createPort({name: "", type: createTypeModel(typeDef), direction,});
 }
 
 function createTypeModel(typeDef: TypeDefApiResponse): SlangType {

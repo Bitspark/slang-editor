@@ -1,5 +1,5 @@
 import {OperatorGeometry, OperatorModel} from "./operator";
-import {BlueprintPortModel, PortDirection, PortModel, PortModelArgs} from "./port";
+import {BlueprintPortModel, PortModel, PortModelArgs} from "./port";
 import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
 import {PropertyAssignments, PropertyModel} from "./property";
 import {LandscapeModel} from "./landscape";
@@ -16,6 +16,13 @@ export enum BlueprintType {
 	Elementary,
 	Library,
 }
+
+export enum BlueprintFakeGeneric {
+	In = "inType",
+	Out = "outType",
+}
+
+export const fakeGenericValues = Object.keys(BlueprintFakeGeneric).map(key => BlueprintFakeGeneric[key as any]);
 
 export interface Size {
 	width: number
@@ -53,7 +60,7 @@ export class BlueprintModel extends BlackBox {
 	private instance = new SlangBehaviorSubject<BlueprintInstance | null>("instance", null);
 	private inputPushed = new SlangSubject<SlangTypeValue>("input-pushed");
 	private outputPushed = new SlangSubject<SlangTypeValue>("output-pushed");
-	private readonly fakeGenerics = new GenericSpecifications(["inType", "outType"]);
+	private readonly fakeGenerics = new GenericSpecifications(fakeGenericValues);
 
 	private readonly geometry: BlueprintGeometry;
 
@@ -92,6 +99,7 @@ export class BlueprintModel extends BlackBox {
 		
 		this.subscribeChildCreated(OperatorModel, operator => {
 			operator.subscribePropertiesChanged(() => {
+				// TODO!
 				operator.getBlueprint().instantiateOperator(operator);
 			});
 		});
@@ -132,9 +140,8 @@ export class BlueprintModel extends BlackBox {
 		for (const port of this.getPorts()) {
 			operator.createPort({
 				name: "",
-				type: port.getOriginalType().expand(properties),
+				type: port.getType().expand(properties),
 				direction: port.getDirection(),
-				reconstruction: false,
 			});
 		}
 
@@ -144,9 +151,8 @@ export class BlueprintModel extends BlackBox {
 				for (const port of delegate.getPorts()) {
 					delegateCopy.createPort({
 						name: "",
-						type: port.getOriginalType().expand(properties),
+						type: port.getType().expand(properties),
 						direction: port.getDirection(),
-						reconstruction: false,
 					});
 				}
 			}
@@ -202,10 +208,7 @@ export class BlueprintModel extends BlackBox {
 	}
 
 	public createPort(args: PortModelArgs): BlueprintPortModel {
-		const identifier = (args.direction === PortDirection.In) ? "inType" : "outType";
-		return this.createChildNode(BlueprintPortModel, args, port => {
-			port.generify(identifier, this.fakeGenerics, BlueprintPortModel);
-		});
+		return this.createChildNode(BlueprintPortModel, args);
 	}
 
 	public getFullName(): string {

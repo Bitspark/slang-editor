@@ -21,7 +21,7 @@ export class PropertyModel {
 export class PropertyAssignment {
 	private type: SlangType | null = null;
 
-	public constructor(private property: PropertyModel, private value: SlangTypeValue | undefined, generics: GenericSpecifications | null) {
+	public constructor(private property: PropertyModel, private value: SlangTypeValue | undefined, generics: GenericSpecifications) {
 		const propertyType = property.getType();
 		if (propertyType.getTypeIdentifier() === TypeIdentifier.Generic) {
 			if (!generics) {
@@ -67,7 +67,7 @@ export class PropertyAssignment {
 export class PropertyAssignments {
 	private readonly assignments: Map<string, PropertyAssignment>;
 
-	public constructor(private properties: Array<PropertyModel>, generics: GenericSpecifications | null) {
+	public constructor(private properties: Array<PropertyModel>, generics: GenericSpecifications) {
 		this.assignments = new Map<string, PropertyAssignment>(
 			properties.map<[string, PropertyAssignment]>(
 				property => [property.getName(), new PropertyAssignment(property, undefined, generics)]
@@ -75,7 +75,7 @@ export class PropertyAssignments {
 		);
 	}
 
-	public copy(generics: GenericSpecifications | null): PropertyAssignments {
+	public copy(generics: GenericSpecifications): PropertyAssignments {
 		const propAssigns = new PropertyAssignments(this.properties, generics);
 		for (const propAssign of this.getAssignments()) {
 			let value = propAssign.getValue();

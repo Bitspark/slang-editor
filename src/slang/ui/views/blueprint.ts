@@ -58,7 +58,7 @@ export class BlueprintView extends PaperView {
 				} else {
 					if (portS.isDirectionIn() &&
 						!portS.isConnected() &&
-						portS.getOriginalType().isPrimitive() &&
+						portS.getType().isPrimitive() &&
 						portS.getTypeIdentifier() !== TypeIdentifier.Trigger) {
 						that.createValueOperator(linkView.getEndAnchor("target"), portS);
 					}
@@ -173,7 +173,7 @@ export class BlueprintView extends PaperView {
 		const valueBlueprint = this.landscape.findBlueprint("slang.data.Value")!;
 
 		const generics = new GenericSpecifications(Array.from(valueBlueprint.getGenericIdentifiers()));
-		generics.specify("valueType", targetPort.getOriginalType());
+		generics.specify("valueType", targetPort.getType());
 		const properties = new PropertyAssignments(Array.from(valueBlueprint.getProperties()), generics);
 
 		const valueOperator = this.blueprint.createOperator(null, valueBlueprint, properties, generics, {position: xy});

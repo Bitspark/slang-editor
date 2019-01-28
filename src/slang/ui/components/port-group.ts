@@ -25,16 +25,17 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
 			portItems.push.apply(portItems, createPortItems(parent, position, port.getStreamSub(), createGhostPorts));
 			break;
 
-		case TypeIdentifier.Generic:
-			break;
+		// case TypeIdentifier.Generic:
+		// 	portItems.push(new PortComponent(port, parent, false));
+		// 	break;
 
 		default:
 			portItems.push(new PortComponent(port, parent, false));
 	}
 
-	if (createGhostPorts && port.getGenericIdentifier()) {
-		portItems.push(new PortComponent(port, parent, true));
-	}
+	// if (createGhostPorts && port.getGenericIdentifier()) {
+	// 	portItems.push(new PortComponent(port, parent, true));
+	// }
 
 	return portItems;
 }

@@ -121,13 +121,11 @@ export class LandscapeView extends PaperView {
 				name: "",
 				type: new SlangType(null, TypeIdentifier.Map),
 				direction: PortDirection.In,
-				reconstruction: false,
 			});
 			newBlueprint.createPort({
 				name: "",
 				type: new SlangType(null, TypeIdentifier.Map),
 				direction: PortDirection.Out,
-				reconstruction: false,
 			});
 			newBlueprint.open();
 		});

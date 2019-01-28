@@ -495,7 +495,7 @@ export class StreamPort {
 		if (this.port.getTypeIdentifier() !== TypeIdentifier.Map) {
 			mapType = new SlangType(null, TypeIdentifier.Map);
 		} else {
-			mapType = this.port.getOriginalType();
+			mapType = this.port.getType();
 		}
 
 		const subName = `gen_${other.getName()}_${(new Date().getTime()) % 100}`;

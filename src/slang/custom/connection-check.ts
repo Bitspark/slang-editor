@@ -22,23 +22,34 @@ function typesMapCompatibleTo(mapTypeA: SlangType, mapTypeB: SlangType): boolean
 }
 
 function typesCompatibleTo(sourceType: SlangType, destinationType: SlangType): boolean {
+	// Triggers can always be destinations, even for specifications, maps and streams
 	if (destinationType.getTypeIdentifier() === TypeIdentifier.Trigger) {
 		return true;
 	}
+	
+	// Careful: 
+	// destinationType.getTypeIdentifier() === TypeIdentifier.Primitive
+	// is not identical with destinationType.isPrimitive(), isPrimitive() is true for Strings, Numbers, ...
 	if (destinationType.getTypeIdentifier() === TypeIdentifier.Primitive && sourceType.isPrimitive()) {
 		return true;
 	}
-	if (sourceType.getTypeIdentifier() === TypeIdentifier.Primitive && destinationType.isPrimitive()) {
+	if (destinationType.isPrimitive() && sourceType.getTypeIdentifier() === TypeIdentifier.Primitive) {
 		return true;
 	}
-	if (sourceType.getTypeIdentifier() === TypeIdentifier.Map && 
-		destinationType.getTypeIdentifier() === TypeIdentifier.Map) {
+	
+	
+	if (sourceType.isMap() && destinationType.isMap()) {
 		return typesMapCompatibleTo(sourceType, destinationType);
 	}
-	if (sourceType.getTypeIdentifier() === TypeIdentifier.Stream && 
-		destinationType.getTypeIdentifier() === TypeIdentifier.Stream) {
+	
+	if (sourceType.isStream() && destinationType.isStream()) {
 		return typesStreamCompatible(sourceType, destinationType);
 	}
+	
+	if (sourceType.isGeneric() && destinationType.isGeneric()) {
+		return sourceType.getGenericIdentifier() === destinationType.getGenericIdentifier();
+	}
+	
 	return sourceType.getTypeIdentifier() === destinationType.getTypeIdentifier();
 }
 
@@ -160,15 +171,15 @@ function cycleCompatibleTo(source: PortModel, destination: PortModel): boolean {
 	return !ancestorOwners.has(destination.getOwner());
 }
 
-function streamsGenericCompatible(portA: PortModel, portB: PortModel): boolean {
-	if (portA.isGeneric()) {
-		return streamsGenericCompatibleTo(portB.getStreamPort().getStreamType(), portA.getStreamPort().getStreamType());
+function streamsGenericLikeCompatible(portA: PortModel, portB: PortModel): boolean {
+	if (portA.isGenericLike()) {
+		return streamsGenericLikeCompatibleTo(portB.getStreamPort().getStreamType(), portA.getStreamPort().getStreamType());
 	} else {
-		return streamsGenericCompatibleTo(portA.getStreamPort().getStreamType(), portB.getStreamPort().getStreamType());
+		return streamsGenericLikeCompatibleTo(portA.getStreamPort().getStreamType(), portB.getStreamPort().getStreamType());
 	}
 }
 
-function streamsGenericCompatibleTo(streamType: StreamType, genericStreamType: StreamType): boolean {
+function streamsGenericLikeCompatibleTo(streamType: StreamType, genericStreamType: StreamType): boolean {
 	return genericStreamType.getStreamStep(streamType)[1] !== -1;
 }
 
@@ -190,11 +201,11 @@ export function canConnectTo(source: PortModel, destination: PortModel): boolean
 		throw new Error(`${source.getIdentity()}: asymmetric connection found`);
 	}
 	
-	if (source.getGenericIdentifier() && destination.getGenericIdentifier()) {
-		if (source.getGenericIdentifier() !== destination.getGenericIdentifier()) {
-			return false;
-		}
-	}
+	// if (source.getGenericIdentifier() && destination.getGenericIdentifier()) {
+	// 	if (source.getGenericIdentifier() !== destination.getGenericIdentifier()) {
+	// 		return false;
+	// 	}
+	// }
 
 	if (!cycleCompatibleTo(source, destination)) {
 		return false;
@@ -207,8 +218,8 @@ export function canConnectTo(source: PortModel, destination: PortModel): boolean
 		return false;
 	}
 	
-	if (!source.isGeneric() && !destination.isGeneric()) {
-		if (!typesCompatibleTo(source.getOriginalType(), destination.getOriginalType())) {
+	if (!source.isGenericLike() && !destination.isGenericLike()) {
+		if (!typesCompatibleTo(source.getType(), destination.getType())) {
 			return false;
 		}
 
@@ -216,7 +227,7 @@ export function canConnectTo(source: PortModel, destination: PortModel): boolean
 			return false;
 		}
 	} else {
-		if (!streamsGenericCompatible(source, destination)) {
+		if (!streamsGenericLikeCompatible(source, destination)) {
 			return false;
 		}
 	}

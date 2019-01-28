@@ -125,6 +125,9 @@ export abstract class SlangNode {
 		if (!parentNode) {
 			return undefined;
 		}
+		if (parentNode === this) {
+			throw new Error(`reflexive structure detected`);
+		}
 		return parentNode.getAncestorNode(types);
 	}
 
@@ -207,6 +210,8 @@ export abstract class PortOwner extends SlangNode {
 	}
 
 	protected abstract createPort(args: PortModelArgs): PortModel;
+
+	public abstract getGenerics(): GenericSpecifications;
 	
 	public getPortIn(): PortModel | null {
 		return this.scanChildNode(GenericPortModel, p => p.isDirectionIn()) || null;

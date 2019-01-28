@@ -4,7 +4,7 @@ import {SlangBehaviorSubject, SlangSubject} from "./events";
 import {PortModel} from "../model/port";
 
 export class GenericSpecifications {
-	private readonly genericsChanged = new SlangSubject<[string, SlangType | null]>("generics-changed");
+	private readonly genericsChanged = new SlangSubject<[string, SlangType | null]>("specifications-changed");
 	private readonly genericTypes = new Map<string, SlangBehaviorSubject<SlangType | null>>();
 	private readonly ports = new Map<string, Set<PortModel>>();
 

@@ -123,7 +123,7 @@ export class WhiteBoxComponent extends CellComponent {
 							onSubmit: (values: SlangTypeValue) => {
 								this.blueprint.pushInput(values);
 							},
-							type: portIn.getOriginalType()
+							type: portIn.getType()
 						}))
 					});
 				}
@@ -143,7 +143,7 @@ export class WhiteBoxComponent extends CellComponent {
 							onLoad: () => {
 								return outputValues;
 							},
-							type: portOut.getOriginalType()
+							type: portOut.getType()
 						}))
 					});
 				}
@@ -173,7 +173,7 @@ export class WhiteBoxComponent extends CellComponent {
 				if (!connection.source.isConnectedWith(connection.destination)) {
 					return;
 				}
-				if (connection.source.getBox() === this.blueprint || connection.destination.getBox() === this.blueprint) {
+				if (connection.source.getBlackBox() === this.blueprint || connection.destination.getBlackBox() === this.blueprint) {
 					component.refresh();
 				}
 			});
@@ -219,7 +219,7 @@ export class WhiteBoxComponent extends CellComponent {
 					if (!connection.source.isConnectedWith(connection.destination)) {
 						return;
 					}
-					if (connection.source.getBox() === operator || connection.destination.getBox() === operator) {
+					if (connection.source.getBlackBox() === operator || connection.destination.getBlackBox() === operator) {
 						component.refresh();
 					}
 				});
