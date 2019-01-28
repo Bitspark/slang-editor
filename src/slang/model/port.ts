@@ -684,7 +684,7 @@ export class BlueprintPortModel extends GenericPortModel<BlueprintModel | Bluepr
 export class OperatorPortModel extends GenericPortModel<OperatorModel | OperatorDelegateModel> {
 	public constructor(parent: OperatorModel | OperatorDelegateModel | OperatorPortModel, args: PortModelArgs) {
 		let generics: PortGenerics | null = null;
-		if (args.type.isGeneric()) {
+		if (args.type.isGeneric() && !(parent instanceof OperatorPortModel && parent.isGenericLikeDescent())) {
 			const owner = parent.getAncestorNode<OperatorModel | OperatorDelegateModel>([OperatorModel, OperatorDelegateModel]);
 			if (owner instanceof OperatorModel) {
 				console.log(owner.getAncestorNode(BlueprintModel)!.getFullName(), owner.getName(), args.name, args.direction === PortDirection.In ? "IN" : "OUT", args.type.getGenericIdentifier());
