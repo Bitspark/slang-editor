@@ -70,8 +70,7 @@ export class WhiteBoxComponent extends CellComponent {
 			});
 
 		this.render();
-		//this.autoLayout();
-		this.fitOuter(false);
+		this.adjustOuterPorts();
 	}
 
 	private subscribe() {
@@ -253,6 +252,18 @@ export class WhiteBoxComponent extends CellComponent {
 
 		this.operators.forEach(operator => {
 			operator.translate(-(boundingBox.x + boundingBox.width / 2), -(boundingBox.y + boundingBox.height / 2));
+		});
+
+		this.adjustOuterPorts();
+	}
+
+	public adjustOuterPorts() {
+		const operatorRectangles = this.operators.map(operatorComponent => operatorComponent.getShape());
+		const boundingBox = this.paperView.getCellsBBox(operatorRectangles) || new g.Rect({
+			x: 0,
+			y: 0,
+			width: WhiteBoxComponent.minimumSpace,
+			height: WhiteBoxComponent.minimumSpace,
 		});
 
 		boundingBox.x -= boundingBox.x + boundingBox.width / 2;
