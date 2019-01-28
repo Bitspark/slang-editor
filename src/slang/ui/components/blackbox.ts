@@ -117,7 +117,7 @@ export abstract class BlackBoxComponent extends CellComponent {
 		}
 		this.shape = this.createShape();
 		this.portGroups.forEach(group => {
-			group.setParent(this.shape, this.drawGenerics);
+			group.setParent(this.shape, this.drawGenerics, true);
 		});
 
 		this.shape.on("pointerclick",

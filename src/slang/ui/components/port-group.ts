@@ -7,35 +7,27 @@ import {OperatorModel} from "../../model/operator";
 
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";
 
-function createPortItems(parent: PortGroupComponent, position: PortGroupPosition, port: PortModel, createGhostPorts: boolean): Array<PortComponent> {
+function createPortItems(parent: PortGroupComponent, position: PortGroupPosition, port: PortModel, createGhostPorts: boolean, isBlackBox: boolean): Array<PortComponent> {
 	let portItems: Array<PortComponent> = [];
 
 	switch (port.getTypeIdentifier()) {
 		case TypeIdentifier.Map:
-			if (port.isCollapsed()) {
-				portItems.push(new PortComponent(port, parent, false));
-				break;
-			}
 			for (const sub of port.getMapSubs()) {
-				portItems.push.apply(portItems, createPortItems(parent, position, sub, createGhostPorts));
+				portItems.push.apply(portItems, createPortItems(parent, position, sub, createGhostPorts, isBlackBox));
 			}
 			break;
 
 		case TypeIdentifier.Stream:
-			portItems.push.apply(portItems, createPortItems(parent, position, port.getStreamSub(), createGhostPorts));
+			portItems.push.apply(portItems, createPortItems(parent, position, port.getStreamSub(), createGhostPorts, isBlackBox));
 			break;
 
-		// case TypeIdentifier.Generic:
-		// 	portItems.push(new PortComponent(port, parent, false));
-		// 	break;
-
 		default:
-			portItems.push(new PortComponent(port, parent, false));
+			portItems.push(new PortComponent(port, parent, false, isBlackBox));
 	}
 
-	// if (createGhostPorts && port.getGenericIdentifier()) {
-	// 	portItems.push(new PortComponent(port, parent, true));
-	// }
+	if (createGhostPorts && port.isGenericLike()) {
+		portItems.push(new PortComponent(port, parent, true, isBlackBox));
+	}
 
 	return portItems;
 }
@@ -85,12 +77,12 @@ export class PortGroupComponent {
 		return this.groupPosition;
 	}
 
-	public setParent(parent: dia.Element, drawGenerics: boolean) {
+	public setParent(parent: dia.Element, drawGenerics: boolean, isBlackBox: boolean) {
 		this.parentElement = parent;
-		this.refreshPorts(drawGenerics);
+		this.refreshPorts(drawGenerics, isBlackBox);
 	}
 
-	public refreshPorts(drawGenerics: boolean) {
+	public refreshPorts(drawGenerics: boolean, isBlackBox: boolean) {
 		const parentElement = this.parentElement;
 		if (!parentElement) {
 			throw new Error(`need parent`);
@@ -98,7 +90,7 @@ export class PortGroupComponent {
 		
 		parentElement.removePorts(this.ports.map(port => port.getPortElement()));
 
-		const ports = createPortItems(this, this.getGroupPosition(), this.port, drawGenerics);
+		const ports = createPortItems(this, this.getGroupPosition(), this.port, drawGenerics, isBlackBox);
 		
 		this.ports.length = 0;
 		this.ports.push.apply(this.ports, ports);

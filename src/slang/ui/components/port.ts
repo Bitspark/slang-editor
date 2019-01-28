@@ -1,5 +1,5 @@
 import {attributes, dia, g} from "jointjs";
-import {OperatorPortModel, PortModel} from "../../model/port";
+import {PortModel} from "../../model/port";
 import {PortGroupComponent, PortGroupPosition} from "./port-group";
 import {TypeIdentifier} from "../../custom/type";
 import {Styles} from "../../../styles/studio";
@@ -12,7 +12,7 @@ export class PortComponent {
 	private position: g.PlainPoint | undefined;
 	private readonly portElement: dia.Element.Port = {};
 
-	constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent, private readonly ghost: boolean) {
+	constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent, private readonly ghost: boolean, isBlackBox: boolean) {
 		if (ghost) {
 			this.portElement.id = `${port.getIdentity()}.*`;
 		} else {
@@ -21,7 +21,7 @@ export class PortComponent {
 		this.portElement.group = parent.getName();
 		this.portElement.markup = PortComponent.getPortMarkup(port, ghost);
 		this.portElement.attrs = {
-			"path": PortComponent.getPortAttributes(parent.getGroupPosition(), port),
+			"path": PortComponent.getPortAttributes(parent.getGroupPosition(), port, isBlackBox),
 			"g": {
 				magnet: true,
 			},
@@ -71,7 +71,7 @@ export class PortComponent {
 				classes.push(`sl-stripe`);
 			} else {
 				if (ghost) {
-					classes.push(`sl-type-generic`);
+					classes.push(`sl-type-ghost`);
 				} else {
 					classes.push(`sl-type-${TypeIdentifier[port.getTypeIdentifier()].toLowerCase()}`);
 				}
@@ -81,12 +81,12 @@ export class PortComponent {
 		return `<g>${markup}</g>`;
 	}
 
-	private static getPortAttributes(position: PortGroupPosition, port: PortModel): attributes.SVGAttributes {
+	private static getPortAttributes(position: PortGroupPosition, port: PortModel, isBlackBox: boolean): attributes.SVGAttributes {
 		const attrs: attributes.SVGAttributes = {
 			paintOrder: "stroke fill",
 		};
 		
-		const rotation = port instanceof OperatorPortModel ? port.isDirectionIn() : port.isDirectionOut();
+		const rotation = isBlackBox ? port.isDirectionIn() : port.isDirectionOut();
 		switch (position) {
 			case "top":
 				attrs.transform = `rotate(${rotation ? 0 : 180})`;

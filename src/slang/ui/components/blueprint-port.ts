@@ -60,7 +60,7 @@ export class IsolatedBlueprintPortComponent {
 				}
 			});
 
-		this.portGroup.setParent(this.rectangle, true);
+		this.portGroup.setParent(this.rectangle, true, false);
 		this.refresh();
 	}
 
@@ -69,7 +69,7 @@ export class IsolatedBlueprintPortComponent {
 	}
 
 	public refresh(): void {
-		this.portGroup.refreshPorts(true);
+		this.portGroup.refreshPorts(true, false);
 	}
 
 	public onPortMouseEnter(cb: (port: PortModel, x: number, y: number) => void) {

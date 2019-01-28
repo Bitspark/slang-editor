@@ -4,7 +4,7 @@ import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
 import {BlackBox, PortOwner, SlangNode} from "../custom/nodes";
 import {Connections} from "../custom/connections";
 import {SlangType, TypeIdentifier} from "../custom/type";
-import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
+import {SlangSubject} from "../custom/events";
 import {StreamPort} from "../custom/stream";
 import {canConnectTo} from "../custom/connection-check";
 import {GenericSpecifications} from "../custom/generics";
