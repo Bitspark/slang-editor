@@ -21,7 +21,6 @@ export class BlueprintView extends PaperView {
 
 	constructor(frame: ViewFrame, private blueprint: BlueprintModel) {
 		super(frame);
-		this.addZooming();
 		this.addPanning();
 		this.landscape = this.blueprint.getAncestorNode(LandscapeModel)!;
 		this.whiteBox = new WhiteBoxComponent(this, blueprint);

@@ -17,7 +17,6 @@ export class LandscapeView extends PaperView {
 
 	constructor(frame: ViewFrame, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
 		super(frame);
-		this.addZooming();
 		this.addPanning();
 
 		if (filter) {
