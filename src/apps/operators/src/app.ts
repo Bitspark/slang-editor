@@ -129,7 +129,6 @@ class DashboardModule implements DashboardModuleComponent {
 					type: this.chosenType,
 					initValue: undefined,
 					onInput: (v: any) => {
-						console.log(">>>>", v);
 					}
 				}) : undefined
 		];

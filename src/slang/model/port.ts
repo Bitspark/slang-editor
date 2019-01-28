@@ -85,7 +85,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			const identifier = generics.identifier;
 
 			this.subscribeDisconnected(() => {
-				debugger;
 				if (this.connectedWith.length === 0) {
 					const newType = specifications.getUnifiedType(identifier);
 					if (newType && !specifications.get(identifier).equals(newType)) {
@@ -686,9 +685,6 @@ export class OperatorPortModel extends GenericPortModel<OperatorModel | Operator
 		let generics: PortGenerics | null = null;
 		if (args.type.isGeneric() && !(parent instanceof OperatorPortModel && parent.isGenericLikeDescent())) {
 			const owner = parent.getAncestorNode<OperatorModel | OperatorDelegateModel>([OperatorModel, OperatorDelegateModel]);
-			if (owner instanceof OperatorModel) {
-				console.log(owner.getAncestorNode(BlueprintModel)!.getFullName(), owner.getName(), args.name, args.direction === PortDirection.In ? "IN" : "OUT", args.type.getGenericIdentifier());
-			}
 			if (!owner) {
 				throw new Error(`operator port without adequate parent`);
 			}
