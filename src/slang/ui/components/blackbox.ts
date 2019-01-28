@@ -20,12 +20,12 @@ function createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
 
 	const portIn = blackBox.getPortIn();
 	if (portIn) {
-		portGroups.push(new PortGroupComponent("MainIn", portIn, "top", 0.0, 1.0));
+		portGroups.push(new PortGroupComponent("MainIn", portIn, "top", 0.0, 1.0, true));
 	}
 
 	const portOut = blackBox.getPortOut();
 	if (portOut) {
-		portGroups.push(new PortGroupComponent("MainOut", portOut, "bottom", 0.0, 1.0));
+		portGroups.push(new PortGroupComponent("MainOut", portOut, "bottom", 0.0, 1.0, true));
 	}
 
 	const delegates = Array.from(blackBox.getDelegates());
@@ -46,25 +46,25 @@ function createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
 		if (right) {
 			const portOut = delegate.getPortOut();
 			if (portOut) {
-				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "right", posRight, widthRight));
+				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "right", posRight, widthRight, true));
 			}
 			posRight += stepRight;
 
 			const portIn = delegate.getPortIn();
 			if (portIn) {
-				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "right", posRight, widthRight));
+				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "right", posRight, widthRight, true));
 			}
 			posRight += stepRight;
 		} else {
 			const portOut = delegate.getPortOut();
 			if (portOut) {
-				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "left", posLeft, widthLeft));
+				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "left", posLeft, widthLeft, true));
 			}
 			posLeft += stepLeft;
 
 			const portIn = delegate.getPortIn();
 			if (portIn) {
-				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "left", posLeft, widthLeft));
+				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "left", posLeft, widthLeft, true));
 			}
 			posLeft += stepLeft;
 		}
@@ -117,7 +117,7 @@ export abstract class BlackBoxComponent extends CellComponent {
 		}
 		this.shape = this.createShape();
 		this.portGroups.forEach(group => {
-			group.setParent(this.shape, this.drawGenerics, true);
+			group.setParent(this.shape, this.drawGenerics);
 		});
 
 		this.shape.on("pointerclick",

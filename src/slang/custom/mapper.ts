@@ -27,7 +27,7 @@ function iter2map<S, T>(iter: Iterable<S>, process: (result: T, curr: S) => void
 	return Array.from(iter).reduce((result, curr) => {
 		process(result, curr);
 		return result;
-	}, {} as T)
+	}, {} as T);
 }
 
 export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApiResponse {
@@ -77,7 +77,7 @@ export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApi
 					result[srcPortRef].push(dstPortRef);
 				}
 			}),
-	}
+	};
 }
 
 function operatorModelToJSON(operator: OperatorModel): OperatorApiResponse {
@@ -92,7 +92,7 @@ function operatorModelToJSON(operator: OperatorModel): OperatorApiResponse {
 			(result, [name, type]) => {
 				result[name] = typeModelToJSON(type);
 			}),
-	}
+	};
 }
 
 function typeModelToJSON(type: SlangType): TypeDefApiResponse {
@@ -241,25 +241,15 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
 			Object.keys(connections).forEach((sourcePortReference: string) => {
 				const destinationPortReferences = connections[sourcePortReference];
 				for (const destinationPortReference of destinationPortReferences) {
-					// Connect sourcePortReference -> destinationPortReference
-					// try {
-						const sourcePort = outerBlueprint.resolvePortReference(sourcePortReference);
-						const destinationPort = outerBlueprint.resolvePortReference(destinationPortReference);
-						if (!sourcePort) {
-							throw `source port ${sourcePortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
-						}
-						if (!destinationPort) {
-							throw `destination port ${destinationPortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
-						}
-						if (sourcePort.getType().isMap()) {
-							console.log(outerBlueprint.getFullName(), sourcePort.getPortReference());
-						}
-						sourcePort.connect(destinationPort, false);
-					// } catch (e) {
-					// 	console.error("error", e);
-					// 	console.error(bpDef);
-					// 	console.error(`${outerBlueprint.getFullName()}: [${sourcePortReference} -> ${destinationPortReferences}] ${e.stack}`);
-					// }
+					const sourcePort = outerBlueprint.resolvePortReference(sourcePortReference);
+					const destinationPort = outerBlueprint.resolvePortReference(destinationPortReference);
+					if (!sourcePort) {
+						throw `source port ${sourcePortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
+					}
+					if (!destinationPort) {
+						throw `destination port ${destinationPortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
+					}
+					sourcePort.connect(destinationPort, false);
 				}
 			});
 		}

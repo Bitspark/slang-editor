@@ -2,7 +2,7 @@ import {TypeIdentifier} from "../slang/custom/type";
 
 export namespace Styles {
 
-	const TypeColors: { [key in TypeIdentifier]: string } = {
+	const TypeColors: { [key in TypeIdentifier | "ghost"]: string } = {
 		[TypeIdentifier.Number]: "#2e49b3",
 		[TypeIdentifier.String]: "#a52e2e",
 		[TypeIdentifier.Boolean]: "#cb8000",
@@ -13,7 +13,7 @@ export namespace Styles {
 		[TypeIdentifier.Trigger]: "rgba(151, 151, 151, 0.5)",
 		[TypeIdentifier.Stream]: "transparent",
 		[TypeIdentifier.Map]: "transparent",
-		// [TypeIdentifier.Ghost]: "rgba(178, 93, 178, 0.5)",
+		["ghost"]: "rgba(178, 93, 178, 0.5)",
 	};
 
 	export class Port {
@@ -24,7 +24,7 @@ export namespace Styles {
 	export namespace Connection {
 		class Connection {
 			public static strokeWidth = 1;
-			public static stroke = (type: TypeIdentifier): string => TypeColors[type];
+			public static stroke = (type: TypeIdentifier | "ghost"): string => TypeColors[type];
 			public static vectorEffect = "default";
 		}
 

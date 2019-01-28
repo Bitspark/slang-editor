@@ -3,7 +3,6 @@ import {dia, g} from "jointjs";
 import {PortModel} from "../../model/port";
 import {TypeIdentifier} from "../../custom/type";
 import {Styles} from "../../../styles/studio";
-import {OperatorModel} from "../../model/operator";
 
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";
 
@@ -19,6 +18,9 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
 
 		case TypeIdentifier.Stream:
 			portItems.push.apply(portItems, createPortItems(parent, position, port.getStreamSub(), createGhostPorts, isBlackBox));
+			break;
+
+		case TypeIdentifier.Unspecified:
 			break;
 
 		default:
@@ -48,19 +50,20 @@ export class PortGroupComponent {
 		private readonly port: PortModel,
 		private readonly groupPosition: PortGroupPosition,
 		start: number,
-		width: number) {
+		width: number,
+		private isBlackBox: boolean,) {
 		switch (groupPosition) {
 			case "top":
-				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "top", start, width) as any;
+				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "top", start, width, isBlackBox) as any;
 				break;
 			case "right":
-				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "right", start, width) as any;
+				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "right", start, width, isBlackBox) as any;
 				break;
 			case "bottom":
-				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "bottom", start, width) as any;
+				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "bottom", start, width, isBlackBox) as any;
 				break;
 			case "left":
-				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "left", start, width) as any;
+				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "left", start, width, isBlackBox) as any;
 				break;
 		}
 	}
@@ -77,12 +80,12 @@ export class PortGroupComponent {
 		return this.groupPosition;
 	}
 
-	public setParent(parent: dia.Element, drawGenerics: boolean, isBlackBox: boolean) {
+	public setParent(parent: dia.Element, drawGenerics: boolean) {
 		this.parentElement = parent;
-		this.refreshPorts(drawGenerics, isBlackBox);
+		this.refreshPorts(drawGenerics);
 	}
 
-	public refreshPorts(drawGenerics: boolean, isBlackBox: boolean) {
+	public refreshPorts(drawGenerics: boolean) {
 		const parentElement = this.parentElement;
 		if (!parentElement) {
 			throw new Error(`need parent`);
@@ -90,7 +93,7 @@ export class PortGroupComponent {
 		
 		parentElement.removePorts(this.ports.map(port => port.getPortElement()));
 
-		const ports = createPortItems(this, this.getGroupPosition(), this.port, drawGenerics, isBlackBox);
+		const ports = createPortItems(this, this.getGroupPosition(), this.port, drawGenerics, this.isBlackBox);
 		
 		this.ports.length = 0;
 		this.ports.push.apply(this.ports, ports);
@@ -100,7 +103,7 @@ export class PortGroupComponent {
 
 	// STATIC:
 
-	public static layoutFunction(portComponents: Array<PortComponent>, position: PortGroupPosition, offset: number, space: number): (ports: Array<any>, elBBox: g.Rect, opt: any) => Array<g.Point> {
+	public static layoutFunction(portComponents: Array<PortComponent>, position: PortGroupPosition, offset: number, space: number, isBlackBox: boolean): (ports: Array<any>, elBBox: g.Rect, opt: any) => Array<g.Point> {
 		return function (ports: Array<PortComponent>, elBBox: g.Rect): Array<g.Point> {
 			return ports.map((_port: PortComponent, index: number, ports: Array<any>) => {
 				const count = ports.length;
@@ -128,9 +131,8 @@ export class PortGroupComponent {
 				let portPosition: g.PlainPoint = {x: 0, y: 0};
 
 				const portModel = portComponents[index].getModel();
-				const portOwner = portModel.getOwner();
 				const translate = portModel.isDirectionIn() ? Styles.PortGroup.TranslationIn : Styles.PortGroup.TranslationOut;
-				const factor = portOwner instanceof OperatorModel ? 1 : -1;
+				const factor = isBlackBox ? 1 : -1;
 
 				switch (position) {
 					case "top":

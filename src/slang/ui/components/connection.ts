@@ -118,15 +118,15 @@ export class ConnectionComponent extends CellComponent {
 		const lines = stream ? stream.getStreamDepth() : 1;
 
 		link.connector(slangConnector(sourcePort, destinationPort, lines));
-		// if (sourcePort.getType) {
-		// 	link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(TypeIdentifier.Generic));
-		// } else {
+		if (sourcePort.isGenericLike() && !sourcePort.getType().isPrimitive()) {
+			link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke("ghost"));
+		} else {
 			if (destinationPort && destinationPort.getTypeIdentifier() === TypeIdentifier.Trigger) {
 				link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(TypeIdentifier.Trigger));
 			} else {
 				link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(sourcePort.getTypeIdentifier()));
 			}
-		// }
+		}
 		link.attr(".connection/stroke-width", lines === 1 ? 2 : 1);
 		link.attr(".connection/vector-effect", Styles.Connection.Ordinary.vectorEffect);
 
