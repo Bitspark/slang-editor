@@ -597,7 +597,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		if (!canConnectTo(this, destination)) {
 			throw new Error(`cannot connect: ${this.getIdentity()} --> ${destination.getIdentity()}`);
 		}
-		if (this.isGenericLike() || destination.isTrigger()) {
+		if ((createGenerics && this.isGenericLike()) || destination.isTrigger()) {
 			this.connectDirectlyTo(destination, createGenerics);
 			return;
 		}
