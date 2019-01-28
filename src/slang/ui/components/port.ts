@@ -1,5 +1,5 @@
 import {attributes, dia, g} from "jointjs";
-import {PortModel} from "../../model/port";
+import {OperatorPortModel, PortModel} from "../../model/port";
 import {PortGroupComponent, PortGroupPosition} from "./port-group";
 import {TypeIdentifier} from "../../custom/type";
 import {Styles} from "../../../styles/studio";
@@ -85,19 +85,20 @@ export class PortComponent {
 		const attrs: attributes.SVGAttributes = {
 			paintOrder: "stroke fill",
 		};
-
+		
+		const rotation = port instanceof OperatorPortModel ? port.isDirectionIn() : port.isDirectionOut();
 		switch (position) {
 			case "top":
-				attrs.transform = "";
+				attrs.transform = `rotate(${rotation ? 0 : 180})`;
 				break;
 			case "right":
-				attrs.transform = `rotate(${port.isDirectionIn() ? 90 : -90})`;
+				attrs.transform = `rotate(${rotation ? 90 : -90})`;
 				break;
 			case "bottom":
-				attrs.transform = "";
+				attrs.transform = `rotate(${rotation ? 180 : 0})`;
 				break;
 			case "left":
-				attrs.transform = `rotate(${port.isDirectionIn() ? -90 : 90})`;
+				attrs.transform = `rotate(${rotation ? -90 : 90})`;
 				break;
 		}
 
