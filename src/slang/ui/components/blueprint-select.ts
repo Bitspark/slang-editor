@@ -6,61 +6,114 @@ import {ClassComponent, CVnode} from "mithril";
 import {BlueprintView} from "../views/blueprint";
 import {Geometry} from "../../model/operator";
 import {AttachableComponent, CellComponent, XY} from "./base";
-import {MithrilMouseEvent, Tk} from "./toolkit";
+import {MithrilKeyboardEvent, MithrilMouseEvent, Tk} from "./toolkit";
 import ListHead = Tk.ListHead;
 import StringInput = Tk.StringInput;
 import ListItem = Tk.ListItem;
 import List = Tk.List;
-import {BlackBoxComponent, BlackBoxShape} from "./blackbox";
+import {BlackBoxShape} from "./blackbox";
 import Box = Tk.Box;
 
 export interface Attrs {
 	onSelect: (bp: BlueprintModel) => void,
 	onHover: (bp?: BlueprintModel) => void,
 	onFilter: (filter: string) => void,
+	onExit: () => void,
 	onLoad: () => Array<BlueprintModel>
 }
 
 class BlueprintMenuComponent implements ClassComponent<Attrs> {
+	menuSliceSize: number = 16;
+	activeMenuItemIdx: number = -1;
+	menuSliceStartIdx: number = 0;
+	menuSliceEndIdx: number = 0;
+
 	// Note that class methods cannot infer parameter types
 	oninit({attrs}: CVnode<Attrs>) {
 	}
 
+	setMenuSlice(menuTotalSize: number) {
+		if (this.menuSliceStartIdx <= this.activeMenuItemIdx && this.activeMenuItemIdx <= this.menuSliceEndIdx) {
+			return;
+		}
+
+
+		if (this.activeMenuItemIdx < this.menuSliceStartIdx) {
+			this.menuSliceStartIdx = Math.max(0, this.menuSliceStartIdx - 1);
+		} else if (this.activeMenuItemIdx > this.menuSliceEndIdx) {
+			this.menuSliceStartIdx = Math.max(0, this.menuSliceStartIdx + 1);
+		}
+
+		this.menuSliceEndIdx = Math.min(menuTotalSize - 1, this.menuSliceStartIdx + this.menuSliceSize);
+	}
+
 	view({attrs}: CVnode<Attrs>) {
 		const blueprints = attrs.onLoad();
+		const menuTotalSize = blueprints.length;
 
+		this.setMenuSlice(menuTotalSize);
 
-		return m(".sl-blupr-menu",
+		if (menuTotalSize == 1) {
+			this.activeMenuItemIdx = 0;
+		}
+
+		return m(".sl-blupr-menu", {
+				onmousewheel: (e: WheelEvent) => {
+					if (e.deltaY < 0) {
+						this.activeMenuItemIdx = Math.max(0, this.activeMenuItemIdx - 1);
+					} else {
+						this.activeMenuItemIdx = Math.min(this.activeMenuItemIdx + 1, menuTotalSize - 1);
+					}
+				},
+				onkeydown: (e: MithrilKeyboardEvent) => {
+					switch (e.key) {
+						case "ArrowUp":
+							this.activeMenuItemIdx = Math.max(0, this.activeMenuItemIdx - 1);
+							attrs.onHover(blueprints[this.activeMenuItemIdx]);
+							break;
+						case "ArrowDown":
+							this.activeMenuItemIdx = Math.min(this.activeMenuItemIdx + 1, menuTotalSize - 1);
+							attrs.onHover(blueprints[this.activeMenuItemIdx]);
+							break;
+						case "Enter":
+							attrs.onSelect(blueprints[this.activeMenuItemIdx]);
+							break;
+						case "Escape":
+							attrs.onExit();
+							break;
+					}
+				},
+			},
 			m(List, {
 					onMouseLeave: (e: MithrilMouseEvent) => {
 						e.redraw = false;
 						attrs.onHover(undefined);
-					}
+					},
 				},
 				m(ListHead, {},
 					m(StringInput, {
 						class: "sl-fullwidth",
 						label: "",
-						onInput: function (f: string) {
+						onInput: (f: string) => {
+							this.activeMenuItemIdx = -1;
 							attrs.onFilter(f.trim());
 						},
 						autofocus: true,
 					}),
 				),
 
-				blueprints.map((blueprint: BlueprintModel) => {
+				blueprints.slice(this.menuSliceStartIdx, this.menuSliceEndIdx + 1).map((blueprint: BlueprintModel, i: number) => {
 					return m(ListItem, {
-							//class: ".sl-blupr-entry",
+							class: (this.activeMenuItemIdx - this.menuSliceStartIdx == i ? "highlighted" : ""),
 							onClick: (e: MithrilMouseEvent) => {
 								e.redraw = false;
 								attrs.onSelect(blueprint);
 							},
 							onMouseEnter: (e: MithrilMouseEvent) => {
-								e.redraw = false;
+								this.activeMenuItemIdx = i + this.menuSliceStartIdx;
 								attrs.onHover(blueprint);
 							},
 							onMouseLeave: (e: MithrilMouseEvent) => {
-								e.redraw = false;
 								attrs.onHover(undefined);
 							}
 						},
@@ -90,6 +143,9 @@ export class BlueprintSelectComponent extends CellComponent {
 					onLoad: () => this.getBlueprints(),
 					onFilter: (fltrExpr: string) => {
 						this.filterExpr = fltrExpr;
+					},
+					onExit: () => {
+						this.destroy();
 					},
 					onSelect: (bp: BlueprintModel) => {
 						const xy = this.shape.getBBox().center();
