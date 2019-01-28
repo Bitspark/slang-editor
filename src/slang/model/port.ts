@@ -28,7 +28,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	// self
 	private readonly connected = new SlangSubject<PortModel>("connected");
 	private readonly disconnected = new SlangSubject<PortModel>("disconnected");
-	private readonly collapsed = new SlangBehaviorSubject<boolean>("collapsed", false);
 
 	// Properties
 	private readonly name: string;
@@ -487,25 +486,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 	// Actions
 
-	public collapse(): void {
-		if (this.getType().getTypeIdentifier() !== TypeIdentifier.Map) {
-			return;
-		}
-		if (!this.collapsed.getValue()) {
-			this.collapsed.next(true);
-		}
-	}
-
-	public expand(): void {
-		if (this.collapsed.getValue()) {
-			this.collapsed.next(false);
-		}
-	}
-
-	public isCollapsed(): boolean {
-		return this.collapsed.getValue();
-	}
-
 	public abstract isSource(): boolean;
 
 	public isDestination(): boolean {
@@ -641,10 +621,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	}
 
 	// Subscriptions
-
-	public subscribeCollapsed(cb: (collapsed: boolean) => void): void {
-		this.collapsed.subscribe(cb);
-	}
 
 	public subscribeConnected(cb: (other: PortModel) => void): Subscription {
 		this.connectedWith.forEach(port => {
