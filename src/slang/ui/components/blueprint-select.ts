@@ -148,8 +148,8 @@ export class BlueprintSelectComponent extends CellComponent {
 						this.destroy();
 					},
 					onSelect: (bp: BlueprintModel) => {
-						const xy = this.shape.getBBox().center();
-						const geo: Geometry = {xy};
+						const position = this.shape.getBBox().center();
+						const geo: Geometry = {position};
 						this.blueprint.createBlankOperator(bp, geo);
 						this.destroy();
 					},

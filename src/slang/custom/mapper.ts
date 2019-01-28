@@ -77,6 +77,7 @@ export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApi
 function operatorModelToJSON(operator: OperatorModel): OperatorApiResponse {
 	return {
 		operator: operator.getBlueprint().getFullName(),
+		geometry: operator.getGeometry(),
 		properties: iter2map<PropertyAssignment, PropertyAssignmentsApiResponse>(operator.getPropertyAssignments().getAssignments(),
 			(result, propAssign) => {
 				result[propAssign.getName()] = propAssign.getValue();
@@ -149,7 +150,7 @@ function operatorPortDef(port: OperatorPortModel): string {
 		const operator = owner.getParentNode() as OperatorModel;
 		ownerRefParts.push(operator.getName());
 		ownerRefParts.push(owner.getName());
-	} else if (owner instanceof OperatorModel)  {
+	} else if (owner instanceof OperatorModel) {
 		ownerRefParts.push(owner.getName());
 	} else {
 		// ...
@@ -215,7 +216,7 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
 				try {
 					const genSpeci = createGenericSpecifications(blueprint, opData.generics);
 					const propAssigns = createPropertyAssignments(blueprint, opData.properties, genSpeci);
-					outerBlueprint.createOperator(opName, blueprint, propAssigns, genSpeci);
+					outerBlueprint.createOperator(opName, blueprint, propAssigns, genSpeci, opData.geometry);
 				} catch (e) {
 					console.error(`${outerBlueprint.getFullName()} (${blueprint.getFullName()}): ${e.stack}`);
 				}
@@ -249,7 +250,6 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
 		}
 	});
 }
-
 
 function toTypeIdentifier(typeName: string): TypeIdentifier {
 	const type = ({

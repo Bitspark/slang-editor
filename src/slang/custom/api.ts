@@ -1,4 +1,5 @@
 import {SlangTypeValue} from "./type";
+import {Geometry} from "../model/operator";
 
 export interface TypeDefApiResponse {
 	type: "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic"
@@ -35,6 +36,7 @@ export interface DeploymentStatusApiResponse {
 
 export interface OperatorApiResponse {
 	operator: string
+	geometry?: Geometry
 	properties: PropertyAssignmentsApiResponse
 	generics: GenericSpecificationsApiResponse
 }

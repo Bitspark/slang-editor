@@ -24,7 +24,7 @@ export type OperatorModelArgs = {
 }
 
 export interface Geometry {
-	xy: XY
+	position: XY
 }
 
 export class OperatorModel extends BlackBox {
@@ -104,6 +104,10 @@ export class OperatorModel extends BlackBox {
 		return this.blueprint.hasProperties();
 	}
 
+	public getGeometry(): Geometry | undefined {
+		return this.geometry;
+	}
+
 	public getPropertyAssignment(property: string | PropertyModel): PropertyAssignment {
 		return this.properties.get(property);
 	}
@@ -176,16 +180,16 @@ export class OperatorModel extends BlackBox {
 
 	public get XY(): XY | undefined {
 		if (this.geometry) {
-			return this.geometry.xy;
+			return this.geometry.position;
 		}
 	}
 
 	public set XY(xy: XY | undefined) {
 		if (xy) {
 			if (!this.geometry) {
-				this.geometry = {xy}
+				this.geometry = {position: xy}
 			} else {
-				this.geometry.xy = xy;
+				this.geometry.position = xy;
 			}
 		}
 	}
