@@ -120,7 +120,7 @@ export class ConnectionComponent extends CellComponent {
 		link.connector(slangConnector(sourcePort, destinationPort, lines));
 		if (destinationPort && destinationPort.getTypeIdentifier() === TypeIdentifier.Trigger) {
 			link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(TypeIdentifier.Trigger));
-		} else if (sourcePort.isGenericLike() && !sourcePort.getType().isPrimitive() && !sourcePort.getType().isTrigger()) {
+		} else if (sourcePort.isGenericLike() && !sourcePort.getType().isElementaryPort()) {
 			link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke("ghost"));
 		} else {
 			link.attr(".connection/stroke", Styles.Connection.Ordinary.stroke(sourcePort.getTypeIdentifier()));

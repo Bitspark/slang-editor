@@ -362,6 +362,10 @@ export class SlangType {
 		return this.typeIdentifier;
 	}
 
+	public isElementaryPort(): boolean {
+		return this.isPrimitive() || this.isTrigger() || this.isGeneric();
+	}
+	
 	public isPrimitive(): boolean {
 		const primitiveTypes = [TypeIdentifier.String, TypeIdentifier.Number, TypeIdentifier.Boolean, TypeIdentifier.Binary, TypeIdentifier.Primitive];
 		return primitiveTypes.indexOf(this.getTypeIdentifier()) !== -1;
