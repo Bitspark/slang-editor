@@ -484,6 +484,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		return this.typeIdentifier === TypeIdentifier.Trigger;
 	}
 
+	public isGeneric(): boolean {
+		return this.typeIdentifier === TypeIdentifier.Generic;
+	}
+
 	// Actions
 
 	public abstract isSource(): boolean;
