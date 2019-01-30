@@ -76,6 +76,8 @@ export abstract class PaperView extends View {
 	}
 
 	protected handleMouseWheel(evt: MouseWheelEvent, x: number, y: number): boolean {
+		this.setUserInputMode(evt);
+
 		switch (this.userInputMode) {
 			case "scroll":
 				this.scroll(-evt.deltaX, -evt.deltaY);
@@ -90,7 +92,7 @@ export abstract class PaperView extends View {
 		return true;
 	}
 
-	protected setUserInputMode(evt: KeyboardEvent) {
+	protected setUserInputMode(evt: MouseEvent | KeyboardEvent) {
 		if (evt.ctrlKey || evt.metaKey) {
 			this.userInputMode = "zoom/pan";
 			return false;
@@ -98,6 +100,7 @@ export abstract class PaperView extends View {
 			this.userInputMode = "hscroll";
 			return false;
 		}
+		this.userInputMode = "scroll";
 		return true;
 	}
 
@@ -107,9 +110,7 @@ export abstract class PaperView extends View {
 
 		document.addEventListener("keydown", (event: KeyboardEvent) => {
 			event.preventDefault();
-			if (!this.setUserInputMode(event)) {
-				event.stopPropagation();
-			}
+			this.setUserInputMode(event);
 		});
 
 		document.addEventListener("keyup", (event: KeyboardEvent) => {
