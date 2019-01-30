@@ -11,9 +11,9 @@ export abstract class PaperView extends View {
 	protected readonly graph = new dia.Graph();
 	private readonly paper: dia.Paper;
 
-	private userInputMode: "scroll" | "hscroll/pan" | "zoom" = "scroll";
+	private userInputMode: "scroll" | "hscroll" | "zoom/pan" = "scroll";
 
-	private scaleSpeed: number = 0.005;
+	private scaleSpeed: number = 0.002;
 	private minScale: number = 0.35;
 	private maxScale: number = 2.5;
 
@@ -82,11 +82,11 @@ export abstract class PaperView extends View {
 			case "scroll":
 				this.scroll(evt.deltaX, -evt.deltaY);
 				return false;
-			case "hscroll/pan":
+			case "hscroll":
 				this.scroll(evt.deltaY, 0);
 				return false;
-			case "zoom":
-				this.zoom(x, y, -evt.deltaY);
+			case "zoom/pan":
+				this.zoom(x, y, evt.deltaY);
 				return false;
 		}
 		return true;
@@ -94,10 +94,10 @@ export abstract class PaperView extends View {
 
 	protected setUserInputMode(evt: KeyboardEvent) {
 		if (evt.ctrlKey || evt.metaKey) {
-			this.userInputMode = "zoom";
+			this.userInputMode = "zoom/pan";
 			return false;
 		} else if (evt.shiftKey) {
-			this.userInputMode = "hscroll/pan";
+			this.userInputMode = "hscroll";
 			return false;
 		}
 		return true;
@@ -122,16 +122,6 @@ export abstract class PaperView extends View {
 		paper.on("cell:mousewheel", function (cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, x: number, y: number, delta: number) {
 			that.handleMouseWheel(originalEvent as MouseWheelEvent, x, y);
 		});
-
-		/*
-		paper.on("blank:mousewheel", function ({originalEvent}: JQueryMouseEventObject, x: number, y: number, delta: number) {
-			zoom(x, y, -(originalEvent as WheelEvent).deltaY);
-		});
-		paper.on("cell:mousewheel", function (cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, x: number, y: number, delta: number) {
-			zoom(x, y, -(originalEvent as WheelEvent).deltaY);
-		});
-		*/
-
 
 		["mousewheel"].forEach(eventName => {
 			(function (eventName) {
@@ -169,7 +159,8 @@ export abstract class PaperView extends View {
 
 	protected zoom(x: number, y: number, delta: number) {
 		const oldScale = this.paper.scale().sx;
-		const newScale = (delta > 0) ? Math.min(this.maxScale, oldScale + delta * this.scaleSpeed) : Math.max(this.minScale, oldScale + delta * this.scaleSpeed);
+		const deltaScale = oldScale * delta * this.scaleSpeed;
+		const newScale = Math.max(this.minScale,  Math.min(this.maxScale, oldScale - deltaScale));
 
 		const translation = this.paper.translate();
 		const [px, py] = [translation.tx, translation.ty];
@@ -216,23 +207,18 @@ export abstract class PaperView extends View {
 		};
 
 		paper.on("blank:pointerdown", function (evt: Event, x: number, y: number) {
-			if (that.userInputMode == "hscroll/pan") {
+			if (that.userInputMode == "zoom/pan") {
 				evt.preventDefault();
 				startPanning(x, y);
 				return false;
 			}
 		});
 		paper.on("cell:pointerdown", function (cellView: dia.CellView, evt: Event, x: number, y: number) {
-			if (that.userInputMode == "hscroll/pan") {
+			if (that.userInputMode == "zoom/pan") {
 				evt.preventDefault();
 				startPanning(x, y);
 				return false;
 			}
-			/*
-			if (cellView.model.attr("draggable") === false) {
-				startPanning(x, y);
-			}
-			*/
 		});
 		paper.on("blank:pointerup", function (evt: Event, x: number, y: number) {
 			stopPanning();
