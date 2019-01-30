@@ -16,18 +16,18 @@ export interface Position extends XY {
 }
 
 abstract class Component {
-	protected constructor(private xy: XY) {
+	protected constructor(private pos: XY) {
 	}
 
 	public destroy() {
 	}
 
 	protected updateXY({x, y}: XY) {
-		this.xy = {x, y};
+		this.pos = {x, y};
 	}
 
-	protected get XY(): XY {
-		return this.xy;
+	protected get xy(): XY {
+		return this.pos;
 	}
 }
 
@@ -80,7 +80,7 @@ abstract class HtmlComponent extends Component {
 	}
 
 	protected getClientXY(): XY {
-		return this.paperView.toClientXY(this.XY);
+		return this.paperView.toClientXY(this.xy);
 	}
 
 	public destroy() {

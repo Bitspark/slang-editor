@@ -4,7 +4,6 @@ import {OperatorModel} from "../../model/operator";
 import {BlueprintModel} from "../../model/blueprint";
 import {DashboardModuleComponent, PropertyFormDashboardModuleComponent,} from "./dashboard";
 
-
 export class ComponentFactory {
 	private readonly blackBoxShape = new Map<BlueprintModel, typeof BlackBoxShape>();
 	private readonly opCompClasses = new Map<BlueprintModel, new (pv: PaperView, op: OperatorModel) => OperatorBoxComponent>();
@@ -52,4 +51,4 @@ export class ComponentFactory {
 	}
 }
 
-export const componentFactory = new ComponentFactory();
+export const COMPONENT_FACTORY = new ComponentFactory();

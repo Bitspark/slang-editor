@@ -3,16 +3,22 @@ jobs:
   build:
     working_directory: ~/slang-studio
     docker:
-    - image: bitspark/slang-ci:latest
+      - image: bitspark/slang-ci:latest
     steps:
-    - checkout
-    - run:
-        name: Install dependencies
-        command: npm install
-    - save_cache:
-        key: dependency-cache-{{ checksum "package.json" }}
-        paths:
-        - ./node_modules
-    - run:
-        name: Test
-        command: npm test
+      - checkout
+      - run:
+          name: Install dependencies
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: Lint
+          command: npm run lint
+      - run:
+          name: Test
+          command: npm test
+      - run:
+          name: Build
+          command: npm build

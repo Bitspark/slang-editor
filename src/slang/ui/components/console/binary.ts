@@ -14,7 +14,7 @@ function post(domValue: string): string {
 	return "base64:" + btoa(domValue);
 }
 
-export const BinaryValueType: ConsoleValueType<string> = {
+export const BINARY_VALUE_TYPE: ConsoleValueType<string> = {
 	typeDef: {
 		type: TypeIdentifier.Binary
 	},

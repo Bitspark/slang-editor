@@ -27,7 +27,7 @@ function iter2map<S, T>(iter: IterableIterator<S>, process: (result: T, curr: S)
 	return Array.from(iter).reduce((result, curr) => {
 		process(result, curr);
 		return result;
-	}, {} as T)
+	}, {} as T);
 }
 
 export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApiResponse {
@@ -77,7 +77,7 @@ export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApi
 					result[srcPortRef].push(dstPortRef);
 				}
 			}),
-	}
+	};
 }
 
 function operatorModelToJSON(operator: OperatorModel): OperatorApiResponse {
@@ -92,7 +92,7 @@ function operatorModelToJSON(operator: OperatorModel): OperatorApiResponse {
 			(result, [name, type]) => {
 				result[name] = typeModelToJSON(type);
 			}),
-	}
+	};
 }
 
 function typeModelToJSON(type: SlangType): TypeDefApiResponse {
@@ -123,11 +123,11 @@ function typeModelToJSON(type: SlangType): TypeDefApiResponse {
 function getFullPortRef(port: PortModel): string {
 	if (port instanceof BlueprintPortModel) {
 		return blueprintPortRef(port);
-	} else if (port instanceof OperatorPortModel) {
-		return operatorPortDef(port);
-	} else {
-		throw new Error("unexpected port model");
 	}
+	if (port instanceof OperatorPortModel) {
+		return operatorPortDef(port);
+	}
+	throw new Error("unexpected port model");
 }
 
 function blueprintPortRef(port: BlueprintPortModel): string {
@@ -142,9 +142,8 @@ function blueprintPortRef(port: BlueprintPortModel): string {
 
 	if (port.isDirectionIn()) {
 		return `${portRef}(${ownerRefParts.join(".")}`;
-	} else {
-		return `${ownerRefParts.join(".")})${portRef}`;
 	}
+	return `${ownerRefParts.join(".")})${portRef}`;
 }
 
 function operatorPortDef(port: OperatorPortModel): string {
@@ -165,9 +164,8 @@ function operatorPortDef(port: OperatorPortModel): string {
 	const ownerRef = ownerRefParts.join(".");
 	if (port.isDirectionIn()) {
 		return `${portRef}(${ownerRef}`;
-	} else {
-		return `${ownerRef})${portRef}`;
 	}
+	return `${ownerRef})${portRef}`;
 
 }
 
@@ -346,4 +344,3 @@ function createGenericSpecifications(blueprint: BlueprintModel, genSpeciData: Ge
 	}
 	return genSpeci;
 }
-

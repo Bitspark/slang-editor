@@ -11,7 +11,7 @@ import {PaperView} from "../views/paper-view";
 import {CellComponent} from "./base";
 import {StreamType} from "../../custom/stream";
 
-const ConnectionLink = dia.Link.define("Connection", {
+const connectionLink = dia.Link.define("Connection", {
 	router: slangRouter,
 }, {
 	toolMarkup: [
@@ -27,7 +27,7 @@ const ConnectionLink = dia.Link.define("Connection", {
 		"</g>"].join(""),
 });
 
-const GhostConnectionLink = dia.Link.define("Connection", {
+const ghostConnectionLink = dia.Link.define("Connection", {
 	router: slangRouter,
 }, {
 	toolMarkup: [
@@ -44,7 +44,7 @@ export class ConnectionComponent extends CellComponent {
 		super(paperView, {x: 0, y: 0});
 		const ownerIds = ConnectionComponent.getBoxOwnerIds(connection);
 		this.id = ConnectionComponent.getLinkId(connection);
-		this.shape = new ConnectionLink({
+		this.shape = new connectionLink({
 			id: this.id,
 			source: {
 				id: ownerIds[0],
@@ -70,7 +70,7 @@ export class ConnectionComponent extends CellComponent {
 		this.refresh();
 		this.render();
 
-		[[connection.source, connection.destination],[connection.destination, connection.source]].forEach(([port, other]) => {
+		[[connection.source, connection.destination], [connection.destination, connection.source]].forEach(([port, other]) => {
 			port.getStreamPort().subscribeRefreshStreamType(stream => {
 				if (StreamType.refreshActive && port.isConnectedWith(other)) {
 					this.refresh();
@@ -102,7 +102,7 @@ export class ConnectionComponent extends CellComponent {
 	// STATIC
 
 	public static createGhostLink(sourcePort: PortModel): dia.Link {
-		const link = new GhostConnectionLink({
+		const link = new ghostConnectionLink({
 			attrs: {
 				".connection": {
 					"stroke-opacity": Styles.Connection.Ghost.strokeOpacity,
@@ -177,9 +177,9 @@ export class ConnectionComponent extends CellComponent {
 
 		if (link.isLink()) {
 			return link as dia.Link;
-		} else {
-			throw new Error(`connection cell not of type link: ${linkId}`);
 		}
+
+		throw new Error(`connection cell not of type link: ${linkId}`);
 	}
 
 }

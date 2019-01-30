@@ -7,7 +7,7 @@
     "start": "webpack-dev-server --open --config webpack/webpack.config.dev.js",
     "start-embedded": "npm start -- --env.slang-mode embedded",
     "build-embedded": "webpack --config webpack/webpack.config.prod.js --colors --env.slang-mode embedded",
-    "lint": "tslint -p tsconfig.json -c tslint.json src/entries/**/*.ts",
+    "lint": "tslint -p tsconfig.json -c tslint.json src/**/*.ts",
     "test": "jasmine-ts"
   },
   "repository": {
@@ -66,6 +66,7 @@
     "ts-loader": "^5.3.0",
     "ts-node": "^8.0.2",
     "tslint": "^5.12.1",
+    "tslint-consistent-codestyle": "^1.15.0",
     "typescript": "^3.2.4",
     "webpack": "^4.25.0",
     "webpack-cli": "^3.1.2",

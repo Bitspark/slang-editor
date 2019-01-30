@@ -135,7 +135,7 @@ export class PortGroupComponent {
 
 				const portModel = portComponents[index].getModel();
 				const portOwner = portModel.getOwner();
-				const translate = portModel.isDirectionIn() ? Styles.PortGroup.TranslationIn : Styles.PortGroup.TranslationOut;
+				const translate = portModel.isDirectionIn() ? Styles.PortGroup.translationIn : Styles.PortGroup.translationOut;
 				const factor = portOwner instanceof OperatorModel ? 1 : -1;
 
 				switch (position) {

@@ -37,7 +37,6 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 			return;
 		}
 
-
 		if (this.activeMenuItemIdx < this.menuSliceStartIdx) {
 			this.menuSliceStartIdx = Math.max(0, this.menuSliceStartIdx - 1);
 		} else if (this.activeMenuItemIdx > this.menuSliceEndIdx) {
@@ -206,9 +205,9 @@ export class BlueprintSelectComponent extends CellComponent {
 		let ghostRect: BlackBoxShape;
 
 		if (!blueprint) {
-			ghostRect = BlackBoxShape.placeGhost(this.paperView, "• • •", this.XY);
+			ghostRect = BlackBoxShape.placeGhost(this.paperView, "• • •", this.xy);
 		} else {
-			ghostRect = BlackBoxShape.place(this.paperView, blueprint, this.XY);
+			ghostRect = BlackBoxShape.place(this.paperView, blueprint, this.xy);
 		}
 		return ghostRect;
 	}

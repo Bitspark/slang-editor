@@ -120,8 +120,7 @@ export namespace Tk {
 
 		oninit() {
 		}
-
-
+		
 		private getClass(attrs: ButtonAttrs): string {
 			const cls = [];
 
@@ -147,8 +146,7 @@ export namespace Tk {
 		private isInactive(attrs: ButtonAttrs): boolean {
 			return !!attrs.notAllowed && !!attrs.inactive;
 		}
-
-
+		
 		view({attrs, children}: CVnode<ButtonAttrs>) {
 			const that = this;
 

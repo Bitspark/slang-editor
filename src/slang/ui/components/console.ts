@@ -2,9 +2,9 @@ import m, {ClassComponent, CVnode} from "mithril";
 
 import {SlangType, SlangTypeDef, SlangTypeValue, TypeIdentifier} from "../../custom/type";
 import {Tk} from "./toolkit";
-import {BinaryValueType} from "./console/binary";
-import {FileValueType, ImageValueType} from "./console/file";
-import {GraphValueType} from "./console/graph";
+import {BINARY_VALUE_TYPE} from "./console/binary";
+import {FILE_VALUE_TYPE, IMAGE_VALUE_TYPE} from "./console/file";
+import {GRAPH_VALUE_TYPE} from "./console/graph";
 
 export type ConsoleValueType<T> = {
 	typeDef: SlangTypeDef;
@@ -72,31 +72,30 @@ export namespace Input {
 
 			if (typeSpecificComp) {
 				return m(typeSpecificComp, attrs);
-			} else {
-				switch (t.getTypeIdentifier()) {
-					case TypeIdentifier.Map:
-						return m(MapInputField, Object.assign(attrs, {
-							entries: t.getMapSubs(),
-						}));
+			}
+			switch (t.getTypeIdentifier()) {
+				case TypeIdentifier.Map:
+					return m(MapInputField, Object.assign(attrs, {
+						entries: t.getMapSubs(),
+					}));
 
-					case TypeIdentifier.Stream:
-						return m(StreamInputField, Object.assign(attrs, {
-							type: t.getStreamSub(),
-						}));
+				case TypeIdentifier.Stream:
+					return m(StreamInputField, Object.assign(attrs, {
+						type: t.getStreamSub(),
+					}));
 
-					case TypeIdentifier.Number:
-						return m(Tk.NumberInput, attrs);
+				case TypeIdentifier.Number:
+					return m(Tk.NumberInput, attrs);
 
-					case TypeIdentifier.Boolean:
-						return m(Tk.BooleanInput, attrs);
+				case TypeIdentifier.Boolean:
+					return m(Tk.BooleanInput, attrs);
 
-					case TypeIdentifier.Trigger:
-						attrs.onInput(null);
-						return;
+				case TypeIdentifier.Trigger:
+					attrs.onInput(null);
+					return;
 
-					default:
-						return m(Tk.StringInput, attrs);
-				}
+				default:
+					return m(Tk.StringInput, attrs);
 			}
 		}
 
@@ -237,30 +236,30 @@ export namespace Output {
 			const typeSpecificComp = ConsoleValueTypeManager.findOutput(type);
 			if (typeSpecificComp) {
 				return m(typeSpecificComp, {value, type});
-			} else {
-				switch (type.getTypeIdentifier()) {
-					case TypeIdentifier.Map:
-						return m(".sl-json", Array.from(type.getMapSubs())
-							.map(([subName, subType]) => [
-								m(".sl-json-pair",
-									{class: (subType.isPrimitive()) ? "sl-json-prim-val" : "sl-json-nested-val"},
-									m(".sl-json-key", subName),
-									m(".sl-json-val", this.getOutputComponent(value[subName], subType)),
-								)
-							]));
-					case TypeIdentifier.Stream:
-						const subType = type.getStreamSub();
-						return m(".sl-json", value.map((val: any, i: number) => [
+			}
+			switch (type.getTypeIdentifier()) {
+				case TypeIdentifier.Map:
+					return m(".sl-json", Array.from(type.getMapSubs())
+						.map(([subName, subType]) => [
 							m(".sl-json-pair",
 								{class: (subType.isPrimitive()) ? "sl-json-prim-val" : "sl-json-nested-val"},
-								m(".sl-json-key", i),
-								m(".sl-json-val", this.getOutputComponent(val, subType))
+								m(".sl-json-key", subName),
+								m(".sl-json-val", this.getOutputComponent(value[subName], subType)),
 							)
 						]));
-					default:
-						return JSON.stringify(value);
-				}
+				case TypeIdentifier.Stream:
+					const subType = type.getStreamSub();
+					return m(".sl-json", value.map((val: any, i: number) => [
+						m(".sl-json-pair",
+							{class: (subType.isPrimitive()) ? "sl-json-prim-val" : "sl-json-nested-val"},
+							m(".sl-json-key", i),
+							m(".sl-json-val", this.getOutputComponent(val, subType))
+						)
+					]));
+				default:
+					return JSON.stringify(value);
 			}
+
 		}
 
 		view({attrs}: CVnode<{ value: any, type: SlangType }>) {
@@ -341,7 +340,7 @@ export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {
 	}
 }
 
-ConsoleValueTypeManager.register(BinaryValueType);
-ConsoleValueTypeManager.register(FileValueType);
-ConsoleValueTypeManager.register(ImageValueType);
-ConsoleValueTypeManager.register(GraphValueType);
+ConsoleValueTypeManager.register(BINARY_VALUE_TYPE);
+ConsoleValueTypeManager.register(FILE_VALUE_TYPE);
+ConsoleValueTypeManager.register(IMAGE_VALUE_TYPE);
+ConsoleValueTypeManager.register(GRAPH_VALUE_TYPE);

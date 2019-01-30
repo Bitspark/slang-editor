@@ -22,7 +22,6 @@ export interface Size {
 	height: number
 }
 
-
 export interface BlueprintPortGeometry {
 	in: {
 		position: number
@@ -408,27 +407,27 @@ export class BlueprintModel extends BlackBox {
 
 	// Geometry
 
-	public get Size(): Size {
+	public get size(): Size {
 		return this.geometry.size;
 	}
 
-	public set Size(size: Size) {
+	public set size(size: Size) {
 		this.geometry.size = size;
 	}
 
-	public get InPosition(): number {
+	public get inPosition(): number {
 		return this.geometry.port.in.position;
 	}
 
-	public set InPosition(pos: number) {
+	public set inPosition(pos: number) {
 		this.geometry.port.in.position = pos;
 	}
 
-	public get OutPosition(): number {
+	public get outPosition(): number {
 		return this.geometry.port.out.position;
 	}
 
-	public set OutPosition(pos: number) {
+	public set outPosition(pos: number) {
 		this.geometry.port.out.position = pos;
 	}
 

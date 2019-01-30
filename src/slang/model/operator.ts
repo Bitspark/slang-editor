@@ -155,14 +155,14 @@ export class OperatorModel extends BlackBox {
 		return connections;
 	}
 
-	public get XY(): XY | undefined {
+	public get xy(): XY | undefined {
 		if (this.geometry) {
 			return this.geometry.position;
 		}
 		return undefined;
 	}
 
-	public set XY(xy: XY | undefined) {
+	public set xy(xy: XY | undefined) {
 		if (xy) {
 			if (!this.geometry) {
 				this.geometry = {position: xy}

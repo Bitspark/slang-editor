@@ -17,7 +17,7 @@ import {SlangTypeValue, TypeIdentifier} from "../../custom/type";
 import {Tk} from "./toolkit";
 import Button = Tk.Button;
 import {InputConsole, OutputConsole} from "./console";
-import {componentFactory} from "./factory";
+import {COMPONENT_FACTORY} from "./factory";
 import {DashboardComponent} from "./dashboard";
 import Modal = Tk.Modal;
 import {SlangSubject} from "../../custom/events";
@@ -55,7 +55,7 @@ export class WhiteBoxComponent extends CellComponent {
 		this.shape = new WhiteBoxComponent.Rect(this.blueprint);
 
 		this.shape.on("change:size", () => {
-			blueprint.Size = this.shape.size();
+			blueprint.size = this.shape.size();
 		});
 
 		this.shape.on("pointerclick",
@@ -247,7 +247,7 @@ export class WhiteBoxComponent extends CellComponent {
 	public centerizeOuter() {
 		const operatorRectangles = this.operators.map(operatorComponent => operatorComponent.getShape());
 
-		const {width, height} = this.blueprint.Size;
+		const {width, height} = this.blueprint.size;
 
 		const bbox = this.paperView.getCellsBBox(operatorRectangles) || new g.Rect({
 			x: -width / 2,
@@ -268,7 +268,7 @@ export class WhiteBoxComponent extends CellComponent {
 		for (const port of this.ports.top) {
 			port.getShape().set({
 				position: {
-					x: this.blueprint.InPosition - pWidth / 2,
+					x: this.blueprint.inPosition - pWidth / 2,
 					y: bbox.y - pHeight
 				}
 			});
@@ -277,7 +277,7 @@ export class WhiteBoxComponent extends CellComponent {
 		for (const port of this.ports.bottom) {
 			port.getShape().set({
 				position: {
-					x: this.blueprint.OutPosition - pWidth / 2,
+					x: this.blueprint.outPosition - pWidth / 2,
 					y: bbox.y + bbox.height
 				}
 			});
@@ -454,7 +454,7 @@ export class WhiteBoxComponent extends CellComponent {
 					height: elementSize.height
 				});
 				portElement.on("change:position", () => {
-					that.blueprint.InPosition = portElement.getBBox().center().x;
+					that.blueprint.inPosition = portElement.getBBox().center().x;
 				});
 				break;
 			case "bottom":
@@ -467,7 +467,7 @@ export class WhiteBoxComponent extends CellComponent {
 					height: elementSize.height
 				});
 				portElement.on("change:position", () => {
-					that.blueprint.OutPosition = portElement.getBBox().center().x;
+					that.blueprint.outPosition = portElement.getBBox().center().x;
 				});
 				break;
 			case "left":
@@ -510,7 +510,7 @@ export class WhiteBoxComponent extends CellComponent {
 
 	private addOperator(operator: OperatorModel): OperatorBoxComponent {
 
-		const operatorComp = componentFactory.createOperatorComponent(this.paperView, operator);
+		const operatorComp = COMPONENT_FACTORY.createOperatorComponent(this.paperView, operator);
 
 		this.operators.push(operatorComp);
 
@@ -649,11 +649,11 @@ export namespace WhiteBoxComponent {
 		};
 	}
 
-	export class Rect extends shapes.standard.Rectangle.define("WhiteBox", Styles.Defaults.Outer) {
+	export class Rect extends shapes.standard.Rectangle.define("WhiteBox", Styles.Defaults.outer) {
 		constructor(blueprint: BlueprintModel) {
 			super(constructRectAttrs({
 				id: `${blueprint.getIdentity()}_outer`,
-				size: blueprint.Size,
+				size: blueprint.size,
 			}) as any);
 			this.attr("draggable", false);
 			this.set("obstacle", false);

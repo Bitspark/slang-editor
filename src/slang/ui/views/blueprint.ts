@@ -74,9 +74,9 @@ export class BlueprintView extends PaperView {
 						link.transition("attrs/.connection/stroke-opacity", 0.0);
 					});
 					return link;
-				} else {
-					throw new Error(`could not find source port`);
 				}
+
+				throw new Error(`could not find source port`);
 			},
 			validateConnection: (_cellViewS: dia.CellView, magnetS: SVGElement, _cellViewT: dia.CellView, magnetT: SVGElement): boolean => {
 				const portS = that.getPortFromMagnet(magnetS);
@@ -207,4 +207,3 @@ class PortInfo implements ClassComponent<Attrs> {
 		);
 	}
 }
-

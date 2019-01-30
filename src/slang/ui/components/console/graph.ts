@@ -4,16 +4,14 @@ import {TypeIdentifier} from "../../../custom/type";
 import * as Plotly from "plotly.js";
 import {Config, ScatterData} from "plotly.js";
 
-
 type GraphType = [{ name: string, data: [{ x: string, y: string }] }];
 
-const PlotlyConfig: Partial<Config> = {
+const plotlyConfig: Partial<Config> = {
 	modeBarButtonsToRemove: ["sendDataToCloud"],
 	displaylogo: false,
 };
 
-
-export const GraphValueType: ConsoleValueType<GraphType> = {
+export const GRAPH_VALUE_TYPE: ConsoleValueType<GraphType> = {
 	typeDef: {
 		type: TypeIdentifier.Stream,
 		stream: {
@@ -55,7 +53,7 @@ export const GraphValueType: ConsoleValueType<GraphType> = {
 					showline: true
 				}
 			};
-			Plotly.plot(dom as HTMLElement, data, layout, PlotlyConfig);
+			Plotly.plot(dom as HTMLElement, data, layout, plotlyConfig);
 			m.redraw();
 		},
 		

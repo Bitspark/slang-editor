@@ -36,7 +36,6 @@ interface SlangTypeDefPrimitive {
 	type: TypeIdentifier.String | TypeIdentifier.Number | TypeIdentifier.Boolean | TypeIdentifier.Binary | TypeIdentifier.Trigger | TypeIdentifier.Primitive
 }
 
-
 export type SlangTypeDef = SlangTypeDefPrimitive | SlangTypeDefGeneric | SlangTypeDefMap | SlangTypeDefStream;
 
 interface SlangTypeStream extends Array<SlangTypeValue> {
@@ -152,7 +151,9 @@ export class SlangType {
 				}
 			}
 			return true;
-		} else if (this.typeIdentifier === TypeIdentifier.Stream) {
+		}
+		
+		if (this.typeIdentifier === TypeIdentifier.Stream) {
 			return this.getStreamSub().isVoid();
 		}
 
@@ -185,7 +186,9 @@ export class SlangType {
 				}
 			}
 			return newMap;
-		} else if (this.typeIdentifier === TypeIdentifier.Stream) {
+		}
+		
+		if (this.typeIdentifier === TypeIdentifier.Stream) {
 			const newStream = new SlangType(this.parent, TypeIdentifier.Stream);
 			newStream.setStreamSub(this.getStreamSub().union(other.getStreamSub()));
 			return newStream;
@@ -219,9 +222,13 @@ export class SlangType {
 				}
 			}
 			return true;
-		} else if (this.typeIdentifier === TypeIdentifier.Stream) {
+		}
+		
+		if (this.typeIdentifier === TypeIdentifier.Stream) {
 			return this.getStreamSub().equals(other.getStreamSub());
-		} else if (this.typeIdentifier === TypeIdentifier.Generic) {
+		}
+		
+		if (this.typeIdentifier === TypeIdentifier.Generic) {
 			return this.genericIdentifier === other.genericIdentifier;
 		}
 
@@ -278,9 +285,9 @@ export class SlangType {
 			const identifier = this.getGenericIdentifier();
 			if (genSpec.has(identifier)) {
 				return genSpec.get(this.getGenericIdentifier()).copy();
-			} else {
-				return this.copy();
 			}
+			
+			return this.copy();
 		}
 		const specifiedType = new SlangType(this.parent, this.typeIdentifier);
 		switch (this.typeIdentifier) {
@@ -384,15 +391,15 @@ export class SlangType {
 		return str;
 	}
 
-	public static Number(): SlangType {
+	public static number(): SlangType {
 		return new SlangType(null, TypeIdentifier.Number);
 	}
 
-	public static String(): SlangType {
+	public static string(): SlangType {
 		return new SlangType(null, TypeIdentifier.String);
 	}
 
-	public static Boolean(): SlangType {
+	public static boolean(): SlangType {
 		return new SlangType(null, TypeIdentifier.Boolean);
 	}
 }

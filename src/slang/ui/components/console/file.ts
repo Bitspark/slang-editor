@@ -3,7 +3,7 @@ import {Input, ConsoleValueType, Output} from "../console";
 import {TypeIdentifier} from "../../../custom/type";
 import {Tk} from "../toolkit";
 
-function selectFile(file: File, onInput: (_: { content: string, name: string }) => void) {
+function selectFile(file: File, onInput: (data: { content: string, name: string }) => void) {
 	const reader = new FileReader();
 	reader.onload = function () {
 		// e.g.: "data:application/pdf;base64,JVBERi0xLj..."
@@ -17,8 +17,7 @@ function selectFile(file: File, onInput: (_: { content: string, name: string }) 
 	reader.readAsDataURL(file);
 }
 
-
-export const FileValueType: ConsoleValueType<{ file: string, name: string }> = {
+export const FILE_VALUE_TYPE: ConsoleValueType<{ file: string, name: string }> = {
 	typeDef: {
 		type: TypeIdentifier.Map,
 		map: {
@@ -42,7 +41,7 @@ export const FileValueType: ConsoleValueType<{ file: string, name: string }> = {
 	}
 };
 
-export const ImageValueType: ConsoleValueType<{ image: string, name: string }> = {
+export const IMAGE_VALUE_TYPE: ConsoleValueType<{ image: string, name: string }> = {
 	typeDef: {
 		type: TypeIdentifier.Map,
 		map: {

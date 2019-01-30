@@ -2,7 +2,7 @@ import {TypeIdentifier} from "../slang/custom/type";
 
 export namespace Styles {
 
-	const TypeColors: { [key in TypeIdentifier]: string } = {
+	const typeColors: { [key in TypeIdentifier]: string } = {
 		// [TypeIdentifier.Unspecified]: "#ffeff2",
 		[TypeIdentifier.Number]: "#2e49b3",
 		[TypeIdentifier.String]: "#a52e2e",
@@ -20,12 +20,13 @@ export namespace Styles {
 		public static height = 8;
 	}
 
+	export class Connection {
+		public static strokeWidth = 1;
+		public static vectorEffect = "default";
+		public static stroke = (type: TypeIdentifier): string => typeColors[type];
+	}
+
 	export namespace Connection {
-		class Connection {
-			public static strokeWidth = 1;
-			public static stroke = (type: TypeIdentifier): string => TypeColors[type];
-			public static vectorEffect = "default";
-		}
 
 		export class Ordinary extends Connection {
 			public static strokeOpacity = 1;
@@ -39,16 +40,16 @@ export namespace Styles {
 
 	export class PortGroup {
 		public static portSpacing = 10;
-		public static TranslationIn = 4;
-		public static TranslationOut = -4;
+		public static translationIn = 4;
+		public static translationOut = -4;
 	}
 
 	export class BlueprintPort {
 		public static transformations = {
-			"top": "translate(0 -20)",
-			"right": "translate(-40 0)",
-			"bottom": "translate(0 20)",
-			"left": "translate(40 0)",
+			bottom: "translate(0 20)",
+			left: "translate(40 0)",
+			right: "translate(-40 0)",
+			top: "translate(0 -20)",
 		};
 	}
 
@@ -57,12 +58,12 @@ export namespace Styles {
 		public static ry = 6;
 		public static size = {width: 80, height: 49};
 		public static filter = {
-			name: "dropShadow",
 			args: {
+				blur: 1,
 				dx: 0,
 				dy: 0,
-				blur: 1,
-			}
+			},
+			name: "dropShadow",
 		};
 	}
 
@@ -70,42 +71,42 @@ export namespace Styles {
 		public static rx = 24;
 		public static ry = 24;
 		public static filter = {
-			name: "innerShadow",
 			args: {
+				blur: 2,
 				dx: 0,
 				dy: 0,
-				blur: 2,
 			},
+			name: "innerShadow",
 		};
 	}
 
 	export class Defaults {
-		public static BlackBox = {
-			size: BlackBox.size,
+		public static blackBox = {
 			attrs: {
 				body: {
+					class: "sl-rectangle",
 					rx: BlackBox.rx,
 					ry: BlackBox.ry,
-					class: "sl-rectangle",
 				},
 				label: {
 					class: "sl-label",
 					fontSize: 10,
 				},
 			},
+			size: BlackBox.size,
 		};
 
-		public static Outer = {
+		public static outer = {
 			attrs: {
-				root: {
-					class: "joint-cell joint-element sl-outer",
-				},
 				body: {
 					class: "sl-rectangle",
-					filter: Outer.filter,
 					cursor: "default",
+					filter: Outer.filter,
 					rx: Outer.rx,
 					ry: Outer.ry,
+				},
+				root: {
+					class: "joint-cell joint-element sl-outer",
 				},
 			},
 		};

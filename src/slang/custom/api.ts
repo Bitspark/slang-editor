@@ -92,7 +92,7 @@ export class ApiService {
 		return `${protocol}//${url}`;
 	}
 
-	private fetch<S, T>(method: string, path: string, data: S, process: (_: any) => T, error: (error: any) => void): Promise<T> {
+	private fetch<S, T>(method: string, path: string, data: S, process: (data: any) => T, error: (error: any) => void): Promise<T> {
 		return new Promise<T>((resolve) => {
 			const reqInit = (method !== "get") ? {method, body: JSON.stringify(data)} : {};
 			fetch(this.host + path, reqInit)
@@ -102,7 +102,7 @@ export class ApiService {
 		});
 	}
 
-	private GET<ReqT, RespT>(path: string, data: ReqT, process: (_: any) => RespT, error: (error: any) => void): Promise<RespT> {
+	private get<ReqT, RespT>(path: string, data: ReqT, process: (data: any) => RespT, error: (error: any) => void): Promise<RespT> {
 		return this.fetch<ReqT, RespT>(
 			"get",
 			path,
@@ -112,7 +112,7 @@ export class ApiService {
 		);
 	}
 
-	private POST<ReqT, RespT>(path: string, data: ReqT, process: (_: any) => RespT, error: (error: any) => void): Promise<RespT> {
+	private post<ReqT, RespT>(path: string, data: ReqT, process: (data: any) => RespT, error: (error: any) => void): Promise<RespT> {
 		return this.fetch<ReqT, RespT>(
 			"post",
 			path,
@@ -122,7 +122,7 @@ export class ApiService {
 		);
 	}
 
-	private DELETE<ReqT, RespT>(path: string, data: ReqT, process: (_: any) => RespT, error: (error: any) => void): Promise<RespT> {
+	private del<ReqT, RespT>(path: string, data: ReqT, process: (data: any) => RespT, error: (error: any) => void): Promise<RespT> {
 		return this.fetch<ReqT, RespT>(
 			"delete",
 			path,
@@ -132,11 +132,11 @@ export class ApiService {
 		);
 	}
 
-	public async getBlueprints(): Promise<Array<BlueprintApiResponse>> {
-		return this.GET<{}, Array<BlueprintApiResponse>>(
+	public async getBlueprints(): Promise<BlueprintApiResponse[]> {
+		return this.get<{}, BlueprintApiResponse[]>(
 			"/operator/",
 			{},
-			(data: any) => (data as { objects: any }).objects as Array<BlueprintApiResponse>,
+			(data: any) => (data as { objects: any }).objects as BlueprintApiResponse[],
 			(err: any) => console.error(err)
 		);
 	}
@@ -161,7 +161,7 @@ export class ApiService {
 	}
 
 	public async deployBlueprint(blueprintFullName: string): Promise<DeploymentStatusApiResponse> {
-		return this.POST<{ fqn: string, props: any, gens: any, stream: boolean }, DeploymentStatusApiResponse>(
+		return this.post<{ fqn: string, props: any, gens: any, stream: boolean }, DeploymentStatusApiResponse>(
 			"/run/",
 			{fqn: blueprintFullName, props: {}, gens: {}, stream: false},
 			(data: any) => {
@@ -175,7 +175,7 @@ export class ApiService {
 	}
 
 	public async shutdownBlueprintInstance(accessHandle: string): Promise<{}> {
-		return this.DELETE<{ handle: string }, {}>(
+		return this.del<{ handle: string }, {}>(
 			"/run/",
 			{handle: accessHandle},
 			(data: any) => {
@@ -189,7 +189,7 @@ export class ApiService {
 	}
 
 	public async pushInput(instanceUrl: string, inputData: SlangTypeValue): Promise<SlangTypeValue> {
-		return this.POST<SlangTypeValue, SlangTypeValue>(
+		return this.post<SlangTypeValue, SlangTypeValue>(
 			instanceUrl,
 			inputData,
 			(outputData: SlangTypeValue) => outputData,

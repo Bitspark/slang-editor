@@ -33,9 +33,8 @@ export abstract class SlangNode {
 	public getIdentity(): string {
 		if (this.parent) {
 			return this.parent.getIdentity() + "." + this.id;
-		} else {
-			return "SL";
 		}
+		return "SL";
 	}
 
 	public getScopedIdentity(): string {

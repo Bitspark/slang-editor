@@ -11,9 +11,8 @@ import {Tk} from "./toolkit";
 import Button = Tk.Button;
 import {SlangSubject} from "../../custom/events";
 import RectangleSelectors = shapes.standard.RectangleSelectors;
-import {componentFactory} from "./factory";
+import {COMPONENT_FACTORY} from "./factory";
 import {PortModel} from "../../model/port";
-
 
 function createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
 	const portGroups: Array<PortGroupComponent> = [];
@@ -199,7 +198,7 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 	}
 
 	protected createShape(): BlackBoxShape {
-		const blackBoxShapeType = componentFactory.getBlackBoxShape(this.blueprint);
+		const blackBoxShapeType = COMPONENT_FACTORY.getBlackBoxShape(this.blueprint);
 		const shape = new blackBoxShapeType({
 			id: this.blueprint.getIdentity(),
 			portGroups: this.portGroups,
@@ -232,8 +231,8 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 		const operator = this.operator;
 		const blueprint = operator.getBlueprint();
 
-		if (operator.XY) {
-			this.updateXY(operator.XY);
+		if (operator.xy) {
+			this.updateXY(operator.xy);
 		}
 
 		if (this.operatorControl) {
@@ -267,7 +266,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 			.attachTo(this.shape, "tl");
 
 		this.shape.on("change:position change:size", () => {
-			operator.XY = this.shape.getBBox().center();
+			operator.xy = this.shape.getBBox().center();
 		});
 
 		this.shape.set("obstacle", true);
@@ -276,10 +275,10 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 	}
 
 	protected createShape(): BlackBoxShape {
-		const blackBoxShapeType = componentFactory.getBlackBoxShape(this.operator.getBlueprint());
+		const blackBoxShapeType = COMPONENT_FACTORY.getBlackBoxShape(this.operator.getBlueprint());
 		const shape = new blackBoxShapeType({
 			id: this.operator.getIdentity(),
-			position: this.operator.XY,
+			position: this.operator.xy,
 			portGroups: this.portGroups,
 		});
 		shape.setupForOperator(this.operator);
@@ -327,7 +326,7 @@ function constructRectAttrs(attrs: BlackBoxShapeAttrs): dia.Element.GenericAttri
 	};
 }
 
-export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", Styles.Defaults.BlackBox) {
+export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", Styles.Defaults.blackBox) {
 	public static place(paperView: PaperView, blueprint: BlueprintModel, position?: g.PlainPoint): BlackBoxShape {
 		const shape = new BlueprintBoxComponent(paperView, blueprint).getShape();
 		if (position) {
@@ -367,4 +366,3 @@ export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", 
 		this.attr("label/text", operator.getBlueprint().getShortName());
 	}
 }
-

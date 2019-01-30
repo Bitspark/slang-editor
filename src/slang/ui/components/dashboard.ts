@@ -5,8 +5,7 @@ import {Input} from "./console";
 import {PropertyAssignments} from "../../model/property";
 import {BlueprintModel} from "../../model/blueprint";
 import {isUndefined, SlangType, SlangTypeValue} from "../../custom/type";
-import {componentFactory} from "./factory";
-
+import {COMPONENT_FACTORY} from "./factory";
 
 interface DashboardAttrs {
 	operator: OperatorModel
@@ -15,7 +14,7 @@ interface DashboardAttrs {
 
 export class DashboardComponent implements ClassComponent<DashboardAttrs> {
 	view({attrs}: CVnode<DashboardAttrs>): any {
-		const dashboardModules = componentFactory.getDashboardModules(attrs.operator);
+		const dashboardModules = COMPONENT_FACTORY.getDashboardModules(attrs.operator);
 		return m("div.sl-operator-dashboard", {
 			onmousewheel: (e: WheelEvent) => {
 				e.stopPropagation();
