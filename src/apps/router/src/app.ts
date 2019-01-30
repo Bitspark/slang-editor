@@ -41,19 +41,19 @@ export class RouterApp extends SlangApp {
 
 	private subscribe(): void {
 		this.app.subscribeLoadRequested((): Promise<void> => {
-			return new Promise<void>(resolve => {
+			return new Promise<void>((resolve) => {
 				this.checkRoute();
 				resolve();
 			});
 		});
-		this.app.subscribeOpenedBlueprintChanged(blueprint => {
+		this.app.subscribeOpenedBlueprintChanged((blueprint) => {
 			if (blueprint !== null) {
 				const title = `${blueprint.getFullName()} Blueprint | Slang Studio`;
 				const url = `blueprint/${blueprint.getFullName()}`;
 				window.history.pushState({type: "blueprint", fullName: blueprint.getFullName()}, title, url);
 			}
 		});
-		this.app.subscribeOpenedLandscapeChanged(blueprint => {
+		this.app.subscribeOpenedLandscapeChanged((blueprint) => {
 			if (blueprint !== null) {
 				const title = `Blueprint Landscape | Slang Studio`;
 				const url = `/`;
@@ -69,4 +69,3 @@ export class RouterApp extends SlangApp {
 		});
 	}
 }
-

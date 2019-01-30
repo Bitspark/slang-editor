@@ -1,0 +1,16 @@
+{
+	"extends": "tslint:recommended",
+	"rules": {
+		"linebreak-style": false,
+		"no-parameter-reassignment": false,
+		"max-classes-per-file": false,
+		"indent": [true, "tabs", 2],
+		"no-console": [true, "log", "warn"],
+		"no-empty": [true, "allow-empty-functions"]
+	},
+	"linterOptions": {
+		"exclude": [
+			"src/slang/ui/link/*"
+		]
+	}
+}

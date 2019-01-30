@@ -1,7 +1,7 @@
 import {SlangApp} from "../../../slang/app";
 import {ApiService} from "../../../slang/custom/api";
-import {AppModel} from "../../../slang/model/app";
 import {SlangTypeValue} from "../../../slang/custom/type";
+import {AppModel} from "../../../slang/model/app";
 import {BlueprintInstance, BlueprintModel} from "../../../slang/model/blueprint";
 import {ComponentFactory} from "../../../slang/ui/components/factory";
 
@@ -14,7 +14,7 @@ export class DeploymentApp extends SlangApp {
 	}
 
 	protected onReady(): void {
-		this.app.subscribeOpenedBlueprintChanged(blueprint => {
+		this.app.subscribeOpenedBlueprintChanged((blueprint) => {
 			if (blueprint !== null) {
 				blueprint.subscribeDeploymentRequested(() => {
 					this.deploy(blueprint);
@@ -55,4 +55,3 @@ export class DeploymentApp extends SlangApp {
 
 	}
 }
-

@@ -1,11 +1,11 @@
 import {SlangApp} from "../../../slang/app";
+import {TypeIdentifier} from "../../../slang/custom/type";
 import {AppModel} from "../../../slang/model/app";
-import {ComponentFactory} from "../../../slang/ui/components/factory";
+import {BlueprintModel} from "../../../slang/model/blueprint";
 import {LandscapeModel} from "../../../slang/model/landscape";
 import {OperatorModel} from "../../../slang/model/operator";
 import {BlackBoxShape, BlackBoxShapeAttrs} from "../../../slang/ui/components/blackbox";
-import {BlueprintModel} from "../../../slang/model/blueprint";
-import {TypeIdentifier} from "../../../slang/custom/type";
+import {ComponentFactory} from "../../../slang/ui/components/factory";
 
 export class OperatorDataApp extends SlangApp {
 	constructor(app: AppModel, componentFactory: ComponentFactory) {
@@ -16,7 +16,7 @@ export class OperatorDataApp extends SlangApp {
 		const landscape = this.app.getChildNode(LandscapeModel)!;
 		const blueprint = landscape.findBlueprint(blueprintName);
 		if (!blueprint) {
-			throw `unknown blueprintName "${blueprintName}"`
+			throw new Error(`unknown blueprintName "${blueprintName}"`);
 		}
 		return blueprint;
 
@@ -32,7 +32,6 @@ export class OperatorDataApp extends SlangApp {
 		this.register("slang.data.Convert", ConvertBlackBoxShape);
 	}
 }
-
 
 class DataBlackBoxShape extends BlackBoxShape {
 	constructor(attrs: BlackBoxShapeAttrs) {
@@ -55,7 +54,7 @@ class ValueBlackBoxShape extends DataBlackBoxShape {
 
 		this.attr("label/text",
 			label.length <= maxLength ? label :
-				`${label.substr(0, maxLength - 2)}...`
+				`${label.substr(0, maxLength - 2)}...`,
 		);
 	}
 }
@@ -70,7 +69,7 @@ class EvalBlackBoxShape extends DataBlackBoxShape {
 
 		this.attr("label/text",
 			label.length <= maxLength ? label :
-				`${label.substr(0, maxLength - 2)}...`
+				`${label.substr(0, maxLength - 2)}...`,
 		);
 	}
 }
@@ -97,42 +96,3 @@ class ConvertBlackBoxShape extends DataBlackBoxShape {
 		}
 	}
 }
-
-/*
-class DashboardModule implements DashboardModuleComponent {
-	private chosenType?: SlangType;
-
-	private supportedTypes = new Map<string, SlangType>([
-		["number", SlangType.Number()],
-		["text", SlangType.String()],
-		["boolean", SlangType.Boolean()],
-	]);
-
-	oninit({attrs}: CVnode<DashboardModuleAttrs>): any {
-	}
-
-
-	view({attrs}: CVnode<DashboardModuleAttrs>): any {
-		return [
-			m(SelectInput, {
-				class: "",
-				label: "Type",
-				options: Array.from(this.supportedTypes.keys()),
-				onInput: (v: string) => {
-					this.chosenType = this.supportedTypes.get(v)!;
-				}
-			}),
-
-			this.chosenType ?
-				m(ConsoleEntry, {
-					label: "Value", class: "",
-					type: this.chosenType,
-					initValue: undefined,
-					onInput: (v: any) => {
-						console.log(">>>>", v);
-					}
-				}) : undefined
-		];
-	}
-}
-*/

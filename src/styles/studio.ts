@@ -81,11 +81,11 @@ export namespace Styles {
 
 	export class Defaults {
 		public static BlackBox = {
-			size: Styles.BlackBox.size,
+			size: BlackBox.size,
 			attrs: {
 				body: {
-					rx: Styles.BlackBox.rx,
-					ry: Styles.BlackBox.ry,
+					rx: BlackBox.rx,
+					ry: BlackBox.ry,
 					class: "sl-rectangle",
 				},
 				label: {
@@ -101,11 +101,11 @@ export namespace Styles {
 					class: "joint-cell joint-element sl-outer",
 				},
 				body: {
-					rx: Styles.Outer.rx,
-					ry: Styles.Outer.ry,
 					class: "sl-rectangle",
+					filter: Outer.filter,
 					cursor: "default",
-					filter: Styles.Outer.filter,
+					rx: Outer.rx,
+					ry: Outer.ry,
 				},
 			},
 		};
