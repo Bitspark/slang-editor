@@ -21,7 +21,6 @@ export abstract class PaperView extends View {
 		super(frame);
 		this.paper = this.createPaper();
 		this.redirectPaperEvents();
-		this.catchPaperEvents();
 	}
 
 	protected reset() {
@@ -77,7 +76,6 @@ export abstract class PaperView extends View {
 	}
 
 	protected handleMouseWheel(evt: MouseWheelEvent, x: number, y: number): boolean {
-		evt.preventDefault();
 		switch (this.userInputMode) {
 			case "scroll":
 				this.scroll(-evt.deltaX, -evt.deltaY);
@@ -108,7 +106,10 @@ export abstract class PaperView extends View {
 		const that = this;
 
 		document.addEventListener("keydown", (event: KeyboardEvent) => {
-			return this.setUserInputMode(event)
+			event.preventDefault();
+			if (!this.setUserInputMode(event)) {
+				event.stopPropagation();
+			}
 		});
 
 		document.addEventListener("keyup", (event: KeyboardEvent) => {
@@ -116,11 +117,17 @@ export abstract class PaperView extends View {
 		});
 
 		paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, x: number, y: number) => {
-			that.handleMouseWheel(originalEvent as MouseWheelEvent, x, y);
+			originalEvent.preventDefault();
+			if (!that.handleMouseWheel(originalEvent as MouseWheelEvent, x, y)) {
+				originalEvent.stopPropagation();
+			}
 		});
 
 		paper.on("cell:mousewheel", function (cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, x: number, y: number, delta: number) {
-			that.handleMouseWheel(originalEvent as MouseWheelEvent, x, y);
+			originalEvent.preventDefault();
+			if (!that.handleMouseWheel(originalEvent as MouseWheelEvent, x, y)) {
+				originalEvent.stopPropagation();
+			}
 		});
 
 		["mousewheel"].forEach(eventName => {
@@ -200,24 +207,22 @@ export abstract class PaperView extends View {
 		};
 
 		const doPanning = function (x: number, y: number) {
-			if (panning) {
+			if (panning && that.userInputMode == "zoom/pan") {
 				paper.translate(x - startX, y - startY);
 				that.positionChanged.next();
 			}
 		};
 
 		paper.on("blank:pointerdown", function (evt: Event, x: number, y: number) {
+			evt.preventDefault();
 			if (that.userInputMode == "zoom/pan") {
-				evt.preventDefault();
 				startPanning(x, y);
-				return false;
 			}
 		});
 		paper.on("cell:pointerdown", function (cellView: dia.CellView, evt: Event, x: number, y: number) {
+			evt.preventDefault();
 			if (that.userInputMode == "zoom/pan") {
-				evt.preventDefault();
 				startPanning(x, y);
-				return false;
 			}
 		});
 		paper.on("blank:pointerup", function (evt: Event, x: number, y: number) {
@@ -231,15 +236,6 @@ export abstract class PaperView extends View {
 		});
 	}
 
-	protected catchPaperEvents() {
-		const paper = this.paper;
-		paper.on("blank:mousewheel", function (evt: Event, x: number, y: number, delta: number) {
-			evt.preventDefault();
-		});
-		paper.on("cell:mousewheel", function (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) {
-			evt.preventDefault();
-		});
-	}
 
 	protected getWidth(): number {
 		return this.paper.getArea().width;
