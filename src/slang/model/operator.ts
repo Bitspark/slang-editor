@@ -12,7 +12,7 @@ import {XY} from "../ui/components/base";
 export type OperatorModelArgs = {
 	name: string,
 	blueprint: BlueprintModel,
-	geometry?: Geometry,
+	geometry?: OperatorGeometry,
 	properties?: undefined,
 	generics?: undefined,
 } | {
@@ -20,10 +20,10 @@ export type OperatorModelArgs = {
 	blueprint: BlueprintModel,
 	properties: PropertyAssignments,
 	generics: GenericSpecifications,
-	geometry?: Geometry,
+	geometry?: OperatorGeometry,
 }
 
-export interface Geometry {
+export interface OperatorGeometry {
 	position: XY
 }
 
@@ -36,7 +36,7 @@ export class OperatorModel extends BlackBox {
 
 	private readonly name: string;
 	private readonly blueprint: BlueprintModel;
-	private geometry: Geometry | undefined;
+	private geometry: OperatorGeometry | undefined;
 	private properties: PropertyAssignments;
 	private readonly generics: GenericSpecifications;
 
@@ -104,7 +104,7 @@ export class OperatorModel extends BlackBox {
 		return this.blueprint.hasProperties();
 	}
 
-	public getGeometry(): Geometry | undefined {
+	public getGeometry(): OperatorGeometry | undefined {
 		return this.geometry;
 	}
 

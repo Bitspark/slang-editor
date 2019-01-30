@@ -1,5 +1,5 @@
 import {SlangTypeValue} from "./type";
-import {Geometry} from "../model/operator";
+import {OperatorGeometry} from "../model/operator";
 
 export interface TypeDefApiResponse {
 	type: "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic"
@@ -10,10 +10,20 @@ export interface TypeDefApiResponse {
 	generic?: string
 }
 
+export interface PortGroupsApiResponse {
+	[portGroupName: string]: PortGroupApiResponse
+}
+
 export interface PortGroupApiResponse {
-	[portGroupName: string]: {
-		in: TypeDefApiResponse,
-		out: TypeDefApiResponse,
+	in: TypeDefApiResponse,
+	out: TypeDefApiResponse,
+	geometry?: {
+		in: {
+			position: number
+		}
+		out: {
+			position: number
+		}
 	}
 }
 
@@ -36,7 +46,7 @@ export interface DeploymentStatusApiResponse {
 
 export interface OperatorApiResponse {
 	operator: string
-	geometry?: Geometry
+	geometry?: OperatorGeometry
 	properties: PropertyAssignmentsApiResponse
 	generics: GenericSpecificationsApiResponse
 }
@@ -46,9 +56,15 @@ export interface BlueprintDefApiResponse {
 		[operatorName: string]: OperatorApiResponse
 	}
 	properties?: PropertyApiResponse
-	services?: PortGroupApiResponse
-	delegates?: PortGroupApiResponse
+	services?: PortGroupsApiResponse
+	delegates?: PortGroupsApiResponse
 	connections?: ConnectionsApiResponse
+	geometry?: {
+		size: {
+			width: number
+			height: number
+		}
+	}
 }
 
 export interface ConnectionsApiResponse {

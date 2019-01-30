@@ -7,6 +7,10 @@ import {SlangSubject} from "../../custom/events";
 
 export class IsolatedBlueprintPortComponent {
 
+	public static size = {
+		width: 100, height: 100
+	};
+
 	private readonly portGroup: PortGroupComponent;
 	private readonly rectangle: shapes.standard.Rectangle;
 
@@ -21,7 +25,7 @@ export class IsolatedBlueprintPortComponent {
 
 		this.rectangle = new shapes.standard.Rectangle({
 			id: identity,
-			size: {width: 100, height: 100},
+			size: IsolatedBlueprintPortComponent.size,
 			attrs: {
 				root: {
 					class: "joint-cell joint-element sl-blueprint-port",
@@ -43,14 +47,14 @@ export class IsolatedBlueprintPortComponent {
 
 		const parentPort = port;
 		this.rectangle.on("port:mouseover",
-			(cellView: dia.CellView, event: MouseEvent, x: number, y:number, portId: string) => {
+			(cellView: dia.CellView, event: MouseEvent, x: number, y: number, portId: string) => {
 				const port = parentPort.findNodeById(portId);
 				if (port) {
 					this.portMouseEntered.next({port: port as PortModel, x, y});
 				}
 			});
 		this.rectangle.on("port:mouseout",
-			(cellView: dia.CellView, event: MouseEvent, x: number, y:number, portId: string) => {
+			(cellView: dia.CellView, event: MouseEvent, x: number, y: number, portId: string) => {
 				const port = parentPort.findNodeById(portId);
 				if (port) {
 					this.portMouseLeft.next({port: port as PortModel, x, y});

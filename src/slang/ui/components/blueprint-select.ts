@@ -4,7 +4,7 @@ import {LandscapeModel} from "../../model/landscape";
 import {BlueprintModel} from "../../model/blueprint";
 import {ClassComponent, CVnode} from "mithril";
 import {BlueprintView} from "../views/blueprint";
-import {Geometry} from "../../model/operator";
+import {OperatorGeometry} from "../../model/operator";
 import {AttachableComponent, CellComponent, XY} from "./base";
 import {MithrilKeyboardEvent, MithrilMouseEvent, Tk} from "./toolkit";
 import ListHead = Tk.ListHead;
@@ -149,7 +149,7 @@ export class BlueprintSelectComponent extends CellComponent {
 					},
 					onSelect: (bp: BlueprintModel) => {
 						const position = this.shape.getBBox().center();
-						const geo: Geometry = {position};
+						const geo: OperatorGeometry = {position};
 						this.blueprint.createBlankOperator(bp, geo);
 						this.destroy();
 					},
