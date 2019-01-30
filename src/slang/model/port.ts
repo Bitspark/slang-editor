@@ -544,6 +544,11 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		const specifications = generics.specifications;
 		const identifier = generics.identifier;
 
+		if (this.typeIdentifier === TypeIdentifier.Unspecified) {
+			// TODO: Replace this legacy solution once all specifications are ensured to be maps
+			this.typeIdentifier = TypeIdentifier.Map;
+		}
+		
 		if (this.typeIdentifier !== TypeIdentifier.Map) {
 			// TODO: Replace this legacy solution once all specifications are ensured to be maps
 			specifications.specify(identifier, other.getType());
