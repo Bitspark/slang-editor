@@ -110,7 +110,6 @@ export abstract class BlackBoxComponent extends CellComponent {
 			});
 	}
 
-
 	public refresh(): void {
 		this.portGroups = this.createPortGroups();
 		if (this.shape) {

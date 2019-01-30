@@ -184,7 +184,7 @@ export class BlueprintView extends PaperView {
 		genSpeci.specify("valueType", portDst.getType());
 		const propAssigns = new PropertyAssignments(Array.from(valueBlueprint.getProperties()), genSpeci);
 
-		const valueOperator = this.blueprint.createOperator(null, valueBlueprint, propAssigns, genSpeci, {xy});
+		const valueOperator = this.blueprint.createOperator(null, valueBlueprint, propAssigns, genSpeci, {position: xy});
 		valueOperator.getPortOut()!.connect(portDst);
 	}
 

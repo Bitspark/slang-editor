@@ -12,7 +12,7 @@ import {XY} from "../ui/components/base";
 export type OperatorModelArgs = {
 	name: string,
 	blueprint: BlueprintModel,
-	geometry?: Geometry,
+	geometry?: OperatorGeometry,
 	properties?: undefined,
 	generics?: undefined,
 } | {
@@ -20,11 +20,11 @@ export type OperatorModelArgs = {
 	blueprint: BlueprintModel,
 	properties: PropertyAssignments,
 	generics: GenericSpecifications,
-	geometry?: Geometry,
+	geometry?: OperatorGeometry,
 }
 
-export interface Geometry {
-	xy: XY
+export interface OperatorGeometry {
+	position: XY
 }
 
 export class OperatorModel extends BlackBox {
@@ -36,7 +36,7 @@ export class OperatorModel extends BlackBox {
 
 	private readonly name: string;
 	private readonly blueprint: BlueprintModel;
-	private geometry: Geometry | undefined;
+	private geometry: OperatorGeometry | undefined;
 	private properties: PropertyAssignments;
 	private readonly generics: GenericSpecifications;
 
@@ -102,6 +102,10 @@ export class OperatorModel extends BlackBox {
 
 	public hasProperties(): boolean {
 		return this.blueprint.hasProperties();
+	}
+
+	public getGeometry(): OperatorGeometry | undefined {
+		return this.geometry;
 	}
 
 	public getPropertyAssignment(property: string | PropertyModel): PropertyAssignment {
@@ -176,16 +180,16 @@ export class OperatorModel extends BlackBox {
 
 	public get XY(): XY | undefined {
 		if (this.geometry) {
-			return this.geometry.xy;
+			return this.geometry.position;
 		}
 	}
 
 	public set XY(xy: XY | undefined) {
 		if (xy) {
 			if (!this.geometry) {
-				this.geometry = {xy}
+				this.geometry = {position: xy}
 			} else {
-				this.geometry.xy = xy;
+				this.geometry.position = xy;
 			}
 		}
 	}
