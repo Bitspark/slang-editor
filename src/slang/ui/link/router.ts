@@ -67,7 +67,9 @@ const config = {
 
 		opt.previousDirectionAngle = directionAngle;
 
-		if (point) route.push(point.round());
+		if (point) {
+			route.push(point.round());
+		}
 		route.push(to);
 
 		return route;
@@ -246,15 +248,13 @@ class SortedSet {
 	public items: any;
 	public hash: any;
 	public values: any;
-	public OPEN: any;
-	public CLOSE: any;
+	public static readonly OPEN = 1;
+	public static readonly CLOSE = 2;
 
 	constructor() {
 		this.items = [];
 		this.hash = {};
 		this.values = {};
-		this.OPEN = 1;
-		this.CLOSE = 2;
 	}
 
 	public add(item: any, value: any) {
@@ -262,7 +262,7 @@ class SortedSet {
 			// item removal
 			this.items.splice(this.items.indexOf(item), 1);
 		} else {
-			this.hash[item] = this.OPEN;
+			this.hash[item] = SortedSet.OPEN;
 		}
 
 		this.values[item] = value;
@@ -275,15 +275,15 @@ class SortedSet {
 	};
 
 	public remove(item: any) {
-		this.hash[item] = this.CLOSE;
+		this.hash[item] = SortedSet.CLOSE;
 	};
 
 	public isOpen(item: any) {
-		return this.hash[item] === this.OPEN;
+		return this.hash[item] === SortedSet.OPEN;
 	};
 
 	public isClose(item: any) {
-		return this.hash[item] === this.CLOSE;
+		return this.hash[item] === SortedSet.CLOSE;
 	};
 
 	public isEmpty() {
@@ -303,7 +303,9 @@ class SortedSet {
 function getSourceBBox(linkView: any, opt: any) {
 
 	// expand by padding box
-	if (opt && opt.paddingBox) return linkView.sourceBBox.clone().moveAndExpand(opt.paddingBox);
+	if (opt && opt.paddingBox) {
+		return linkView.sourceBBox.clone().moveAndExpand(opt.paddingBox);
+	}
 
 	return linkView.sourceBBox.clone();
 }
@@ -312,7 +314,9 @@ function getSourceBBox(linkView: any, opt: any) {
 function getTargetBBox(linkView: any, opt: any) {
 
 	// expand by padding box
-	if (opt && opt.paddingBox) return linkView.targetBBox.clone().moveAndExpand(opt.paddingBox);
+	if (opt && opt.paddingBox) {
+		return linkView.targetBBox.clone().moveAndExpand(opt.paddingBox);
+	}
 
 	return linkView.targetBBox.clone();
 }
@@ -320,7 +324,9 @@ function getTargetBBox(linkView: any, opt: any) {
 // return source anchor
 function getSourceAnchor(linkView: any, opt: any) {
 
-	if (linkView.sourceAnchor) return linkView.sourceAnchor;
+	if (linkView.sourceAnchor) {
+		return linkView.sourceAnchor;
+	}
 
 	// fallback: center of bbox
 	let sourceBBox = getSourceBBox(linkView, opt);
@@ -330,7 +336,9 @@ function getSourceAnchor(linkView: any, opt: any) {
 // return target anchor
 function getTargetAnchor(linkView: any, opt: any) {
 
-	if (linkView.targetAnchor) return linkView.targetAnchor;
+	if (linkView.targetAnchor) {
+		return linkView.targetAnchor;
+	}
 
 	// fallback: center of bbox
 	let targetBBox = getTargetBBox(linkView, opt);
@@ -401,13 +409,17 @@ function getGrid(step: any, source: any, target: any) {
 function getGridDimension(diff: any, step: any) {
 
 	// return step if diff = 0
-	if (!diff) return step;
+	if (!diff) {
+		return step;
+	}
 
 	let absDiff = Math.abs(diff);
 	let numSteps = Math.round(absDiff / step);
 
 	// return absDiff if less than one step apart
-	if (!numSteps) return absDiff;
+	if (!numSteps) {
+		return absDiff;
+	}
 
 	// otherwise, return corrected step
 	let roundedDiff = numSteps * step;
@@ -431,7 +443,9 @@ function snapToGrid(point: any, grid: any) {
 // round the point to opt.precision
 function round(point: any, opt: any) {
 
-	if (!point) return point;
+	if (!point) {
+		return point;
+	}
 
 	return point.round(opt.precision);
 }
@@ -497,7 +511,9 @@ function estimateCost(from: any, endPoints: any) {
 
 	for (let i = 0, len = endPoints.length; i < len; i++) {
 		let cost = from.manhattanDistance(endPoints[i]);
-		if (cost < min) min = cost;
+		if (cost < min) {
+			min = cost;
+		}
 	}
 
 	return min;
@@ -563,7 +579,9 @@ function getRectPoints(anchor: any, bbox: any, directionList: any, grid: any, op
 	}, []);
 
 	// if anchor lies outside of bbox, add it to the array of points
-	if (!bbox.containsPoint(snappedAnchor)) rectPoints.push(snappedAnchor);
+	if (!bbox.containsPoint(snappedAnchor)) {
+		rectPoints.push(snappedAnchor);
+	}
 
 	return rectPoints;
 }
@@ -673,10 +691,19 @@ function findRoute(this: any, from: any, to: any, map: any, opt: any) {
 			let isStart = currentPoint.equals(start); // (is source anchor or `from` point) = can leave in any direction
 
 			let previousDirectionAngle;
-			if (!isRouteBeginning) previousDirectionAngle = getDirectionAngle(currentParent, currentPoint, numDirections, grid, opt); // a vertex on the route
-			else if (!isPathBeginning) previousDirectionAngle = previousRouteDirectionAngle; // beginning of route on the path
-			else if (!isStart) previousDirectionAngle = getDirectionAngle(start, currentPoint, numDirections, grid, opt); // beginning of path, start rect point
-			else previousDirectionAngle = null; // beginning of path, source anchor or `from` point
+			if (!isRouteBeginning) {
+				// a vertex on the route
+				previousDirectionAngle = getDirectionAngle(currentParent, currentPoint, numDirections, grid, opt);
+			} else if (!isPathBeginning) {
+				// beginning of route on the path
+				previousDirectionAngle = previousRouteDirectionAngle;
+			} else if (!isStart) {
+				// beginning of path, start rect point
+				previousDirectionAngle = getDirectionAngle(start, currentPoint, numDirections, grid, opt);
+			} else {
+				// beginning of path, source anchor or `from` point
+				previousDirectionAngle = null;
+			}
 
 			// check if we reached any endpoint
 			if (endPointsKeys.indexOf(currentKey) >= 0) {
@@ -693,13 +720,17 @@ function findRoute(this: any, from: any, to: any, map: any, opt: any) {
 
 				// if the direction changed rapidly, don't use this point
 				// any direction is allowed for starting points
-				if (!(isPathBeginning && isStart) && directionChange > opt.maxAllowedDirectionChange) continue;
+				if (!(isPathBeginning && isStart) && directionChange > opt.maxAllowedDirectionChange) {
+					continue;
+				}
 
 				let neighborPoint = currentPoint.clone().offset(direction.gridOffsetX, direction.gridOffsetY);
 				let neighborKey = getKey(neighborPoint);
 
 				// Closed points from the openSet were already evaluated.
-				if (openSet.isClose(neighborKey) || !map.isPointAccessible(neighborPoint)) continue;
+				if (openSet.isClose(neighborKey) || !map.isPointAccessible(neighborPoint)) {
+					continue;
+				}
 
 				// We can only enter end points at an acceptable angle.
 				if (endPointsKeys.indexOf(neighborKey) >= 0) { // neighbor is an end point
@@ -711,7 +742,9 @@ function findRoute(this: any, from: any, to: any, map: any, opt: any) {
 						let endDirectionAngle = getDirectionAngle(neighborPoint, end, numDirections, grid, opt);
 						let endDirectionChange = getDirectionChange(directionAngle, endDirectionAngle);
 
-						if (endDirectionChange > opt.maxAllowedDirectionChange) continue;
+						if (endDirectionChange > opt.maxAllowedDirectionChange) {
+							continue;
+						}
 					}
 				}
 
@@ -817,7 +850,9 @@ function router(vertices: any, opt: any, linkView: any) {
 		let leadPoint = partialRoute[0];
 
 		// remove the first point if the previous partial route had the same point as last
-		if (leadPoint && leadPoint.equals(tailPoint)) partialRoute.shift();
+		if (leadPoint && leadPoint.equals(tailPoint)) {
+			partialRoute.shift();
+		}
 
 		// save tailPoint for next iteration
 		tailPoint = partialRoute[partialRoute.length - 1] || tailPoint;

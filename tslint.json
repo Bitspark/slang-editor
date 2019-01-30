@@ -124,8 +124,5 @@
 		]
 	},
 	"linterOptions": {
-		"exclude": [
-			"src/slang/ui/link/*"
-		]
 	}
 }

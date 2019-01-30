@@ -5,7 +5,7 @@ function movePoint(p: g.PlainPoint, i: number, total: number): g.PlainPoint {
 	if (total <= 1) {
 		return p;
 	}
-	const dist = 2.0;
+	const dist = 2;
 	const move = (i - 0.5 * (total - 1)) * dist;
 	const x = Math.round(p.x + move);
 	const y = p.y;
