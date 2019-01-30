@@ -16,7 +16,11 @@ interface DashboardAttrs {
 export class DashboardComponent implements ClassComponent<DashboardAttrs> {
 	view({attrs}: CVnode<DashboardAttrs>): any {
 		const dashboardModules = componentFactory.getDashboardModules(attrs.operator);
-		return m("div.sl-operator-dashboard", dashboardModules.map((dashboardModule) => {
+		return m("div.sl-operator-dashboard", {
+			onmousewheel: (e: WheelEvent) => {
+				e.stopPropagation();
+			},
+		}, dashboardModules.map((dashboardModule) => {
 			return m(dashboardModule, {
 				operator: attrs.operator,
 				onSave: () => {

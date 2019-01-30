@@ -39,8 +39,8 @@ export namespace Tk {
 	}
 
 	export class Container implements ClassComponent<{}> {
-		view({children}: CVnode<{}>) {
-			return m(".sl-container", children);
+		view({children, attrs}: CVnode<any>) {
+			return m(".sl-container", attrs, children);
 		}
 	}
 
