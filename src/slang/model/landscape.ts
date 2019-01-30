@@ -9,7 +9,7 @@ export class LandscapeModel extends SlangNode {
 
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
 
-	constructor(parent: AppModel, args: LandscapeModelArgs) {
+	constructor(parent: AppModel, _args: LandscapeModelArgs) {
 		super(parent);
 	}
 

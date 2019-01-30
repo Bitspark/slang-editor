@@ -58,7 +58,8 @@ export const GraphValueType: ConsoleValueType<GraphType> = {
 			Plotly.plot(dom as HTMLElement, data, layout, PlotlyConfig);
 			m.redraw();
 		},
-		view({attrs}: CVnode<Output.ValueTypeAttrs<GraphType>>) {
+		
+		view({}: CVnode<Output.ValueTypeAttrs<GraphType>>): m.Children | void | null {
 			return m(".sl-graph");
 		}
 	}

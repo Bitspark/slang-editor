@@ -106,6 +106,7 @@ export abstract class SlangNode {
 				return child as T;
 			}
 		}
+		return undefined;
 	}
 
 	public getParentNode(): SlangNode | null {
@@ -153,7 +154,7 @@ export abstract class SlangNode {
 		return childNode;
 	}
 
-	public destroy<T extends SlangNode, A>() {
+	public destroy() {
 		for (const child of this.getChildNodes(SlangNode)) {
 			child.destroy();
 		}

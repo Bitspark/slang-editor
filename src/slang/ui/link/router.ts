@@ -376,7 +376,7 @@ function getDirectionChange(angle1: any, angle2: any) {
 }
 
 // fix direction offsets according to current grid
-function getGridOffsets(directions: any, grid: any, opt: any) {
+function getGridOffsets(_directions: any, grid: any, opt: any) {
 
 	let step = opt.step;
 

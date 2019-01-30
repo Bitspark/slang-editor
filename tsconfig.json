@@ -7,6 +7,12 @@
 		"jsx": "react",
 		"allowJs": true,
 		"esModuleInterop": true,
-		"moduleResolution": "node"
+		"moduleResolution": "node",
+		"removeComments": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"diagnostics": true
 	}
 }

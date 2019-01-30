@@ -4,7 +4,6 @@ import {View} from "./view";
 import {SlangSubjectTrigger} from "../../custom/events";
 import {XY} from "../components/base";
 
-
 export abstract class PaperView extends View {
 	private positionChanged = new SlangSubjectTrigger("positionChanged");
 
@@ -105,22 +104,21 @@ export abstract class PaperView extends View {
 
 	protected redirectPaperEvents() {
 		const paper = this.paper;
-		const that = this;
 
 		document.addEventListener("keydown", (event: KeyboardEvent) => {
 			return this.setUserInputMode(event)
 		});
 
-		document.addEventListener("keyup", (event: KeyboardEvent) => {
+		document.addEventListener("keyup", () => {
 			this.userInputMode = "scroll";
 		});
 
 		paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, x: number, y: number) => {
-			that.handleMouseWheel(originalEvent as MouseWheelEvent, x, y);
+			this.handleMouseWheel(originalEvent as MouseWheelEvent, x, y);
 		});
 
-		paper.on("cell:mousewheel", function (cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, x: number, y: number, delta: number) {
-			that.handleMouseWheel(originalEvent as MouseWheelEvent, x, y);
+		paper.on("cell:mousewheel", (_cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, x: number, y: number) => {
+			this.handleMouseWheel(originalEvent as MouseWheelEvent, x, y);
 		});
 
 		["mousewheel"].forEach(eventName => {
@@ -131,21 +129,21 @@ export abstract class PaperView extends View {
 			})(eventName);
 		});
 		["pointerdblclick", "pointerclick", "contextmenu", "pointerdown", "pointermove", "pointerup"].forEach(eventName => {
-			(function (eventName) {
-				paper.on("cell:" + eventName, function (cellView: dia.CellView, evt: Event, x: number, y: number) {
+			((eventName) => {
+				paper.on("cell:" + eventName, (cellView: dia.CellView, evt: Event, x: number, y: number) => {
 					cellView.model.trigger(eventName, cellView, evt, x, y);
 				});
 			})(eventName);
 		});
 		["mouseover", "mouseout", "mouseenter", "mouseleave"].forEach(eventName => {
-			(function (eventName) {
-				paper.on("cell:" + eventName, function (cellView: dia.CellView, evt: MouseEvent, x: number, y: number) {
+			((eventName) => {
+				paper.on("cell:" + eventName, (cellView: dia.CellView, evt: MouseEvent, _x: number, _y: number) => {
 					const evTarget = (evt.target as Node);
 					if (evTarget && evTarget.parentElement) {
 						const portId = evTarget.parentElement.getAttribute("port");
 						if (portId) {
 							const {clientX, clientY} = evt;
-							const {x, y} = that.toLocalXY({x: clientX, y: clientY});
+							const {x, y} = this.toLocalXY({x: clientX, y: clientY});
 							cellView.model.trigger("port:" + eventName, cellView, evt, x, y, portId);
 							return;
 						}
@@ -206,39 +204,29 @@ export abstract class PaperView extends View {
 			}
 		};
 
-		paper.on("blank:pointerdown", function (evt: Event, x: number, y: number) {
+		paper.on("blank:pointerdown", (evt: Event, x: number, y: number) => {
 			if (that.userInputMode == "zoom/pan") {
 				evt.preventDefault();
 				startPanning(x, y);
-				return false;
 			}
 		});
-		paper.on("cell:pointerdown", function (cellView: dia.CellView, evt: Event, x: number, y: number) {
+		paper.on("cell:pointerdown", (_cellView: dia.CellView, evt: Event, x: number, y: number) => {
 			if (that.userInputMode == "zoom/pan") {
 				evt.preventDefault();
 				startPanning(x, y);
-				return false;
 			}
 		});
-		paper.on("blank:pointerup", function (evt: Event, x: number, y: number) {
-			stopPanning();
-		});
-		paper.on("cell:pointerup", function (cellView: dia.CellView, evt: Event, x: number, y: number) {
-			stopPanning();
-		});
-		paper.svg.addEventListener("mousemove", function (event: any) {
+		paper.on("blank:pointerup", stopPanning);
+		paper.on("cell:pointerup", stopPanning);
+		paper.svg.addEventListener("mousemove", (event: any) => {
 			doPanning(event.offsetX, event.offsetY);
 		});
 	}
 
 	protected catchPaperEvents() {
 		const paper = this.paper;
-		paper.on("blank:mousewheel", function (evt: Event, x: number, y: number, delta: number) {
-			evt.preventDefault();
-		});
-		paper.on("cell:mousewheel", function (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) {
-			evt.preventDefault();
-		});
+		paper.on("blank:mousewheel", (evt: Event)  => evt.preventDefault());
+		paper.on("cell:mousewheel", (_cellView: dia.CellView, evt: Event) => evt.preventDefault());
 	}
 
 	protected getWidth(): number {

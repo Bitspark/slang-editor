@@ -1,6 +1,6 @@
 import m, {ClassComponent, CVnode} from "mithril";
 import {OperatorModel} from "../../model/operator";
-import {MithrilMouseEvent, Tk} from "./toolkit";
+import {Tk} from "./toolkit";
 import {Input} from "./console";
 import {PropertyAssignments} from "../../model/property";
 import {BlueprintModel} from "../../model/blueprint";
@@ -48,7 +48,7 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 		this.formData = new Map<string, { value: SlangTypeValue }>();
 	}
 
-	protected isValid(formData: Map<string, { value: SlangTypeValue }>): boolean {
+	protected isValid(_formData: Map<string, { value: SlangTypeValue }>): boolean {
 		return true;
 	}
 
@@ -78,7 +78,7 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 		return propAssigns
 	}
 
-	private renderPropertyInput(fieldName: string, fieldAttrs: { type: SlangType, initValue?: SlangTypeValue }): m.Children {
+	private renderPropertyInput(fieldName: string, _fieldAttrs: { type: SlangType, initValue?: SlangTypeValue }): m.Children {
 		const {type, initValue} = this.formBody.get(fieldName)!;
 		return m(Input.ConsoleEntry, {
 			label: fieldName, class: "",
@@ -103,7 +103,7 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 			m(Tk.Button, {
 					full: true,
 					notAllowed: !this.isValid(this.formData),
-					onClick: this.isValid ? (e: MithrilMouseEvent) => {
+					onClick: this.isValid ? () => {
 						this.operator.setPropertyAssignments(this.getFormSubmitData(this.beforeFormSubmit(this.formData)));
 						attrs.onSave();
 					} : undefined

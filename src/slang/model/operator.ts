@@ -5,7 +5,6 @@ import {BlackBox} from "../custom/nodes";
 import {Connections} from "../custom/connections";
 import {SlangBehaviorSubject, SlangSubjectTrigger} from "../custom/events";
 import {PropertyAssignment, PropertyAssignments, PropertyModel} from "./property";
-import {TypeIdentifier} from "../custom/type";
 import {GenericSpecifications} from "../custom/generics";
 import {XY} from "../ui/components/base";
 
@@ -182,6 +181,7 @@ export class OperatorModel extends BlackBox {
 		if (this.geometry) {
 			return this.geometry.position;
 		}
+		return undefined;
 	}
 
 	public set XY(xy: XY | undefined) {

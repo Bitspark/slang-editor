@@ -1,6 +1,6 @@
 import {OperatorGeometry, OperatorModel} from "./operator";
 import {BlueprintPortModel, PortDirection, PortModel, PortModelArgs} from "./port";
-import {BlueprintDelegateModel, BlueprintDelegateModelArgs, OperatorDelegateModel} from "./delegate";
+import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
 import {SlangParsing} from "../custom/parsing";
 import {PropertyEvaluator} from "../custom/utils";
 import {BlackBox} from "../custom/nodes";

@@ -29,7 +29,7 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 	menuSliceEndIdx: number = 0;
 
 	// Note that class methods cannot infer parameter types
-	oninit({attrs}: CVnode<Attrs>) {
+	oninit({}: CVnode<Attrs>) {
 	}
 
 	setMenuSlice(menuTotalSize: number) {
@@ -109,13 +109,11 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 								e.redraw = false;
 								attrs.onSelect(blueprint);
 							},
-							onMouseEnter: (e: MithrilMouseEvent) => {
+							onMouseEnter: () => {
 								this.activeMenuItemIdx = i + this.menuSliceStartIdx;
 								attrs.onHover(blueprint);
 							},
-							onMouseLeave: (e: MithrilMouseEvent) => {
-								attrs.onHover(undefined);
-							}
+							onMouseLeave: () => attrs.onHover(undefined),
 						},
 						m(".sl-blupr-title", blueprint.getFullName()));
 				})
@@ -198,7 +196,7 @@ export class BlueprintSelectComponent extends CellComponent {
 		return blueprints;
 	}
 
-	private placeGhostRect({x, y}: XY, blueprint?: BlueprintModel): BlackBoxShape {
+	private placeGhostRect({}: XY, blueprint?: BlueprintModel): BlackBoxShape {
 		if (this.shape) {
 			this.shape.remove();
 		}

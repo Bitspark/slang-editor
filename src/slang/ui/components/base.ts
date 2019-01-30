@@ -166,7 +166,7 @@ abstract class HtmlComponent extends Component {
 }
 
 export class AttachableComponent extends HtmlComponent {
-	public constructor(paperView: PaperView, private offset: Position) {
+	public constructor(paperView: PaperView, offset: Position) {
 		super(paperView, offset);
 	}
 

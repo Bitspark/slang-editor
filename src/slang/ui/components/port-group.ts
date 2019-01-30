@@ -4,7 +4,6 @@ import {PortModel} from "../../model/port";
 import {TypeIdentifier} from "../../custom/type";
 import {Styles} from "../../../styles/studio";
 import {OperatorModel} from "../../model/operator";
-import {PaperView} from "../views/paper-view";
 
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";
 
@@ -52,7 +51,6 @@ export class PortGroupComponent {
 	private portGroupElement: dia.Element.PortGroup = {};
 
 	constructor(
-		private readonly paperView: PaperView,
 		private readonly name: string,
 		private readonly port: PortModel,
 		private readonly groupPosition: PortGroupPosition,
@@ -109,8 +107,8 @@ export class PortGroupComponent {
 	// STATIC:
 
 	public static layoutFunction(portComponents: Array<PortComponent>, position: PortGroupPosition, offset: number, space: number): (ports: Array<any>, elBBox: g.Rect, opt: any) => Array<g.Point> {
-		return function (ports: Array<PortComponent>, elBBox: g.Rect, opt: any): Array<g.Point> {
-			return ports.map((port: PortComponent, index: number, ports: Array<any>) => {
+		return function (ports: Array<PortComponent>, elBBox: g.Rect): Array<g.Point> {
+			return ports.map((_port: PortComponent, index: number, ports: Array<any>) => {
 				const count = ports.length;
 
 				let total = 0;

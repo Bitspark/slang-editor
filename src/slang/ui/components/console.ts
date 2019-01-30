@@ -1,7 +1,7 @@
 import m, {ClassComponent, CVnode} from "mithril";
 
 import {SlangType, SlangTypeDef, SlangTypeValue, TypeIdentifier} from "../../custom/type";
-import {MithrilMouseEvent, Tk} from "./toolkit";
+import {Tk} from "./toolkit";
 import {BinaryValueType} from "./console/binary";
 import {FileValueType, ImageValueType} from "./console/file";
 import {GraphValueType} from "./console/graph";
@@ -29,6 +29,7 @@ export class ConsoleValueTypeManager {
 		if (foundInpComps.length) {
 			return foundInpComps[0].input;
 		}
+		return undefined;
 	}
 
 	public static findOutput(type: SlangType): Output.ValueType<any> | undefined {
@@ -37,6 +38,7 @@ export class ConsoleValueTypeManager {
 		if (foundOutComps.length) {
 			return foundOutComps[0].output;
 		}
+		return undefined;
 	}
 }
 
@@ -52,13 +54,11 @@ export namespace Input {
 		type: SlangType
 	}
 
-	export class ConsoleEntry<T> implements ClassComponent<ConsoleEntryAttrs> {
+	export class ConsoleEntry implements ClassComponent<ConsoleEntryAttrs> {
 		private type: SlangType | undefined;
-		private initValue: SlangTypeValue | undefined;
 
 		oninit({attrs}: CVnode<ConsoleEntryAttrs>) {
 			this.type = attrs.type;
-			this.initValue = attrs.initValue;
 		}
 
 		private getInputComponent(attrs: ConsoleEntryAttrs): any {
@@ -223,10 +223,10 @@ export namespace Output {
 	}
 
 	export abstract class ValueType<T> implements ClassComponent<ValueTypeAttrs<T>> {
-		oncreate?(vnode: m.CVnodeDOM<ValueTypeAttrs<T>>): any {
+		oncreate?(_vnode: m.CVnodeDOM<ValueTypeAttrs<T>>): any {
 		}
 
-		onupdate?(vnode: m.CVnodeDOM<ValueTypeAttrs<T>>): any {
+		onupdate?(_vnode: m.CVnodeDOM<ValueTypeAttrs<T>>): any {
 		}
 
 		abstract view(vnode: m.CVnode<ValueTypeAttrs<T>>): m.Children | void | null;
@@ -306,7 +306,7 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 			m(Tk.Button, {
 				full: true,
 				notAllowed: !that.isValid(),
-				onClick: that.isValid ? (e: MithrilMouseEvent) => {
+				onClick: that.isValid ? () => {
 					attrs.onSubmit(that.value!);
 				} : undefined
 			}, "Push")
