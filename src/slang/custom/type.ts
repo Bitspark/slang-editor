@@ -1,6 +1,6 @@
 import {GenericSpecifications} from "./generics";
-import {PropertyAssignments} from "../model/property";
 import {PropertyEvaluator} from "./utils";
+import {PropertyAssignments} from "../model/property";
 
 export enum TypeIdentifier {
 	// Unspecified, // 0

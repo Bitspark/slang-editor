@@ -2,7 +2,6 @@ import m, {ClassComponent, CVnode} from "mithril";
 
 import {AttachableComponent, CellComponent} from "./base";
 import {Styles} from "../../../styles/studio";
-import {BlackBox} from "../../custom/nodes";
 import {dia, g, layout, shapes} from "jointjs";
 import {BlueprintInstance, BlueprintModel} from "../../model/blueprint";
 import {BlackBoxComponent, OperatorBoxComponent} from "./blackbox";
@@ -25,8 +24,7 @@ import {SlangSubject} from "../../custom/events";
 import Box = Tk.Box;
 
 export class WhiteBoxComponent extends CellComponent {
-	private static readonly padding = 120;
-	private static readonly minimumSpace = 10;
+	private static readonly padding = 60;
 
 	private clicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("clicked");
 	private dblclicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("dblclicked");
@@ -56,24 +54,24 @@ export class WhiteBoxComponent extends CellComponent {
 		this.output = this.createComponent({x: 0, y: 0, align: "t"});
 		this.subscribe();
 
-		const size = {
-			width: WhiteBoxComponent.padding * 2 + WhiteBoxComponent.minimumSpace,
-			height: WhiteBoxComponent.padding * 2 + WhiteBoxComponent.minimumSpace,
-		};
-		this.shape = new WhiteBoxComponent.Rect(this.blueprint, size);
+		this.shape = new WhiteBoxComponent.Rect(this.blueprint);
+
+		this.shape.on("change:size", () => {
+			blueprint.Size = this.shape.size();
+		});
 
 		this.shape.on("pointerclick",
-			(cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
+			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
 				this.clearPortInfos()
 				this.clicked.next({event, x, y});
 			});
 		this.shape.on("pointerdblclick",
-			(cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
+			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
 				this.dblclicked.next({event, x, y});
 			});
 
 		this.render();
-		this.autoLayout();
+		this.centerizeOuter();
 	}
 
 	private subscribe() {
@@ -246,29 +244,35 @@ export class WhiteBoxComponent extends CellComponent {
 				resizeClusters: false,
 			});
 
-		const boundingBox = this.paperView.getCellsBBox(operatorRectangles) || new g.Rect({
-			x: 0,
-			y: 0,
-			width: WhiteBoxComponent.minimumSpace,
-			height: WhiteBoxComponent.minimumSpace,
+		this.centerizeOuter();
+	}
+
+	public centerizeOuter() {
+		const operatorRectangles = this.operators.map(operatorComponent => operatorComponent.getShape());
+
+		const {width, height} = this.blueprint.Size;
+
+		const bbox = this.paperView.getCellsBBox(operatorRectangles) || new g.Rect({
+			x: -width / 2,
+			y: -height / 2,
+			width,
+			height,
 		});
 
-		this.operators.forEach(operator => {
-			operator.translate(-(boundingBox.x + boundingBox.width / 2), -(boundingBox.y + boundingBox.height / 2));
-		});
+		bbox.width = Math.max(width, bbox.width);
+		bbox.height = Math.max(height, bbox.height);
+		const [pWidth, pHeight] = [IsolatedBlueprintPortComponent.size.width, IsolatedBlueprintPortComponent.size.height];
 
-		boundingBox.x -= boundingBox.x + boundingBox.width / 2;
-		boundingBox.y -= boundingBox.y + boundingBox.height / 2;
+		bbox.x = -bbox.width / 2;
+		bbox.y = -bbox.height / 2;
 
 		// Center ports
-
-		const padding = WhiteBoxComponent.padding;
 
 		for (const port of this.ports.top) {
 			port.getShape().set({
 				position: {
-					x: boundingBox.x - 50 + boundingBox.width / 2,
-					y: boundingBox.y - 100 - padding,
+					x: this.blueprint.InPosition - pWidth / 2,
+					y: bbox.y - pHeight
 				}
 			});
 		}
@@ -276,18 +280,18 @@ export class WhiteBoxComponent extends CellComponent {
 		for (const port of this.ports.bottom) {
 			port.getShape().set({
 				position: {
-					x: boundingBox.x - 50 + boundingBox.width / 2,
-					y: boundingBox.y + boundingBox.height + padding,
+					x: this.blueprint.OutPosition - pWidth / 2,
+					y: bbox.y + bbox.height
 				}
 			});
 		}
 
-		const offset = boundingBox.y + (boundingBox.height - this.ports.right.length * 100) / 2;
+		const offset = bbox.y + (bbox.height - this.ports.right.length * pHeight) / 2;
 		this.ports.right.forEach((port, index) => {
 			port.getShape().set({
 				position: {
-					x: boundingBox.x + boundingBox.width + padding,
-					y: offset + index * 100,
+					x: bbox.x + bbox.width,
+					y: offset + index * pHeight,
 				}
 			});
 		});
@@ -303,6 +307,7 @@ export class WhiteBoxComponent extends CellComponent {
 		const padding = WhiteBoxComponent.padding;
 		const currentPosition = this.shape.get("position");
 		const currentSize = this.shape.get("size");
+		const [, pHeight] = [IsolatedBlueprintPortComponent.size.width, IsolatedBlueprintPortComponent.size.height];
 
 		let newX: number = currentPosition.x + padding;
 		let newY: number = currentPosition.y + padding;
@@ -384,7 +389,7 @@ export class WhiteBoxComponent extends CellComponent {
 				const currentPortPosition = port.get("position");
 				const targetPosition = {
 					x: currentPortPosition.x,
-					y: newPosition.y - 100,
+					y: newPosition.y - pHeight,
 				};
 				if (!animation) {
 					port.set({position: targetPosition});
@@ -433,7 +438,7 @@ export class WhiteBoxComponent extends CellComponent {
 		};
 
 		const that = this;
-		const portComponent = new IsolatedBlueprintPortComponent(this.paperView, name, id, port, invertedPosition[position]);
+		const portComponent = new IsolatedBlueprintPortComponent(name, id, port, invertedPosition[position]);
 		const portElement = portComponent.getShape();
 		this.paperView.renderCell(portElement);
 
@@ -451,6 +456,9 @@ export class WhiteBoxComponent extends CellComponent {
 					width: outerSize.width,
 					height: elementSize.height
 				});
+				portElement.on("change:position", () => {
+					that.blueprint.InPosition = portElement.getBBox().center().x;
+				});
 				break;
 			case "bottom":
 				portElement.set({position: {x: -elementSize.width / 2, y: 0}});
@@ -460,6 +468,9 @@ export class WhiteBoxComponent extends CellComponent {
 					y: outerPosition.y + outerSize.height,
 					width: outerSize.width,
 					height: elementSize.height
+				});
+				portElement.on("change:position", () => {
+					that.blueprint.OutPosition = portElement.getBBox().center().x;
 				});
 				break;
 			case "left":
@@ -509,7 +520,7 @@ export class WhiteBoxComponent extends CellComponent {
 		const that = this;
 
 		if (operator.hasProperties()) {
-			operatorComp.onClick((event: Event, x: number, y: number) => {
+			operatorComp.onClick(() => {
 				const comp = that
 					.createComponent({x: 0, y: 0, align: "c"})
 					.mount({
@@ -612,7 +623,7 @@ export interface Attrs {
 
 class PortInfo implements ClassComponent<Attrs> {
 	// Note that class methods cannot infer parameter types
-	oninit({attrs}: CVnode<Attrs>) {
+	oninit() {
 	}
 
 	view({attrs}: CVnode<Attrs>) {
@@ -643,7 +654,7 @@ export namespace WhiteBoxComponent {
 		size: Size;
 	}
 
-	function constructRectAttrs({id, cssClass, size}: BasicAttrs): dia.Element.GenericAttributes<RectangleSelectors> {
+	function constructRectAttrs({id, size}: BasicAttrs): dia.Element.GenericAttributes<RectangleSelectors> {
 		const {width, height} = size;
 		const position = {x: -width / 2, y: -height / 2};
 
@@ -661,10 +672,10 @@ export namespace WhiteBoxComponent {
 	}
 
 	export class Rect extends shapes.standard.Rectangle.define("WhiteBox", Styles.Defaults.Outer) {
-		constructor(blackBox: BlackBox, size: Size) {
+		constructor(blueprint: BlueprintModel) {
 			super(constructRectAttrs({
-				id: `${blackBox.getIdentity()}_outer`,
-				size,
+				id: `${blueprint.getIdentity()}_outer`,
+				size: blueprint.Size,
 			}) as any);
 			this.attr("draggable", false);
 			this.set("obstacle", false);

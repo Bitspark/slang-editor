@@ -1,14 +1,14 @@
 import {BehaviorSubject, Subject, Subscription} from "rxjs";
 import {SlangNode} from "./nodes";
 
-abstract class BaseSlangSubject<T> {
+abstract class BaseSlangSubject {
 
 	protected constructor(protected readonly name: string) {
 	}
 
 }
 
-export class SlangSubject<T> extends BaseSlangSubject<T> {
+export class SlangSubject<T> extends BaseSlangSubject {
 	private readonly subject = new Subject<T>();
 
 	constructor(name: string) {
@@ -30,7 +30,7 @@ export class SlangSubject<T> extends BaseSlangSubject<T> {
 	}
 }
 
-export class SlangSubjectTrigger extends BaseSlangSubject<void> {
+export class SlangSubjectTrigger extends BaseSlangSubject {
 	private readonly subject = new Subject<void>();
 
 	constructor(name: string) {
@@ -46,7 +46,7 @@ export class SlangSubjectTrigger extends BaseSlangSubject<void> {
 	}
 }
 
-export class SlangBehaviorSubject<T> extends BaseSlangSubject<T> {
+export class SlangBehaviorSubject<T> extends BaseSlangSubject {
 	private readonly subject: BehaviorSubject<T>;
 
 	constructor(name: string, initial: T) {
@@ -67,7 +67,7 @@ export class SlangBehaviorSubject<T> extends BaseSlangSubject<T> {
 	}
 }
 
-export class SlangBagSubject<T> extends BaseSlangSubject<T> {
+export class SlangBagSubject<T> extends BaseSlangSubject {
 	private readonly subjectAdded = new Subject<T>();
 	private readonly subjectRemoved = new Subject<T>();
 

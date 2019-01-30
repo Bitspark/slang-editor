@@ -1,17 +1,15 @@
 import m from "mithril";
 
-import {dia, g} from "jointjs";
+import {dia} from "jointjs";
 import {PaperView} from "../views/paper-view";
 import {Tk} from "./toolkit";
 import Container = Tk.Container;
+import {XY} from "../../model/operator";
 
 export type Alignment =
 	"tl" | "t" | "tr" |
 	"l" | "c" | "r" |
 	"bl" | "b" | "br";
-
-export interface XY extends g.PlainPoint {
-}
 
 export interface Position extends XY {
 	align: Alignment;
@@ -145,6 +143,8 @@ abstract class HtmlComponent extends Component {
 	public mount(component: m.Component): this {
 		this.unmount();
 
+		const paper = this.paperView.getPaper();
+
 		m.mount(this.htmlRoot, {
 			oncreate: () => {
 				this.draw();
@@ -153,7 +153,16 @@ abstract class HtmlComponent extends Component {
 				this.draw();
 			},
 			view: () => {
-				return m(Container, m(component));
+				return m(Container, {
+						onmousewheel: (e: WheelEvent) => {
+							e.preventDefault();
+							e.stopPropagation();
+							const {x, y} = paper.clientToLocalPoint(e.clientX, e.clientY);
+							// jointjs uses JqueryEventObjects --> paper.on expect JqueryEvents instead of standard DOM events
+							paper.trigger("blank:mousewheel", {originalEvent: e}, x, y);
+						},
+					},
+					m(component));
 			}
 		});
 		return this;
@@ -166,7 +175,7 @@ abstract class HtmlComponent extends Component {
 }
 
 export class AttachableComponent extends HtmlComponent {
-	public constructor(paperView: PaperView, private offset: Position) {
+	public constructor(paperView: PaperView, offset: Position) {
 		super(paperView, offset);
 	}
 

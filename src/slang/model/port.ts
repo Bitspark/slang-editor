@@ -1,6 +1,6 @@
 import {BlueprintModel} from "./blueprint";
 import {OperatorModel} from "./operator";
-import {BlueprintDelegateModel, DelegateModel, GenericDelegateModel, OperatorDelegateModel} from "./delegate";
+import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
 import {BlackBox, PortOwner, SlangNode} from "../custom/nodes";
 import {Connections} from "../custom/connections";
 import {SlangType, TypeIdentifier} from "../custom/type";
@@ -8,6 +8,7 @@ import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
 import {StreamPort} from "../custom/stream";
 import {canConnectTo} from "../custom/connection-check";
 import {GenericSpecifications} from "../custom/generics";
+
 import {Subscription} from "rxjs";
 
 export enum PortDirection {
@@ -398,16 +399,9 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		switch (this.typeIdentifier) {
 			case TypeIdentifier.Map:
 				const mapSubs = this.getMapSubs();
-				let noMapSubs = true;
 				for (const mapSub of mapSubs) {
 					connections.addConnections(mapSub.getConnectionsTo());
-					noMapSubs = false;
 				}
-				/*
-				if (noMapSubs) {
-					throw new Error(`map port without map sub ports`);
-				}
-				*/
 				break;
 			case TypeIdentifier.Stream:
 				const streamSub = this.getStreamSub();

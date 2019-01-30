@@ -1,14 +1,14 @@
-import {Geometry, OperatorModel} from "./operator";
+import {OperatorGeometry, OperatorModel} from "./operator";
 import {BlueprintPortModel, PortDirection, PortModel, PortModelArgs} from "./port";
-import {BlueprintDelegateModel, BlueprintDelegateModelArgs, OperatorDelegateModel} from "./delegate";
+import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
+import {PropertyAssignments, PropertyModel} from "./property";
+import {LandscapeModel} from "./landscape";
 import {SlangParsing} from "../custom/parsing";
 import {PropertyEvaluator} from "../custom/utils";
 import {BlackBox} from "../custom/nodes";
 import {SlangTypeValue, TypeIdentifier} from "../custom/type";
-import {PropertyAssignments, PropertyModel} from "./property";
 import {GenericSpecifications} from "../custom/generics";
 import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../custom/events";
-import {LandscapeModel} from "./landscape";
 import {Connections} from "../custom/connections";
 
 export enum BlueprintType {
@@ -17,7 +17,27 @@ export enum BlueprintType {
 	Library,
 }
 
-export type BlueprintModelArgs = { fullName: string, type: BlueprintType };
+export interface Size {
+	width: number
+	height: number
+}
+
+
+export interface BlueprintPortGeometry {
+	in: {
+		position: number
+	}
+	out: {
+		position: number
+	}
+}
+
+export interface BlueprintGeometry {
+	size: Size
+	port: BlueprintPortGeometry
+}
+
+export type BlueprintModelArgs = { fullName: string, type: BlueprintType, geometry?: BlueprintGeometry };
 
 export type BlueprintInstance = { handle: string, url: string };
 
@@ -35,6 +55,8 @@ export class BlueprintModel extends BlackBox {
 	private outputPushed = new SlangSubject<SlangTypeValue>("output-pushed");
 	private readonly fakeGenerics = new GenericSpecifications(["inType", "outType"]);
 
+	private readonly geometry: BlueprintGeometry;
+
 	// Properties
 	private readonly fullName: string;
 	private readonly type: BlueprintType;
@@ -44,12 +66,29 @@ export class BlueprintModel extends BlackBox {
 	private properties: Array<PropertyModel> = [];
 	private genericIdentifiers: Set<string>;
 
-	constructor(parent: LandscapeModel, {fullName, type}: BlueprintModelArgs) {
+	constructor(parent: LandscapeModel, {fullName, type, geometry}: BlueprintModelArgs) {
 		super(parent, true);
 		this.fullName = fullName;
 		this.type = type;
 		this.hierarchy = fullName.split(".");
 		this.genericIdentifiers = new Set<string>();
+
+		if (!geometry) {
+			const dfltSize = {width: 200, height: 200};
+			this.geometry = {
+				size: dfltSize,
+				port: {
+					in: {
+						position: 0,
+					},
+					out: {
+						position: 0,
+					}
+				}
+			}
+		} else {
+			this.geometry = geometry;
+		}
 	}
 
 	private static revealGenericIdentifiers(port: PortModel): Set<string> {
@@ -124,15 +163,21 @@ export class BlueprintModel extends BlackBox {
 		}
 	}
 
-	public createOperator(name: string | null, blueprint: BlueprintModel, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications, geometry?: Geometry): OperatorModel {
+	public createOperator(name: string | null, blueprint: BlueprintModel, properties: PropertyAssignments | null, generics: GenericSpecifications | null, geometry?: OperatorGeometry): OperatorModel {
 		if (!name) {
 			name = this.getRandomOperatorName(blueprint);
+		}
+		if (!generics) {
+			generics = new GenericSpecifications([]);
+		}
+		if (!properties) {
+			properties = new PropertyAssignments([], generics);
 		}
 		return this.createChildNode(OperatorModel, {
 			name,
 			blueprint,
-			properties: propAssigns,
-			generics: genSpeci,
+			properties,
+			generics,
 			geometry: geometry
 		}, operator => {
 			blueprint.instantiateOperator(operator);
@@ -145,7 +190,7 @@ export class BlueprintModel extends BlackBox {
 		return `${operatorBaseName}-${cnt + 1}`;
 	}
 
-	public createBlankOperator(blueprint: BlueprintModel, geometry: Geometry): OperatorModel {
+	public createBlankOperator(blueprint: BlueprintModel, geometry: OperatorGeometry): OperatorModel {
 		const name = this.getRandomOperatorName(blueprint);
 		return this.createChildNode(OperatorModel, {
 			name,
@@ -213,6 +258,14 @@ export class BlueprintModel extends BlackBox {
 
 	public findDelegate(name: string): BlueprintDelegateModel | undefined {
 		return this.scanChildNode(BlueprintDelegateModel, delegate => delegate.getName() === name);
+	}
+
+	public getGeometry(): BlueprintGeometry {
+		return this.geometry;
+	}
+
+	public setPortGeometry(portGeo: BlueprintPortGeometry) {
+		this.geometry.port = portGeo;
 	}
 
 	public hasProperties(): boolean {
@@ -351,6 +404,32 @@ export class BlueprintModel extends BlackBox {
 		}
 
 		return connections;
+	}
+
+	// Geometry
+
+	public get Size(): Size {
+		return this.geometry.size;
+	}
+
+	public set Size(size: Size) {
+		this.geometry.size = size;
+	}
+
+	public get InPosition(): number {
+		return this.geometry.port.in.position;
+	}
+
+	public set InPosition(pos: number) {
+		this.geometry.port.in.position = pos;
+	}
+
+	public get OutPosition(): number {
+		return this.geometry.port.out.position;
+	}
+
+	public set OutPosition(pos: number) {
+		this.geometry.port.out.position = pos;
 	}
 
 	// Actions

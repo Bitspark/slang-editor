@@ -3,8 +3,13 @@ import {View} from "./views/view";
 export class ViewFrame {
 
 	private view: View | null = null;
+	private readonly viewEl: HTMLElement;
 
 	public constructor(private readonly container: HTMLElement) {
+		this.viewEl = document.createElement("div");
+		this.viewEl.classList.add("view");
+		container.appendChild(this.viewEl);
+
 		const that = this;
 		window.addEventListener("resize", function () {
 			if (that.view) {
@@ -24,7 +29,7 @@ export class ViewFrame {
 	}
 
 	public getHTMLElement(): HTMLElement {
-		return this.container;
+		return this.viewEl;
 	}
 
 }

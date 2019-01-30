@@ -23,7 +23,7 @@ export class OperatorDataApp extends SlangApp {
 	}
 
 	protected register(blueprintName: string, ctr: typeof BlackBoxShape) {
-		this.componentFactory.registerBlackBoxShape(this.getBlueprint(blueprintName), ctr);
+		this.componentFactory!.registerBlackBoxShape(this.getBlueprint(blueprintName), ctr);
 	}
 
 	protected onReady() {

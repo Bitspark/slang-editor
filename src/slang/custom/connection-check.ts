@@ -1,7 +1,7 @@
-import {PortModel} from "../model/port";
 import {SlangType, TypeIdentifier} from "./type";
 import {containsMisplacedStreamTypeTo, StreamType} from "./stream";
 import {PortOwner} from "./nodes";
+import {PortModel} from "../model/port";
 import {OperatorDelegateModel} from "../model/delegate";
 import {OperatorModel} from "../model/operator";
 

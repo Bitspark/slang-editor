@@ -13,13 +13,11 @@ export class AppModel extends SlangNode {
 	private loadRequested = new SlangSubjectTrigger("load-requested");
 	private storeRequested = new SlangSubject<BlueprintModel>("save-requested");
 
-	private readonly name: string;
 	private readonly landscape: LandscapeModel;
 	private loading: Array<Promise<void>> = [];
 
-	public constructor({name}: AppModelArgs) {
+	public constructor({}: AppModelArgs) {
 		super(null);
-		this.name = name;
 		this.landscape = this.createChildNode(LandscapeModel, {});
 		this.subscribeLandscape(this.landscape);
 	}

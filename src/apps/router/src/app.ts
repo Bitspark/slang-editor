@@ -64,7 +64,7 @@ export class RouterApp extends SlangApp {
 
 	private addEventListeners() {
 		const that = this;
-		window.addEventListener("popstate", function (event: PopStateEvent) {
+		window.addEventListener("popstate", () => {
 			that.checkRoute();
 		});
 	}

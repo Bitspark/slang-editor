@@ -4,8 +4,8 @@ import {LandscapeModel} from "../../model/landscape";
 import {BlueprintModel} from "../../model/blueprint";
 import {ClassComponent, CVnode} from "mithril";
 import {BlueprintView} from "../views/blueprint";
-import {Geometry} from "../../model/operator";
-import {AttachableComponent, CellComponent, XY} from "./base";
+import {OperatorGeometry, XY} from "../../model/operator";
+import {AttachableComponent, CellComponent} from "./base";
 import {MithrilKeyboardEvent, MithrilMouseEvent, Tk} from "./toolkit";
 import ListHead = Tk.ListHead;
 import StringInput = Tk.StringInput;
@@ -29,7 +29,7 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 	menuSliceEndIdx: number = 0;
 
 	// Note that class methods cannot infer parameter types
-	oninit({attrs}: CVnode<Attrs>) {
+	oninit({}: CVnode<Attrs>) {
 	}
 
 	setMenuSlice(menuTotalSize: number) {
@@ -59,11 +59,13 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 
 		return m(".sl-blupr-menu", {
 				onmousewheel: (e: WheelEvent) => {
+					e.preventDefault();
 					if (e.deltaY < 0) {
 						this.activeMenuItemIdx = Math.max(0, this.activeMenuItemIdx - 1);
 					} else {
 						this.activeMenuItemIdx = Math.min(this.activeMenuItemIdx + 1, menuTotalSize - 1);
 					}
+					e.stopPropagation();
 				},
 				onkeydown: (e: MithrilKeyboardEvent) => {
 					switch (e.key) {
@@ -109,13 +111,11 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 								e.redraw = false;
 								attrs.onSelect(blueprint);
 							},
-							onMouseEnter: (e: MithrilMouseEvent) => {
+							onMouseEnter: () => {
 								this.activeMenuItemIdx = i + this.menuSliceStartIdx;
 								attrs.onHover(blueprint);
 							},
-							onMouseLeave: (e: MithrilMouseEvent) => {
-								attrs.onHover(undefined);
-							}
+							onMouseLeave: () => attrs.onHover(undefined),
 						},
 						m(".sl-blupr-title", blueprint.getFullName()));
 				})
@@ -148,8 +148,8 @@ export class BlueprintSelectComponent extends CellComponent {
 						this.destroy();
 					},
 					onSelect: (bp: BlueprintModel) => {
-						const xy = this.shape.getBBox().center();
-						const geo: Geometry = {xy};
+						const position = this.shape.getBBox().center();
+						const geo: OperatorGeometry = {position};
 						this.blueprint.createBlankOperator(bp, geo);
 						this.destroy();
 					},
@@ -198,7 +198,7 @@ export class BlueprintSelectComponent extends CellComponent {
 		return blueprints;
 	}
 
-	private placeGhostRect({x, y}: XY, blueprint?: BlueprintModel): BlackBoxShape {
+	private placeGhostRect({}: XY, blueprint?: BlueprintModel): BlackBoxShape {
 		if (this.shape) {
 			this.shape.remove();
 		}

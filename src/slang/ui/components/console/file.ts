@@ -1,5 +1,5 @@
 import m, {CVnode} from "mithril";
-import {Input, Output, ConsoleValueType} from "../console";
+import {Input, ConsoleValueType, Output} from "../console";
 import {TypeIdentifier} from "../../../custom/type";
 import {Tk} from "../toolkit";
 
@@ -66,7 +66,7 @@ export const ImageValueType: ConsoleValueType<{ image: string, name: string }> =
 	},
 
 	output: {
-		view({attrs}: CVnode<Output.ValueTypeAttrs<{ image: string, name: string }>>) {
+		view({}: CVnode<Output.ValueTypeAttrs<{ image: string, name: string }>>) {
 			return m("img");
 		}
 	}

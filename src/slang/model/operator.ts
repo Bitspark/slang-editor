@@ -1,18 +1,21 @@
 import {BlueprintModel, BlueprintType} from "./blueprint";
 import {OperatorPortModel, PortModelArgs} from "./port";
 import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
+import {PropertyAssignment, PropertyAssignments, PropertyModel} from "./property";
 import {BlackBox} from "../custom/nodes";
 import {Connections} from "../custom/connections";
 import {SlangBehaviorSubject, SlangSubjectTrigger} from "../custom/events";
-import {PropertyAssignment, PropertyAssignments, PropertyModel} from "./property";
-import {TypeIdentifier} from "../custom/type";
 import {GenericSpecifications} from "../custom/generics";
-import {XY} from "../ui/components/base";
+
+export interface XY {
+	x: number;
+	y: number;
+}
 
 export type OperatorModelArgs = {
 	name: string,
 	blueprint: BlueprintModel,
-	geometry?: Geometry,
+	geometry?: OperatorGeometry,
 	properties?: undefined,
 	generics?: undefined,
 } | {
@@ -20,11 +23,11 @@ export type OperatorModelArgs = {
 	blueprint: BlueprintModel,
 	properties: PropertyAssignments,
 	generics: GenericSpecifications,
-	geometry?: Geometry,
+	geometry?: OperatorGeometry,
 }
 
-export interface Geometry {
-	xy: XY
+export interface OperatorGeometry {
+	position: XY
 }
 
 export class OperatorModel extends BlackBox {
@@ -36,7 +39,7 @@ export class OperatorModel extends BlackBox {
 
 	private readonly name: string;
 	private readonly blueprint: BlueprintModel;
-	private geometry: Geometry | undefined;
+	private geometry: OperatorGeometry | undefined;
 	private properties: PropertyAssignments;
 	private readonly generics: GenericSpecifications;
 
@@ -104,6 +107,10 @@ export class OperatorModel extends BlackBox {
 		return this.blueprint.hasProperties();
 	}
 
+	public getGeometry(): OperatorGeometry | undefined {
+		return this.geometry;
+	}
+
 	public getPropertyAssignment(property: string | PropertyModel): PropertyAssignment {
 		return this.properties.get(property);
 	}
@@ -131,32 +138,6 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public getDisplayName(): string {
-		/*
-		if (this.properties) {
-			switch (this.blueprint.getFullName()) {
-				case "slang.data.Value":
-					const value = this.properties.get("value").getValue();
-					const display = (typeof value !== "undefined") ? JSON.stringify(value) : "value?";
-					const maxLength = 13;
-					if (display.length > maxLength) {
-						return `"${display.substr(0, maxLength - 2)}..."`;
-					} else {
-						return `"${display}"`;
-					}
-				case "slang.data.Evaluate":
-					const expression = this.properties.get("expression").getValue();
-					return expression ? expression as string : "expression?";
-				case "slang.data.Convert":
-					const portIn = this.getPortIn();
-					const portOut = this.getPortOut();
-					if (portIn && portOut) {
-						const fromType = TypeIdentifier[portIn.getTypeIdentifier()];
-						const toType = TypeIdentifier[portOut.getTypeIdentifier()];
-						return `${fromType} → ${toType}`;
-					}
-			}
-		}
-		*/
 		return this.blueprint.getDisplayName();
 	}
 
@@ -176,16 +157,17 @@ export class OperatorModel extends BlackBox {
 
 	public get XY(): XY | undefined {
 		if (this.geometry) {
-			return this.geometry.xy;
+			return this.geometry.position;
 		}
+		return undefined;
 	}
 
 	public set XY(xy: XY | undefined) {
 		if (xy) {
 			if (!this.geometry) {
-				this.geometry = {xy}
+				this.geometry = {position: xy}
 			} else {
-				this.geometry.xy = xy;
+				this.geometry.position = xy;
 			}
 		}
 	}

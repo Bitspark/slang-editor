@@ -2,7 +2,7 @@ import {dia, g, shapes, util} from "jointjs";
 import {ViewFrame} from "../frame";
 import {View} from "./view";
 import {SlangSubjectTrigger} from "../../custom/events";
-import {CellComponent, XY} from "../components/base";
+import {XY} from "../../model/operator";
 
 export abstract class PaperView extends View {
 	private positionChanged = new SlangSubjectTrigger("positionChanged");
@@ -10,11 +10,16 @@ export abstract class PaperView extends View {
 	protected readonly graph = new dia.Graph();
 	private readonly paper: dia.Paper;
 
+	private userInputMode: "scroll" | "hscroll" | "zoom/pan" = "scroll";
+
+	private scaleSpeed: number = 0.002;
+	private minScale: number = 0.35;
+	private maxScale: number = 2.5;
+
 	protected constructor(frame: ViewFrame) {
 		super(frame);
 		this.paper = this.createPaper();
 		this.redirectPaperEvents();
-		this.catchPaperEvents();
 	}
 
 	protected reset() {
@@ -33,7 +38,7 @@ export abstract class PaperView extends View {
 	}
 
 	protected createPaper(opt: dia.Paper.Options = {}): dia.Paper {
-		const container = this.getFrame().getHTMLElement();
+		const container = this.getViewElement();
 		container.innerHTML = "";
 		const inner = document.createElement("div");
 		container.appendChild(inner);
@@ -69,9 +74,60 @@ export abstract class PaperView extends View {
 		return new dia.Paper(opt);
 	}
 
+	protected handleMouseWheel(evt: MouseWheelEvent, x: number, y: number): boolean {
+		this.setUserInputMode(evt);
+
+		switch (this.userInputMode) {
+			case "scroll":
+				this.scroll(-evt.deltaX, -evt.deltaY);
+				return false;
+			case "hscroll":
+				this.scroll(-evt.deltaY, 0);
+				return false;
+			case "zoom/pan":
+				this.zoom(x, y, evt.deltaY);
+				return false;
+		}
+		return true;
+	}
+
+	protected setUserInputMode(evt: MouseEvent | KeyboardEvent) {
+		if (evt.ctrlKey || evt.metaKey) {
+			this.userInputMode = "zoom/pan";
+			return false;
+		} else if (evt.shiftKey) {
+			this.userInputMode = "hscroll";
+			return false;
+		}
+		this.userInputMode = "scroll";
+		return true;
+	}
+
 	protected redirectPaperEvents() {
 		const paper = this.paper;
-		const that = this;
+
+		document.addEventListener("keydown", (event: KeyboardEvent) => {
+			event.preventDefault();
+			this.setUserInputMode(event);
+		});
+
+		document.addEventListener("keyup", () => {
+			this.userInputMode = "scroll";
+		});
+
+		paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, x: number, y: number) => {
+			originalEvent.preventDefault();
+			if (!that.handleMouseWheel(originalEvent as MouseWheelEvent, x, y)) {
+				originalEvent.stopPropagation();
+			}
+		});
+
+		paper.on("cell:mousewheel", function (cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, x: number, y: number, delta: number) {
+			originalEvent.preventDefault();
+			if (!that.handleMouseWheel(originalEvent as MouseWheelEvent, x, y)) {
+				originalEvent.stopPropagation();
+			}
+		});
 
 		["mousewheel"].forEach(eventName => {
 			(function (eventName) {
@@ -81,21 +137,21 @@ export abstract class PaperView extends View {
 			})(eventName);
 		});
 		["pointerdblclick", "pointerclick", "contextmenu", "pointerdown", "pointermove", "pointerup"].forEach(eventName => {
-			(function (eventName) {
-				paper.on("cell:" + eventName, function (cellView: dia.CellView, evt: Event, x: number, y: number) {
+			((eventName) => {
+				paper.on("cell:" + eventName, (cellView: dia.CellView, evt: Event, x: number, y: number) => {
 					cellView.model.trigger(eventName, cellView, evt, x, y);
 				});
 			})(eventName);
 		});
 		["mouseover", "mouseout", "mouseenter", "mouseleave"].forEach(eventName => {
-			(function (eventName) {
-				paper.on("cell:" + eventName, function (cellView: dia.CellView, evt: MouseEvent, x: number, y: number) {
+			((eventName) => {
+				paper.on("cell:" + eventName, (cellView: dia.CellView, evt: MouseEvent, _x: number, _y: number) => {
 					const evTarget = (evt.target as Node);
 					if (evTarget && evTarget.parentElement) {
 						const portId = evTarget.parentElement.getAttribute("port");
 						if (portId) {
 							const {clientX, clientY} = evt;
-							const {x, y} = that.toLocalXY({x: clientX, y: clientY});
+							const {x, y} = this.toLocalXY({x: clientX, y: clientY});
 							cellView.model.trigger("port:" + eventName, cellView, evt, x, y, portId);
 							return;
 						}
@@ -106,39 +162,28 @@ export abstract class PaperView extends View {
 		});
 	}
 
-	protected addZooming(speed = 0.1, min = 0.5, max = 2.5) {
-		const that = this;
-		const paper = this.paper;
-		const zoom = function (x: number, y: number, delta: number) {
-			const scale = paper.scale();
-			const oldScale = scale.sx;
 
-			let newScale = oldScale + oldScale * delta * speed;
-			if (newScale < min) {
-				newScale = min;
-			}
-			if (newScale > max) {
-				newScale = max;
-			}
+	protected zoom(x: number, y: number, delta: number) {
+		const oldScale = this.paper.scale().sx;
+		const deltaScale = oldScale * delta * this.scaleSpeed;
+		const newScale = Math.max(this.minScale, Math.min(this.maxScale, oldScale - deltaScale));
 
-			paper.scale(newScale, newScale);
+		const translation = this.paper.translate();
+		const [px, py] = [translation.tx, translation.ty];
+		const deltaPx = x * (oldScale - newScale);
+		const deltaPy = y * (oldScale - newScale);
 
-			const translation = paper.translate();
-			const [px, py] = [translation.tx, translation.ty];
-			const deltaPx = x * (oldScale - newScale);
-			const deltaPy = y * (oldScale - newScale);
+		this.paper.scale(newScale);
+		this.paper.translate(px + deltaPx, py + deltaPy);
+		this.positionChanged.next();
+	}
 
-			paper.translate(px + deltaPx, py + deltaPy);
+	protected scroll(deltaX: number, deltaY: number) {
+		const translation = this.paper.translate();
+		const [px, py] = [translation.tx, translation.ty];
 
-			that.positionChanged.next();
-		};
-
-		paper.on("blank:mousewheel", function (evt: Event, x: number, y: number, delta: number) {
-			zoom(x, y, delta);
-		});
-		paper.on("cell:mousewheel", function (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) {
-			zoom(x, y, delta);
-		});
+		this.paper.translate(px + deltaX, py + deltaY);
+		this.positionChanged.next();
 	}
 
 	protected addPanning() {
@@ -161,38 +206,30 @@ export abstract class PaperView extends View {
 		};
 
 		const doPanning = function (x: number, y: number) {
-			if (panning) {
+			if (panning && that.userInputMode == "zoom/pan") {
 				paper.translate(x - startX, y - startY);
 				that.positionChanged.next();
 			}
 		};
 
 		paper.on("blank:pointerdown", function (evt: Event, x: number, y: number) {
-			startPanning(x, y);
-		});
-		paper.on("cell:pointerdown", function (cellView: dia.CellView, evt: Event, x: number, y: number) {
-			if (cellView.model.attr("draggable") === false) {
+			evt.preventDefault();
+
+			if (that.userInputMode == "zoom/pan") {
 				startPanning(x, y);
 			}
 		});
-		paper.on("blank:pointerup", function (evt: Event, x: number, y: number) {
-			stopPanning();
-		});
-		paper.on("cell:pointerup", function (cellView: dia.CellView, evt: Event, x: number, y: number) {
-			stopPanning();
-		});
-		paper.svg.addEventListener("mousemove", function (event: any) {
-			doPanning(event.offsetX, event.offsetY);
-		});
-	}
+		paper.on("cell:pointerdown", function (cellView: dia.CellView, evt: Event, x: number, y: number) {
+			evt.preventDefault();
 
-	protected catchPaperEvents() {
-		const paper = this.paper;
-		paper.on("blank:mousewheel", function (evt: Event, x: number, y: number, delta: number) {
-			evt.preventDefault();
+			if (that.userInputMode == "zoom/pan") {
+				startPanning(x, y);
+			}
 		});
-		paper.on("cell:mousewheel", function (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) {
-			evt.preventDefault();
+		paper.on("blank:pointerup", stopPanning);
+		paper.on("cell:pointerup", stopPanning);
+		paper.svg.addEventListener("mousemove", (event: any) => {
+			doPanning(event.offsetX, event.offsetY);
 		});
 	}
 
@@ -256,6 +293,10 @@ export abstract class PaperView extends View {
 
 	public subscribePositionChanged(cb: () => void): void {
 		this.positionChanged.subscribe(cb);
+	}
+
+	public getViewElement(): HTMLElement {
+		return this.getFrame().getHTMLElement();
 	}
 }
 
