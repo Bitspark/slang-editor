@@ -80,10 +80,10 @@ export abstract class PaperView extends View {
 		evt.preventDefault();
 		switch (this.userInputMode) {
 			case "scroll":
-				this.scroll(evt.deltaX, -evt.deltaY);
+				this.scroll(-evt.deltaX, -evt.deltaY);
 				return false;
 			case "hscroll":
-				this.scroll(evt.deltaY, 0);
+				this.scroll(-evt.deltaY, 0);
 				return false;
 			case "zoom/pan":
 				this.zoom(x, y, evt.deltaY);
@@ -160,7 +160,7 @@ export abstract class PaperView extends View {
 	protected zoom(x: number, y: number, delta: number) {
 		const oldScale = this.paper.scale().sx;
 		const deltaScale = oldScale * delta * this.scaleSpeed;
-		const newScale = Math.max(this.minScale,  Math.min(this.maxScale, oldScale - deltaScale));
+		const newScale = Math.max(this.minScale, Math.min(this.maxScale, oldScale - deltaScale));
 
 		const translation = this.paper.translate();
 		const [px, py] = [translation.tx, translation.ty];
