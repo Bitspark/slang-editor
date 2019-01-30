@@ -2,7 +2,7 @@ import {dia, g, shapes, util} from "jointjs";
 import {ViewFrame} from "../frame";
 import {View} from "./view";
 import {SlangSubjectTrigger} from "../../custom/events";
-import {XY} from "../components/base";
+import {XY} from "../../model/operator";
 
 export abstract class PaperView extends View {
 	private positionChanged = new SlangSubjectTrigger("positionChanged");
@@ -294,8 +294,6 @@ export abstract class PaperView extends View {
 	public getViewElement(): HTMLElement {
 		return this.getFrame().getHTMLElement();
 	}
-
-	//protected abstract onMouseWheel(event: MouseEvent): void;
 }
 
 (util.filter as any).innerShadow = function (args: any) {

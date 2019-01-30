@@ -1,12 +1,13 @@
-import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "./events";
 import {Subscription} from "rxjs";
+import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "./events";
 import {PortOwner} from "./nodes";
-import {ConnectionComponent} from "../ui/components/connection";
-import {GenericPortModel, PortModel} from "../model/port";
 import {SlangType, TypeIdentifier} from "./type";
+import {GenericPortModel, PortModel} from "../model/port";
 
 export class StreamType {
 
+	public static refreshActive = true;
+	
 	private static id = 0;
 
 	private readonly id = StreamType.id++;
@@ -200,10 +201,8 @@ export class StreamType {
 	}
 
 	private resetStreamTypeRoot() {
-		ConnectionComponent.refreshActive = false;
-		
+		StreamType.refreshActive = false;
 		const streamPortOwner = this.getStreamPortOwner();
-
 		if (streamPortOwner && streamPortOwner.isStreamSource()) {
 			streamPortOwner.setMarkedForReset(true);
 		}
@@ -220,7 +219,7 @@ export class StreamType {
 			streamPortOwner.propagateStreamType();
 			streamPortOwner.refreshStreamType();
 		}
-		ConnectionComponent.refreshActive = true;
+		StreamType.refreshActive = true;
 		if (streamPortOwner && streamPortOwner.isStreamSource()) {
 			streamPortOwner.refreshStreamType();
 		}

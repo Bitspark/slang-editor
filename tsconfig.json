@@ -2,7 +2,7 @@
 	"compilerOptions": {
 		"outDir": "./build/",
 		"strict": true,
-		"module": "es6",
+		"module": "commonjs",
 		"target": "es6",
 		"jsx": "react",
 		"allowJs": true,
@@ -13,6 +13,7 @@
 		"noUnusedParameters": true,
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,
-		"diagnostics": true
+		"diagnostics": true,
+		"resolveJsonModule": true
 	}
 }

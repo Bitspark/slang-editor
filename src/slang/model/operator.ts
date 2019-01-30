@@ -1,12 +1,16 @@
 import {BlueprintModel, BlueprintType} from "./blueprint";
 import {OperatorPortModel, PortModelArgs} from "./port";
 import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
+import {PropertyAssignment, PropertyAssignments, PropertyModel} from "./property";
 import {BlackBox} from "../custom/nodes";
 import {Connections} from "../custom/connections";
 import {SlangBehaviorSubject, SlangSubjectTrigger} from "../custom/events";
-import {PropertyAssignment, PropertyAssignments, PropertyModel} from "./property";
 import {GenericSpecifications} from "../custom/generics";
-import {XY} from "../ui/components/base";
+
+export interface XY {
+	x: number;
+	y: number;
+}
 
 export type OperatorModelArgs = {
 	name: string,
@@ -134,32 +138,6 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public getDisplayName(): string {
-		/*
-		if (this.properties) {
-			switch (this.blueprint.getFullName()) {
-				case "slang.data.Value":
-					const value = this.properties.get("value").getValue();
-					const display = (typeof value !== "undefined") ? JSON.stringify(value) : "value?";
-					const maxLength = 13;
-					if (display.length > maxLength) {
-						return `"${display.substr(0, maxLength - 2)}..."`;
-					} else {
-						return `"${display}"`;
-					}
-				case "slang.data.Evaluate":
-					const expression = this.properties.get("expression").getValue();
-					return expression ? expression as string : "expression?";
-				case "slang.data.Convert":
-					const portIn = this.getPortIn();
-					const portOut = this.getPortOut();
-					if (portIn && portOut) {
-						const fromType = TypeIdentifier[portIn.getTypeIdentifier()];
-						const toType = TypeIdentifier[portOut.getTypeIdentifier()];
-						return `${fromType} → ${toType}`;
-					}
-			}
-		}
-		*/
 		return this.blueprint.getDisplayName();
 	}
 

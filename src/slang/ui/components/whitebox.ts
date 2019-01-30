@@ -304,7 +304,7 @@ export class WhiteBoxComponent extends CellComponent {
 		const padding = WhiteBoxComponent.padding;
 		const currentPosition = this.shape.get("position");
 		const currentSize = this.shape.get("size");
-		const [pWidth, pHeight] = [IsolatedBlueprintPortComponent.size.width, IsolatedBlueprintPortComponent.size.height];
+		const [, pHeight] = [IsolatedBlueprintPortComponent.size.width, IsolatedBlueprintPortComponent.size.height];
 
 		let newX: number = currentPosition.x + padding;
 		let newY: number = currentPosition.y + padding;

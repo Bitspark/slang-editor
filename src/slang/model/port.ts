@@ -8,6 +8,7 @@ import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
 import {StreamPort} from "../custom/stream";
 import {canConnectTo} from "../custom/connection-check";
 import {GenericSpecifications} from "../custom/generics";
+
 import {Subscription} from "rxjs";
 
 export enum PortDirection {

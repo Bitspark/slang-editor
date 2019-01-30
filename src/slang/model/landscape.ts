@@ -1,7 +1,7 @@
+import {AppModel} from "./app";
 import {BlueprintModel, BlueprintModelArgs} from "./blueprint";
 import {SlangNode} from "../custom/nodes";
 import {SlangBehaviorSubject} from "../custom/events";
-import {AppModel} from "./app";
 
 export type LandscapeModelArgs = {};
 

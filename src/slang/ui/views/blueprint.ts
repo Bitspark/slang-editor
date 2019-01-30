@@ -8,11 +8,12 @@ import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {WhiteBoxComponent} from "../components/whitebox";
 import {dia} from "jointjs";
-import {AttachableComponent, XY} from "../components/base";
+import {AttachableComponent} from "../components/base";
 import {LandscapeModel} from "../../model/landscape";
 import {PropertyAssignments} from "../../model/property";
 import {GenericSpecifications} from "../../custom/generics";
 import {TypeIdentifier} from "../../custom/type";
+import {XY} from "../../model/operator";
 
 export class BlueprintView extends PaperView {
 	private readonly whiteBox: WhiteBoxComponent;

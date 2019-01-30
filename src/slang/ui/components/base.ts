@@ -1,17 +1,15 @@
 import m from "mithril";
 
-import {dia, g} from "jointjs";
+import {dia} from "jointjs";
 import {PaperView} from "../views/paper-view";
 import {Tk} from "./toolkit";
 import Container = Tk.Container;
+import {XY} from "../../model/operator";
 
 export type Alignment =
 	"tl" | "t" | "tr" |
 	"l" | "c" | "r" |
 	"bl" | "b" | "br";
-
-export interface XY extends g.PlainPoint {
-}
 
 export interface Position extends XY {
 	align: Alignment;
