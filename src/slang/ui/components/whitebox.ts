@@ -548,7 +548,7 @@ export class WhiteBoxComponent extends CellComponent {
 	private attachPortInfo(portOwnerComp: OperatorBoxComponent | IsolatedBlueprintPortComponent) {
 		const that = this;
 		portOwnerComp.onPortMouseEnter((port: PortModel, x: number, y: number) => {
-		    // in order to avoid multiple portInfos to be drawn we keep track of them and clear them out if needed
+			// in order to avoid multiple portInfos to be drawn we keep track of them and clear them out if needed
 			// since there are so many different events that can and should trigger a dismissal this solution is not
 			// really future proof.
 			// IMO a better solution would be to keep track of things that can be dismissed and destroy those
@@ -562,7 +562,7 @@ export class WhiteBoxComponent extends CellComponent {
 			that.trackPortInfo(portInfo)
 		});
 		portOwnerComp.onPortMouseLeave((port: PortModel, x: number, y: number) => {
-            that.clearPortInfos()
+			that.clearPortInfos()
 		});
 	}
 
