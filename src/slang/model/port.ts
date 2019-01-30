@@ -108,18 +108,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		this.streamPort.initialize();
 	}
 
-	// public generify(identifier: string, generics: GenericSpecifications, P: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel): void {
-	// 	if (!this.isGeneric() && this.typeIdentifier === TypeIdentifier.Map) {
-	// 		this.genericIdentifier = identifier;
-	// 		generics.registerPort(identifier, this);
-	// 		generics.subscribeGenericTypeChanged(identifier, type => {
-	// 			if (type) {
-	// 				this.reconstruct(type, P, this.direction, true);
-	// 			}
-	// 		});
-	// 	}
-	// }
-
 	public reconstruct(type: SlangType, P: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel, direction: PortDirection): void {
 		if (this.typeIdentifier !== type.getTypeIdentifier()) {
 			this.typeIdentifier = type.getTypeIdentifier();
@@ -397,10 +385,11 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 	private getDirectConnectionsTo(): Connections {
 		const connections = new Connections();
+		if (!this.isSource()) {
+			return connections;
+		}
 		for (const connectedWith of this.connectedWith) {
-			if (this.isSource()) {
-				connections.add({source: this, destination: connectedWith});
-			}
+			connections.add({source: this, destination: connectedWith});
 		}
 		return connections;
 	}
@@ -429,7 +418,11 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	}
 
 	public getConnectionsTo(): Connections {
-		const connections = this.getDirectConnectionsTo();
+		const connections = new Connections();
+		if (!this.isDirectionOut()) {
+			return connections;
+		}
+		connections.addAll(this.getDirectConnectionsTo());
 		switch (this.typeIdentifier) {
 			case TypeIdentifier.Map:
 				const mapSubs = this.getMapSubs();
@@ -548,7 +541,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			// TODO: Replace this legacy solution once all specifications are ensured to be maps
 			this.typeIdentifier = TypeIdentifier.Map;
 		}
-		
+
 		if (this.typeIdentifier !== TypeIdentifier.Map) {
 			// TODO: Replace this legacy solution once all specifications are ensured to be maps
 			specifications.specify(identifier, other.getType());

@@ -17,9 +17,8 @@ export abstract class GenericDelegateModel<B extends BlackBox> extends PortOwner
 	public getConnectionsTo(): Connections {
 		const connections = new Connections();
 
-		// First, handle operator out-ports
-		if (this.getPortOut()) {
-			connections.addAll(this.getPortOut()!.getConnectionsTo());
+		for (const port of this.getPorts()) {
+			connections.addAll(port.getConnectionsTo());
 		}
 
 		return connections;
@@ -28,10 +27,8 @@ export abstract class GenericDelegateModel<B extends BlackBox> extends PortOwner
 	public getConnections(): Connections {
 		const connections = new Connections();
 
-		// First, handle operator out-ports
-		if (this.getPortOut()) {
-			connections.addAll(this.getPortOut()!.getConnections());
-			connections.addAll(this.getPortIn()!.getConnections());
+		for (const port of this.getPorts()) {
+			connections.addAll(port.getConnections());
 		}
 
 		return connections;
@@ -70,10 +67,6 @@ export type OperatorDelegateModelArgs = { name: string };
 export class OperatorDelegateModel extends GenericDelegateModel<OperatorModel> {
 	constructor(owner: OperatorModel, {name}: OperatorDelegateModelArgs) {
 		super(owner, name, true);
-	}
-
-	public isStreamSource(): boolean {
-		return true;
 	}
 
 	public createPort(args: PortModelArgs): OperatorPortModel {

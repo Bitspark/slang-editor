@@ -1,15 +1,14 @@
 import {OperatorGeometry, OperatorModel} from "./operator";
 import {BlueprintPortModel, PortModel, PortModelArgs} from "./port";
 import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
-import {PropertyAssignments, PropertyModel} from "./property";
-import {LandscapeModel} from "./landscape";
 import {SlangParsing} from "../custom/parsing";
-import {PropertyEvaluator} from "../custom/utils";
 import {BlackBox} from "../custom/nodes";
 import {SlangTypeValue, TypeIdentifier} from "../custom/type";
 import {GenericSpecifications} from "../custom/generics";
 import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../custom/events";
 import {Connections} from "../custom/connections";
+import {PropertyAssignments, PropertyModel} from "./property";
+import {LandscapeModel} from "./landscape";
 
 export enum BlueprintType {
 	Local,
@@ -50,7 +49,6 @@ export type BlueprintInstance = { handle: string, url: string };
 
 export class BlueprintModel extends BlackBox {
 	// Topics::self
-	private selected = new SlangBehaviorSubject<boolean>("selected", false);
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
 	private saveChanges = new SlangSubjectTrigger("save-changes");
 
@@ -79,8 +77,7 @@ export class BlueprintModel extends BlackBox {
 		this.type = type;
 		this.hierarchy = fullName.split(".");
 		this.genericIdentifiers = new Set<string>();
-
-		if (!geometry) {
+if (!geometry) {
 			const dfltSize = {width: 200, height: 200};
 			this.geometry = {
 				size: dfltSize,
@@ -98,9 +95,8 @@ export class BlueprintModel extends BlackBox {
 		}
 		
 		this.subscribeChildCreated(OperatorModel, operator => {
-			operator.subscribePropertiesChanged(() => {
-				// TODO!
-				operator.getBlueprint().instantiateOperator(operator);
+			operator.subscribePropertiesChanged((properties) => {
+				operator.reconstruct(properties);
 			});
 		});
 	}
@@ -132,31 +128,6 @@ export class BlueprintModel extends BlackBox {
 
 	public getFakeGenerics(): GenericSpecifications {
 		return this.fakeGenerics;
-	}
-
-	private instantiateOperator(operator: OperatorModel) {
-		const properties = operator.getProperties();
-
-		for (const port of this.getPorts()) {
-			operator.createPort({
-				name: "",
-				type: port.getType().expand(properties),
-				direction: port.getDirection(),
-			});
-		}
-
-		for (const delegate of this.getDelegates()) {
-			for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), properties)) {
-				const delegateCopy = operator.createDelegate({name: expandedDlgName});
-				for (const port of delegate.getPorts()) {
-					delegateCopy.createPort({
-						name: "",
-						type: port.getType().expand(properties),
-						direction: port.getDirection(),
-					});
-				}
-			}
-		}
 	}
 
 	public createOperator(name: string | null, blueprint: BlueprintModel, properties: PropertyAssignments | null, generics: GenericSpecifications | null, geometry?: OperatorGeometry): OperatorModel {
@@ -215,20 +186,8 @@ export class BlueprintModel extends BlackBox {
 		return this.fullName;
 	}
 
-	public getPackageName(level: number): string {
-		return this.hierarchy[level];
-	}
-
-	public getPackageDepth(): number {
-		return this.hierarchy.length;
-	}
-
 	public getShortName(): string {
 		return this.hierarchy[this.hierarchy.length - 1];
-	}
-
-	public isSelected(): boolean {
-		return this.selected.getValue();
 	}
 
 	public isDeployed(): boolean {
@@ -490,10 +449,6 @@ export class BlueprintModel extends BlackBox {
 
 	public subscribeSaveChanges(cb: () => void): void {
 		this.saveChanges.subscribe(cb);
-	}
-
-	public subscribeSelectChanged(cb: (selected: boolean) => void): void {
-		this.selected.subscribe(cb);
 	}
 
 	public subscribeOpenedChanged(cb: (opened: boolean) => void): void {

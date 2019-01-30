@@ -277,29 +277,6 @@ export class SlangType {
 		return type;
 	}
 
-	// public specifyGenerics(genSpec: GenericSpecifications): SlangType {
-	// 	if (this.typeIdentifier === TypeIdentifier.Generic) {
-	// 		const identifier = this.getGenericIdentifier();
-	// 		if (genSpec.has(identifier)) {
-	// 			return genSpec.get(this.getGenericIdentifier()).copy();
-	// 		} else {
-	// 			return this.copy();
-	// 		}
-	// 	}
-	// 	const specifiedType = new SlangType(this.parent, this.typeIdentifier);
-	// 	switch (this.typeIdentifier) {
-	// 		case TypeIdentifier.Map:
-	// 			for (const [subName, subType] of this.getMapSubs()) {
-	// 				specifiedType.addMapSub(subName, subType.specifyGenerics(genSpec));
-	// 			}
-	// 			break;
-	// 		case TypeIdentifier.Stream:
-	// 			specifiedType.setStreamSub(this.getStreamSub().specifyGenerics(genSpec));
-	// 			break;
-	// 	}
-	// 	return specifiedType;
-	// }
-
 	public addMapSub(name: string, type: SlangType): SlangType {
 		if (this.typeIdentifier !== TypeIdentifier.Map) {
 			throw `add map sub type to a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;

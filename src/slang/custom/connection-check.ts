@@ -26,30 +26,29 @@ function typesCompatibleTo(sourceType: SlangType, destinationType: SlangType): b
 	if (destinationType.getTypeIdentifier() === TypeIdentifier.Trigger) {
 		return true;
 	}
-	
-	// Careful: 
-	// destinationType.getTypeIdentifier() === TypeIdentifier.Primitive
-	// is not identical with destinationType.isPrimitive(), isPrimitive() is true for Strings, Numbers, ...
+
+	// Careful: destinationType.getTypeIdentifier() === TypeIdentifier.Primitive is not identical with destinationType.isPrimitive()
+	// isPrimitive() is true for Strings, Numbers, etc.
 	if (destinationType.getTypeIdentifier() === TypeIdentifier.Primitive && sourceType.isPrimitive()) {
 		return true;
 	}
 	if (destinationType.isPrimitive() && sourceType.getTypeIdentifier() === TypeIdentifier.Primitive) {
 		return true;
 	}
-	
-	
+
+
 	if (sourceType.isMap() && destinationType.isMap()) {
 		return typesMapCompatibleTo(sourceType, destinationType);
 	}
-	
+
 	if (sourceType.isStream() && destinationType.isStream()) {
 		return typesStreamCompatible(sourceType, destinationType);
 	}
-	
+
 	if (sourceType.isGeneric() && destinationType.isGeneric()) {
 		return sourceType.getGenericIdentifier() === destinationType.getGenericIdentifier();
 	}
-	
+
 	return sourceType.getTypeIdentifier() === destinationType.getTypeIdentifier();
 }
 
@@ -63,21 +62,21 @@ function fluentStreamCompatibleTo(fluentStream: StreamType, stream: StreamType):
 	}
 }
 
-function collectDelegateStreams(stream: StreamType): Set<StreamType> {	
+function collectDelegateStreams(stream: StreamType): Set<StreamType> {
 	const streams = new Set<StreamType>();
-	
+
 	const rootStream = stream.getRootStream();
 	if (!rootStream) {
 		return streams;
 	}
-	
+
 	const rootSource = rootStream.getSource();
 	if (!rootSource) {
 		return streams;
 	}
-	
+
 	const rootOwner = rootSource.getOwner();
-	
+
 	if (rootOwner instanceof OperatorDelegateModel) {
 		const rootBlackBox = rootOwner.getAncestorNode(OperatorModel);
 		if (rootBlackBox) {
@@ -90,7 +89,7 @@ function collectDelegateStreams(stream: StreamType): Set<StreamType> {
 			}
 		}
 	}
-	
+
 	return streams;
 }
 
@@ -98,9 +97,9 @@ function delegateStreamCompatibleTo(rootStream: StreamType | null, stream: Strea
 	if (!rootStream || !stream) {
 		return true;
 	}
-	
+
 	const rootStreams = collectDelegateStreams(rootStream);
-	
+
 	let baseStream: StreamType | null = stream;
 	while (baseStream) {
 		if (rootStreams.has(baseStream)) {
@@ -108,7 +107,7 @@ function delegateStreamCompatibleTo(rootStream: StreamType | null, stream: Strea
 		}
 		baseStream = baseStream.getBaseStreamOrNull();
 	}
-	
+
 	return true;
 }
 
@@ -120,12 +119,12 @@ function streamsCompatible(streamA: StreamType | null, streamB: StreamType | nul
 	if (!streamA || !streamB) {
 		return !streamA && !streamB;
 	}
-	
+
 	if (streamA === streamB) {
 		// Identical stream types
 		return true;
 	}
-	
+
 	if (!streamA.isPlaceholder() && !streamB.isPlaceholder()) {
 		// Incompatible stream types
 		return false;
@@ -134,11 +133,11 @@ function streamsCompatible(streamA: StreamType | null, streamB: StreamType | nul
 	if (streamA.hasPlaceholderRoot()) {
 		return fluentStreamCompatibleTo(streamA, streamB);
 	}
-	
+
 	if (streamB.hasPlaceholderRoot()) {
 		return fluentStreamCompatibleTo(streamB, streamA);
 	}
-	
+
 	return streamsCompatible(streamA.getBaseStreamOrNull(), streamB.getBaseStreamOrNull());
 }
 
@@ -151,9 +150,9 @@ function collectAncestorOwners(port: PortModel, owners: Set<PortOwner>) {
 	if (port.getOwner().getStreamPortOwner().isStreamSource()) {
 		return;
 	}
-	
+
 	owners.add(owner);
-	
+
 	const portIn = owner.getPortIn();
 	if (portIn) {
 		const descendantPorts = portIn.getDescendantPorts();
@@ -165,7 +164,7 @@ function collectAncestorOwners(port: PortModel, owners: Set<PortOwner>) {
 	}
 }
 
-function cycleCompatibleTo(source: PortModel, destination: PortModel): boolean {	
+function cycleCompatibleTo(source: PortModel, destination: PortModel): boolean {
 	const ancestorOwners = new Set<PortOwner>();
 	collectAncestorOwners(source, ancestorOwners);
 	return !ancestorOwners.has(destination.getOwner());
@@ -187,10 +186,10 @@ export function canConnectTo(source: PortModel, destination: PortModel): boolean
 	if (!source.isSource() || !destination.isDestination()) {
 		return false;
 	}
-	
+
 	const sourceConnectedWith = Array.from(source.getConnectedWith());
 	const destinationConnectedWith = Array.from(destination.getConnectedWith());
-	
+
 	if (destinationConnectedWith.length !== 0) {
 		return false;
 	}
@@ -200,12 +199,6 @@ export function canConnectTo(source: PortModel, destination: PortModel): boolean
 	if (sourceConnectedWith.indexOf(source) !== -1) {
 		throw new Error(`${source.getIdentity()}: asymmetric connection found`);
 	}
-	
-	// if (source.getGenericIdentifier() && destination.getGenericIdentifier()) {
-	// 	if (source.getGenericIdentifier() !== destination.getGenericIdentifier()) {
-	// 		return false;
-	// 	}
-	// }
 
 	if (!cycleCompatibleTo(source, destination)) {
 		return false;
@@ -213,11 +206,11 @@ export function canConnectTo(source: PortModel, destination: PortModel): boolean
 
 	const sourceStream = source.getStreamPort().getStreamType();
 	const destinationStream = destination.getStreamPort().getStreamType();
-	
+
 	if (!delegateStreamCompatible(sourceStream, destinationStream)) {
 		return false;
 	}
-	
+
 	if (!source.isGenericLike() && !destination.isGenericLike()) {
 		if (!typesCompatibleTo(source.getType(), destination.getType())) {
 			return false;
@@ -231,6 +224,6 @@ export function canConnectTo(source: PortModel, destination: PortModel): boolean
 			return false;
 		}
 	}
-	
+
 	return true;
 }

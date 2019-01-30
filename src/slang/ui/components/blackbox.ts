@@ -227,8 +227,10 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 		operator.getGenerics().subscribeGenericsChanged(() => {
 			this.refresh();
 		});
-		
-		// TODO: Properties
+
+		operator.subscribePropertiesChanged(() => {
+			this.refresh();
+		});
 		
 		this.refresh();
 	}

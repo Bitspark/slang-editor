@@ -212,18 +212,21 @@ export class WhiteBoxComponent extends CellComponent {
 			});
 		});
 
-		this.blueprint.subscribeChildCreated(OperatorModel, operator => {
-			operator.getGenerics().subscribeGenericsChanged(() => {
-				this.connections.forEach(component => {
-					const connection = component.getConnection();
-					if (!connection.source.isConnectedWith(connection.destination)) {
-						return;
-					}
-					if (connection.source.getBlackBox() === operator || connection.destination.getBlackBox() === operator) {
-						component.refresh();
-					}
-				});
+		const refreshOperatorConnections = (operator: OperatorModel) => {
+			this.connections.forEach(component => {
+				const connection = component.getConnection();
+				if (!connection.source.isConnectedWith(connection.destination)) {
+					return;
+				}
+				if (connection.source.getBlackBox() === operator || connection.destination.getBlackBox() === operator) {
+					component.refresh();
+				}
 			});
+		};
+		
+		this.blueprint.subscribeChildCreated(OperatorModel, operator => {
+			operator.getGenerics().subscribeGenericsChanged(() => refreshOperatorConnections(operator));
+			operator.subscribePropertiesChanged(() => refreshOperatorConnections(operator));
 		});
 	}
 
@@ -493,7 +496,7 @@ export class WhiteBoxComponent extends CellComponent {
 					x: outerPosition.x + outerSize.width,
 					y: outerPosition.y,
 					width: elementSize.width,
-					height: outerSize.height
+					height: outerSize.height,
 				});
 				break;
 		}
@@ -520,27 +523,26 @@ export class WhiteBoxComponent extends CellComponent {
 
 		this.operators.push(operatorComp);
 
-		//if (operator.hasProperties()) {
-			operatorComp.onClick(() => {
-				const comp = this
-					.createComponent({x: 0, y: 0, align: "c"})
-					.mount({
-						view: () => m(Modal, {
-								onClose: () => {
-									comp.destroy();
-								}
-							},
-							m(DashboardComponent, {
-								operator: operator,
-								onSave: () => {
-									comp.destroy();
-								}
-							})
-						)
-					});
-				return true;
-			});
-		//}
+		operatorComp.onClick(() => {
+			const comp = this
+				.createComponent({x: 0, y: 0, align: "c"})
+				.mount({
+					view: () => m(Modal, {
+							onClose: () => {
+								comp.destroy();
+							}
+						},
+						m(DashboardComponent, {
+							operator: operator,
+							onSave: () => {
+								comp.destroy();
+							}
+						})
+					)
+				});
+			return true;
+		});
+		
 		
 		this.attachPortInfo(operatorComp);
 

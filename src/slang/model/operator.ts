@@ -8,6 +8,7 @@ import {GenericSpecifications} from "../custom/generics";
 import {SlangTypeValue} from "../custom/type";
 import {Subscription} from "rxjs";
 import {SlangBehaviorSubject} from "../custom/events";
+import {PropertyEvaluator} from "../custom/utils";
 
 export interface XY {
 	x: number;
@@ -101,15 +102,10 @@ export class OperatorModel extends BlackBox {
 		return this.properties.getValue().copy(this.generics);
 	}
 
-	public setProperties(properties: PropertyAssignments) {
-		console.log("Update properties...");
-		
+	public setProperties(properties: PropertyAssignments) {		
 		if (this.properties.getValue().isEqual(properties)) {
-			console.log("... have not changed.");
 			return;
 		}
-
-		console.log("... changed!");
 		
 		this.properties.next(properties);
 	}
@@ -123,6 +119,20 @@ export class OperatorModel extends BlackBox {
 		return this.blueprint.getDisplayName();
 	}
 
+	public getConnections(): Connections {
+		const connections = new Connections();
+
+		for (const port of this.getPorts()) {
+			connections.addAll(port.getConnections());
+		}
+
+		for (const delegate of this.getDelegates()) {
+			connections.addAll(delegate.getConnections());
+		}
+
+		return connections;
+	}
+	
 	public getConnectionsTo(): Connections {
 		const connections = new Connections();
 
@@ -154,41 +164,31 @@ export class OperatorModel extends BlackBox {
 		}
 	}
 	
-	// public reconstruct(): void {
-	// 	// const parentBlueprint = this.getParentNode() as BlueprintModel;
-	//
-	// 	// const connections = new Connections();
-	// 	// for (const delegate of this.getDelegates()) {
-	// 	// 	connections.addAll(delegate.getConnections());
-	// 	// }
-	// 	// for (const port of this.getPorts()) {
-	// 	// 	connections.addAll(port.getConnections());
-	// 	// }
-	// 	//
-	// 	// const savedConnections = Array.from(connections).map(connection => ({
-	// 	// 	source: getFullPortRef(connection.source),
-	// 	// 	destination: getFullPortRef(connection.destination),
-	// 	// }));
-	//
-	// 	for (const delegate of this.getDelegates()) {
-	// 		delegate.reconstruct();
-	// 	}
-	// 	for (const port of this.getPorts()) {
-	// 		port.reconstruct(OperatorPortModel);
-	// 	}
-	//
-	// 	// savedConnections.forEach(savedConnection => {
-	// 	// 	try {
-	// 	// 		const source = parentBlueprint.resolvePortReference(savedConnection.source);
-	// 	// 		const destination = parentBlueprint.resolvePortReference(savedConnection.destination);
-	// 	// 		if (source && destination) {
-	// 	// 			source.connect(destination);
-	// 	// 		}
-	// 	// 	} catch (e) {
-	// 	// 		console.error(`${e}, ${savedConnection.source} -> ${savedConnection.destination}`);
-	// 	// 	}
-	// 	// });
-	// }
+	public reconstruct(properties: PropertyAssignments) {
+		super.reconstructPorts(properties, this.blueprint.getPorts(), OperatorPortModel);
+		
+		const obsoleteDelegates = new Set(this.getDelegates());
+		for (const delegate of this.blueprint.getDelegates()) {
+			for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), properties)) {
+				const opDelegate = this.findDelegate(expandedDlgName);
+				if (!opDelegate) {
+					const newDelegate = this.createDelegate({name: expandedDlgName});
+					for (const port of newDelegate.getPorts()) {
+						newDelegate.createPort({
+							name: "",
+							type: port.getType().expand(properties),
+							direction: port.getDirection(),
+						});
+					}
+					newDelegate.reconstructPorts(properties, delegate.getPorts(), OperatorPortModel);
+				} else {
+					opDelegate.reconstructPorts(properties, delegate.getPorts(), OperatorPortModel);
+					obsoleteDelegates.delete(opDelegate);
+				}
+			}
+		}
+		obsoleteDelegates.forEach(obsoleteDelegate => obsoleteDelegate.destroy());
+	}
 
 	// Actions
 	public createDelegate(args: OperatorDelegateModelArgs): OperatorDelegateModel {
