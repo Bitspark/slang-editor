@@ -2,15 +2,15 @@ import "./common";
 
 import "../styles/embedded.scss";
 
-import {AppModel} from "../slang/model/app";
-import {Slang} from "../slang/slang";
-import {ViewFrame} from "../slang/ui/frame";
-import {LandscapeModel} from "../slang/model/landscape";
 import {StaticStorageApp} from "../apps/storage/src/app";
+import {AppModel} from "../slang/model/app";
+import {LandscapeModel} from "../slang/model/landscape";
+import {Slang} from "../slang/slang";
 import {componentFactory} from "../slang/ui/components/factory";
+import {ViewFrame} from "../slang/ui/frame";
 
 export function SlangStudioEmbedded(el: HTMLElement, blueprintFullName: string): Promise<void> {
-	return new Promise<void>(resolve => {
+	return new Promise<void>((resolve) => {
 		const appModel = AppModel.create(`embedded-${blueprintFullName}`);
 		const app = new Slang(appModel);
 		app.addFrame(new ViewFrame(el), true);
@@ -31,6 +31,6 @@ export function SlangStudioEmbedded(el: HTMLElement, blueprintFullName: string):
 const elements = document.getElementsByClassName("slang-embedded");
 for (const el of elements) {
 	if (el instanceof HTMLElement) {
-		SlangStudioEmbedded(el, el.dataset["blueprint"] as string);
+		SlangStudioEmbedded(el, el.dataset.blueprint as string);
 	}
 }

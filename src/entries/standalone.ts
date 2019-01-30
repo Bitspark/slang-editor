@@ -2,18 +2,18 @@ import "./common";
 
 import "../styles/standalone.scss";
 
+import {AutoTriggerApp} from "../apps/autotrigger/src/app";
+import {DeploymentApp} from "../apps/deployment/src/app";
+import {OperatorDataApp} from "../apps/operators/src/app";
+import {RouterApp} from "../apps/router/src/app";
+import {APIStorageApp} from "../apps/storage/src/app";
 import {AppModel} from "../slang/model/app";
 import {Slang} from "../slang/slang";
-import {ViewFrame} from "../slang/ui/frame";
-import {APIStorageApp} from "../apps/storage/src/app";
-import {DeploymentApp} from "../apps/deployment/src/app";
 import {componentFactory} from "../slang/ui/components/factory";
-import {RouterApp} from "../apps/router/src/app";
-import {OperatorDataApp} from "../apps/operators/src/app";
-import {AutoTriggerApp} from "../apps/autotrigger/src/app";
+import {ViewFrame} from "../slang/ui/frame";
 
 function SlangStudioStandalone(el: HTMLElement): Promise<void> {
-	return new Promise<void>(resolve => {
+	return new Promise<void>((resolve) => {
 		const appModel = AppModel.create("slang");
 		const app = new Slang(appModel);
 		const frame = new ViewFrame(el);
@@ -32,7 +32,7 @@ function SlangStudioStandalone(el: HTMLElement): Promise<void> {
 	});
 }
 
-const el = document.getElementById("slang-studio");
-if (el) {
-	SlangStudioStandalone(el);
+const element = document.getElementById("slang-studio");
+if (element) {
+	SlangStudioStandalone(element);
 }

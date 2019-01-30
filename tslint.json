@@ -6,7 +6,8 @@
 		"max-classes-per-file": false,
 		"indent": [true, "tabs", 2],
 		"no-console": [true, "log", "warn"],
-		"no-empty": [true, "allow-empty-functions"]
+		"no-empty": [true, "allow-empty-functions"],
+		"no-unused-expression": [true, "allow-new"]
 	},
 	"linterOptions": {
 		"exclude": [
