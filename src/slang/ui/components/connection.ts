@@ -9,7 +9,7 @@ import {PortModel} from "../../model/port";
 import {TypeIdentifier} from "../../custom/type";
 import {PaperView} from "../views/paper-view";
 import {CellComponent} from "./base";
-import { StreamType } from "../../custom/stream";
+import {StreamType} from "../../custom/stream";
 
 const connectionLink = dia.Link.define("Connection", {
 	router: slangRouter,

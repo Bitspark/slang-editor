@@ -71,10 +71,10 @@ export abstract class SlangNode {
 	}
 
 	public getChildNodes<T extends SlangNode>(types: Types<T>): IterableIterator<T> {
-		types = getTypes(types);
+		const typesArray = getTypes(types);
 		const children: Array<T> = [];
 		for (const childNode of this.children.getNodes()) {
-			for (const t of types) {
+			for (const t of typesArray) {
 				if (childNode instanceof t) {
 					children.push(childNode as T);
 					break;
@@ -85,12 +85,12 @@ export abstract class SlangNode {
 	}
 
 	public getChildNode<T extends SlangNode>(types: Types<T>): T | null {
-		types = getTypes(types);
+		const typesArray = getTypes(types);
 		if (this.children.size() === 0) {
 			return null;
 		}
 		for (const childNode of this.children.getNodes()) {
-			for (const t of types) {
+			for (const t of typesArray) {
 				if (childNode instanceof t) {
 					return childNode as T;
 				}
@@ -113,8 +113,8 @@ export abstract class SlangNode {
 	}
 
 	public getAncestorNode<T extends SlangNode>(types: Types<T>): T | undefined {
-		types = getTypes(types);
-		for (const t of types) {
+		const typesArray = getTypes(types);
+		for (const t of typesArray) {
 			if (this instanceof t) {
 				return this as any;
 			}
@@ -127,10 +127,10 @@ export abstract class SlangNode {
 	}
 
 	public getDescendantNodes<T extends SlangNode>(types: Types<T>): IterableIterator<T> {
-		types = getTypes(types);
+		const typesArray = getTypes(types);
 		const children: Array<T> = [];
 		for (const childNode of this.getChildNodes(SlangNode)) {
-			for (const t of types) {
+			for (const t of typesArray) {
 				if (childNode instanceof t) {
 					children.push(childNode as T);
 					break;

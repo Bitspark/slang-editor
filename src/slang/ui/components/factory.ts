@@ -9,9 +9,6 @@ export class ComponentFactory {
 	private readonly opCompClasses = new Map<BlueprintModel, new (pv: PaperView, op: OperatorModel) => OperatorBoxComponent>();
 	private readonly opDashboardModuleClasses = new Map<BlueprintModel, Array<new() => DashboardModuleComponent>>();
 
-	public constructor() {
-	}
-
 	public createOperatorComponent(paperView: PaperView, operator: OperatorModel): OperatorBoxComponent {
 		const operatorCompClass = this.opCompClasses.get(operator.getBlueprint());
 		if (!operatorCompClass) {

@@ -149,7 +149,9 @@ export class StreamType {
 		return this.source;
 	}
 
-	public fixedDepth(sum = 0, current = 0): number {
+	public fixedDepth(start = 0, current = 0): number {
+		let sum = start;
+		
 		if (!this.isPlaceholder()) {
 			sum += 1 << current;
 		}

@@ -8,9 +8,6 @@ export interface Connection {
 export class Connections {
 	private connections: Array<Connection> = [];
 
-	constructor() {
-	}
-
 	public getIterator(): IterableIterator<Connection> {
 		return this.connections.values();
 	}

@@ -370,27 +370,6 @@ export class SlangType {
 		return primitiveTypes.indexOf(this.getTypeIdentifier()) !== -1;
 	}
 
-	public toString(tab?: string): string {
-		if (!tab) {
-			tab = "";
-		}
-
-		let str = TypeIdentifier[this.typeIdentifier] + "\n";
-		if (this.typeIdentifier === TypeIdentifier.Map) {
-			for (const sub of this.mapSubs!) {
-				str += tab + "  " + sub[0] + ": " + sub[1].toString(tab + "  ");
-			}
-		}
-		if (this.typeIdentifier === TypeIdentifier.Stream) {
-			str += tab + "  " + this.streamSub!.toString(tab + "  ");
-		}
-		if (this.typeIdentifier === TypeIdentifier.Generic) {
-			str += tab + "  " + "identifier: " + this.genericIdentifier;
-		}
-
-		return str;
-	}
-
 	public static number(): SlangType {
 		return new SlangType(null, TypeIdentifier.Number);
 	}

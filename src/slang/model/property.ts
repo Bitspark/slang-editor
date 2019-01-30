@@ -88,7 +88,7 @@ export class PropertyAssignments {
 
 	public isEqual(other: PropertyAssignments): boolean {
 		if (this.assignments.size !== other.assignments.size) {
-			return false
+			return false;
 		}
 
 		for (const propAssign of this.getAssignments()) {
@@ -109,17 +109,11 @@ export class PropertyAssignments {
 	}
 
 	public get(property: PropertyModel | string): PropertyAssignment {
-		if (property instanceof PropertyModel) {
-			property = property.getName();
-		}
-		return this.getByName(property);
+		return this.getByName((property instanceof PropertyModel) ? property.getName() : property);
 	}
 
 	public isDefined(propertyName: string | PropertyModel): boolean {
-		if (propertyName instanceof PropertyModel) {
-			propertyName = propertyName.getName();
-		}
-		const propAssign = this.assignments.get(propertyName);
+		const propAssign = this.assignments.get((propertyName instanceof PropertyModel) ? propertyName.getName() : propertyName);
 		return !!propAssign && !!propAssign.getValue();
 	}
 

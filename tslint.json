@@ -1,12 +1,18 @@
 {
-	"extends": [],
-	"rulesDirectory": [
+	"extends": [
+		"tslint-eslint-rules",
 		"tslint-consistent-codestyle"
 	],
 	"rules": {
-		/*"linebreak-style": false,
-		"no-parameter-reassignment": false,
-		"max-classes-per-file": false,*/
+		"object-curly-spacing": [
+			true,
+			"never"
+		],
+		"array-bracket-spacing": [
+			true,
+			"never"
+		],
+		"no-parameter-reassignment": true,
 		"indent": [
 			true,
 			"tabs",
@@ -17,17 +23,14 @@
 			"log",
 			"warn"
 		],
-		/*"no-empty": [
+		"no-empty": [
 			true,
 			"allow-empty-functions"
-		],*/
+		],
 		"no-unused-expression": [
 			true,
 			"allow-new"
 		],
-		/*"no-namespace": false,
-		"variable-name": false,
-		"no-else-after-return": false,*/
 		"number-literal-format": true,
 		"no-unnecessary-qualifier": true,
 		"curly": true,

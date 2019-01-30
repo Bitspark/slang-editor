@@ -81,7 +81,7 @@ export abstract class PaperView extends View {
 		const inner = document.createElement("div");
 		container.appendChild(inner);
 
-		opt = Object.assign({
+		return new dia.Paper(Object.assign({
 			drawGrid: false,
 			el: inner,
 			gridSize: 5,
@@ -107,9 +107,7 @@ export abstract class PaperView extends View {
 					y: -(Number.MAX_VALUE / 2),
 				};
 			},
-		}, opt);
-
-		return new dia.Paper(opt);
+		}, opt));
 	}
 
 	protected handleMouseWheel(evt: MouseWheelEvent, x: number, y: number): boolean {
