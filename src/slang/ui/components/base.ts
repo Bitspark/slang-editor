@@ -145,6 +145,8 @@ abstract class HtmlComponent extends Component {
 	public mount(component: m.Component): this {
 		this.unmount();
 
+		const paper = this.paperView.getPaper();
+
 		m.mount(this.htmlRoot, {
 			oncreate: () => {
 				this.draw();
@@ -153,7 +155,16 @@ abstract class HtmlComponent extends Component {
 				this.draw();
 			},
 			view: () => {
-				return m(Container, m(component));
+				return m(Container, {
+						onmousewheel: (e: WheelEvent) => {
+							e.preventDefault();
+							e.stopPropagation();
+							const {x, y} = paper.clientToLocalPoint(e.clientX, e.clientY);
+							// jointjs uses JqueryEventObjects --> paper.on expect JqueryEvents instead of standard DOM events
+							paper.trigger("blank:mousewheel", {originalEvent: e}, x, y);
+						},
+					},
+					m(component));
 			}
 		});
 		return this;

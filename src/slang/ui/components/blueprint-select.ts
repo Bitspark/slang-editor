@@ -59,11 +59,13 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 
 		return m(".sl-blupr-menu", {
 				onmousewheel: (e: WheelEvent) => {
+					e.preventDefault();
 					if (e.deltaY < 0) {
 						this.activeMenuItemIdx = Math.max(0, this.activeMenuItemIdx - 1);
 					} else {
 						this.activeMenuItemIdx = Math.min(this.activeMenuItemIdx + 1, menuTotalSize - 1);
 					}
+					e.stopPropagation();
 				},
 				onkeydown: (e: MithrilKeyboardEvent) => {
 					switch (e.key) {
