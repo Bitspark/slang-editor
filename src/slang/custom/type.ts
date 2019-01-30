@@ -1,4 +1,3 @@
-import {GenericSpecifications} from "./generics";
 import {PropertyEvaluator} from "./utils";
 import {PropertyAssignments} from "../model/property";
 
