@@ -9,6 +9,7 @@ import {PortModel} from "../../model/port";
 import {TypeIdentifier} from "../../custom/type";
 import {PaperView} from "../views/paper-view";
 import {CellComponent} from "./base";
+import {StreamType} from "../../custom/stream";
 
 const ConnectionLink = dia.Link.define("Connection", {
 	router: slangRouter,
@@ -38,8 +39,6 @@ export class ConnectionComponent extends CellComponent {
 
 	protected shape: dia.Link;
 	private readonly id: string;
-
-	public static refreshActive: boolean = true;
 
 	constructor(paperView: PaperView, private connection: Connection) {
 		super(paperView, {x: 0, y: 0});
@@ -73,7 +72,7 @@ export class ConnectionComponent extends CellComponent {
 
 		[[connection.source, connection.destination],[connection.destination, connection.source]].forEach(([port, other]) => {
 			port.getStreamPort().subscribeRefreshStreamType(stream => {
-				if (ConnectionComponent.refreshActive && port.isConnectedWith(other)) {
+				if (StreamType.refreshActive && port.isConnectedWith(other)) {
 					this.refresh();
 					if (stream) {
 						stream.subscribeNestingChanged(() => {

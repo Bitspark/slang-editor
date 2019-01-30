@@ -1,7 +1,7 @@
-import {GenericPortModel, PortModel, PortModelArgs} from "../model/port";
-import {DelegateModel} from "../model/delegate";
 import {SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "./events";
 import {StreamPortOwner} from "./stream";
+import {GenericPortModel, PortModel, PortModelArgs} from "../model/port";
+import {DelegateModel} from "../model/delegate";
 
 type Type<T> = Function & { prototype: T };
 
@@ -106,6 +106,7 @@ export abstract class SlangNode {
 				return child as T;
 			}
 		}
+		return undefined;
 	}
 
 	public getParentNode(): SlangNode | null {
@@ -153,7 +154,7 @@ export abstract class SlangNode {
 		return childNode;
 	}
 
-	public destroy<T extends SlangNode, A>() {
+	public destroy() {
 		for (const child of this.getChildNodes(SlangNode)) {
 			child.destroy();
 		}

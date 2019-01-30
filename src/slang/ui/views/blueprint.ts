@@ -8,11 +8,12 @@ import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {WhiteBoxComponent} from "../components/whitebox";
 import {dia} from "jointjs";
-import {AttachableComponent, XY} from "../components/base";
+import {AttachableComponent} from "../components/base";
 import {LandscapeModel} from "../../model/landscape";
 import {PropertyAssignments} from "../../model/property";
 import {GenericSpecifications} from "../../custom/generics";
 import {TypeIdentifier} from "../../custom/type";
+import {XY} from "../../model/operator";
 
 export class BlueprintView extends PaperView {
 	private readonly whiteBox: WhiteBoxComponent;
@@ -65,7 +66,7 @@ export class BlueprintView extends PaperView {
 
 				return false;
 			},
-			defaultLink: function (cellView: dia.CellView, magnet: SVGElement): dia.Link {
+			defaultLink: (_cellView: dia.CellView, magnet: SVGElement): dia.Link => {
 				const port = that.getPortFromMagnet(magnet);
 				if (port) {
 					const link = ConnectionComponent.createGhostLink(port);
@@ -77,12 +78,7 @@ export class BlueprintView extends PaperView {
 					throw new Error(`could not find source port`);
 				}
 			},
-			validateConnection: function (cellViewS: dia.CellView,
-										  magnetS: SVGElement,
-										  cellViewT: dia.CellView,
-										  magnetT: SVGElement,
-										  end: "source" | "target",
-										  linkView: dia.LinkView): boolean {
+			validateConnection: (_cellViewS: dia.CellView, magnetS: SVGElement, _cellViewT: dia.CellView, magnetT: SVGElement): boolean => {
 				const portS = that.getPortFromMagnet(magnetS);
 				if (!portS) {
 					return false;
@@ -96,24 +92,24 @@ export class BlueprintView extends PaperView {
 			snapLinks: {radius: 75,},
 			markAvailable: true,
 		});
-		paper.on("tool:remove", function (linkView: dia.LinkView) {
+		paper.on("tool:remove", (linkView: dia.LinkView): void => {
 			const magnetS = linkView.getEndMagnet("source");
 			const magnetT = linkView.getEndMagnet("target");
 			if (!magnetS || !magnetT) {
-				return false;
+				return;
 			}
 
 			const sourcePortRef = magnetS.getAttribute("port");
 			const destinationPortRef = magnetT.getAttribute("port");
 			if (!sourcePortRef || !destinationPortRef) {
-				return false;
+				return;
 			}
 
 			const sourcePort = that.blueprint.findNodeById(sourcePortRef);
 			const destinationPort = that.blueprint.findNodeById(destinationPortRef);
 			if (!sourcePort || !destinationPort ||
 				!(sourcePort instanceof GenericPortModel) || !(destinationPort instanceof GenericPortModel)) {
-				return false;
+				return;
 			}
 
 			sourcePort.disconnectTo(destinationPort);
@@ -122,35 +118,31 @@ export class BlueprintView extends PaperView {
 	}
 
 	private attachEventHandlers() {
-		const that = this;
-
-		this.whiteBox.onDblClick((event: Event, x: number, y: number) => {
-			that.blueprintSelect = new BlueprintSelectComponent(that, {x, y});
+		this.whiteBox.onDblClick((_event: Event, x: number, y: number) => {
+			this.blueprintSelect = new BlueprintSelectComponent(this, {x, y});
 		});
 		let portInfo: AttachableComponent;
 		this.whiteBox.onPortMouseEnter((port: PortModel, x: number, y: number) => {
-			portInfo = that.whiteBox
+			portInfo = this.whiteBox
 				.createComponent({x: x + 2, y: y + 2, align: "tl"})
 				.mount({
 					view: () => m(PortInfo, {port})
 				});
 		});
-		this.whiteBox.onPortMouseLeave((port: PortModel, x: number, y: number) => {
-			portInfo.destroy();
-		});
+		this.whiteBox.onPortMouseLeave(() => portInfo.destroy());
 
-		this.graph.on("change:position change:size", function (cell: dia.Cell) {
+		this.graph.on("change:position change:size", (cell: dia.Cell) => {
 			// Moving around inner operators
 			if (!(cell instanceof BlackBoxShape)) {
 				return;
 			}
-			that.fitOuter(false);
+			this.fitOuter(false);
 		});
 
-		this.getPaper().on("blank:pointerclick cell:pointerclick", function (elementView: dia.ElementView, evt: JQueryMouseEventObject, x: number, y: number) {
-			if (that.blueprintSelect) {
-				that.blueprintSelect.destroy();
-				that.blueprintSelect = null;
+		this.getPaper().on("blank:pointerclick cell:pointerclick", () => {
+			if (this.blueprintSelect) {
+				this.blueprintSelect.destroy();
+				this.blueprintSelect = null;
 			}
 		});
 	}
@@ -199,7 +191,7 @@ export interface Attrs {
 
 class PortInfo implements ClassComponent<Attrs> {
 	// Note that class methods cannot infer parameter types
-	oninit({attrs}: CVnode<Attrs>) {
+	oninit() {
 	}
 
 	view({attrs}: CVnode<Attrs>) {

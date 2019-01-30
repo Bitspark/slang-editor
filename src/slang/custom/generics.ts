@@ -1,6 +1,6 @@
+import {Subscription} from "rxjs";
 import {SlangType} from "./type";
 import {SlangBehaviorSubject, SlangSubject} from "./events";
-import {Subscription} from "rxjs";
 import {PortModel} from "../model/port";
 
 export class GenericSpecifications {

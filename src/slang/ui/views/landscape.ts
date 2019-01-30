@@ -66,106 +66,6 @@ export class LandscapeView extends PaperView {
 		this.reorder();
 	}
 
-	private reorderCircle(blueprintFullnames: Array<string>) {
-		const blueprintCount = blueprintFullnames.length + 1;
-		const ankleStep = 2 * Math.PI / blueprintCount;
-		const radius = 100 + blueprintCount * 150 / 2 / Math.PI;
-		let ankle = -Math.PI / 2 + ankleStep;
-
-		// Blueprints
-		for (const fullname of blueprintFullnames) {
-			const rect = this.blueprintRects.get(fullname)!;
-			const posX = Math.cos(ankle) * radius;
-			const posY = Math.sin(ankle) * radius;
-			rect.position(posX - rect.getBBox().width / 2, posY - rect.getBBox().height / 2);
-			ankle += ankleStep;
-		}
-
-		// Button
-		const btn = this.addBlueprintButton;
-		let posX = Math.cos(ankle) * radius;
-		let posY = Math.sin(ankle) * radius;
-		btn.position(posX - btn.getBBox().width / 2, posY - btn.getBBox().height / 2);
-
-		// Slang logo
-		const logo = this.slangLogo;
-		posX = 0;
-		posY = 0;
-		logo.position(posX - logo.getBBox().width / 2, posY - logo.getBBox().height / 2);
-	}
-
-	private reorderSpiral(blueprintFullnames: Array<string>) {
-		const ankleStep = 200;
-		const radiusStep = 8000;
-		let radius = 200;
-		let ankle = 0;
-
-		// Blueprints
-		for (const fullname of blueprintFullnames) {
-			const rect = this.blueprintRects.get(fullname)!;
-			const posX = Math.cos(ankle) * radius - rect.getBBox().width / 2;
-			const posY = Math.sin(ankle) * radius - rect.getBBox().height / 2;
-			rect.position(posX, posY);
-			ankle += 1 / radius * ankleStep;
-			radius += 1 / radius * radiusStep;
-		}
-
-		// Button
-		const btn = this.addBlueprintButton;
-		let posX = Math.cos(ankle) * radius;
-		let posY = Math.sin(ankle) * radius;
-		btn.position(posX - btn.getBBox().width / 2, posY - btn.getBBox().height / 2);
-
-		// Slang logo
-		const logo = this.slangLogo;
-		posX = 0;
-		posY = 0;
-		logo.position(posX - logo.getBBox().width / 2, posY - logo.getBBox().height / 2);
-	}
-
-	private reorderConcentric(blueprintFullnames: Array<string>) {
-		const blueprintCount = blueprintFullnames.length + 1;
-
-		const circleStep = 8;
-
-		let circle = 1;
-		let circleCapacity = 8;
-		let elements = 0;
-
-		// Blueprints
-		for (const fullname of blueprintFullnames) {
-
-			const ankle = (2 * Math.PI / circleCapacity) * elements;
-			const radius = circleCapacity * 200 / 2 / Math.PI;
-
-			const rect = this.blueprintRects.get(fullname)!;
-			const posX = Math.cos(ankle) * radius;
-			const posY = Math.sin(ankle) * radius;
-
-			rect.position(posX - rect.getBBox().width / 2, posY - rect.getBBox().height / 2);
-
-			elements++;
-
-			if (elements % circleCapacity == 0) {
-				circle++;
-				circleCapacity += circleStep;
-				elements = 0;
-			}
-		}
-
-		// Button
-		const btn = this.addBlueprintButton;
-		let posX = 0;
-		let posY = 0;
-		btn.position(posX - btn.getBBox().width / 2, posY - btn.getBBox().height / 2);
-
-		// Slang logo
-		const logo = this.slangLogo;
-		posX = 0;
-		posY = 0;
-		logo.position(posX - logo.getBBox().width / 2, posY - logo.getBBox().height / 2);
-	}
-
 	private reorderEqually(blueprintFullnames: Array<string>, width: number, height: number) {
 		const columns = Math.min(5, Math.floor((width - 400) / 200));
 		const rows = Math.max((blueprintFullnames.length + 1) / columns);
@@ -212,7 +112,7 @@ export class LandscapeView extends PaperView {
 		rect.attr("label/font-size", "28");
 		rect.attr("body/cursor", "pointer");
 
-		rect.on("pointerup", (evt: Event, x: number, y: number) => {
+		rect.on("pointerup", () => {
 			const newBlueprint = this.landscape.createBlueprint({
 				fullName: `Unnamed${new Date().getTime()}`,
 				type: BlueprintType.Local,
@@ -267,9 +167,7 @@ export class LandscapeView extends PaperView {
 		this.blueprintRects.set(blueprint.getFullName(), blueprintBox.getShape());
 
 		// JointJS -> Model
-		blueprintBox.onClick(function (evt: Event, x: number, y: number) {
-			blueprint.open();
-		});
+		blueprintBox.onClick(() => blueprint.open());
 	}
 
 }

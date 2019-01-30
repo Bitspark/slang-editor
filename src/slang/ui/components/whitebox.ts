@@ -59,11 +59,11 @@ export class WhiteBoxComponent extends CellComponent {
 		});
 
 		this.shape.on("pointerclick",
-			(cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
+			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
 				this.clicked.next({event, x, y});
 			});
 		this.shape.on("pointerdblclick",
-			(cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
+			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
 				this.dblclicked.next({event, x, y});
 			});
 
@@ -304,7 +304,7 @@ export class WhiteBoxComponent extends CellComponent {
 		const padding = WhiteBoxComponent.padding;
 		const currentPosition = this.shape.get("position");
 		const currentSize = this.shape.get("size");
-		const [pWidth, pHeight] = [IsolatedBlueprintPortComponent.size.width, IsolatedBlueprintPortComponent.size.height];
+		const [, pHeight] = [IsolatedBlueprintPortComponent.size.width, IsolatedBlueprintPortComponent.size.height];
 
 		let newX: number = currentPosition.x + padding;
 		let newY: number = currentPosition.y + padding;
@@ -435,7 +435,7 @@ export class WhiteBoxComponent extends CellComponent {
 		};
 
 		const that = this;
-		const portComponent = new IsolatedBlueprintPortComponent(this.paperView, name, id, port, invertedPosition[position]);
+		const portComponent = new IsolatedBlueprintPortComponent(name, id, port, invertedPosition[position]);
 		const portElement = portComponent.getShape();
 		this.paperView.renderCell(portElement);
 
@@ -517,7 +517,7 @@ export class WhiteBoxComponent extends CellComponent {
 		const that = this;
 
 		if (operator.hasProperties()) {
-			operatorComp.onClick((event: Event, x: number, y: number) => {
+			operatorComp.onClick(() => {
 				const comp = that
 					.createComponent({x: 0, y: 0, align: "c"})
 					.mount({
@@ -552,7 +552,7 @@ export class WhiteBoxComponent extends CellComponent {
 					view: () => m(PortInfo, {port})
 				});
 		});
-		portOwnerComp.onPortMouseLeave((port: PortModel, x: number, y: number) => {
+		portOwnerComp.onPortMouseLeave(() => {
 			portInfo.destroy();
 		});
 	}
@@ -601,7 +601,7 @@ export interface Attrs {
 
 class PortInfo implements ClassComponent<Attrs> {
 	// Note that class methods cannot infer parameter types
-	oninit({attrs}: CVnode<Attrs>) {
+	oninit() {
 	}
 
 	view({attrs}: CVnode<Attrs>) {
@@ -632,7 +632,7 @@ export namespace WhiteBoxComponent {
 		size: Size;
 	}
 
-	function constructRectAttrs({id, cssClass, size}: BasicAttrs): dia.Element.GenericAttributes<RectangleSelectors> {
+	function constructRectAttrs({id, size}: BasicAttrs): dia.Element.GenericAttributes<RectangleSelectors> {
 		const {width, height} = size;
 		const position = {x: -width / 2, y: -height / 2};
 

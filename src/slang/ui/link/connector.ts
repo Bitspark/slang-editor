@@ -62,6 +62,6 @@ function slangConnectorFunction(sourcePoint: g.PlainPoint, targetPoint: g.PlainP
 	return svg;
 }
 
-export function slangConnector(sourcePort: PortModel, destinationPort: PortModel | null, lines: number): (sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: Array<g.PlainPoint>, opt: any) => string {
+export function slangConnector(_sourcePort: PortModel, _destinationPort: PortModel | null, lines: number): (sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: Array<g.PlainPoint>, opt: any) => string {
 	return (sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: Array<g.PlainPoint>) => slangConnectorFunction(sourcePoint, targetPoint, route, lines);
 }

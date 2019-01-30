@@ -2,7 +2,6 @@ import {PortGroupComponent, PortGroupPosition} from "./port-group";
 import {dia, shapes} from "jointjs";
 import {PortModel} from "../../model/port";
 import {Styles} from "../../../styles/studio";
-import {PaperView} from "../views/paper-view";
 import {SlangSubject} from "../../custom/events";
 
 export class IsolatedBlueprintPortComponent {
@@ -17,8 +16,8 @@ export class IsolatedBlueprintPortComponent {
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("mouseleft");
 
-	constructor(paperView: PaperView, name: string, identity: string, port: PortModel, position: PortGroupPosition) {
-		this.portGroup = new PortGroupComponent(paperView, "PortGroup", port, position, 0, 1.0);
+	constructor(name: string, identity: string, port: PortModel, position: PortGroupPosition) {
+		this.portGroup = new PortGroupComponent("PortGroup", port, position, 0, 1.0);
 		const portGroups = {"PortGroup": this.portGroup.getPortGroupElement()};
 
 		const transform = Styles.BlueprintPort.transformations[position];
@@ -47,14 +46,14 @@ export class IsolatedBlueprintPortComponent {
 
 		const parentPort = port;
 		this.rectangle.on("port:mouseover",
-			(cellView: dia.CellView, event: MouseEvent, x: number, y: number, portId: string) => {
+			(_cellView: dia.CellView, _event: MouseEvent, x: number, y: number, portId: string) => {
 				const port = parentPort.findNodeById(portId);
 				if (port) {
 					this.portMouseEntered.next({port: port as PortModel, x, y});
 				}
 			});
 		this.rectangle.on("port:mouseout",
-			(cellView: dia.CellView, event: MouseEvent, x: number, y: number, portId: string) => {
+			(_cellView: dia.CellView, _event: MouseEvent, x: number, y: number, portId: string) => {
 				const port = parentPort.findNodeById(portId);
 				if (port) {
 					this.portMouseLeft.next({port: port as PortModel, x, y});

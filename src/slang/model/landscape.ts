@@ -1,7 +1,7 @@
+import {AppModel} from "./app";
 import {BlueprintModel, BlueprintModelArgs} from "./blueprint";
 import {SlangNode} from "../custom/nodes";
 import {SlangBehaviorSubject} from "../custom/events";
-import {AppModel} from "./app";
 
 export type LandscapeModelArgs = {};
 
@@ -9,7 +9,7 @@ export class LandscapeModel extends SlangNode {
 
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
 
-	constructor(parent: AppModel, args: LandscapeModelArgs) {
+	constructor(parent: AppModel, _args: LandscapeModelArgs) {
 		super(parent);
 	}
 

@@ -1,16 +1,15 @@
 import {OperatorGeometry, OperatorModel} from "./operator";
 import {BlueprintPortModel, PortDirection, PortModel, PortModelArgs} from "./port";
-import {BlueprintDelegateModel, BlueprintDelegateModelArgs, OperatorDelegateModel} from "./delegate";
+import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
+import {PropertyAssignments, PropertyModel} from "./property";
+import {LandscapeModel} from "./landscape";
 import {SlangParsing} from "../custom/parsing";
 import {PropertyEvaluator} from "../custom/utils";
 import {BlackBox} from "../custom/nodes";
 import {SlangTypeValue, TypeIdentifier} from "../custom/type";
-import {PropertyAssignments, PropertyModel} from "./property";
 import {GenericSpecifications} from "../custom/generics";
 import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../custom/events";
-import {LandscapeModel} from "./landscape";
 import {Connections} from "../custom/connections";
-import {Styles} from "../../styles/studio";
 
 export enum BlueprintType {
 	Local,
@@ -164,15 +163,21 @@ export class BlueprintModel extends BlackBox {
 		}
 	}
 
-	public createOperator(name: string | null, blueprint: BlueprintModel, propAssigns: PropertyAssignments, genSpeci: GenericSpecifications, geometry?: OperatorGeometry): OperatorModel {
+	public createOperator(name: string | null, blueprint: BlueprintModel, properties: PropertyAssignments | null, generics: GenericSpecifications | null, geometry?: OperatorGeometry): OperatorModel {
 		if (!name) {
 			name = this.getRandomOperatorName(blueprint);
+		}
+		if (!generics) {
+			generics = new GenericSpecifications([]);
+		}
+		if (!properties) {
+			properties = new PropertyAssignments([], generics);
 		}
 		return this.createChildNode(OperatorModel, {
 			name,
 			blueprint,
-			properties: propAssigns,
-			generics: genSpeci,
+			properties,
+			generics,
 			geometry: geometry
 		}, operator => {
 			blueprint.instantiateOperator(operator);
