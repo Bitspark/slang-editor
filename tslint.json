@@ -28,7 +28,30 @@
 		/*"no-namespace": false,
 		"variable-name": false,
 		"no-else-after-return": false,*/
-		"no-consecutive-blank-lines": [true, 1],
+		"number-literal-format": true,
+		"no-unnecessary-qualifier": true,
+		"curly": true,
+		"typedef-whitespace": [
+			true,
+			{
+				"call-signature": "nospace",
+				"index-signature": "nospace",
+				"parameter": "nospace",
+				"property-declaration": "nospace",
+				"variable-declaration": "nospace"
+			},
+			{
+				"call-signature": "onespace",
+				"index-signature": "onespace",
+				"parameter": "onespace",
+				"property-declaration": "onespace",
+				"variable-declaration": "onespace"
+			}
+		],
+		"no-consecutive-blank-lines": [
+			true,
+			1
+		],
 		"one-line": [
 			true,
 			"check-catch",

@@ -19,12 +19,12 @@ function createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
 
 	const portIn = blackBox.getPortIn();
 	if (portIn) {
-		portGroups.push(new PortGroupComponent("MainIn", portIn, "top", 0.0, 1.0));
+		portGroups.push(new PortGroupComponent("MainIn", portIn, "top", 0, 1));
 	}
 
 	const portOut = blackBox.getPortOut();
 	if (portOut) {
-		portGroups.push(new PortGroupComponent("MainOut", portOut, "bottom", 0.0, 1.0));
+		portGroups.push(new PortGroupComponent("MainOut", portOut, "bottom", 0, 1));
 	}
 
 	const delegates = Array.from(blackBox.getDelegates());

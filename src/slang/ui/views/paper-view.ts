@@ -61,7 +61,7 @@ export abstract class PaperView extends View {
 	}
 
 	protected reset() {
-		this.paper.scale(1.0);
+		this.paper.scale(1);
 		this.center();
 	}
 

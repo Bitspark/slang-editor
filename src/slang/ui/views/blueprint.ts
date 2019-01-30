@@ -71,7 +71,7 @@ export class BlueprintView extends PaperView {
 				if (port) {
 					const link = ConnectionComponent.createGhostLink(port);
 					link.on("remove", () => {
-						link.transition("attrs/.connection/stroke-opacity", 0.0);
+						link.transition("attrs/.connection/stroke-opacity", 0);
 					});
 					return link;
 				}
