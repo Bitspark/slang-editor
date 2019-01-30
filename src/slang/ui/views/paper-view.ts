@@ -80,7 +80,7 @@ export abstract class PaperView extends View {
 		evt.preventDefault();
 		switch (this.userInputMode) {
 			case "scroll":
-				this.scroll(evt.deltaX, evt.deltaY);
+				this.scroll(evt.deltaX, -evt.deltaY);
 				return false;
 			case "hscroll/pan":
 				this.scroll(evt.deltaY, 0);
