@@ -1,10 +1,10 @@
 /* tslint:disable:no-circular-imports */
 
 import {Subscription} from "rxjs";
-import {canConnectTo} from "../connection-check";
 import {SlangType, TypeIdentifier} from "../definitions/type";
-import {StreamPort} from "../stream";
+import {canConnectTo} from "../utils/connection-check";
 import {SlangBehaviorSubject, SlangSubject} from "../utils/events";
+import {StreamPort} from "../utils/stream";
 import {BlackBox} from "./blackbox";
 import {BlueprintModel} from "./blueprint";
 import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";

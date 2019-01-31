@@ -2,10 +2,10 @@
 
 import {OperatorGeometry} from "../definitions/geometry";
 import {SlangTypeValue, TypeIdentifier} from "../definitions/type";
-import {PropertyAssignments, PropertyModel} from "../property";
-import {PropertyEvaluator} from "../property";
 import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../utils/events";
 import {SlangParsing} from "../utils/parsing";
+import {PropertyAssignments, PropertyModel} from "../utils/property";
+import {PropertyEvaluator} from "../utils/property";
 import {BlackBox} from "./blackbox";
 import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
 import {LandscapeModel} from "./landscape";

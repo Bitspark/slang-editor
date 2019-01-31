@@ -3,7 +3,7 @@ import m, {ClassComponent, CVnode} from "mithril";
 import {isUndefined, SlangType, SlangTypeValue} from "../../core/definitions/type";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {OperatorModel} from "../../core/models/operator";
-import {PropertyAssignments} from "../../core/property";
+import {PropertyAssignments} from "../../core/utils/property";
 import {ComponentFactory} from "../factory";
 import {Input} from "./console";
 import {Tk} from "./toolkit";

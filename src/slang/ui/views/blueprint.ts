@@ -4,9 +4,8 @@ import {TypeIdentifier} from "../../core/definitions/type";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {LandscapeModel} from "../../core/models/landscape";
 import {GenericPortModel, GenericSpecifications, PortModel} from "../../core/models/port";
-import {PropertyAssignments} from "../../core/property";
+import {PropertyAssignments} from "../../core/utils/property";
 import {BlackBoxShape} from "../components/blackbox";
-import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {WhiteBoxComponent} from "../components/whitebox";
 import {ViewFrame} from "../frame";
@@ -15,7 +14,6 @@ import {PaperView} from "./paper-view";
 export class BlueprintView extends PaperView {
 	private readonly whiteBox: WhiteBoxComponent;
 	private readonly landscape: LandscapeModel;
-	private blueprintSelect: BlueprintSelectComponent | null = null;
 
 	constructor(frame: ViewFrame, private blueprint: BlueprintModel) {
 		super(frame);

@@ -1,8 +1,8 @@
-import {SlangType, TypeIdentifier} from "./definitions/type";
-import {OperatorDelegateModel} from "./models/delegate";
-import {OperatorModel} from "./models/operator";
-import {PortModel} from "./models/port";
-import {PortOwner} from "./models/port-owner";
+import {SlangType, TypeIdentifier} from "../definitions/type";
+import {OperatorDelegateModel} from "../models/delegate";
+import {OperatorModel} from "../models/operator";
+import {PortModel} from "../models/port";
+import {PortOwner} from "../models/port-owner";
 import {containsMisplacedStreamTypeTo, StreamType} from "./stream";
 
 function typesStreamCompatible(streamTypeA: SlangType, streamTypeB: SlangType): boolean {

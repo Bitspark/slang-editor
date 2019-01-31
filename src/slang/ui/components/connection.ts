@@ -5,7 +5,7 @@ import {BlackBox} from "../../core/models/blackbox";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {Connection, PortModel} from "../../core/models/port";
 import {PortOwner} from "../../core/models/port-owner";
-import {StreamType} from "../../core/stream";
+import {StreamType} from "../../core/utils/stream";
 import {slangConnector} from "../link/connector";
 import {slangRouter} from "../link/router";
 import {PaperView} from "../views/paper-view";
