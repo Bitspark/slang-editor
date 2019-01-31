@@ -2,8 +2,8 @@
 	"extends": [
 		"tslint:recommended",
 		"tslint-eslint-rules",
-		"tslint-consistent-codestyle" // ,
-		// "tslint-no-circular-imports"
+		"tslint-consistent-codestyle",
+		"tslint-no-circular-imports"
 	],
 	"rules": {
 		// Rules from plain tslint
@@ -156,6 +156,8 @@
 				]
 			}
 		],
+		//
+		"no-circular-imports": true,
 		// Disabled from tslint:recommended
 		"variable-name": false,
 		"interface-name": false,
