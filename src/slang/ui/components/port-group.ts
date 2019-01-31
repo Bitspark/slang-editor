@@ -1,14 +1,14 @@
-import {PortComponent} from "./port";
 import {dia, g} from "jointjs";
-import {PortModel} from "../../model/port";
-import {TypeIdentifier} from "../../custom/type";
 import {Styles} from "../../../styles/studio";
+import {TypeIdentifier} from "../../custom/type";
 import {OperatorModel} from "../../model/operator";
+import {PortModel} from "../../model/port";
+import {PortComponent} from "./port";
 
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";
 
-function createPortItems(parent: PortGroupComponent, position: PortGroupPosition, port: PortModel, createGhostPorts: boolean): Array<PortComponent> {
-	let portItems: Array<PortComponent> = [];
+function createPortItems(parent: PortGroupComponent, position: PortGroupPosition, port: PortModel, createGhostPorts: boolean): PortComponent[] {
+	const portItems: PortComponent[] = [];
 
 	switch (port.getTypeIdentifier()) {
 		case TypeIdentifier.Map:
@@ -46,69 +46,11 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
  */
 export class PortGroupComponent {
 
-	private readonly ports: Array<PortComponent> = [];
-	private parentElement: dia.Element | null = null;
-	private portGroupElement: dia.Element.PortGroup = {};
-
-	constructor(
-		private readonly name: string,
-		private readonly port: PortModel,
-		private readonly groupPosition: PortGroupPosition,
-		start: number,
-		width: number) {
-		switch (groupPosition) {
-			case "top":
-				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "top", start, width) as any;
-				break;
-			case "right":
-				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "right", start, width) as any;
-				break;
-			case "bottom":
-				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "bottom", start, width) as any;
-				break;
-			case "left":
-				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "left", start, width) as any;
-				break;
-		}
-	}
-
-	public getPortGroupElement(): dia.Element.PortGroup {
-		return this.portGroupElement;
-	}
-
-	public getName(): string {
-		return this.name;
-	}
-
-	public getGroupPosition(): PortGroupPosition {
-		return this.groupPosition;
-	}
-
-	public setParent(parent: dia.Element, drawGenerics: boolean) {
-		this.parentElement = parent;
-		this.refreshPorts(drawGenerics);
-	}
-
-	public refreshPorts(drawGenerics: boolean) {
-		const parentElement = this.parentElement;
-		if (!parentElement) {
-			throw new Error(`need parent`);
-		}
-
-		parentElement.removePorts(this.ports.map(port => port.getPortElement()));
-
-		const ports = createPortItems(this, this.getGroupPosition(), this.port, drawGenerics);
-
-		this.ports.length = 0;
-		this.ports.push.apply(this.ports, ports);
-		parentElement.addPorts(this.ports.map(port => port.getPortElement()));
-	}
-
 	// STATIC:
 
-	public static layoutFunction(portComponents: Array<PortComponent>, position: PortGroupPosition, offset: number, space: number): (ports: Array<any>, elBBox: g.Rect, opt: any) => Array<g.Point> {
-		return function (ports: Array<PortComponent>, elBBox: g.Rect): Array<g.Point> {
-			return ports.map((_port: PortComponent, index: number, ports: Array<any>) => {
+	public static layoutFunction(portComponents: PortComponent[], position: PortGroupPosition, offset: number, space: number): (ports: any[], elBBox: g.Rect, opt: any) => g.Point[] {
+		return (ports: PortComponent[], elBBox: g.Rect): g.Point[] => {
+			return ports.map((_port: PortComponent, index: number) => {
 				const count = ports.length;
 
 				let total = 0;
@@ -157,6 +99,64 @@ export class PortGroupComponent {
 				return new g.Point(portPosition);
 			});
 		};
+	}
+
+	private readonly ports: PortComponent[] = [];
+	private parentElement: dia.Element | null = null;
+	private portGroupElement: dia.Element.PortGroup = {};
+
+	constructor(
+		private readonly name: string,
+		private readonly port: PortModel,
+		private readonly groupPosition: PortGroupPosition,
+		start: number,
+		width: number) {
+		switch (groupPosition) {
+			case "top":
+				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "top", start, width) as any;
+				break;
+			case "right":
+				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "right", start, width) as any;
+				break;
+			case "bottom":
+				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "bottom", start, width) as any;
+				break;
+			case "left":
+				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "left", start, width) as any;
+				break;
+		}
+	}
+
+	public getPortGroupElement(): dia.Element.PortGroup {
+		return this.portGroupElement;
+	}
+
+	public getName(): string {
+		return this.name;
+	}
+
+	public getGroupPosition(): PortGroupPosition {
+		return this.groupPosition;
+	}
+
+	public setParent(parent: dia.Element, drawGenerics: boolean) {
+		this.parentElement = parent;
+		this.refreshPorts(drawGenerics);
+	}
+
+	public refreshPorts(drawGenerics: boolean) {
+		const parentElement = this.parentElement;
+		if (!parentElement) {
+			throw new Error(`need parent`);
+		}
+
+		parentElement.removePorts(this.ports.map((port) => port.getPortElement()));
+
+		const ports = createPortItems(this, this.getGroupPosition(), this.port, drawGenerics);
+
+		this.ports.length = 0;
+		this.ports.push.apply(this.ports, ports);
+		parentElement.addPorts(this.ports.map((port) => port.getPortElement()));
 	}
 
 }

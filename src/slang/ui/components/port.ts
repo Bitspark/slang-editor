@@ -1,52 +1,13 @@
 import {attributes, dia, g} from "jointjs";
+import {Styles} from "../../../styles/studio";
+import {TypeIdentifier} from "../../custom/type";
 import {PortModel} from "../../model/port";
 import {PortGroupComponent, PortGroupPosition} from "./port-group";
-import {TypeIdentifier} from "../../custom/type";
-import {Styles} from "../../../styles/studio";
 
 /**
  * Component representing a Slang port.
  */
 export class PortComponent {
-
-	private position: g.PlainPoint | undefined;
-	private readonly portElement: dia.Element.Port = {};
-
-	constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent) {
-		if (port.isGeneric()) {
-			this.portElement.id = `${port.getIdentity()}.*`;
-		} else {
-			this.portElement.id = `${port.getIdentity()}`;
-		}
-		this.portElement.group = parent.getName();
-		this.portElement.markup = PortComponent.getPortMarkup(port);
-		this.portElement.attrs = {
-			"path": PortComponent.getPortAttributes(parent.getGroupPosition(), port),
-			"g": {
-				magnet: true,
-			},
-		};
-	}
-
-	public getPortElement(): dia.Element.Port {
-		return this.portElement;
-	}
-
-	public getModel(): PortModel {
-		return this.port;
-	}
-
-	public setPosition(position: g.PlainPoint) {
-		this.position = position;
-	}
-
-	public getPosition(): g.PlainPoint | undefined {
-		return this.position;
-	}
-
-	public getGroup(): PortGroupComponent {
-		return this.parent;
-	}
 
 	// STATIC:
 
@@ -67,7 +28,7 @@ export class PortComponent {
 			const width = Styles.Port.width * factor;
 			const height = Styles.Port.height * factor;
 			const classes = ["sl-port"];
-			if (i % 2 == 1) {
+			if (i % 2 === 1) {
 				classes.push(`sl-stripe`);
 			} else {
 				if (port.isGeneric() && port.getTypeIdentifier() === TypeIdentifier.Map) {
@@ -102,5 +63,44 @@ export class PortComponent {
 		}
 
 		return attrs;
+	}
+
+	private position: g.PlainPoint | undefined;
+	private readonly portElement: dia.Element.Port = {};
+
+	constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent) {
+		if (port.isGeneric()) {
+			this.portElement.id = `${port.getIdentity()}.*`;
+		} else {
+			this.portElement.id = `${port.getIdentity()}`;
+		}
+		this.portElement.group = parent.getName();
+		this.portElement.markup = PortComponent.getPortMarkup(port);
+		this.portElement.attrs = {
+			path: PortComponent.getPortAttributes(parent.getGroupPosition(), port),
+			g: {
+				magnet: true,
+			},
+		};
+	}
+
+	public getPortElement(): dia.Element.Port {
+		return this.portElement;
+	}
+
+	public getModel(): PortModel {
+		return this.port;
+	}
+
+	public setPosition(position: g.PlainPoint) {
+		this.position = position;
+	}
+
+	public getPosition(): g.PlainPoint | undefined {
+		return this.position;
+	}
+
+	public getGroup(): PortGroupComponent {
+		return this.parent;
 	}
 }

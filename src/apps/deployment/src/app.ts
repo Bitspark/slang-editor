@@ -15,17 +15,18 @@ export class DeploymentApp extends SlangApp {
 
 	protected onReady(): void {
 		this.app.subscribeOpenedBlueprintChanged((blueprint) => {
-			if (blueprint !== null) {
-				blueprint.subscribeDeploymentRequested(() => {
-					this.deploy(blueprint);
-				});
-				blueprint.subscribeShutdownRequested(() => {
-					this.shutdown(blueprint);
-				});
-				blueprint.subscribeInputPushed((inputData: SlangTypeValue) => {
-					this.pushInput(blueprint, inputData);
-				});
+			if (blueprint === null) {
+				return;
 			}
+			blueprint.subscribeDeploymentRequested(() => {
+				this.deploy(blueprint);
+			});
+			blueprint.subscribeShutdownRequested(() => {
+				this.shutdown(blueprint);
+			});
+			blueprint.subscribeInputPushed((inputData: SlangTypeValue) => {
+				this.pushInput(blueprint, inputData);
+			});
 		});
 	}
 
@@ -37,21 +38,21 @@ export class DeploymentApp extends SlangApp {
 
 	private shutdown(blueprint: BlueprintModel): void {
 		const access = blueprint.getInstanceAccess();
-		if (access) {
-			this.api.shutdownBlueprintInstance(access.handle).then(() => {
-				blueprint.shutdown();
-			});
+		if (!access) {
+			return;
 		}
-
+		this.api.shutdownBlueprintInstance(access.handle).then(() => {
+			blueprint.shutdown();
+		});
 	}
 
 	private pushInput(blueprint: BlueprintModel, inputData: SlangTypeValue): void {
 		const access = blueprint.getInstanceAccess();
-		if (access) {
-			this.api.pushInput(access.url, inputData).then((outputData: SlangTypeValue) => {
-				blueprint.pushOutput(outputData);
-			});
+		if (!access) {
+			return;
 		}
-
+		this.api.pushInput(access.url, inputData).then((outputData: SlangTypeValue) => {
+			blueprint.pushOutput(outputData);
+		});
 	}
 }

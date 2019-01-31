@@ -19,7 +19,7 @@ export class SlangParsing {
 			delegate: undefined,
 			service: undefined,
 			directionIn: false,
-			port: ""
+			port: "",
 		};
 
 		let separator = "";

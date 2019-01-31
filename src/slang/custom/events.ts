@@ -99,9 +99,9 @@ export class SlangBagSubject<T> extends BaseSlangSubject {
 export class SlangNodeSetBehaviorSubject<T extends SlangNode> extends SlangBagSubject<T> {
 	private readonly nodes: Map<string, T> = new Map<string, T>();
 
-	constructor(protected readonly name: string, initial: Array<T>) {
+	constructor(protected readonly name: string, initial: T[]) {
 		super(name);
-		initial.forEach(node => this.nodes.set(node.getScopedIdentity(), node));
+		initial.forEach((node) => this.nodes.set(node.getScopedIdentity(), node));
 	}
 
 	public nextAdd<U extends T>(value: U, cb?: (node: U) => void) {
@@ -127,7 +127,7 @@ export class SlangNodeSetBehaviorSubject<T extends SlangNode> extends SlangBagSu
 
 	public subscribeAdded(next: (value: T) => void): Subscription {
 		if (this.nodes) {
-			this.nodes.forEach(node => next(node));
+			this.nodes.forEach((node) => next(node));
 		}
 		return super.subscribeAdded(next);
 	}

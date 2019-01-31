@@ -1,26 +1,16 @@
 import {Subscription} from "rxjs";
-import {SlangType} from "./type";
-import {SlangBehaviorSubject, SlangSubject} from "./events";
 import {PortModel} from "../model/port";
+import {SlangBehaviorSubject, SlangSubject} from "./events";
+import {SlangType} from "./type";
 
 export class GenericSpecifications {
 	private readonly genericsChanged = new SlangSubject<[string, SlangType | null]>("generics-changed");
 	private readonly genericTypes = new Map<string, SlangBehaviorSubject<SlangType | null>>();
 	private readonly ports = new Map<string, Set<PortModel>>();
 
-	public constructor(private genericIdentifiers: Array<string>) {
+	public constructor(private genericIdentifiers: string[]) {
 	}
 
-	private getSubject(identifier: string, initial: SlangType | null = null): SlangBehaviorSubject<SlangType | null> {
-		const generic = this.genericTypes.get(identifier);
-		if (generic) {
-			return generic;
-		}
-		const newGeneric = new SlangBehaviorSubject<SlangType | null>("generic", initial);
-		this.genericTypes.set(identifier, newGeneric);
-		return newGeneric;
-	}
-	
 	public specify(identifier: string, type: SlangType): void {
 		if (this.genericIdentifiers.indexOf(identifier) === -1) {
 			throw new Error(`unknown generic identifier ${identifier}`);
@@ -56,7 +46,7 @@ export class GenericSpecifications {
 	public has(identifier: string): boolean {
 		return this.genericTypes.has(identifier);
 	}
-	
+
 	public clear(identifier: string): void {
 		if (this.genericIdentifiers.indexOf(identifier) === -1) {
 			return;
@@ -64,7 +54,7 @@ export class GenericSpecifications {
 		const subject = this.getSubject(identifier);
 		subject.next(null);
 	}
-	
+
 	public registerPort(identifier: string, port: PortModel) {
 		let portSet = this.ports.get(identifier);
 		if (!portSet) {
@@ -75,14 +65,14 @@ export class GenericSpecifications {
 	}
 
 	public unregisterPort(identifier: string, port: PortModel) {
-		let portSet = this.ports.get(identifier);
+		const portSet = this.ports.get(identifier);
 		if (portSet) {
 			portSet.delete(port);
 		}
 	}
-	
+
 	public getUnifiedType(identifier: string): SlangType | null {
-		let portSet = this.ports.get(identifier);
+		const portSet = this.ports.get(identifier);
 		if (!portSet) {
 			return null;
 		}
@@ -96,7 +86,7 @@ export class GenericSpecifications {
 		}
 		return unifiedType;
 	}
-	
+
 	public subscribeGenericTypeChanged(identifier: string, cb: (type: SlangType | null) => void): Subscription {
 		return this.getSubject(identifier).subscribe(cb);
 	}
@@ -104,5 +94,15 @@ export class GenericSpecifications {
 	public subscribeGenericsChanged(cb: (generic: [string, SlangType | null]) => void): Subscription {
 		return this.genericsChanged.subscribe(cb);
 	}
-	
+
+	private getSubject(identifier: string, initial: SlangType | null = null): SlangBehaviorSubject<SlangType | null> {
+		const generic = this.genericTypes.get(identifier);
+		if (generic) {
+			return generic;
+		}
+		const newGeneric = new SlangBehaviorSubject<SlangType | null>("generic", initial);
+		this.genericTypes.set(identifier, newGeneric);
+		return newGeneric;
+	}
+
 }

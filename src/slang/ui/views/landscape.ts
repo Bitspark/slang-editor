@@ -1,11 +1,11 @@
 import {dia, shapes} from "jointjs";
+import {SlangType, TypeIdentifier} from "../../custom/type";
 import {BlueprintModel, BlueprintType} from "../../model/blueprint";
 import {LandscapeModel} from "../../model/landscape";
+import {PortDirection} from "../../model/port";
+import {BlackBoxShape, BlueprintBoxComponent} from "../components/blackbox";
 import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";
-import {PortDirection} from "../../model/port";
-import {SlangType, TypeIdentifier} from "../../custom/type";
-import {BlackBoxShape, BlueprintBoxComponent} from "../components/blackbox";
 
 export class LandscapeView extends PaperView {
 
@@ -32,25 +32,10 @@ export class LandscapeView extends PaperView {
 		this.subscribe(landscape);
 	}
 
-	private subscribe(landscape: LandscapeModel) {
-		landscape.subscribeChildCreated(BlueprintModel, blueprint => {
-			if (!this.filter || this.filter(blueprint)) {
-				this.addBlueprint(blueprint);
-				this.reorder();
-			}
-		});
-	}
-
 	public resize(width: number, height: number) {
 		super.resize(width, height);
 		this.dimensions = [width, height];
 		this.reorder();
-	}
-
-	private reorder() {
-		const blueprintFullnames = Array.from(this.blueprintRects.keys());
-		blueprintFullnames.sort();
-		this.reorderEqually(blueprintFullnames, this.dimensions[0], this.dimensions[1]);
 	}
 
 	public redraw() {
@@ -66,7 +51,22 @@ export class LandscapeView extends PaperView {
 		this.reorder();
 	}
 
-	private reorderEqually(blueprintFullnames: Array<string>, width: number, height: number) {
+	private subscribe(landscape: LandscapeModel) {
+		landscape.subscribeChildCreated(BlueprintModel, (blueprint) => {
+			if (!this.filter || this.filter(blueprint)) {
+				this.addBlueprint(blueprint);
+				this.reorder();
+			}
+		});
+	}
+
+	private reorder() {
+		const blueprintFullnames = Array.from(this.blueprintRects.keys());
+		blueprintFullnames.sort();
+		this.reorderEqually(blueprintFullnames, this.dimensions[0], this.dimensions[1]);
+	}
+
+	private reorderEqually(blueprintFullnames: string[], width: number, height: number) {
 		const columns = Math.min(5, Math.floor((width - 400) / 200));
 		const rows = Math.max((blueprintFullnames.length + 1) / columns);
 
@@ -96,14 +96,14 @@ export class LandscapeView extends PaperView {
 
 		// Slang logo
 		const logo = this.slangLogo;
-		let posX = 0;
-		let posY = -height / 2 + 100;
-		logo.position(posX - logo.getBBox().width / 2, posY - logo.getBBox().height / 2);
+		const logoPosX = 0;
+		const logoPosY = -height / 2 + 100;
+		logo.position(logoPosX - logo.getBBox().width / 2, logoPosY - logo.getBBox().height / 2);
 	}
 
 	private createAddBlueprintButton(): dia.Element {
 		if (!this.graph) {
-			throw `no graph`;
+			throw new Error(`no graph`);
 		}
 
 		const rect = BlackBoxShape.placeGhost(this, "＋");
@@ -135,22 +135,22 @@ export class LandscapeView extends PaperView {
 
 	private createSlangLogo(): dia.Element {
 		if (!this.graph) {
-			throw `no graph`;
+			throw new Error(`no graph`);
 		}
 
-		let image = new shapes.basic.Image({
+		const image = new shapes.basic.Image({
 			size: {
 				width: 177,
-				height: 203
+				height: 203,
 			},
 			attrs: {
 				image: {
 					"xlink:href": "https://files.bitspark.de/slang2.png",
-					width: 177,
-					height: 203,
-					cursor: "default"
-				}
-			}
+					"width": 177,
+					"height": 203,
+					"cursor": "default",
+				},
+			},
 		});
 		image.attr("draggable", false);
 		this.graph.addCell(image);

@@ -1,48 +1,48 @@
 import m, {ClassComponent, CVnode} from "mithril";
 
-import {AttachableComponent, CellComponent} from "./base";
-import {Styles} from "../../../styles/studio";
 import {dia, g, layout, shapes} from "jointjs";
-import {BlueprintInstance, BlueprintModel} from "../../model/blueprint";
-import {BlackBoxComponent, OperatorBoxComponent} from "./blackbox";
-import {PaperView} from "../views/paper-view";
-import {ConnectionComponent} from "./connection";
-import {BlueprintPortModel, GenericPortModel, PortModel} from "../../model/port";
-import {PortGroupPosition} from "./port-group";
-import {IsolatedBlueprintPortComponent} from "./blueprint-port";
+import {Styles} from "../../../styles/studio";
 import {Connection} from "../../custom/connections";
-import {OperatorModel} from "../../model/operator";
-import {BlueprintDelegateModel} from "../../model/delegate";
-import {SlangTypeValue, TypeIdentifier} from "../../custom/type";
-import {Tk} from "./toolkit";
-import Button = Tk.Button;
-import {InputConsole, OutputConsole} from "./console";
-import {COMPONENT_FACTORY} from "./factory";
-import {DashboardComponent} from "./dashboard";
 import Modal = Tk.Modal;
 import {SlangSubject} from "../../custom/events";
+import {SlangTypeValue, TypeIdentifier} from "../../custom/type";
+import {BlueprintInstance, BlueprintModel} from "../../model/blueprint";
+import {BlueprintDelegateModel} from "../../model/delegate";
+import {OperatorModel} from "../../model/operator";
+import {BlueprintPortModel, GenericPortModel, PortModel} from "../../model/port";
+import {PaperView} from "../views/paper-view";
+import {AttachableComponent, CellComponent} from "./base";
+import {BlackBoxComponent, OperatorBoxComponent} from "./blackbox";
+import {IsolatedBlueprintPortComponent} from "./blueprint-port";
+import {ConnectionComponent} from "./connection";
+import Button = Tk.Button;
+import {InputConsole, OutputConsole} from "./console";
+import {DashboardComponent} from "./dashboard";
+import {COMPONENT_FACTORY} from "./factory";
+import {PortGroupPosition} from "./port-group";
+import {Tk} from "./toolkit";
 import Box = Tk.Box;
 
 export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 60;
 
+	protected readonly shape: WhiteBoxComponent.Rect;
+
 	private clicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("clicked");
 	private dblclicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("dblclicked");
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
-
-	protected readonly shape: WhiteBoxComponent.Rect;
 	private readonly buttons: AttachableComponent;
 	private readonly input: AttachableComponent;
 	private readonly output: AttachableComponent;
 
-	private readonly operators: Array<BlackBoxComponent> = [];
-	private readonly connections: Array<ConnectionComponent> = [];
+	private readonly operators: BlackBoxComponent[] = [];
+	private readonly connections: ConnectionComponent[] = [];
 	private readonly ports = {
-		top: [] as Array<IsolatedBlueprintPortComponent>,
-		bottom: [] as Array<IsolatedBlueprintPortComponent>,
-		left: [] as Array<IsolatedBlueprintPortComponent>,
-		right: [] as Array<IsolatedBlueprintPortComponent>,
+		top: [] as IsolatedBlueprintPortComponent[],
+		bottom: [] as IsolatedBlueprintPortComponent[],
+		left: [] as IsolatedBlueprintPortComponent[],
+		right: [] as IsolatedBlueprintPortComponent[],
 	};
 
 	constructor(paperView: PaperView, private readonly blueprint: BlueprintModel) {
@@ -71,168 +71,18 @@ export class WhiteBoxComponent extends CellComponent {
 		this.centerizeOuter();
 	}
 
-	private subscribe() {
-		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
-			if (!instance) {
-				this.buttons.mount({
-					view: () => m(".toolbox", [
-						m(Button, {
-							onClick: () => {
-								this.blueprint.save();
-								this.blueprint.requestDeployment();
-							},
-							class: "sl-blupr-deploy",
-						}, "Deploy"),
-						m(Button, {
-							onClick: () => {
-								this.blueprint.save();
-							},
-							class: "sl-blupr-deploy",
-						}, "Save"),
-					])
-				});
-				this.input.unmount();
-				this.output.unmount();
-
-			} else {
-				this.buttons.mount({
-					view: () => m(".toolbox", [
-						m(Button, {
-							class: "sl-green-pulsing",
-						}, "Running"),
-						m(Button, {
-							onClick: () => {
-								this.blueprint.requestShutdown();
-							},
-							class: "sl-btn-warn",
-						}, "Shutdown"),
-					])
-				});
-
-				const portIn = this.blueprint.getPortIn();
-
-				if (portIn) {
-					this.input.mount({
-						view: () => m(Box, m(InputConsole, {
-							onSubmit: (values: SlangTypeValue) => {
-								this.blueprint.pushInput(values);
-							},
-							type: portIn.getType()
-						}))
-					});
-				}
-
-				const portOut = this.blueprint.getPortOut();
-
-				if (portOut) {
-					const outputValues: Array<SlangTypeValue> = [];
-
-					this.blueprint.subscribeOutputPushed((outputData: SlangTypeValue) => {
-						outputValues.unshift(outputData);
-						m.redraw();
-					}, this.blueprint.shutdownRequested);
-
-					this.output.mount({
-						view: () => m(Box, m(OutputConsole, {
-							onLoad: () => {
-								return outputValues;
-							},
-							type: portOut.getType()
-						}))
-					});
-				}
-			}
-		});
-
-		this.blueprint.subscribeChildCreated(OperatorModel, operator => {
-			const opComp = this.addOperator(operator);
-			this.fitOuter(true);
-
-			operator.subscribeDestroyed(() => {
-				const idx = this.operators.indexOf(opComp);
-				if (idx >= 0) {
-					opComp.destroy();
-					this.operators.splice(idx, 1);
-					this.fitOuter(true);
-				}
-			});
-		});
-
-		this.blueprint.getFakeGenerics().subscribeGenericsChanged(() => {
-			this.ports.top.forEach(p => p.refresh());
-			this.ports.bottom.forEach(p => p.refresh());
-
-			this.connections.forEach(component => {
-				const connection = component.getConnection();
-				if (!connection.source.isConnectedWith(connection.destination)) {
-					return;
-				}
-				if (connection.source.getBox() === this.blueprint || connection.destination.getBox() === this.blueprint) {
-					component.refresh();
-				}
-			});
-		});
-
-		this.blueprint.subscribeChildCreated(BlueprintPortModel, port => {
-			if (port.isDirectionIn()) {
-				const p = this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
-				this.buttons.attachTo(p.getShape(), "br");
-				this.input.attachTo(p.getShape(), "c");
-			} else {
-				const p = this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
-				this.output.attachTo(p.getShape(), "c");
-			}
-		});
-
-		this.blueprint.subscribeChildCreated(BlueprintDelegateModel, delegate => {
-			delegate.subscribeChildCreated(BlueprintPortModel, port => {
-				if (port.isDirectionIn()) {
-					this.createIsolatedPort(port, `${delegate.getIdentity()}_in`, `Delegate ${delegate.getName()} In-Port`, "right");
-				} else {
-					this.createIsolatedPort(port, `${delegate.getIdentity()}_out`, `Delegate ${delegate.getName()} Out-Port`, "right");
-				}
-			});
-		});
-
-		this.blueprint.subscribeDescendantCreated(GenericPortModel, port => {
-			if (!port.isSource()) {
-				return;
-			}
-			port.subscribeConnected(other => {
-				this.addConnection({source: port, destination: other});
-			});
-			port.subscribeDisconnected(other => {
-				this.removeConnection({source: port, destination: other});
-			});
-		});
-
-		this.blueprint.subscribeChildCreated(OperatorModel, operator => {
-			operator.getGenericSpecifications().subscribeGenericsChanged(() => {
-				this.connections.forEach(component => {
-					const connection = component.getConnection();
-					if (!connection.source.isConnectedWith(connection.destination)) {
-						return;
-					}
-					if (connection.source.getBox() === operator || connection.destination.getBox() === operator) {
-						component.refresh();
-					}
-				});
-			});
-		});
-	}
-
 	public autoLayout() {
-		const operatorRectangles = this.operators.map(operatorComponent => operatorComponent.getShape());
-		const connectionLinks = this.connections.map(connectionComponent => connectionComponent.getShape());
+		const operatorRectangles = this.operators.map((operatorComponent) => operatorComponent.getShape());
+		const connectionLinks = this.connections.map((connectionComponent) => connectionComponent.getShape());
 
 		layout.DirectedGraph.layout(
 			[
 				...operatorRectangles,
 				...connectionLinks,
-				...this.ports.top.map(p => p.getShape()),
-				...this.ports.bottom.map(p => p.getShape()),
-				...this.ports.left.map(p => p.getShape()),
-				...this.ports.right.map(p => p.getShape()),
+				...this.ports.top.map((p) => p.getShape()),
+				...this.ports.bottom.map((p) => p.getShape()),
+				...this.ports.left.map((p) => p.getShape()),
+				...this.ports.right.map((p) => p.getShape()),
 			], {
 				nodeSep: 80,
 				rankSep: 80,
@@ -245,7 +95,7 @@ export class WhiteBoxComponent extends CellComponent {
 	}
 
 	public centerizeOuter() {
-		const operatorRectangles = this.operators.map(operatorComponent => operatorComponent.getShape());
+		const operatorRectangles = this.operators.map((operatorComponent) => operatorComponent.getShape());
 
 		const {width, height} = this.blueprint.size;
 
@@ -269,8 +119,8 @@ export class WhiteBoxComponent extends CellComponent {
 			port.getShape().set({
 				position: {
 					x: this.blueprint.inPosition - pWidth / 2,
-					y: bbox.y - pHeight
-				}
+					y: bbox.y - pHeight,
+				},
 			});
 		}
 
@@ -278,8 +128,8 @@ export class WhiteBoxComponent extends CellComponent {
 			port.getShape().set({
 				position: {
 					x: this.blueprint.outPosition - pWidth / 2,
-					y: bbox.y + bbox.height
-				}
+					y: bbox.y + bbox.height,
+				},
 			});
 		}
 
@@ -289,7 +139,7 @@ export class WhiteBoxComponent extends CellComponent {
 				position: {
 					x: bbox.x + bbox.width,
 					y: offset + index * pHeight,
-				}
+				},
 			});
 		});
 
@@ -311,7 +161,7 @@ export class WhiteBoxComponent extends CellComponent {
 		let newCornerX: number = currentPosition.x + currentSize.width - 2 * padding;
 		let newCornerY: number = currentPosition.y + currentSize.height - 2 * padding;
 
-		this.operators.forEach(operator => {
+		this.operators.forEach((operator) => {
 			const childBBox = operator.bbox;
 			if (childBBox.x < newX) {
 				newX = childBBox.x;
@@ -382,7 +232,7 @@ export class WhiteBoxComponent extends CellComponent {
 				}
 			}
 
-			this.ports.top.map(p => p.getShape()).forEach(port => {
+			this.ports.top.map((p) => p.getShape()).forEach((port) => {
 				const currentPortPosition = port.get("position");
 				const targetPosition = {
 					x: currentPortPosition.x,
@@ -396,7 +246,7 @@ export class WhiteBoxComponent extends CellComponent {
 				}
 			});
 
-			this.ports.bottom.map(p => p.getShape()).forEach(port => {
+			this.ports.bottom.map((p) => p.getShape()).forEach((port) => {
 				const currentPortPosition = port.get("position");
 				const targetPosition = {
 					x: currentPortPosition.x,
@@ -410,7 +260,7 @@ export class WhiteBoxComponent extends CellComponent {
 				}
 			});
 
-			this.ports.right.map(p => p.getShape()).forEach(port => {
+			this.ports.right.map((p) => p.getShape()).forEach((port) => {
 				const currentPortPosition = port.get("position");
 				const targetPosition = {
 					x: newPosition.x + newSize.width,
@@ -424,6 +274,180 @@ export class WhiteBoxComponent extends CellComponent {
 				}
 			});
 		}
+	}
+
+	public onClick(cb: (event: MouseEvent, x: number, y: number) => void) {
+		this.clicked.subscribe(({event, x, y}) => {
+			cb(event, x, y);
+		});
+	}
+
+	public onDblClick(cb: (event: MouseEvent, x: number, y: number) => void) {
+		this.dblclicked.subscribe(({event, x, y}) => {
+			cb(event, x, y);
+		});
+	}
+
+	public onPortMouseEnter(cb: (port: PortModel, x: number, y: number) => void) {
+		this.portMouseEntered.subscribe(({port, x, y}) => {
+			cb(port, x, y);
+		});
+	}
+
+	public onPortMouseLeave(cb: (port: PortModel, x: number, y: number) => void) {
+		this.portMouseLeft.subscribe(({port, x, y}) => {
+			cb(port, x, y);
+		});
+	}
+
+	private subscribe() {
+		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
+			if (!instance) {
+				this.buttons.mount({
+					view: () => m(".toolbox", [
+						m(Button, {
+							onClick: () => {
+								this.blueprint.save();
+								this.blueprint.requestDeployment();
+							},
+							class: "sl-blupr-deploy",
+						}, "Deploy"),
+						m(Button, {
+							onClick: () => {
+								this.blueprint.save();
+							},
+							class: "sl-blupr-deploy",
+						}, "Save"),
+					]),
+				});
+				this.input.unmount();
+				this.output.unmount();
+
+			} else {
+				this.buttons.mount({
+					view: () => m(".toolbox", [
+						m(Button, {
+							class: "sl-green-pulsing",
+						}, "Running"),
+						m(Button, {
+							onClick: () => {
+								this.blueprint.requestShutdown();
+							},
+							class: "sl-btn-warn",
+						}, "Shutdown"),
+					]),
+				});
+
+				const portIn = this.blueprint.getPortIn();
+
+				if (portIn) {
+					this.input.mount({
+						view: () => m(Box, m(InputConsole, {
+							onSubmit: (values: SlangTypeValue) => {
+								this.blueprint.pushInput(values);
+							},
+							type: portIn.getType(),
+						})),
+					});
+				}
+
+				const portOut = this.blueprint.getPortOut();
+
+				if (portOut) {
+					const outputValues: SlangTypeValue[] = [];
+
+					this.blueprint.subscribeOutputPushed((outputData: SlangTypeValue) => {
+						outputValues.unshift(outputData);
+						m.redraw();
+					}, this.blueprint.shutdownRequested);
+
+					this.output.mount({
+						view: () => m(Box, m(OutputConsole, {
+							onLoad: () => {
+								return outputValues;
+							},
+							type: portOut.getType(),
+						})),
+					});
+				}
+			}
+		});
+
+		this.blueprint.subscribeChildCreated(OperatorModel, (operator) => {
+			const opComp = this.addOperator(operator);
+			this.fitOuter(true);
+
+			operator.subscribeDestroyed(() => {
+				const idx = this.operators.indexOf(opComp);
+				if (idx >= 0) {
+					opComp.destroy();
+					this.operators.splice(idx, 1);
+					this.fitOuter(true);
+				}
+			});
+		});
+
+		this.blueprint.getFakeGenerics().subscribeGenericsChanged(() => {
+			this.ports.top.forEach((p) => p.refresh());
+			this.ports.bottom.forEach((p) => p.refresh());
+
+			this.connections.forEach((component) => {
+				const connection = component.getConnection();
+				if (!connection.source.isConnectedWith(connection.destination)) {
+					return;
+				}
+				if (connection.source.getBox() === this.blueprint || connection.destination.getBox() === this.blueprint) {
+					component.refresh();
+				}
+			});
+		});
+
+		this.blueprint.subscribeChildCreated(BlueprintPortModel, (port) => {
+			if (port.isDirectionIn()) {
+				const p = this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
+				this.buttons.attachTo(p.getShape(), "br");
+				this.input.attachTo(p.getShape(), "c");
+			} else {
+				const p = this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
+				this.output.attachTo(p.getShape(), "c");
+			}
+		});
+
+		this.blueprint.subscribeChildCreated(BlueprintDelegateModel, (delegate) => {
+			delegate.subscribeChildCreated(BlueprintPortModel, (port) => {
+				if (port.isDirectionIn()) {
+					this.createIsolatedPort(port, `${delegate.getIdentity()}_in`, `Delegate ${delegate.getName()} In-Port`, "right");
+				} else {
+					this.createIsolatedPort(port, `${delegate.getIdentity()}_out`, `Delegate ${delegate.getName()} Out-Port`, "right");
+				}
+			});
+		});
+
+		this.blueprint.subscribeDescendantCreated(GenericPortModel, (port) => {
+			if (!port.isSource()) {
+				return;
+			}
+			port.subscribeConnected((other) => {
+				this.addConnection({source: port, destination: other});
+			});
+			port.subscribeDisconnected((other) => {
+				this.removeConnection({source: port, destination: other});
+			});
+		});
+
+		this.blueprint.subscribeChildCreated(OperatorModel, (operator) => {
+			operator.getGenericSpecifications().subscribeGenericsChanged(() => {
+				this.connections.forEach((component) => {
+					const connection = component.getConnection();
+					if (!connection.source.isConnectedWith(connection.destination)) {
+						return;
+					}
+					if (connection.source.getBox() === operator || connection.destination.getBox() === operator) {
+						component.refresh();
+					}
+				});
+			});
+		});
 	}
 
 	private createIsolatedPort(port: BlueprintPortModel, id: string, name: string, position: PortGroupPosition): IsolatedBlueprintPortComponent {
@@ -451,7 +475,7 @@ export class WhiteBoxComponent extends CellComponent {
 					x: outerPosition.x,
 					y: outerPosition.y - elementSize.height,
 					width: outerSize.width,
-					height: elementSize.height
+					height: elementSize.height,
 				});
 				portElement.on("change:position", () => {
 					that.blueprint.inPosition = portElement.getBBox().center().x;
@@ -464,7 +488,7 @@ export class WhiteBoxComponent extends CellComponent {
 					x: outerPosition.x,
 					y: outerPosition.y + outerSize.height,
 					width: outerSize.width,
-					height: elementSize.height
+					height: elementSize.height,
 				});
 				portElement.on("change:position", () => {
 					that.blueprint.outPosition = portElement.getBBox().center().x;
@@ -477,7 +501,7 @@ export class WhiteBoxComponent extends CellComponent {
 					x: outerPosition.x - elementSize.width,
 					y: outerPosition.y,
 					width: elementSize.width,
-					height: outerSize.height
+					height: outerSize.height,
 				});
 				break;
 			case "right":
@@ -487,12 +511,12 @@ export class WhiteBoxComponent extends CellComponent {
 					x: outerPosition.x + outerSize.width,
 					y: outerPosition.y,
 					width: elementSize.width,
-					height: outerSize.height
+					height: outerSize.height,
 				});
 				break;
 		}
 
-		portElement.set("restrictTranslate", function (): g.PlainRect {
+		portElement.set("restrictTranslate", (): g.PlainRect => {
 			const outerPosition = that.shape.get("position") as g.PlainPoint;
 			const outerSize = that.shape.get("size") as g.PlainRect;
 			return calculateRestrictedRect(outerPosition, outerSize);
@@ -524,15 +548,15 @@ export class WhiteBoxComponent extends CellComponent {
 						view: () => m(Modal, {
 								onClose: () => {
 									comp.destroy();
-								}
+								},
 							},
 							m(DashboardComponent, {
-								operator: operator,
+								operator,
 								onSave: () => {
 									comp.destroy();
-								}
-							})
-						)
+								},
+							}),
+						),
 					});
 				return true;
 			});
@@ -547,9 +571,9 @@ export class WhiteBoxComponent extends CellComponent {
 		let portInfo: AttachableComponent;
 		portOwnerComp.onPortMouseEnter((port: PortModel, x: number, y: number) => {
 			portInfo = that
-				.createComponent({x: x, y: y + 2, align: "tl"})
+				.createComponent({x, y: y + 2, align: "tl"})
 				.mount({
-					view: () => m(PortInfo, {port})
+					view: () => m(PortInfo, {port}),
 				});
 		});
 		portOwnerComp.onPortMouseLeave(() => {
@@ -564,47 +588,23 @@ export class WhiteBoxComponent extends CellComponent {
 			link.remove();
 		}
 
-		const idx = this.connections.findIndex(conn => conn.getId() === linkId);
+		const idx = this.connections.findIndex((conn) => conn.getId() === linkId);
 		if (idx !== -1) {
 			this.connections.splice(idx, 1);
 		}
 	}
-
-	public onClick(cb: (event: MouseEvent, x: number, y: number) => void) {
-		this.clicked.subscribe(({event, x, y}) => {
-			cb(event, x, y);
-		});
-	}
-
-	public onDblClick(cb: (event: MouseEvent, x: number, y: number) => void) {
-		this.dblclicked.subscribe(({event, x, y}) => {
-			cb(event, x, y);
-		});
-	}
-
-	public onPortMouseEnter(cb: (port: PortModel, x: number, y: number) => void) {
-		this.portMouseEntered.subscribe(({port, x, y}) => {
-			cb(port, x, y);
-		});
-	}
-
-	public onPortMouseLeave(cb: (port: PortModel, x: number, y: number) => void) {
-		this.portMouseLeft.subscribe(({port, x, y}) => {
-			cb(port, x, y);
-		});
-	}
 }
 
 export interface Attrs {
-	port: PortModel,
+	port: PortModel;
 }
 
 class PortInfo implements ClassComponent<Attrs> {
 	// Note that class methods cannot infer parameter types
-	oninit() {
+	public oninit() {
 	}
 
-	view({attrs}: CVnode<Attrs>) {
+	public view({attrs}: CVnode<Attrs>) {
 		const port = attrs.port;
 		const portType = TypeIdentifier[port.getTypeIdentifier()].toLowerCase();
 
@@ -613,7 +613,7 @@ class PortInfo implements ClassComponent<Attrs> {
 					class: `sl-type-${portType}`,
 				},
 				portType),
-			m(".sl-port-name", port.getName())
+			m(".sl-port-name", port.getName()),
 		);
 	}
 }

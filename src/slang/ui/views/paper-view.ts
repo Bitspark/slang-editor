@@ -132,14 +132,14 @@ export abstract class PaperView extends View {
 			this.userInputMode = "zoom/pan";
 			return false;
 		}
-		
+
 		if (evt.shiftKey) {
 			this.userInputMode = "hscroll";
 			return false;
 		}
-		
+
 		this.userInputMode = "scroll";
-		
+
 		return true;
 	}
 

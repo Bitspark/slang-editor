@@ -1,8 +1,8 @@
-import {BlueprintPortModel, OperatorPortModel, PortModelArgs} from "./port";
+import {Connections} from "../custom/connections";
+import {BlackBox, PortOwner} from "../custom/nodes";
 import {BlueprintModel} from "./blueprint";
 import {OperatorModel} from "./operator";
-import {BlackBox, PortOwner} from "../custom/nodes";
-import {Connections} from "../custom/connections";
+import {BlueprintPortModel, OperatorPortModel, PortModelArgs} from "./port";
 
 export abstract class GenericDelegateModel<B extends BlackBox> extends PortOwner {
 	protected constructor(parent: B, private name: string, streamSource: boolean) {
@@ -27,7 +27,7 @@ export abstract class GenericDelegateModel<B extends BlackBox> extends PortOwner
 
 export type DelegateModel = GenericDelegateModel<BlackBox>;
 
-export type BlueprintDelegateModelArgs = { name: string };
+export interface BlueprintDelegateModelArgs { name: string; }
 
 export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel> {
 	constructor(owner: BlueprintModel, {name}: BlueprintDelegateModelArgs) {
@@ -47,7 +47,7 @@ export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel>
 	}
 }
 
-export type OperatorDelegateModelArgs = { name: string };
+export interface OperatorDelegateModelArgs { name: string; }
 
 export class OperatorDelegateModel extends GenericDelegateModel<OperatorModel> {
 	constructor(owner: OperatorModel, {name}: OperatorDelegateModelArgs) {

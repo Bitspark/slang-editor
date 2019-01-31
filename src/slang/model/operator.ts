@@ -1,11 +1,11 @@
-import {BlueprintModel, BlueprintType} from "./blueprint";
-import {OperatorPortModel, PortModelArgs} from "./port";
-import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
-import {PropertyAssignment, PropertyAssignments, PropertyModel} from "./property";
-import {BlackBox} from "../custom/nodes";
 import {Connections} from "../custom/connections";
 import {SlangBehaviorSubject, SlangSubjectTrigger} from "../custom/events";
 import {GenericSpecifications} from "../custom/generics";
+import {BlackBox} from "../custom/nodes";
+import {BlueprintModel, BlueprintType} from "./blueprint";
+import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
+import {OperatorPortModel, PortModelArgs} from "./port";
+import {PropertyAssignment, PropertyAssignments, PropertyModel} from "./property";
 
 export interface XY {
 	x: number;
@@ -24,13 +24,30 @@ export type OperatorModelArgs = {
 	properties: PropertyAssignments,
 	generics: GenericSpecifications,
 	geometry?: OperatorGeometry,
-}
+};
 
 export interface OperatorGeometry {
-	position: XY
+	position: XY;
 }
 
 export class OperatorModel extends BlackBox {
+
+	public get xy(): XY | undefined {
+		if (this.geometry) {
+			return this.geometry.position;
+		}
+		return undefined;
+	}
+
+	public set xy(xy: XY | undefined) {
+		if (xy) {
+			if (!this.geometry) {
+				this.geometry = {position: xy};
+			} else {
+				this.geometry.position = xy;
+			}
+		}
+	}
 
 	// Topics
 	// self
@@ -59,7 +76,7 @@ export class OperatorModel extends BlackBox {
 
 		// TODO use same method for properties changed
 		this.generics.subscribeGenericsChanged(() => {
-			this.update()
+			this.update();
 		});
 	}
 
@@ -83,24 +100,12 @@ export class OperatorModel extends BlackBox {
 		return this.createChildNode(OperatorPortModel, args);
 	}
 
-	private removeDelegates() {
-		for (const delegate of this.getDelegates()) {
-			delegate.destroy();
-		}
-	}
-
-	private removeMainPorts() {
-		for (const port of this.getPorts()) {
-			port.destroy();
-		}
-	}
-
 	public getDelegates(): IterableIterator<OperatorDelegateModel> {
 		return this.getChildNodes(OperatorDelegateModel);
 	}
 
 	public findDelegate(name: string): OperatorDelegateModel | undefined {
-		return this.scanChildNode(OperatorDelegateModel, delegate => delegate.getName() === name);
+		return this.scanChildNode(OperatorDelegateModel, (delegate) => delegate.getName() === name);
 	}
 
 	public hasProperties(): boolean {
@@ -155,23 +160,6 @@ export class OperatorModel extends BlackBox {
 		return connections;
 	}
 
-	public get xy(): XY | undefined {
-		if (this.geometry) {
-			return this.geometry.position;
-		}
-		return undefined;
-	}
-
-	public set xy(xy: XY | undefined) {
-		if (xy) {
-			if (!this.geometry) {
-				this.geometry = {position: xy}
-			} else {
-				this.geometry.position = xy;
-			}
-		}
-	}
-
 	// Actions
 	public createDelegate(args: OperatorDelegateModelArgs): OperatorDelegateModel {
 		return this.createChildNode(OperatorDelegateModel, args);
@@ -189,5 +177,17 @@ export class OperatorModel extends BlackBox {
 
 	public subscribeChanged(cb: () => void): void {
 		this.changed.subscribe(cb);
+	}
+
+	private removeDelegates() {
+		for (const delegate of this.getDelegates()) {
+			delegate.destroy();
+		}
+	}
+
+	private removeMainPorts() {
+		for (const port of this.getPorts()) {
+			port.destroy();
+		}
 	}
 }

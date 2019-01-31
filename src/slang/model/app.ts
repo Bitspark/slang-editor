@@ -1,11 +1,15 @@
+import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../custom/events";
+import {SlangNode} from "../custom/nodes";
 import {BlueprintModel} from "./blueprint";
 import {LandscapeModel} from "./landscape";
-import {SlangNode} from "../custom/nodes";
-import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../custom/events";
 
-export type AppModelArgs = { name: string };
+export interface AppModelArgs { name: string; }
 
 export class AppModel extends SlangNode {
+
+	public static create(name: string): AppModel {
+		return SlangNode.createRoot(AppModel, {name});
+	}
 
 	private openedBlueprint = new SlangBehaviorSubject<BlueprintModel | null>("opened-blueprint", null);
 	private openedLandscape = new SlangBehaviorSubject<LandscapeModel | null>("opened-landscape", null);
@@ -22,55 +26,10 @@ export class AppModel extends SlangNode {
 		this.subscribeLandscape(this.landscape);
 	}
 
-	public static create(name: string): AppModel {
-		return SlangNode.createRoot(AppModel, {name});
-	}
-
-	private subscribeLandscape(landscape: LandscapeModel) {
-		for (const blueprint of landscape.getChildNodes(BlueprintModel)) {
-			this.subscribeBlueprint(blueprint);
-		}
-		landscape.subscribeChildCreated(BlueprintModel, blueprint => {
-			this.subscribeBlueprint(blueprint);
-		});
-		landscape.subscribeOpenedChanged(opened => {
-			if (opened) {
-				const openedBlueprint = this.openedBlueprint.getValue();
-				if (openedBlueprint !== null) {
-					openedBlueprint.close();
-				}
-				this.openedLandscape.next(landscape);
-			} else {
-				if (landscape === this.openedLandscape.getValue()) {
-					this.openedLandscape.next(null);
-				}
-			}
-		});
-	}
-
-	private subscribeBlueprint(blueprint: BlueprintModel) {
-		blueprint.subscribeOpenedChanged(opened => {
-			if (opened) {
-				const openedLandscape = this.openedLandscape.getValue();
-				if (openedLandscape !== null) {
-					openedLandscape.close();
-				}
-				blueprint.subscribeSaveChanges(() => {
-					this.storeRequested.next(blueprint);
-				});
-				this.openedBlueprint.next(blueprint);
-			} else {
-				if (blueprint === this.openedBlueprint.getValue()) {
-					this.openedBlueprint.next(null);
-				}
-			}
-		});
-	}
-
 	// Actions
 
 	public load(): Promise<void> {
-		return new Promise<void>(async resolve => {
+		return new Promise<void>(async (resolve) => {
 			this.loadRequested.next();
 			const loading = this.loading;
 			this.loading = [];
@@ -102,6 +61,47 @@ export class AppModel extends SlangNode {
 
 	public subscribeStoreRequested(cb: (blueprint: BlueprintModel) => void) {
 		this.storeRequested.subscribe(cb);
+	}
+
+	private subscribeLandscape(landscape: LandscapeModel) {
+		for (const blueprint of landscape.getChildNodes(BlueprintModel)) {
+			this.subscribeBlueprint(blueprint);
+		}
+		landscape.subscribeChildCreated(BlueprintModel, (blueprint) => {
+			this.subscribeBlueprint(blueprint);
+		});
+		landscape.subscribeOpenedChanged((opened) => {
+			if (opened) {
+				const openedBlueprint = this.openedBlueprint.getValue();
+				if (openedBlueprint !== null) {
+					openedBlueprint.close();
+				}
+				this.openedLandscape.next(landscape);
+			} else {
+				if (landscape === this.openedLandscape.getValue()) {
+					this.openedLandscape.next(null);
+				}
+			}
+		});
+	}
+
+	private subscribeBlueprint(blueprint: BlueprintModel) {
+		blueprint.subscribeOpenedChanged((opened) => {
+			if (opened) {
+				const openedLandscape = this.openedLandscape.getValue();
+				if (openedLandscape !== null) {
+					openedLandscape.close();
+				}
+				blueprint.subscribeSaveChanges(() => {
+					this.storeRequested.next(blueprint);
+				});
+				this.openedBlueprint.next(blueprint);
+			} else {
+				if (blueprint === this.openedBlueprint.getValue()) {
+					this.openedBlueprint.next(null);
+				}
+			}
+		});
 	}
 
 }

@@ -1,88 +1,83 @@
-import {SlangTypeValue} from "./type";
 import {OperatorGeometry} from "../model/operator";
+import {SlangTypeValue} from "./type";
 
 export interface TypeDefApiResponse {
-	type: "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic"
+	type: "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic";
 	map?: {
 		[portName: string]: TypeDefApiResponse,
-	}
-	stream?: TypeDefApiResponse
-	generic?: string
+	};
+	stream?: TypeDefApiResponse;
+	generic?: string;
 }
 
 export interface PortGroupsApiResponse {
-	[portGroupName: string]: PortGroupApiResponse
+	[portGroupName: string]: PortGroupApiResponse;
 }
 
 export interface PortGroupApiResponse {
-	in: TypeDefApiResponse,
-	out: TypeDefApiResponse,
+	in: TypeDefApiResponse;
+	out: TypeDefApiResponse;
 	geometry?: {
 		in: {
-			position: number
+			position: number,
 		}
 		out: {
-			position: number
-		}
-	}
+			position: number,
+		},
+	};
 }
 
 export interface PropertyApiResponse {
-	[propertyName: string]: TypeDefApiResponse
+	[propertyName: string]: TypeDefApiResponse;
 }
 
 export interface PropertyAssignmentsApiResponse {
-	[propertyName: string]: any
+	[propertyName: string]: any;
 }
 
 export interface GenericSpecificationsApiResponse {
-	[genericIdentifier: string]: TypeDefApiResponse
+	[genericIdentifier: string]: TypeDefApiResponse;
 }
 
 export interface DeploymentStatusApiResponse {
-	url: string
-	handle: string
+	url: string;
+	handle: string;
 }
 
 export interface OperatorApiResponse {
-	operator: string
-	geometry?: OperatorGeometry
-	properties: PropertyAssignmentsApiResponse
-	generics: GenericSpecificationsApiResponse
+	operator: string;
+	geometry?: OperatorGeometry;
+	properties: PropertyAssignmentsApiResponse;
+	generics: GenericSpecificationsApiResponse;
 }
 
 export interface BlueprintDefApiResponse {
 	operators?: {
-		[operatorName: string]: OperatorApiResponse
-	}
-	properties?: PropertyApiResponse
-	services?: PortGroupsApiResponse
-	delegates?: PortGroupsApiResponse
-	connections?: ConnectionsApiResponse
+		[operatorName: string]: OperatorApiResponse,
+	};
+	properties?: PropertyApiResponse;
+	services?: PortGroupsApiResponse;
+	delegates?: PortGroupsApiResponse;
+	connections?: ConnectionsApiResponse;
 	geometry?: {
 		size: {
 			width: number
-			height: number
-		}
-	}
+			height: number,
+		},
+	};
 }
 
 export interface ConnectionsApiResponse {
-	[sourcePortReference: string]: [string]
+	[sourcePortReference: string]: [string];
 }
 
 export interface BlueprintApiResponse {
-	type: string,
-	name: string,
-	def: BlueprintDefApiResponse,
+	type: string;
+	name: string;
+	def: BlueprintDefApiResponse;
 }
 
 export class ApiService {
-	private readonly host: string;
-
-	constructor(host: string) {
-		this.host = ApiService.normalizeUrl(host);
-	}
 
 	private static normalizeUrl(host: string): string {
 		let [protocol, url] = (host.startsWith("//")) ? ["", host] : host.split("://");
@@ -91,45 +86,10 @@ export class ApiService {
 		url = (url.endsWith("/")) ? url.slice(0, -1) : url;
 		return `${protocol}//${url}`;
 	}
+	private readonly host: string;
 
-	private fetch<S, T>(method: string, path: string, data: S, process: (data: any) => T, error: (error: any) => void): Promise<T> {
-		return new Promise<T>((resolve) => {
-			const reqInit = (method !== "get") ? {method, body: JSON.stringify(data)} : {};
-			fetch(this.host + path, reqInit)
-				.then((response: Response) => response.json())
-				.then((data: any) => resolve(process(data)))
-				.catch(error);
-		});
-	}
-
-	private get<ReqT, RespT>(path: string, data: ReqT, process: (data: any) => RespT, error: (error: any) => void): Promise<RespT> {
-		return this.fetch<ReqT, RespT>(
-			"get",
-			path,
-			data,
-			process,
-			error
-		);
-	}
-
-	private post<ReqT, RespT>(path: string, data: ReqT, process: (data: any) => RespT, error: (error: any) => void): Promise<RespT> {
-		return this.fetch<ReqT, RespT>(
-			"post",
-			path,
-			data,
-			process,
-			error
-		);
-	}
-
-	private del<ReqT, RespT>(path: string, data: ReqT, process: (data: any) => RespT, error: (error: any) => void): Promise<RespT> {
-		return this.fetch<ReqT, RespT>(
-			"delete",
-			path,
-			data,
-			process,
-			error
-		);
+	constructor(host: string) {
+		this.host = ApiService.normalizeUrl(host);
 	}
 
 	public async getBlueprints(): Promise<BlueprintApiResponse[]> {
@@ -137,7 +97,7 @@ export class ApiService {
 			"/operator/",
 			{},
 			(data: any) => (data as { objects: any }).objects as BlueprintApiResponse[],
-			(err: any) => console.error(err)
+			(err: any) => console.error(err),
 		);
 	}
 
@@ -170,7 +130,7 @@ export class ApiService {
 				}
 				throw(data);
 			},
-			(err: any) => console.error(err)
+			(err: any) => console.error(err),
 		);
 	}
 
@@ -184,7 +144,7 @@ export class ApiService {
 				}
 				throw(data);
 			},
-			(err: any) => console.error(err)
+			(err: any) => console.error(err),
 		);
 	}
 
@@ -193,7 +153,47 @@ export class ApiService {
 			instanceUrl,
 			inputData,
 			(outputData: SlangTypeValue) => outputData,
-			(err: any) => console.error(err)
+			(err: any) => console.error(err),
+		);
+	}
+
+	private fetch<S, T>(method: string, path: string, body: S, process: (data: any) => T, error: (error: any) => void): Promise<T> {
+		return new Promise<T>((resolve) => {
+			const reqInit = (method !== "get") ? {method, body: JSON.stringify(body)} : {};
+			fetch(this.host + path, reqInit)
+				.then((response: Response) => response.json())
+				.then((data: any) => resolve(process(data)))
+				.catch(error);
+		});
+	}
+
+	private get<ReqT, RespT>(path: string, data: ReqT, process: (data: any) => RespT, error: (error: any) => void): Promise<RespT> {
+		return this.fetch<ReqT, RespT>(
+			"get",
+			path,
+			data,
+			process,
+			error,
+		);
+	}
+
+	private post<ReqT, RespT>(path: string, data: ReqT, process: (data: any) => RespT, error: (error: any) => void): Promise<RespT> {
+		return this.fetch<ReqT, RespT>(
+			"post",
+			path,
+			data,
+			process,
+			error,
+		);
+	}
+
+	private del<ReqT, RespT>(path: string, data: ReqT, process: (data: any) => RespT, error: (error: any) => void): Promise<RespT> {
+		return this.fetch<ReqT, RespT>(
+			"delete",
+			path,
+			data,
+			process,
+			error,
 		);
 	}
 

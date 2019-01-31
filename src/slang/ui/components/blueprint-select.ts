@@ -1,38 +1,38 @@
 import m from "mithril";
 
-import {LandscapeModel} from "../../model/landscape";
-import {BlueprintModel} from "../../model/blueprint";
 import {ClassComponent, CVnode} from "mithril";
-import {BlueprintView} from "../views/blueprint";
+import {BlueprintModel} from "../../model/blueprint";
+import {LandscapeModel} from "../../model/landscape";
 import {OperatorGeometry, XY} from "../../model/operator";
+import {BlueprintView} from "../views/blueprint";
 import {AttachableComponent, CellComponent} from "./base";
-import {MithrilKeyboardEvent, MithrilMouseEvent, Tk} from "./toolkit";
 import ListHead = Tk.ListHead;
 import StringInput = Tk.StringInput;
 import ListItem = Tk.ListItem;
 import List = Tk.List;
 import {BlackBoxShape} from "./blackbox";
+import {MithrilKeyboardEvent, MithrilMouseEvent, Tk} from "./toolkit";
 import Box = Tk.Box;
 
 export interface Attrs {
-	onSelect: (bp: BlueprintModel) => void,
-	onHover: (bp?: BlueprintModel) => void,
-	onFilter: (filter: string) => void,
-	onExit: () => void,
-	onLoad: () => Array<BlueprintModel>
+	onSelect: (bp: BlueprintModel) => void;
+	onHover: (bp?: BlueprintModel) => void;
+	onFilter: (filter: string) => void;
+	onExit: () => void;
+	onLoad: () => BlueprintModel[];
 }
 
 class BlueprintMenuComponent implements ClassComponent<Attrs> {
-	menuSliceSize: number = 16;
-	activeMenuItemIdx: number = -1;
-	menuSliceStartIdx: number = 0;
-	menuSliceEndIdx: number = 0;
+	public menuSliceSize: number = 16;
+	public activeMenuItemIdx: number = -1;
+	public menuSliceStartIdx: number = 0;
+	public menuSliceEndIdx: number = 0;
 
 	// Note that class methods cannot infer parameter types
-	oninit({}: CVnode<Attrs>) {
+	public oninit({}: CVnode<Attrs>) {
 	}
 
-	setMenuSlice(menuTotalSize: number) {
+	public setMenuSlice(menuTotalSize: number) {
 		if (this.menuSliceStartIdx <= this.activeMenuItemIdx && this.activeMenuItemIdx <= this.menuSliceEndIdx) {
 			return;
 		}
@@ -46,13 +46,13 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 		this.menuSliceEndIdx = Math.min(menuTotalSize - 1, this.menuSliceStartIdx + this.menuSliceSize);
 	}
 
-	view({attrs}: CVnode<Attrs>) {
+	public view({attrs}: CVnode<Attrs>) {
 		const blueprints = attrs.onLoad();
 		const menuTotalSize = blueprints.length;
 
 		this.setMenuSlice(menuTotalSize);
 
-		if (menuTotalSize == 1) {
+		if (menuTotalSize === 1) {
 			this.activeMenuItemIdx = 0;
 		}
 
@@ -105,7 +105,7 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 
 				blueprints.slice(this.menuSliceStartIdx, this.menuSliceEndIdx + 1).map((blueprint: BlueprintModel, i: number) => {
 					return m(ListItem, {
-							class: (this.activeMenuItemIdx - this.menuSliceStartIdx == i ? "highlighted" : ""),
+							class: (this.activeMenuItemIdx - this.menuSliceStartIdx === i ? "highlighted" : ""),
 							onClick: (e: MithrilMouseEvent) => {
 								e.redraw = false;
 								attrs.onSelect(blueprint);
@@ -117,17 +117,17 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 							onMouseLeave: () => attrs.onHover(undefined),
 						},
 						m(".sl-blupr-title", blueprint.getFullName()));
-				})
-			)
+				}),
+			),
 		);
 	}
 }
 
 export class BlueprintSelectComponent extends CellComponent {
+	protected shape: BlackBoxShape;
 	private readonly blueprint: BlueprintModel;
 	private readonly landscape: LandscapeModel;
 	private readonly menu: AttachableComponent;
-	protected shape: BlackBoxShape;
 	private filterExpr: string = "";
 
 	constructor(blueprintView: BlueprintView, {x, y}: XY) {
@@ -155,8 +155,8 @@ export class BlueprintSelectComponent extends CellComponent {
 					onHover: (bp?: BlueprintModel) => {
 						const xy = this.shape.getBBox().center();
 						this.shape = this.placeGhostRect(xy, bp);
-					}
-				}))
+					},
+				})),
 			});
 	}
 
@@ -169,7 +169,7 @@ export class BlueprintSelectComponent extends CellComponent {
 		return this.filterExpr === "" || blueprint.getFullName().toLowerCase().includes(this.filterExpr.toLowerCase());
 	}
 
-	private getBlueprints(): Array<BlueprintModel> {
+	private getBlueprints(): BlueprintModel[] {
 		const blueprintsMap = new Map<BlueprintModel, number>();
 		for (const op of this.blueprint.getOperators()) {
 			const bp = op.getBlueprint();
@@ -178,10 +178,10 @@ export class BlueprintSelectComponent extends CellComponent {
 			blueprintsMap.set(bp, cnt + 1);
 		}
 
-		const blueprints: Array<BlueprintModel> = Array.from(blueprintsMap.entries())
-			.filter(([bp, _]: [BlueprintModel, number]) => this.isFilterExprIncluded(bp))
+		const blueprints: BlueprintModel[] = Array.from(blueprintsMap.entries())
+			.filter(([bp]: [BlueprintModel, number]) => this.isFilterExprIncluded(bp))
 			.sort((a: [BlueprintModel, number], b: [BlueprintModel, number]) => a[1] - b[1])
-			.map(([bp, _]: [BlueprintModel, number]) => bp);
+			.map(([bp]: [BlueprintModel, number]) => bp);
 
 		for (const bp of this.landscape.getChildNodes(BlueprintModel)) {
 			if (blueprints.length < 60) {

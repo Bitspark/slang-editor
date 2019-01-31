@@ -1,12 +1,12 @@
 import {PortModel} from "../model/port";
 
 export interface Connection {
-	source: PortModel
-	destination: PortModel
+	source: PortModel;
+	destination: PortModel;
 }
 
 export class Connections {
-	private connections: Array<Connection> = [];
+	private connections: Connection[] = [];
 
 	public getIterator(): IterableIterator<Connection> {
 		return this.connections.values();

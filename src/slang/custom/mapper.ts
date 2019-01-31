@@ -1,3 +1,9 @@
+import {BlueprintModel, BlueprintType} from "../model/blueprint";
+import {BlueprintDelegateModel, OperatorDelegateModel} from "../model/delegate";
+import {LandscapeModel} from "../model/landscape";
+import {OperatorModel} from "../model/operator";
+import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel} from "../model/port";
+import {PropertyAssignment, PropertyAssignments, PropertyModel} from "../model/property";
 import {
 	BlueprintApiResponse,
 	BlueprintDefApiResponse, ConnectionsApiResponse,
@@ -5,17 +11,11 @@ import {
 	PortGroupsApiResponse,
 	PropertyApiResponse,
 	PropertyAssignmentsApiResponse,
-	TypeDefApiResponse
+	TypeDefApiResponse,
 } from "./api";
-import {TypeIdentifier, SlangType} from "./type";
-import {GenericSpecifications} from "./generics";
 import {Connection} from "./connections";
-import {BlueprintModel, BlueprintType} from "../model/blueprint";
-import {LandscapeModel} from "../model/landscape";
-import {BlueprintDelegateModel, OperatorDelegateModel} from "../model/delegate";
-import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel} from "../model/port";
-import {PropertyAssignment, PropertyAssignments, PropertyModel} from "../model/property";
-import {OperatorModel} from "../model/operator";
+import {GenericSpecifications} from "./generics";
+import {SlangType, TypeIdentifier} from "./type";
 
 /*
 \
@@ -46,7 +46,7 @@ export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApi
 					if (!result.geometry) {
 						result.geometry = blueprintGeometry.port;
 					}
-				})
+				}),
 		},
 		delegates: iter2map<BlueprintDelegateModel, PortGroupsApiResponse>(blueprint.getDelegates(),
 			(result, delegate) => {
@@ -179,10 +179,10 @@ function fromTypeIdentifier(t: TypeIdentifier): "string" | "number" | "boolean" 
   \
  */
 
-export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<BlueprintApiResponse>) {
+export function fillLandscape(landscape: LandscapeModel, bpDataList: BlueprintApiResponse[]) {
 	const blueprintToOperator = new Map<BlueprintModel, BlueprintDefApiResponse>();
 	// 1) Add Blueprints
-	bpDataList.forEach(bpData => {
+	bpDataList.forEach((bpData) => {
 		const type: BlueprintType | null = ({
 			local: BlueprintType.Local,
 			library: BlueprintType.Library,
@@ -195,7 +195,7 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
 
 		const services = bpData.def.services;
 		const bpGeo = bpData.def.geometry;
-		const geometry = (services && bpGeo) ? Object.assign(bpGeo, {"port": services.main.geometry!}) : undefined;
+		const geometry = (services && bpGeo) ? Object.assign(bpGeo, {port: services.main.geometry!}) : undefined;
 
 		const blueprint = landscape.createBlueprint({fullName: bpData.name, type, geometry});
 		if (services) {
@@ -244,10 +244,10 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
 						const sourcePort = outerBlueprint.resolvePortReference(sourcePortReference);
 						const destinationPort = outerBlueprint.resolvePortReference(destinationPortReference);
 						if (!sourcePort) {
-							throw `source port ${sourcePortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
+							throw new Error(`source port ${sourcePortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`);
 						}
 						if (!destinationPort) {
-							throw `destination port ${destinationPortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
+							throw new Error(`destination port ${destinationPortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`);
 						}
 						sourcePort.connect(destinationPort);
 					} catch (e) {
@@ -273,7 +273,7 @@ function toTypeIdentifier(typeName: string): TypeIdentifier {
 	} as { [_: string]: TypeIdentifier })[typeName];
 
 	if (type === null) {
-		throw `unknown property type '${TypeIdentifier[type]}'`;
+		throw new Error(`unknown property type '${TypeIdentifier[type]}'`);
 	}
 
 	return type;
@@ -281,7 +281,7 @@ function toTypeIdentifier(typeName: string): TypeIdentifier {
 
 function setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupsApiResponse) {
 	Object.keys(delegates).forEach((delegateName: string) => {
-		blueprint.createDelegate({name: delegateName}, delegate => {
+		blueprint.createDelegate({name: delegateName}, (delegate) => {
 			createPort(delegates[delegateName].in, delegate, PortDirection.In);
 			createPort(delegates[delegateName].out, delegate, PortDirection.Out);
 		});
@@ -313,8 +313,8 @@ function createTypeModel(typeDef: TypeDefApiResponse): SlangType {
 }
 
 function setBlueprintServices(blueprint: BlueprintModel, services: PortGroupsApiResponse) {
-	const portInDef: TypeDefApiResponse = services["main"].in;
-	const portOutDef: TypeDefApiResponse = services["main"].out;
+	const portInDef: TypeDefApiResponse = services.main.in;
+	const portOutDef: TypeDefApiResponse = services.main.out;
 	createPort(portInDef, blueprint, PortDirection.In);
 	createPort(portOutDef, blueprint, PortDirection.Out);
 }

@@ -1,5 +1,5 @@
-import {copySlangTypeValue, SlangType, SlangTypeValue, TypeIdentifier} from "../custom/type";
 import {GenericSpecifications} from "../custom/generics";
+import {copySlangTypeValue, SlangType, SlangTypeValue, TypeIdentifier} from "../custom/type";
 
 export class PropertyModel {
 	public constructor(private name: string, private type: SlangType) {
@@ -25,7 +25,7 @@ export class PropertyAssignment {
 		const propertyType = property.getType();
 		if (propertyType.getTypeIdentifier() === TypeIdentifier.Generic) {
 			if (generics) {
-				generics.subscribeGenericTypeChanged(propertyType.getGenericIdentifier(), type => {
+				generics.subscribeGenericTypeChanged(propertyType.getGenericIdentifier(), (type) => {
 					this.type = type;
 				});
 			}
@@ -55,7 +55,7 @@ export class PropertyAssignment {
 	}
 
 	public isEqual(other: PropertyAssignment): boolean {
-		return this.property === other.property && this.value == other.value;
+		return this.property === other.property && this.value === other.value;
 	}
 
 	public assign(value: SlangTypeValue | undefined) {
@@ -66,11 +66,11 @@ export class PropertyAssignment {
 export class PropertyAssignments {
 	private readonly assignments: Map<string, PropertyAssignment>;
 
-	public constructor(private properties: Array<PropertyModel>, generics: GenericSpecifications | null) {
+	public constructor(private properties: PropertyModel[], generics: GenericSpecifications | null) {
 		this.assignments = new Map<string, PropertyAssignment>(
 			properties.map<[string, PropertyAssignment]>(
-				property => [property.getName(), new PropertyAssignment(property, undefined, generics)]
-			)
+				(property) => [property.getName(), new PropertyAssignment(property, undefined, generics)],
+			),
 		);
 	}
 

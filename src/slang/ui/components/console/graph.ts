@@ -1,8 +1,8 @@
 import m, {CVnode, CVnodeDOM} from "mithril";
-import {Output, ConsoleValueType} from "../console";
-import {TypeIdentifier} from "../../../custom/type";
 import * as Plotly from "plotly.js";
 import {Config, ScatterData} from "plotly.js";
+import {TypeIdentifier} from "../../../custom/type";
+import {ConsoleValueType, Output} from "../console";
 
 type GraphType = [{ name: string, data: [{ x: string, y: string }] }];
 
@@ -25,21 +25,21 @@ export const GRAPH_VALUE_TYPE: ConsoleValueType<GraphType> = {
 						map: {
 							x: {type: TypeIdentifier.Primitive},
 							y: {type: TypeIdentifier.Primitive},
-						}
-					}
-				}
-			}
-		}
+						},
+					},
+				},
+			},
+		},
 	},
 
 	output: {
 		oncreate({attrs, dom}: CVnodeDOM<Output.ValueTypeAttrs<GraphType>>) {
-			const data = attrs.value.map(({name, data}) => {
+			const graphData = attrs.value.map(({name, data}) => {
 				return {
 					x: data.map(({x}) => x),
 					y: data.map(({y}) => y),
 					mode: "lines+markers",
-					name: name,
+					name,
 				} as Partial<ScatterData>;
 			});
 			const layout = {
@@ -47,18 +47,18 @@ export const GRAPH_VALUE_TYPE: ConsoleValueType<GraphType> = {
 				height: 500,
 				xaxis: {
 					showgrid: true,
-					zeroline: true
+					zeroline: true,
 				},
 				yaxis: {
-					showline: true
-				}
+					showline: true,
+				},
 			};
-			Plotly.plot(dom as HTMLElement, data, layout, plotlyConfig);
+			Plotly.plot(dom as HTMLElement, graphData, layout, plotlyConfig);
 			m.redraw();
 		},
-		
+
 		view({}: CVnode<Output.ValueTypeAttrs<GraphType>>): m.Children | void | null {
 			return m(".sl-graph");
-		}
-	}
+		},
+	},
 };

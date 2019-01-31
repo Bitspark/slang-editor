@@ -1,18 +1,16 @@
 {
 	"extends": [
+		"tslint:recommended",
 		"tslint-eslint-rules",
 		"tslint-consistent-codestyle"
 	],
 	"rules": {
-		"object-curly-spacing": [
-			true,
-			"never"
-		],
-		"array-bracket-spacing": [
-			true,
-			"never"
-		],
+		// Rules from plain tslint
 		"no-parameter-reassignment": true,
+		"no-switch-case-fall-through": true,
+		"number-literal-format": true,
+		"no-unnecessary-qualifier": true,
+		"curly": true,
 		"indent": [
 			true,
 			"tabs",
@@ -31,9 +29,6 @@
 			true,
 			"allow-new"
 		],
-		"number-literal-format": true,
-		"no-unnecessary-qualifier": true,
-		"curly": true,
 		"typedef-whitespace": [
 			true,
 			{
@@ -63,7 +58,42 @@
 			"check-open-brace",
 			"check-whitespace"
 		],
-		"no-unnecessary-else": true,
+		// Rules from tslint-eslint-rules
+		"no-constant-condition": true,
+		"no-inner-declarations": true,
+		"no-irregular-whitespace": true,
+		"no-unexpected-multiline": true,
+		"valid-typeof": true,
+		"cyclomatic-complexity": [
+			true,
+			20
+		],
+		"block-spacing": true,
+		"brace-style": [
+			true,
+			"1tbs"
+		],
+		"object-curly-spacing": [
+			true,
+			"never"
+		],
+		"ter-computed-property-spacing": true,
+		"array-bracket-spacing": [
+			true,
+			"never"
+		],
+		"ter-func-call-spacing": true,
+		"ter-no-mixed-spaces-and-tabs": true,
+		"space-in-parens": [
+			true,
+			"never"
+		],
+		// Rules from tslint-consistent-codestyle
+		// "early-exit": true,
+		// "no-unnecessary-else": true,
+		// "no-collapsible-if": true,
+		"no-else-after-return": true,
+		"no-unused": true,
 		"naming-convention": [
 			true,
 			{
@@ -124,7 +154,14 @@
 					"UPPER_CASE"
 				]
 			}
-		]
+		],
+		// Disabled from tslint:recommended
+		"variable-name": false,
+		"interface-name": false,
+		"object-literal-sort-keys": false,
+		"max-line-length": false,
+		"max-classes-per-file": false,
+		"no-namespace": false
 	},
 	"linterOptions": {
 	}

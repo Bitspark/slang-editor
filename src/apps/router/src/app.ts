@@ -14,12 +14,12 @@ export class RouterApp extends SlangApp {
 	public checkRoute(): void {
 		const url = window.location.pathname;
 		const paths = url.split("/");
-		
+
 		if (paths.length <= 2) {
 			this.openLandscape();
 			return;
 		}
-		
+
 		switch (paths[1]) {
 			case "blueprint":
 				this.openBlueprint(paths[2]);

@@ -1,15 +1,15 @@
+import {Connections} from "../custom/connections";
+import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../custom/events";
+import {GenericSpecifications} from "../custom/generics";
+import {BlackBox} from "../custom/nodes";
+import {SlangParsing} from "../custom/parsing";
+import {SlangTypeValue, TypeIdentifier} from "../custom/type";
+import {PropertyEvaluator} from "../custom/utils";
+import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
+import {LandscapeModel} from "./landscape";
 import {OperatorGeometry, OperatorModel} from "./operator";
 import {BlueprintPortModel, PortDirection, PortModel, PortModelArgs} from "./port";
-import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
 import {PropertyAssignments, PropertyModel} from "./property";
-import {LandscapeModel} from "./landscape";
-import {SlangParsing} from "../custom/parsing";
-import {PropertyEvaluator} from "../custom/utils";
-import {BlackBox} from "../custom/nodes";
-import {SlangTypeValue, TypeIdentifier} from "../custom/type";
-import {GenericSpecifications} from "../custom/generics";
-import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../custom/events";
-import {Connections} from "../custom/connections";
 
 export enum BlueprintType {
 	Local,
@@ -18,29 +18,87 @@ export enum BlueprintType {
 }
 
 export interface Size {
-	width: number
-	height: number
+	width: number;
+	height: number;
 }
 
 export interface BlueprintPortGeometry {
 	in: {
-		position: number
-	}
+		position: number,
+	};
 	out: {
-		position: number
-	}
+		position: number,
+	};
 }
 
 export interface BlueprintGeometry {
-	size: Size
-	port: BlueprintPortGeometry
+	size: Size;
+	port: BlueprintPortGeometry;
 }
 
-export type BlueprintModelArgs = { fullName: string, type: BlueprintType, geometry?: BlueprintGeometry };
+export interface BlueprintModelArgs {
+	fullName: string;
+	type: BlueprintType;
+	geometry?: BlueprintGeometry;
+}
 
-export type BlueprintInstance = { handle: string, url: string };
+export interface BlueprintInstance {
+	handle: string;
+	url: string;
+}
 
 export class BlueprintModel extends BlackBox {
+
+	// Geometry
+
+	public get size(): Size {
+		return this.geometry.size;
+	}
+
+	public set size(size: Size) {
+		this.geometry.size = size;
+	}
+
+	public get inPosition(): number {
+		return this.geometry.port.in.position;
+	}
+
+	public set inPosition(pos: number) {
+		this.geometry.port.in.position = pos;
+	}
+
+	public get outPosition(): number {
+		return this.geometry.port.out.position;
+	}
+
+	public set outPosition(pos: number) {
+		this.geometry.port.out.position = pos;
+	}
+
+	private static revealGenericIdentifiers(port: PortModel): Set<string> {
+		let genericIdentifiers = new Set<string>();
+		switch (port.getTypeIdentifier()) {
+			case TypeIdentifier.Map: {
+				for (const subPort of port.getMapSubs()) {
+					genericIdentifiers = new Set<string>([...genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(subPort)]);
+				}
+				break;
+			}
+			case TypeIdentifier.Stream: {
+				const subPort = port.getStreamSub();
+				if (subPort) {
+					genericIdentifiers = new Set<string>([...genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(subPort)]);
+				}
+				break;
+			}
+			case TypeIdentifier.Generic: {
+				genericIdentifiers.add(port.getGenericIdentifier());
+			}
+		}
+		return genericIdentifiers;
+	}
+
+	public shutdownRequested = new SlangSubject<boolean>("shutdown-triggered");
 	// Topics::self
 	private selected = new SlangBehaviorSubject<boolean>("selected", false);
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
@@ -48,7 +106,6 @@ export class BlueprintModel extends BlackBox {
 
 	// Topics::Deployment
 	private deploymentRequested = new SlangSubject<boolean>("deployment-triggered");
-	public shutdownRequested = new SlangSubject<boolean>("shutdown-triggered");
 	private instance = new SlangBehaviorSubject<BlueprintInstance | null>("instance", null);
 	private inputPushed = new SlangSubject<SlangTypeValue>("input-pushed");
 	private outputPushed = new SlangSubject<SlangTypeValue>("output-pushed");
@@ -60,9 +117,9 @@ export class BlueprintModel extends BlackBox {
 	private readonly fullName: string;
 	private readonly type: BlueprintType;
 
-	private readonly hierarchy: Array<string> = [];
+	private readonly hierarchy: string[] = [];
 
-	private properties: Array<PropertyModel> = [];
+	private properties: PropertyModel[] = [];
 	private genericIdentifiers: Set<string>;
 
 	constructor(parent: LandscapeModel, {fullName, type, geometry}: BlueprintModelArgs) {
@@ -75,39 +132,19 @@ export class BlueprintModel extends BlackBox {
 		if (!geometry) {
 			const dfltSize = {width: 200, height: 200};
 			this.geometry = {
-				size: dfltSize,
 				port: {
 					in: {
 						position: 0,
 					},
 					out: {
 						position: 0,
-					}
-				}
-			}
+					},
+				},
+				size: dfltSize,
+			};
 		} else {
 			this.geometry = geometry;
 		}
-	}
-
-	private static revealGenericIdentifiers(port: PortModel): Set<string> {
-		let genericIdentifiers = new Set<string>();
-		switch (port.getTypeIdentifier()) {
-			case TypeIdentifier.Map:
-				for (const subPort of port.getMapSubs()) {
-					genericIdentifiers = new Set<string>([...genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(subPort)]);
-				}
-				break;
-			case TypeIdentifier.Stream:
-				const subPort = port.getStreamSub();
-				if (subPort) {
-					genericIdentifiers = new Set<string>([...genericIdentifiers, ...BlueprintModel.revealGenericIdentifiers(subPort)]);
-				}
-				break;
-			case TypeIdentifier.Generic:
-				genericIdentifiers.add(port.getGenericIdentifier());
-		}
-		return genericIdentifiers;
 	}
 
 	public getFakeGenerics(): GenericSpecifications {
@@ -124,9 +161,9 @@ export class BlueprintModel extends BlackBox {
 					const delegateCopy = owner.createDelegate({name: expandedDlgName});
 					for (const port of delegate.getPorts()) {
 						delegateCopy.createPort({
+							direction: port.getDirection(),
 							name: "",
 							type: port.getType().expand(properties),
-							direction: port.getDirection(),
 						});
 					}
 				}
@@ -134,9 +171,9 @@ export class BlueprintModel extends BlackBox {
 				const delegateCopy = owner.createDelegate({name: delegate.getName()});
 				for (const port of delegate.getPorts()) {
 					delegateCopy.createPort({
+						direction: port.getDirection(),
 						name: "",
 						type: port.getType(),
-						direction: port.getDirection(),
 					});
 				}
 			}
@@ -168,16 +205,10 @@ export class BlueprintModel extends BlackBox {
 			blueprint,
 			properties: properties ? properties : new PropertyAssignments([], generics),
 			generics: generics ? generics : new GenericSpecifications([]),
-			geometry: geometry
-		}, operator => {
+			geometry,
+		}, (operator) => {
 			blueprint.instantiateOperator(operator);
 		});
-	}
-
-	private getRandomOperatorName(blueprint: BlueprintModel): string {
-		const operatorBaseName = blueprint.getShortName().toLowerCase();
-		const cnt = Array.from(this.getOperators()).filter((op: OperatorModel) => op.getName().startsWith(operatorBaseName)).length;
-		return `${operatorBaseName}-${cnt + 1}`;
 	}
 
 	public createBlankOperator(blueprint: BlueprintModel, geometry: OperatorGeometry): OperatorModel {
@@ -186,7 +217,7 @@ export class BlueprintModel extends BlackBox {
 			name,
 			blueprint,
 			geometry,
-		}, operator => {
+		}, (operator) => {
 			blueprint.instantiateOperator(operator);
 		});
 	}
@@ -197,7 +228,7 @@ export class BlueprintModel extends BlackBox {
 
 	public createPort(args: PortModelArgs): BlueprintPortModel {
 		const identifier = (args.direction === PortDirection.In) ? "inType" : "outType";
-		return this.createChildNode(BlueprintPortModel, args, port => {
+		return this.createChildNode(BlueprintPortModel, args, (port) => {
 			port.generify(identifier, this.fakeGenerics, BlueprintPortModel);
 		});
 	}
@@ -227,7 +258,7 @@ export class BlueprintModel extends BlackBox {
 	}
 
 	public isLocal(): boolean {
-		return this.type == BlueprintType.Local;
+		return this.type === BlueprintType.Local;
 	}
 
 	public getType(): BlueprintType {
@@ -239,7 +270,7 @@ export class BlueprintModel extends BlackBox {
 	}
 
 	public findOperator(name: string): OperatorModel | undefined {
-		return this.scanChildNode(OperatorModel, operator => operator.getName() === name);
+		return this.scanChildNode(OperatorModel, (operator) => operator.getName() === name);
 	}
 
 	public getDelegates(): IterableIterator<BlueprintDelegateModel> {
@@ -247,7 +278,7 @@ export class BlueprintModel extends BlackBox {
 	}
 
 	public findDelegate(name: string): BlueprintDelegateModel | undefined {
-		return this.scanChildNode(BlueprintDelegateModel, delegate => delegate.getName() === name);
+		return this.scanChildNode(BlueprintDelegateModel, (delegate) => delegate.getName() === name);
 	}
 
 	public getGeometry(): BlueprintGeometry {
@@ -298,8 +329,8 @@ export class BlueprintModel extends BlackBox {
 			return undefined;
 		}
 
-		let blackbox: BlackBox | undefined = undefined;
-		let port: PortModel | null | undefined = undefined;
+		let blackbox: BlackBox | undefined;
+		let port: PortModel | null | undefined;
 
 		if (portInfo.instance === "") {
 			blackbox = this;
@@ -313,7 +344,7 @@ export class BlueprintModel extends BlackBox {
 
 		if (portInfo.service) {
 			if (portInfo.service !== "main" && portInfo.service !== "") {
-				throw `services other than main are not supported yet: ${portInfo.service}`;
+				throw new Error(`services other than main are not supported yet: ${portInfo.service}`);
 			}
 			if (portInfo.directionIn) {
 				port = blackbox.getPortIn();
@@ -325,7 +356,7 @@ export class BlueprintModel extends BlackBox {
 		if (portInfo.delegate) {
 			const delegate = blackbox.findDelegate(portInfo.delegate);
 			if (!delegate) {
-				throw `delegate ${portInfo.delegate} not found`;
+				throw new Error(`delegate ${portInfo.delegate} not found`);
 			}
 			if (portInfo.directionIn) {
 				port = delegate.getPortIn();
@@ -343,8 +374,8 @@ export class BlueprintModel extends BlackBox {
 			return port;
 		}
 
-		for (let i = 0; i < pathSplit.length; i++) {
-			if (pathSplit[i] === "~") {
+		for (const pathPart of pathSplit) {
+			if (pathPart === "~") {
 				port = port.getStreamSub();
 				continue;
 			}
@@ -353,7 +384,7 @@ export class BlueprintModel extends BlackBox {
 				return null;
 			}
 
-			const mapSubName = pathSplit[i];
+			const mapSubName = pathPart;
 			port = port.findMapSub(mapSubName);
 			if (!port) {
 				return undefined;
@@ -394,32 +425,6 @@ export class BlueprintModel extends BlackBox {
 		}
 
 		return connections;
-	}
-
-	// Geometry
-
-	public get size(): Size {
-		return this.geometry.size;
-	}
-
-	public set size(size: Size) {
-		this.geometry.size = size;
-	}
-
-	public get inPosition(): number {
-		return this.geometry.port.in.position;
-	}
-
-	public set inPosition(pos: number) {
-		this.geometry.port.in.position = pos;
-	}
-
-	public get outPosition(): number {
-		return this.geometry.port.out.position;
-	}
-
-	public set outPosition(pos: number) {
-		this.geometry.port.out.position = pos;
 	}
 
 	// Actions
@@ -505,5 +510,11 @@ export class BlueprintModel extends BlackBox {
 
 	public subscribeOutputPushed(cb: (outputData: SlangTypeValue) => void, until?: SlangSubject<any>): void {
 		this.outputPushed.subscribe(cb, until);
+	}
+
+	private getRandomOperatorName(blueprint: BlueprintModel): string {
+		const operatorBaseName = blueprint.getShortName().toLowerCase();
+		const cnt = Array.from(this.getOperators()).filter((op: OperatorModel) => op.getName().startsWith(operatorBaseName)).length;
+		return `${operatorBaseName}-${cnt + 1}`;
 	}
 }
