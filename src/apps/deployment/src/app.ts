@@ -1,8 +1,8 @@
 import {SlangApp} from "../../../slang/app";
-import {ApiService} from "../../../slang/custom/api";
-import {SlangTypeValue} from "../../../slang/custom/type";
-import {AppModel} from "../../../slang/model/app";
-import {BlueprintInstance, BlueprintModel} from "../../../slang/model/blueprint";
+import {AppModel} from "../../../slang/core/models/app";
+import {BlueprintInstance, BlueprintModel} from "../../../slang/core/models/blueprint";
+import {ApiService} from "../../../slang/definitions/api";
+import {SlangTypeValue} from "../../../slang/definitions/type";
 import {ComponentFactory} from "../../../slang/ui/components/factory";
 
 export class DeploymentApp extends SlangApp {

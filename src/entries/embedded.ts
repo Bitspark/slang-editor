@@ -3,8 +3,8 @@ import "./common";
 import "../styles/embedded.scss";
 
 import {StaticStorageApp} from "../apps/storage/src/app";
-import {AppModel} from "../slang/model/app";
-import {LandscapeModel} from "../slang/model/landscape";
+import {AppModel} from "../slang/core/models/app";
+import {LandscapeModel} from "../slang/core/models/landscape";
 import {Slang} from "../slang/slang";
 import {COMPONENT_FACTORY} from "../slang/ui/components/factory";
 import {ViewFrame} from "../slang/ui/frame";

@@ -1,7 +1,7 @@
-import {SlangBehaviorSubject} from "../custom/events";
-import {SlangNode} from "../custom/nodes";
+import {SlangBehaviorSubject} from "../../utils/events";
 import {AppModel} from "./app";
 import {BlueprintModel, BlueprintModelArgs} from "./blueprint";
+import {SlangNode} from "./node";
 
 // tslint:disable-next-line
 export interface LandscapeModelArgs {}

@@ -1,15 +1,16 @@
-import {canConnectTo} from "../custom/connection-check";
-import {Connections} from "../custom/connections";
-import {SlangBehaviorSubject, SlangSubject} from "../custom/events";
-import {GenericSpecifications} from "../custom/generics";
-import {BlackBox, PortOwner, SlangNode} from "../custom/nodes";
-import {StreamPort} from "../custom/stream";
-import {SlangType, TypeIdentifier} from "../custom/type";
+import {Subscription} from "rxjs";
+import {SlangType, TypeIdentifier} from "../../definitions/type";
+import {SlangBehaviorSubject, SlangSubject} from "../../utils/events";
+import {canConnectTo} from "../connection-check";
+import {Connections} from "../connections";
+import {GenericSpecifications} from "../generics";
+import {StreamPort} from "../stream";
+import {BlackBox} from "./blackbox";
 import {BlueprintModel} from "./blueprint";
 import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
+import {SlangNode} from "./node";
 import {OperatorModel} from "./operator";
-
-import {Subscription} from "rxjs";
+import {PortOwner} from "./port-owner";
 
 export enum PortDirection {
 	In, // 0

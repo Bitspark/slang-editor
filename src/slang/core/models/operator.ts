@@ -1,16 +1,12 @@
-import {Connections} from "../custom/connections";
-import {SlangBehaviorSubject, SlangSubjectTrigger} from "../custom/events";
-import {GenericSpecifications} from "../custom/generics";
-import {BlackBox} from "../custom/nodes";
+import {OperatorGeometry, XY} from "../../definitions/geometry";
+import {SlangBehaviorSubject, SlangSubjectTrigger} from "../../utils/events";
+import {Connections} from "../connections";
+import {GenericSpecifications} from "../generics";
+import {PropertyAssignment, PropertyAssignments, PropertyModel} from "../property";
+import {BlackBox} from "./blackbox";
 import {BlueprintModel, BlueprintType} from "./blueprint";
 import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
 import {OperatorPortModel, PortModelArgs} from "./port";
-import {PropertyAssignment, PropertyAssignments, PropertyModel} from "./property";
-
-export interface XY {
-	x: number;
-	y: number;
-}
 
 export type OperatorModelArgs = {
 	name: string,
@@ -25,10 +21,6 @@ export type OperatorModelArgs = {
 	generics: GenericSpecifications,
 	geometry?: OperatorGeometry,
 };
-
-export interface OperatorGeometry {
-	position: XY;
-}
 
 export class OperatorModel extends BlackBox {
 

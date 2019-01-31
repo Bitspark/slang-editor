@@ -1,12 +1,13 @@
 import {dia, g, shapes} from "jointjs";
 import m from "mithril";
 import {Styles} from "../../../styles/studio";
+import {BlackBox} from "../../core/models/blackbox";
+import {BlueprintModel} from "../../core/models/blueprint";
+import {OperatorModel} from "../../core/models/operator";
+import {PortModel} from "../../core/models/port";
+import {XY} from "../../definitions/geometry";
+import {SlangSubject} from "../../utils/events";
 import Button = Tk.Button;
-import {SlangSubject} from "../../custom/events";
-import {BlackBox} from "../../custom/nodes";
-import {BlueprintModel} from "../../model/blueprint";
-import {OperatorModel, XY} from "../../model/operator";
-import {PortModel} from "../../model/port";
 import {PaperView} from "../views/paper-view";
 import {AttachableComponent, CellComponent} from "./base";
 import RectangleSelectors = shapes.standard.RectangleSelectors;

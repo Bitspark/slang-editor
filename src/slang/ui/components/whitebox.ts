@@ -2,26 +2,27 @@ import m, {ClassComponent, CVnode} from "mithril";
 
 import {dia, g, layout, shapes} from "jointjs";
 import {Styles} from "../../../styles/studio";
-import {Connection} from "../../custom/connections";
-import Modal = Tk.Modal;
-import {SlangSubject} from "../../custom/events";
-import {SlangTypeValue, TypeIdentifier} from "../../custom/type";
-import {BlueprintInstance, BlueprintModel} from "../../model/blueprint";
-import {BlueprintDelegateModel} from "../../model/delegate";
-import {OperatorModel} from "../../model/operator";
-import {BlueprintPortModel, GenericPortModel, PortModel} from "../../model/port";
+import {Connection} from "../../core/connections";
+import {BlueprintInstance, BlueprintModel} from "../../core/models/blueprint";
+import {BlueprintDelegateModel} from "../../core/models/delegate";
+import {OperatorModel} from "../../core/models/operator";
+import {BlueprintPortModel, GenericPortModel, PortModel} from "../../core/models/port";
+import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
+import {SlangSubject} from "../../utils/events";
 import {PaperView} from "../views/paper-view";
 import {AttachableComponent, CellComponent} from "./base";
 import {BlackBoxComponent, OperatorBoxComponent} from "./blackbox";
 import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {ConnectionComponent} from "./connection";
-import Button = Tk.Button;
 import {InputConsole, OutputConsole} from "./console";
 import {DashboardComponent} from "./dashboard";
 import {COMPONENT_FACTORY} from "./factory";
 import {PortGroupPosition} from "./port-group";
 import {Tk} from "./toolkit";
+
 import Box = Tk.Box;
+import Button = Tk.Button;
+import Modal = Tk.Modal;
 
 export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 60;

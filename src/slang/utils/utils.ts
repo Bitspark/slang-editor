@@ -1,4 +1,4 @@
-import {PropertyAssignments} from "../model/property";
+import {PropertyAssignments} from "../core/property";
 
 export class PropertyEvaluator {
 	public static expand(str: string, propAssigns?: PropertyAssignments): string[] {

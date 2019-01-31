@@ -2,7 +2,8 @@
 	"extends": [
 		"tslint:recommended",
 		"tslint-eslint-rules",
-		"tslint-consistent-codestyle"
+		"tslint-consistent-codestyle" // ,
+		// "tslint-no-circular-imports"
 	],
 	"rules": {
 		// Rules from plain tslint

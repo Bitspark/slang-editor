@@ -1,12 +1,12 @@
 import {SlangApp} from "../../src/slang/app";
-import {AppModel} from "../../src/slang/model/app";
-import {BlueprintApiResponse} from "../../src/slang/custom/api";
-import {fillLandscape} from "../../src/slang/custom/mapper";
-import {LandscapeModel} from "../../src/slang/model/landscape";
+import {fillLandscape} from "../../src/slang/core/mapper";
+import {AppModel} from "../../src/slang/core/models/app";
+import {LandscapeModel} from "../../src/slang/core/models/landscape";
+import {BlueprintApiResponse} from "../../src/slang/definitions/api";
 
 export class TestStorageApp extends SlangApp {
 
-	constructor(app: AppModel, private objects: Array<BlueprintApiResponse>) {
+	constructor(app: AppModel, private objects: BlueprintApiResponse[]) {
 		super(app, null);
 		this.subscribe();
 	}
@@ -21,7 +21,7 @@ export class TestStorageApp extends SlangApp {
 	}
 
 	private async load(): Promise<void> {
-		return new Promise<void>(async resolve => {
+		return new Promise<void>(async (resolve) => {
 			fillLandscape(this.app.getChildNode(LandscapeModel)!, this.objects);
 			resolve();
 		});

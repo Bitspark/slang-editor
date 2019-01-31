@@ -1,5 +1,5 @@
-import {BlueprintModel} from "../../model/blueprint";
-import {OperatorModel} from "../../model/operator";
+import {BlueprintModel} from "../../core/models/blueprint";
+import {OperatorModel} from "../../core/models/operator";
 import {PaperView} from "../views/paper-view";
 import {BlackBoxShape, OperatorBoxComponent} from "./blackbox";
 import {DashboardModuleComponent, PropertyFormDashboardModuleComponent} from "./dashboard";

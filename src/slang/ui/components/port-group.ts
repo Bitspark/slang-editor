@@ -1,8 +1,8 @@
 import {dia, g} from "jointjs";
 import {Styles} from "../../../styles/studio";
-import {TypeIdentifier} from "../../custom/type";
-import {OperatorModel} from "../../model/operator";
-import {PortModel} from "../../model/port";
+import {OperatorModel} from "../../core/models/operator";
+import {PortModel} from "../../core/models/port";
+import {TypeIdentifier} from "../../definitions/type";
 import {PortComponent} from "./port";
 
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";

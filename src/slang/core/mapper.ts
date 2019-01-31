@@ -1,21 +1,18 @@
-import {BlueprintModel, BlueprintType} from "../model/blueprint";
-import {BlueprintDelegateModel, OperatorDelegateModel} from "../model/delegate";
-import {LandscapeModel} from "../model/landscape";
-import {OperatorModel} from "../model/operator";
-import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel} from "../model/port";
-import {PropertyAssignment, PropertyAssignments, PropertyModel} from "../model/property";
 import {
-	BlueprintApiResponse,
-	BlueprintDefApiResponse, ConnectionsApiResponse,
-	GenericSpecificationsApiResponse, OperatorApiResponse, PortGroupApiResponse,
-	PortGroupsApiResponse,
-	PropertyApiResponse,
-	PropertyAssignmentsApiResponse,
-	TypeDefApiResponse,
-} from "./api";
+	BlueprintApiResponse, BlueprintDefApiResponse,
+	ConnectionsApiResponse, GenericSpecificationsApiResponse,
+	OperatorApiResponse, PortGroupApiResponse, PortGroupsApiResponse,
+	PropertyApiResponse, PropertyAssignmentsApiResponse, TypeDefApiResponse,
+} from "../definitions/api";
+import {SlangType, TypeIdentifier} from "../definitions/type";
 import {Connection} from "./connections";
 import {GenericSpecifications} from "./generics";
-import {SlangType, TypeIdentifier} from "./type";
+import {BlueprintModel, BlueprintType} from "./models/blueprint";
+import {BlueprintDelegateModel, OperatorDelegateModel} from "./models/delegate";
+import {LandscapeModel} from "./models/landscape";
+import {OperatorModel} from "./models/operator";
+import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel} from "./models/port";
+import {PropertyAssignment, PropertyAssignments, PropertyModel} from "./property";
 
 /*
 \

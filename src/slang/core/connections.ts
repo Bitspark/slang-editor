@@ -1,4 +1,4 @@
-import {PortModel} from "../model/port";
+import {PortModel} from "./models/port";
 
 export interface Connection {
 	source: PortModel;

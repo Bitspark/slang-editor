@@ -1,8 +1,8 @@
 import m from "mithril";
 
 import {dia} from "jointjs";
+import {XY} from "../../definitions/geometry";
 import Container = Tk.Container;
-import {XY} from "../../model/operator";
 import {PaperView} from "../views/paper-view";
 import {Tk} from "./toolkit";
 

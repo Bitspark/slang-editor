@@ -7,7 +7,7 @@ import {DeploymentApp} from "../apps/deployment/src/app";
 import {OperatorDataApp} from "../apps/operators/src/app";
 import {RouterApp} from "../apps/router/src/app";
 import {APIStorageApp} from "../apps/storage/src/app";
-import {AppModel} from "../slang/model/app";
+import {AppModel} from "../slang/core/models/app";
 import {Slang} from "../slang/slang";
 import {COMPONENT_FACTORY} from "../slang/ui/components/factory";
 import {ViewFrame} from "../slang/ui/frame";

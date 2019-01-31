@@ -1,7 +1,7 @@
 import {Subscription} from "rxjs";
-import {PortModel} from "../model/port";
-import {SlangBehaviorSubject, SlangSubject} from "./events";
-import {SlangType} from "./type";
+import {SlangType} from "../definitions/type";
+import {SlangBehaviorSubject, SlangSubject} from "../utils/events";
+import {PortModel} from "./models/port";
 
 export class GenericSpecifications {
 	private readonly genericsChanged = new SlangSubject<[string, SlangType | null]>("generics-changed");
@@ -34,7 +34,7 @@ export class GenericSpecifications {
 		return type;
 	}
 
-	public *getIterator(): IterableIterator<[string, SlangType]> {
+	public* getIterator(): IterableIterator<[string, SlangType]> {
 		for (const [genName, subject] of this.genericTypes.entries()) {
 			const genType = subject.getValue();
 			if (genType) {

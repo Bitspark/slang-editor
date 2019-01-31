@@ -1,9 +1,9 @@
 import {SlangApp} from "../../../slang/app";
-import {TypeIdentifier} from "../../../slang/custom/type";
-import {AppModel} from "../../../slang/model/app";
-import {BlueprintModel} from "../../../slang/model/blueprint";
-import {LandscapeModel} from "../../../slang/model/landscape";
-import {OperatorModel} from "../../../slang/model/operator";
+import {AppModel} from "../../../slang/core/models/app";
+import {BlueprintModel} from "../../../slang/core/models/blueprint";
+import {LandscapeModel} from "../../../slang/core/models/landscape";
+import {OperatorModel} from "../../../slang/core/models/operator";
+import {TypeIdentifier} from "../../../slang/definitions/type";
 import {BlackBoxShape, BlackBoxShapeAttrs} from "../../../slang/ui/components/blackbox";
 import {ComponentFactory} from "../../../slang/ui/components/factory";
 
@@ -19,7 +19,6 @@ export class OperatorDataApp extends SlangApp {
 			throw new Error(`unknown blueprintName "${blueprintName}"`);
 		}
 		return blueprint;
-
 	}
 
 	protected register(blueprintName: string, ctr: typeof BlackBoxShape) {

@@ -1,5 +1,4 @@
 import {BehaviorSubject, Subject, Subscription} from "rxjs";
-import {SlangNode} from "./nodes";
 
 abstract class BaseSlangSubject {
 
@@ -96,7 +95,11 @@ export class SlangBagSubject<T> extends BaseSlangSubject {
 	}
 }
 
-export class SlangNodeSetBehaviorSubject<T extends SlangNode> extends SlangBagSubject<T> {
+export interface IScopedIdentity {
+	getScopedIdentity(): string;
+}
+
+export class SlangNodeSetBehaviorSubject<T extends IScopedIdentity> extends SlangBagSubject<T> {
 	private readonly nodes: Map<string, T> = new Map<string, T>();
 
 	constructor(protected readonly name: string, initial: T[]) {

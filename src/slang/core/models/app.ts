@@ -1,7 +1,7 @@
-import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../custom/events";
-import {SlangNode} from "../custom/nodes";
+import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../../utils/events";
 import {BlueprintModel} from "./blueprint";
 import {LandscapeModel} from "./landscape";
+import {SlangNode} from "./node";
 
 export interface AppModelArgs { name: string; }
 

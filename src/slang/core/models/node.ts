@@ -1,7 +1,4 @@
-import {DelegateModel} from "../model/delegate";
-import {GenericPortModel, PortModel, PortModelArgs} from "../model/port";
-import {SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "./events";
-import {StreamPortOwner} from "./stream";
+import {SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "../../utils/events";
 
 // tslint:disable-next-line
 type Type<T> = Function & { prototype: T };
@@ -192,45 +189,5 @@ export abstract class SlangNode {
 		this.lastId = Number(Number.parseInt(this.lastId, 16) + 1).toString(16);
 		return this.lastId;
 	}
-
-}
-
-export abstract class PortOwner extends SlangNode {
-
-	private readonly streamPortOwner: StreamPortOwner;
-
-	protected constructor(parent: SlangNode, streamSource: boolean) {
-		super(parent);
-		this.streamPortOwner = new StreamPortOwner(this, streamSource);
-		this.streamPortOwner.initialize();
-	}
-
-	public getPortIn(): PortModel | null {
-		return this.scanChildNode(GenericPortModel, (p) => p.isDirectionIn()) || null;
-	}
-
-	public getPortOut(): PortModel | null {
-		return this.scanChildNode(GenericPortModel, (p) => p.isDirectionOut()) || null;
-	}
-
-	public getPorts(): IterableIterator<PortModel> {
-		return this.getChildNodes(GenericPortModel);
-	}
-
-	public getStreamPortOwner(): StreamPortOwner {
-		return this.streamPortOwner;
-	}
-
-	protected abstract createPort(args: PortModelArgs): PortModel;
-
-}
-
-export abstract class BlackBox extends PortOwner {
-
-	public abstract getDisplayName(): string;
-
-	public abstract findDelegate(name: string): DelegateModel | undefined;
-
-	public abstract getDelegates(): IterableIterator<DelegateModel>;
 
 }

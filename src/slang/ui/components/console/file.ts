@@ -1,5 +1,5 @@
 import m, {CVnode} from "mithril";
-import {TypeIdentifier} from "../../../custom/type";
+import {TypeIdentifier} from "../../../definitions/type";
 import {ConsoleValueType, Input, Output} from "../console";
 import {Tk} from "../toolkit";
 
