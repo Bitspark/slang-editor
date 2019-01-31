@@ -1,12 +1,12 @@
-import {OperatorGeometry, XY} from "../../definitions/geometry";
-import {SlangBehaviorSubject, SlangSubjectTrigger} from "../../utils/events";
-import {Connections} from "../connections";
-import {GenericSpecifications} from "../generics";
+/* tslint:disable:no-circular-imports */
+
+import {OperatorGeometry, XY} from "../definitions/geometry";
 import {PropertyAssignment, PropertyAssignments, PropertyModel} from "../property";
+import {SlangBehaviorSubject, SlangSubjectTrigger} from "../utils/events";
 import {BlackBox} from "./blackbox";
 import {BlueprintModel, BlueprintType} from "./blueprint";
 import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
-import {OperatorPortModel, PortModelArgs} from "./port";
+import {Connections, GenericSpecifications, OperatorPortModel, PortModelArgs} from "./port";
 
 export type OperatorModelArgs = {
 	name: string,

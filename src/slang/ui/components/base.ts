@@ -1,10 +1,12 @@
 import m from "mithril";
 
 import {dia} from "jointjs";
-import {XY} from "../../definitions/geometry";
-import Container = Tk.Container;
+import {XY} from "../../core/definitions/geometry";
+import {ComponentFactory} from "../factory";
 import {PaperView} from "../views/paper-view";
 import {Tk} from "./toolkit";
+
+import Container = Tk.Container;
 
 export type Alignment =
 	"tl" | "t" | "tr" |
@@ -16,7 +18,7 @@ export interface Position extends XY {
 }
 
 abstract class Component {
-	protected constructor(private pos: XY) {
+	protected constructor(protected readonly factory: ComponentFactory, private pos: XY) {
 	}
 
 	public destroy() {
@@ -36,7 +38,7 @@ export abstract class CellComponent extends Component {
 	private components: Component[] = [];
 
 	protected constructor(protected readonly paperView: PaperView, xy: XY) {
-		super(xy);
+		super(paperView.getFactory(), xy);
 	}
 
 	public destroy() {
@@ -76,7 +78,7 @@ abstract class HtmlComponent extends Component {
 	protected readonly align: Alignment;
 
 	protected constructor(protected paperView: PaperView, position: Position) {
-		super(position);
+		super(paperView.getFactory(), position);
 		this.align = position.align;
 		this.htmlRoot = HtmlComponent.createRoot();
 		this.paperView.getFrame().getHTMLElement().appendChild(this.htmlRoot);

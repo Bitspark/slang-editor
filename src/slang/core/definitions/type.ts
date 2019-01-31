@@ -1,6 +1,5 @@
-import {GenericSpecifications} from "../core/generics";
-import {PropertyAssignments} from "../core/property";
-import {PropertyEvaluator} from "../utils/utils";
+import {PropertyAssignments} from "../property";
+import {PropertyEvaluator} from "../utils/properties";
 
 export enum TypeIdentifier {
 	// Unspecified, // 0
@@ -292,29 +291,6 @@ export class SlangType {
 		}
 
 		return type;
-	}
-
-	public specifyGenerics(genSpec: GenericSpecifications): SlangType {
-		if (this.typeIdentifier === TypeIdentifier.Generic) {
-			const identifier = this.getGenericIdentifier();
-			if (genSpec.has(identifier)) {
-				return genSpec.get(this.getGenericIdentifier()).copy();
-			}
-
-			return this.copy();
-		}
-		const specifiedType = new SlangType(this.parent, this.typeIdentifier);
-		switch (this.typeIdentifier) {
-			case TypeIdentifier.Map:
-				for (const [subName, subType] of this.getMapSubs()) {
-					specifiedType.addMapSub(subName, subType.specifyGenerics(genSpec));
-				}
-				break;
-			case TypeIdentifier.Stream:
-				specifiedType.setStreamSub(this.getStreamSub().specifyGenerics(genSpec));
-				break;
-		}
-		return specifiedType;
 	}
 
 	public addMapSub(name: string, port: SlangType): SlangType {

@@ -1,8 +1,9 @@
-import {Connections} from "../connections";
+/* tslint:disable:no-circular-imports */
+
 import {BlackBox} from "./blackbox";
 import {BlueprintModel} from "./blueprint";
 import {OperatorModel} from "./operator";
-import {BlueprintPortModel, OperatorPortModel, PortModelArgs} from "./port";
+import {BlueprintPortModel, Connections, OperatorPortModel, PortModelArgs} from "./port";
 import {PortOwner} from "./port-owner";
 
 export abstract class GenericDelegateModel<B extends BlackBox> extends PortOwner {

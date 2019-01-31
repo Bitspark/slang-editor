@@ -1,8 +1,8 @@
 import {SlangApp} from "../../src/slang/app";
+import {BlueprintApiResponse} from "../../src/slang/core/definitions/api";
 import {fillLandscape} from "../../src/slang/core/mapper";
 import {AppModel} from "../../src/slang/core/models/app";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
-import {BlueprintApiResponse} from "../../src/slang/definitions/api";
 
 export class TestStorageApp extends SlangApp {
 

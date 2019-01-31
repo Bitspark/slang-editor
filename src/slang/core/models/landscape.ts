@@ -1,4 +1,6 @@
-import {SlangBehaviorSubject} from "../../utils/events";
+/* tslint:disable:no-circular-imports */
+
+import {SlangBehaviorSubject} from "../utils/events";
 import {AppModel} from "./app";
 import {BlueprintModel, BlueprintModelArgs} from "./blueprint";
 import {SlangNode} from "./node";

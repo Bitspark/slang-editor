@@ -1,5 +1,5 @@
-import {copySlangTypeValue, SlangType, SlangTypeValue, TypeIdentifier} from "../definitions/type";
-import {GenericSpecifications} from "./generics";
+import {copySlangTypeValue, SlangType, SlangTypeValue, TypeIdentifier} from "./definitions/type";
+import {GenericSpecifications} from "./models/port";
 
 export class PropertyModel {
 	public constructor(private name: string, private type: SlangType) {

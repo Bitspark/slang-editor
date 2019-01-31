@@ -1,11 +1,12 @@
 import {SlangApp} from "../../../slang/app";
+import {TypeIdentifier} from "../../../slang/core/definitions/type";
 import {AppModel} from "../../../slang/core/models/app";
 import {BlueprintModel} from "../../../slang/core/models/blueprint";
 import {LandscapeModel} from "../../../slang/core/models/landscape";
 import {OperatorModel} from "../../../slang/core/models/operator";
-import {TypeIdentifier} from "../../../slang/definitions/type";
-import {BlackBoxShape, BlackBoxShapeAttrs} from "../../../slang/ui/components/blackbox";
-import {ComponentFactory} from "../../../slang/ui/components/factory";
+import {BlackBoxShape} from "../../../slang/ui/components/blackbox";
+import {ComponentFactory} from "../../../slang/ui/factory";
+import {CtorBlackBoxShape, IBlackBoxShapeAttrs} from "../../../slang/ui/interfaces/backbox";
 
 export class OperatorDataApp extends SlangApp {
 	constructor(app: AppModel, componentFactory: ComponentFactory) {
@@ -21,7 +22,7 @@ export class OperatorDataApp extends SlangApp {
 		return blueprint;
 	}
 
-	protected register(blueprintName: string, ctr: typeof BlackBoxShape) {
+	protected register(blueprintName: string, ctr: CtorBlackBoxShape) {
 		this.componentFactory!.registerBlackBoxShape(this.getBlueprint(blueprintName), ctr);
 	}
 
@@ -33,7 +34,7 @@ export class OperatorDataApp extends SlangApp {
 }
 
 class DataBlackBoxShape extends BlackBoxShape {
-	constructor(attrs: BlackBoxShapeAttrs) {
+	constructor(attrs: IBlackBoxShapeAttrs) {
 		super(attrs);
 
 		this.attr("body/rx", 12);
@@ -74,7 +75,7 @@ class EvalBlackBoxShape extends DataBlackBoxShape {
 }
 
 class ConvertBlackBoxShape extends DataBlackBoxShape {
-	constructor(attrs: BlackBoxShapeAttrs) {
+	constructor(attrs: IBlackBoxShapeAttrs) {
 		super(attrs);
 
 		this.attr("body/rx", 12);

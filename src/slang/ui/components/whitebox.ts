@@ -2,13 +2,12 @@ import m, {ClassComponent, CVnode} from "mithril";
 
 import {dia, g, layout, shapes} from "jointjs";
 import {Styles} from "../../../styles/studio";
-import {Connection} from "../../core/connections";
+import {SlangTypeValue, TypeIdentifier} from "../../core/definitions/type";
 import {BlueprintInstance, BlueprintModel} from "../../core/models/blueprint";
 import {BlueprintDelegateModel} from "../../core/models/delegate";
 import {OperatorModel} from "../../core/models/operator";
-import {BlueprintPortModel, GenericPortModel, PortModel} from "../../core/models/port";
-import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
-import {SlangSubject} from "../../utils/events";
+import {BlueprintPortModel, Connection, GenericPortModel, PortModel} from "../../core/models/port";
+import {SlangSubject} from "../../core/utils/events";
 import {PaperView} from "../views/paper-view";
 import {AttachableComponent, CellComponent} from "./base";
 import {BlackBoxComponent, OperatorBoxComponent} from "./blackbox";
@@ -16,7 +15,6 @@ import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {ConnectionComponent} from "./connection";
 import {InputConsole, OutputConsole} from "./console";
 import {DashboardComponent} from "./dashboard";
-import {COMPONENT_FACTORY} from "./factory";
 import {PortGroupPosition} from "./port-group";
 import {Tk} from "./toolkit";
 
@@ -535,7 +533,7 @@ export class WhiteBoxComponent extends CellComponent {
 
 	private addOperator(operator: OperatorModel): OperatorBoxComponent {
 
-		const operatorComp = COMPONENT_FACTORY.createOperatorComponent(this.paperView, operator);
+		const operatorComp = this.paperView.getFactory().createOperatorComponent(this.paperView, operator);
 
 		this.operators.push(operatorComp);
 
@@ -552,6 +550,7 @@ export class WhiteBoxComponent extends CellComponent {
 								},
 							},
 							m(DashboardComponent, {
+								factory: this.paperView.getFactory(),
 								operator,
 								onSave: () => {
 									comp.destroy();

@@ -1,18 +1,19 @@
 import m from "mithril";
 
 import {ClassComponent, CVnode} from "mithril";
-import Box = Tk.Box;
+import {OperatorGeometry, XY} from "../../core/definitions/geometry";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {LandscapeModel} from "../../core/models/landscape";
-import {OperatorGeometry, XY} from "../../definitions/geometry";
 import {BlueprintView} from "../views/blueprint";
 import {AttachableComponent, CellComponent} from "./base";
+import {BlackBoxShape} from "./blackbox";
+import {MithrilKeyboardEvent, MithrilMouseEvent, Tk} from "./toolkit";
+
+import Box = Tk.Box;
 import ListHead = Tk.ListHead;
 import StringInput = Tk.StringInput;
 import ListItem = Tk.ListItem;
 import List = Tk.List;
-import {BlackBoxShape} from "./blackbox";
-import {MithrilKeyboardEvent, MithrilMouseEvent, Tk} from "./toolkit";
 
 export interface Attrs {
 	onSelect: (bp: BlueprintModel) => void;

@@ -1,13 +1,21 @@
-import {BlueprintModel} from "../../core/models/blueprint";
-import {OperatorModel} from "../../core/models/operator";
-import {PaperView} from "../views/paper-view";
-import {BlackBoxShape, OperatorBoxComponent} from "./blackbox";
-import {DashboardModuleComponent, PropertyFormDashboardModuleComponent} from "./dashboard";
+/* tslint:disable:no-circular-imports */
+
+import {BlueprintModel} from "../core/models/blueprint";
+import {OperatorModel} from "../core/models/operator";
+import {OperatorBoxComponent} from "./components/blackbox";
+import {DashboardModuleComponent, PropertyFormDashboardModuleComponent} from "./components/dashboard";
+import {CtorBlackBoxShape} from "./interfaces/backbox";
+import {PaperView} from "./views/paper-view";
 
 export class ComponentFactory {
-	private readonly blackBoxShape = new Map<BlueprintModel, typeof BlackBoxShape>();
+	private readonly blackBoxShape = new Map<BlueprintModel, CtorBlackBoxShape>();
 	private readonly opCompClasses = new Map<BlueprintModel, new (pv: PaperView, op: OperatorModel) => OperatorBoxComponent>();
 	private readonly opDashboardModuleClasses = new Map<BlueprintModel, Array<new() => DashboardModuleComponent>>();
+
+	constructor(
+		private defaultBlackBoxShape: CtorBlackBoxShape,
+	) {
+	}
 
 	public createOperatorComponent(paperView: PaperView, operator: OperatorModel): OperatorBoxComponent {
 		const operatorCompClass = this.opCompClasses.get(operator.getBlueprint());
@@ -26,16 +34,15 @@ export class ComponentFactory {
 		return dashboardCompClass;
 	}
 
-	public getBlackBoxShape(blueprint: BlueprintModel): typeof BlackBoxShape {
+	public getBlackBoxShape(blueprint: BlueprintModel): CtorBlackBoxShape {
 		const newBlackBoxShape = this.blackBoxShape.get(blueprint);
 		if (!newBlackBoxShape) {
-			return BlackBoxShape;
+			return this.defaultBlackBoxShape;
 		}
 		return newBlackBoxShape;
-
 	}
 
-	public registerBlackBoxShape(blueprint: BlueprintModel, ctr: typeof BlackBoxShape) {
+	public registerBlackBoxShape(blueprint: BlueprintModel, ctr: CtorBlackBoxShape) {
 		this.blackBoxShape.set(blueprint, ctr);
 	}
 
@@ -47,5 +54,3 @@ export class ComponentFactory {
 		this.opDashboardModuleClasses.set(blueprint, modules);
 	}
 }
-
-export const COMPONENT_FACTORY = new ComponentFactory();

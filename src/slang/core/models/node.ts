@@ -1,4 +1,6 @@
-import {SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "../../utils/events";
+/* tslint:disable:no-circular-imports */
+
+import {SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "../utils/events";
 
 // tslint:disable-next-line
 type Type<T> = Function & { prototype: T };

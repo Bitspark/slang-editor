@@ -1,16 +1,16 @@
-import {OperatorGeometry} from "../../definitions/geometry";
-import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
-import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../../utils/events";
-import {SlangParsing} from "../../utils/parsing";
-import {PropertyEvaluator} from "../../utils/utils";
-import {Connections} from "../connections";
-import {GenericSpecifications} from "../generics";
+/* tslint:disable:no-circular-imports */
+
+import {OperatorGeometry} from "../definitions/geometry";
+import {SlangTypeValue, TypeIdentifier} from "../definitions/type";
 import {PropertyAssignments, PropertyModel} from "../property";
+import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../utils/events";
+import {SlangParsing} from "../utils/parsing";
+import {PropertyEvaluator} from "../utils/properties";
 import {BlackBox} from "./blackbox";
 import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
 import {LandscapeModel} from "./landscape";
 import {OperatorModel} from "./operator";
-import {BlueprintPortModel, PortDirection, PortModel, PortModelArgs} from "./port";
+import {BlueprintPortModel, Connections, GenericSpecifications, PortDirection, PortModel, PortModelArgs} from "./port";
 
 export enum BlueprintType {
 	Local,

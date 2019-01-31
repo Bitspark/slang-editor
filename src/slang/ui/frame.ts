@@ -1,24 +1,28 @@
+import {ComponentFactory} from "./factory";
 import {View} from "./views/view";
+
+export interface IView {
+	resize(width: number, height: number): void;
+}
 
 export class ViewFrame {
 
-	private view: View | null = null;
+	private view: IView | null = null;
 	private readonly viewEl: HTMLElement;
 
-	public constructor(private readonly container: HTMLElement) {
+	public constructor(private readonly container: HTMLElement, private readonly factory: ComponentFactory) {
 		this.viewEl = document.createElement("div");
 		this.viewEl.classList.add("view");
 		container.appendChild(this.viewEl);
 
-		const that = this;
 		window.addEventListener("resize", () => {
-			if (that.view) {
-				that.view.resize(that.container.clientWidth, that.container.clientHeight);
+			if (this.view) {
+				this.view.resize(this.container.clientWidth, this.container.clientHeight);
 			}
 		});
 		window.addEventListener("load", () => {
-			if (that.view) {
-				that.view.resize(that.container.clientWidth, that.container.clientHeight);
+			if (this.view) {
+				this.view.resize(this.container.clientWidth, this.container.clientHeight);
 			}
 		});
 	}
@@ -30,6 +34,10 @@ export class ViewFrame {
 
 	public getHTMLElement(): HTMLElement {
 		return this.viewEl;
+	}
+
+	public getFactory(): ComponentFactory {
+		return this.factory;
 	}
 
 }

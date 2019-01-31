@@ -1,10 +1,10 @@
+/* tslint:disable:no-circular-imports */
+
 import {Subscription} from "rxjs";
-import {SlangType, TypeIdentifier} from "../../definitions/type";
-import {SlangBehaviorSubject, SlangSubject} from "../../utils/events";
 import {canConnectTo} from "../connection-check";
-import {Connections} from "../connections";
-import {GenericSpecifications} from "../generics";
+import {SlangType, TypeIdentifier} from "../definitions/type";
 import {StreamPort} from "../stream";
+import {SlangBehaviorSubject, SlangSubject} from "../utils/events";
 import {BlackBox} from "./blackbox";
 import {BlueprintModel} from "./blueprint";
 import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
@@ -639,6 +639,140 @@ export class OperatorPortModel extends GenericPortModel<OperatorModel | Operator
 
 	public isSource(): boolean {
 		return this.isDirectionOut();
+	}
+
+}
+
+export class GenericSpecifications {
+	private readonly genericsChanged = new SlangSubject<[string, SlangType | null]>("generics-changed");
+	private readonly genericTypes = new Map<string, SlangBehaviorSubject<SlangType | null>>();
+	private readonly ports = new Map<string, Set<PortModel>>();
+
+	public constructor(private genericIdentifiers: string[]) {
+	}
+
+	public specify(identifier: string, type: SlangType): void {
+		if (this.genericIdentifiers.indexOf(identifier) === -1) {
+			throw new Error(`unknown generic identifier ${identifier}`);
+		}
+		const subject = this.getSubject(identifier, type);
+		if (subject.getValue() !== type) {
+			subject.next(type);
+			this.genericsChanged.next([identifier, type]);
+		}
+	}
+
+	public get(identifier: string): SlangType {
+		const generic = this.genericTypes.get(identifier);
+		if (!generic) {
+			throw new Error(`generic is not specified: ${identifier}`);
+		}
+		const type = generic.getValue();
+		if (!type) {
+			throw new Error(`generic is not specified: ${identifier}`);
+		}
+		return type;
+	}
+
+	public* getIterator(): IterableIterator<[string, SlangType]> {
+		for (const [genName, subject] of this.genericTypes.entries()) {
+			const genType = subject.getValue();
+			if (genType) {
+				yield [genName, genType!];
+			}
+		}
+	}
+
+	public has(identifier: string): boolean {
+		return this.genericTypes.has(identifier);
+	}
+
+	public clear(identifier: string): void {
+		if (this.genericIdentifiers.indexOf(identifier) === -1) {
+			return;
+		}
+		const subject = this.getSubject(identifier);
+		subject.next(null);
+	}
+
+	public registerPort(identifier: string, port: PortModel) {
+		let portSet = this.ports.get(identifier);
+		if (!portSet) {
+			portSet = new Set<PortModel>();
+			this.ports.set(identifier, portSet);
+		}
+		portSet.add(port);
+	}
+
+	public unregisterPort(identifier: string, port: PortModel) {
+		const portSet = this.ports.get(identifier);
+		if (portSet) {
+			portSet.delete(port);
+		}
+	}
+
+	public getUnifiedType(identifier: string): SlangType | null {
+		const portSet = this.ports.get(identifier);
+		if (!portSet) {
+			return null;
+		}
+		let unifiedType: SlangType | null = null;
+		for (const registeredPort of portSet) {
+			if (!unifiedType) {
+				unifiedType = registeredPort.getConnectedType();
+			} else {
+				unifiedType = unifiedType.union(registeredPort.getConnectedType());
+			}
+		}
+		return unifiedType;
+	}
+
+	public subscribeGenericTypeChanged(identifier: string, cb: (type: SlangType | null) => void): Subscription {
+		return this.getSubject(identifier).subscribe(cb);
+	}
+
+	public subscribeGenericsChanged(cb: (generic: [string, SlangType | null]) => void): Subscription {
+		return this.genericsChanged.subscribe(cb);
+	}
+
+	private getSubject(identifier: string, initial: SlangType | null = null): SlangBehaviorSubject<SlangType | null> {
+		const generic = this.genericTypes.get(identifier);
+		if (generic) {
+			return generic;
+		}
+		const newGeneric = new SlangBehaviorSubject<SlangType | null>("generic", initial);
+		this.genericTypes.set(identifier, newGeneric);
+		return newGeneric;
+	}
+
+}
+
+export interface Connection {
+	source: PortModel;
+	destination: PortModel;
+}
+
+export class Connections {
+	private connections: Connection[] = [];
+
+	public getIterator(): IterableIterator<Connection> {
+		return this.connections.values();
+	}
+
+	public addConnection(connection: Connection) {
+		this.connections.push(connection);
+	}
+
+	public addConnections(connections: Connections) {
+		for (const connection of connections.getIterator()) {
+			this.connections.push(connection);
+		}
+	}
+
+	public forEach(cb: (connection: Connection) => void): void {
+		for (const connection of this.connections) {
+			cb(connection);
+		}
 	}
 
 }

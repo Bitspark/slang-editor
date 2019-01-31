@@ -1,4 +1,4 @@
-import {SlangType, TypeIdentifier} from "../definitions/type";
+import {SlangType, TypeIdentifier} from "./definitions/type";
 import {OperatorDelegateModel} from "./models/delegate";
 import {OperatorModel} from "./models/operator";
 import {PortModel} from "./models/port";

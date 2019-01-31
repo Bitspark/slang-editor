@@ -1,3 +1,4 @@
+import {ComponentFactory} from "../factory";
 import {ViewFrame} from "../frame";
 
 export abstract class View {
@@ -9,6 +10,10 @@ export abstract class View {
 
 	public getFrame(): ViewFrame {
 		return this.frame;
+	}
+
+	public getFactory(): ComponentFactory {
+		return this.frame.getFactory();
 	}
 
 }

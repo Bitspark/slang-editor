@@ -1,6 +1,6 @@
-import {dia, g, shapes, util} from "jointjs";
-import {XY} from "../../definitions/geometry";
-import {SlangSubjectTrigger} from "../../utils/events";
+import {dia, g, util} from "jointjs";
+import {XY} from "../../core/definitions/geometry";
+import {SlangSubjectTrigger} from "../../core/utils/events";
 import {ViewFrame} from "../frame";
 import {View} from "./view";
 
@@ -40,8 +40,12 @@ export abstract class PaperView extends View {
 		return this.paper;
 	}
 
-	public getCell(id: string | number | dia.Cell): dia.Cell {
-		return this.graph.getCell(id);
+	public getCell(id: string): dia.Cell {
+		const cell = this.graph.getCell(id);
+		if (!cell) {
+			throw new Error("cell not found");
+		}
+		return cell;
 	}
 
 	public getCellsBBox(cells: dia.Cell[]): g.Rect | null {
@@ -267,33 +271,33 @@ export abstract class PaperView extends View {
 		});
 	}
 
-	protected getWidth(): number {
-		return this.paper.getArea().width;
-	}
-
-	protected getHeight(): number {
-		return this.paper.getArea().height;
-	}
-
-	protected addOriginPoint() {
-		const origin = new shapes.standard.Circle({
-			position: {
-				x: -2,
-				y: -2,
-			},
-			size: {
-				height: 4,
-				width: 4,
-			},
-		}).addTo(this.graph);
-
-		origin.attr("body/fill", "blue");
-		origin.attr("body/fill-opacity", ".05");
-		origin.attr("body/rx", "24");
-		origin.attr("body/ry", "24");
-		origin.attr("draggable", false);
-		origin.set("obstacle", false);
-	}
+	// protected getWidth(): number {
+	// 	return this.paper.getArea().width;
+	// }
+	//
+	// protected getHeight(): number {
+	// 	return this.paper.getArea().height;
+	// }
+	//
+	// protected addOriginPoint() {
+	// 	const origin = new shapes.standard.Circle({
+	// 		position: {
+	// 			x: -2,
+	// 			y: -2,
+	// 		},
+	// 		size: {
+	// 			height: 4,
+	// 			width: 4,
+	// 		},
+	// 	}).addTo(this.graph);
+	//
+	// 	origin.attr("body/fill", "blue");
+	// 	origin.attr("body/fill-opacity", ".05");
+	// 	origin.attr("body/rx", "24");
+	// 	origin.attr("body/ry", "24");
+	// 	origin.attr("draggable", false);
+	// 	origin.set("obstacle", false);
+	// }
 }
 
 (util.filter as any).innerShadow = (args: any) => {

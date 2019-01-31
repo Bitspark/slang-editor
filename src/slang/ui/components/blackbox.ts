@@ -1,19 +1,21 @@
-import {dia, g, shapes} from "jointjs";
 import m from "mithril";
+
+import {dia, g, shapes} from "jointjs";
 import {Styles} from "../../../styles/studio";
+import {XY} from "../../core/definitions/geometry";
 import {BlackBox} from "../../core/models/blackbox";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {OperatorModel} from "../../core/models/operator";
 import {PortModel} from "../../core/models/port";
-import {XY} from "../../definitions/geometry";
-import {SlangSubject} from "../../utils/events";
-import Button = Tk.Button;
+import {SlangSubject} from "../../core/utils/events";
+import {IBlackBoxShape, IBlackBoxShapeAttrs} from "../interfaces/backbox";
 import {PaperView} from "../views/paper-view";
 import {AttachableComponent, CellComponent} from "./base";
-import RectangleSelectors = shapes.standard.RectangleSelectors;
-import {COMPONENT_FACTORY} from "./factory";
 import {PortGroupComponent} from "./port-group";
 import {Tk} from "./toolkit";
+
+import Button = Tk.Button;
+import RectangleSelectors = shapes.standard.RectangleSelectors;
 
 function createPortGroups(blackBox: BlackBox): PortGroupComponent[] {
 	const portGroups: PortGroupComponent[] = [];
@@ -81,7 +83,7 @@ export abstract class BlackBoxComponent extends CellComponent {
 		return this.shape.getBBox();
 	}
 
-	protected shape!: BlackBoxShape;
+	protected shape!: IBlackBoxShape;
 	protected portGroups!: PortGroupComponent[];
 
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
@@ -149,7 +151,7 @@ export abstract class BlackBoxComponent extends CellComponent {
 
 	protected abstract createPortGroups(): PortGroupComponent[];
 
-	protected abstract createShape(): BlackBoxShape;
+	protected abstract createShape(): IBlackBoxShape;
 
 	protected attachPortEvents(blackbox: BlackBox) {
 		this.shape.on("port:mouseover",
@@ -199,12 +201,12 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 		this.attachPortEvents(this.blueprint);
 	}
 
-	public getShape(): BlackBoxShape {
+	public getShape(): IBlackBoxShape {
 		return this.shape;
 	}
 
-	protected createShape(): BlackBoxShape {
-		const blackBoxShapeType = COMPONENT_FACTORY.getBlackBoxShape(this.blueprint);
+	protected createShape(): IBlackBoxShape {
+		const blackBoxShapeType = this.paperView.getFactory().getBlackBoxShape(this.blueprint);
 		const shape = new blackBoxShapeType({
 			id: this.blueprint.getIdentity(),
 			portGroups: this.portGroups,
@@ -276,8 +278,8 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 		this.attachPortEvents(operator);
 	}
 
-	protected createShape(): BlackBoxShape {
-		const blackBoxShapeType = COMPONENT_FACTORY.getBlackBoxShape(this.operator.getBlueprint());
+	protected createShape(): IBlackBoxShape {
+		const blackBoxShapeType = this.paperView.getFactory().getBlackBoxShape(this.operator.getBlueprint());
 		const shape = new blackBoxShapeType({
 			id: this.operator.getIdentity(),
 			position: this.operator.xy,
@@ -292,15 +294,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 	}
 }
 
-export interface BlackBoxShapeAttrs {
-	id?: string;
-	label?: string;
-	portGroups?: PortGroupComponent[];
-	cssClass?: string;
-	position?: { x: number, y: number };
-}
-
-function constructRectAttrs(attrs: BlackBoxShapeAttrs): dia.Element.GenericAttributes<RectangleSelectors> {
+function constructRectAttrs(attrs: IBlackBoxShapeAttrs): dia.Element.GenericAttributes<RectangleSelectors> {
 	let pos = attrs.position;
 	if (pos) {
 		const {width, height} = Styles.BlackBox.size;
@@ -328,8 +322,8 @@ function constructRectAttrs(attrs: BlackBoxShapeAttrs): dia.Element.GenericAttri
 	};
 }
 
-export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", Styles.Defaults.blackBox) {
-	public static place(paperView: PaperView, blueprint: BlueprintModel, position?: g.PlainPoint): BlackBoxShape {
+export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", Styles.Defaults.blackBox) implements IBlackBoxShape {
+	public static place(paperView: PaperView, blueprint: BlueprintModel, position?: g.PlainPoint): IBlackBoxShape {
 		const shape = new BlueprintBoxComponent(paperView, blueprint).getShape();
 		if (position) {
 			const {width, height} = shape.size();
@@ -342,7 +336,7 @@ export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", 
 		return shape;
 	}
 
-	public static placeGhost(paperView: PaperView, label: string, position?: g.PlainPoint): BlackBoxShape {
+	public static placeGhost(paperView: PaperView, label: string, position?: g.PlainPoint): IBlackBoxShape {
 		const shape = new BlackBoxShape({
 			id: "",
 			label,
@@ -356,7 +350,7 @@ export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", 
 		return shape;
 	}
 
-	constructor(attrs: BlackBoxShapeAttrs) {
+	constructor(attrs: IBlackBoxShapeAttrs) {
 		super(constructRectAttrs(attrs) as any);
 	}
 
@@ -367,4 +361,5 @@ export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", 
 	public setupForOperator(operator: OperatorModel) {
 		this.attr("label/text", operator.getBlueprint().getShortName());
 	}
+
 }

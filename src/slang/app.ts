@@ -1,5 +1,5 @@
 import {AppModel} from "./core/models/app";
-import {ComponentFactory} from "./ui/components/factory";
+import {ComponentFactory} from "./ui/factory";
 
 export abstract class SlangApp {
 	protected constructor(protected app: AppModel, protected componentFactory: ComponentFactory | null) {

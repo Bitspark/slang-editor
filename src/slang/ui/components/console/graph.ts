@@ -1,7 +1,7 @@
 import m, {CVnode, CVnodeDOM} from "mithril";
 import * as Plotly from "plotly.js";
 import {Config, ScatterData} from "plotly.js";
-import {TypeIdentifier} from "../../../definitions/type";
+import {TypeIdentifier} from "../../../core/definitions/type";
 import {ConsoleValueType, Output} from "../console";
 
 type GraphType = [{ name: string, data: [{ x: string, y: string }] }];

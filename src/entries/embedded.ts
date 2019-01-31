@@ -6,15 +6,18 @@ import {StaticStorageApp} from "../apps/storage/src/app";
 import {AppModel} from "../slang/core/models/app";
 import {LandscapeModel} from "../slang/core/models/landscape";
 import {Slang} from "../slang/slang";
-import {COMPONENT_FACTORY} from "../slang/ui/components/factory";
+import {BlackBoxShape} from "../slang/ui/components/blackbox";
+import {ComponentFactory} from "../slang/ui/factory";
 import {ViewFrame} from "../slang/ui/frame";
+
+const factory = new ComponentFactory(BlackBoxShape);
 
 export function slangStudioEmbedded(el: HTMLElement, blueprintFullName: string): Promise<void> {
 	return new Promise<void>((resolve) => {
 		const appModel = AppModel.create(`embedded-${blueprintFullName}`);
 		const app = new Slang(appModel);
-		app.addFrame(new ViewFrame(el), true);
-		new StaticStorageApp(appModel, COMPONENT_FACTORY, "https://files.bitspark.de/slang-operators/slang-definitions.json");
+		app.addFrame(new ViewFrame(el, factory), true);
+		new StaticStorageApp(appModel, factory, "https://files.bitspark.de/slang-operators/slang-definitions.json");
 
 		app.load().then(() => {
 			const blueprint = appModel.getChildNode([LandscapeModel])!.findBlueprint(blueprintFullName);
