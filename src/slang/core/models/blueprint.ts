@@ -3,9 +3,9 @@
 import {OperatorGeometry} from "../definitions/geometry";
 import {SlangTypeValue, TypeIdentifier} from "../definitions/type";
 import {PropertyAssignments, PropertyModel} from "../property";
+import {PropertyEvaluator} from "../property";
 import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../utils/events";
 import {SlangParsing} from "../utils/parsing";
-import {PropertyEvaluator} from "../utils/properties";
 import {BlackBox} from "./blackbox";
 import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
 import {LandscapeModel} from "./landscape";
@@ -164,7 +164,7 @@ export class BlueprintModel extends BlackBox {
 						delegateCopy.createPort({
 							direction: port.getDirection(),
 							name: "",
-							type: port.getType().expand(properties),
+							type: PropertyEvaluator.expandType(port.getType(), properties),
 						});
 					}
 				}
@@ -184,7 +184,7 @@ export class BlueprintModel extends BlackBox {
 			if (properties && generics) {
 				operator.createPort({
 					name: "",
-					type: port.getType().expand(properties),
+					type: PropertyEvaluator.expandType(port.getType(), properties),
 					direction: port.getDirection(),
 				});
 			} else {

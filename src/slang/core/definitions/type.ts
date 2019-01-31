@@ -1,6 +1,3 @@
-import {PropertyAssignments} from "../property";
-import {PropertyEvaluator} from "../utils/properties";
-
 export enum TypeIdentifier {
 	// Unspecified, // 0
 	Number, // 1
@@ -270,27 +267,6 @@ export class SlangType {
 				break;
 		}
 		return typeCopy;
-	}
-
-	public expand(propAssigns: PropertyAssignments): SlangType {
-		const type = new SlangType(this.parent, this.typeIdentifier);
-		switch (this.getTypeIdentifier()) {
-			case TypeIdentifier.Map:
-				for (const [subName, subType] of this.getMapSubs()) {
-					for (const expSubName of PropertyEvaluator.expand(subName, propAssigns)) {
-						type.addMapSub(expSubName, subType.expand(propAssigns));
-					}
-				}
-				break;
-			case TypeIdentifier.Stream:
-				type.setStreamSub(this.getStreamSub().expand(propAssigns));
-				break;
-			case TypeIdentifier.Generic:
-				type.setGenericIdentifier(this.getGenericIdentifier());
-				break;
-		}
-
-		return type;
 	}
 
 	public addMapSub(name: string, port: SlangType): SlangType {

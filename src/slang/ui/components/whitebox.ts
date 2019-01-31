@@ -1,6 +1,6 @@
 import m, {ClassComponent, CVnode} from "mithril";
 
-import {dia, g, layout, shapes} from "jointjs";
+import {dia, g, shapes} from "jointjs";
 import {Styles} from "../../../styles/studio";
 import {SlangTypeValue, TypeIdentifier} from "../../core/definitions/type";
 import {BlueprintInstance, BlueprintModel} from "../../core/models/blueprint";
@@ -12,10 +12,11 @@ import {PaperView} from "../views/paper-view";
 import {AttachableComponent, CellComponent} from "./base";
 import {BlackBoxComponent, OperatorBoxComponent} from "./blackbox";
 import {IsolatedBlueprintPortComponent} from "./blueprint-port";
+import {BlueprintSelectComponent} from "./blueprint-select";
 import {ConnectionComponent} from "./connection";
 import {InputConsole, OutputConsole} from "./console";
 import {DashboardComponent} from "./dashboard";
-import {PortGroupPosition} from "./port-group";
+import {PortGroupPosition} from "./port";
 import {Tk} from "./toolkit";
 
 import Box = Tk.Box;
@@ -31,10 +32,11 @@ export class WhiteBoxComponent extends CellComponent {
 	private dblclicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("dblclicked");
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
+	private blueprintSelect: BlueprintSelectComponent | null = null;
+
 	private readonly buttons: AttachableComponent;
 	private readonly input: AttachableComponent;
 	private readonly output: AttachableComponent;
-
 	private readonly operators: BlackBoxComponent[] = [];
 	private readonly connections: ConnectionComponent[] = [];
 	private readonly ports = {
@@ -68,29 +70,7 @@ export class WhiteBoxComponent extends CellComponent {
 
 		this.render();
 		this.centerizeOuter();
-	}
-
-	public autoLayout() {
-		const operatorRectangles = this.operators.map((operatorComponent) => operatorComponent.getShape());
-		const connectionLinks = this.connections.map((connectionComponent) => connectionComponent.getShape());
-
-		layout.DirectedGraph.layout(
-			[
-				...operatorRectangles,
-				...connectionLinks,
-				...this.ports.top.map((p) => p.getShape()),
-				...this.ports.bottom.map((p) => p.getShape()),
-				...this.ports.left.map((p) => p.getShape()),
-				...this.ports.right.map((p) => p.getShape()),
-			], {
-				nodeSep: 80,
-				rankSep: 80,
-				edgeSep: 0,
-				rankDir: "TB",
-				resizeClusters: false,
-			});
-
-		this.centerizeOuter();
+		this.attachEventHandlers();
 	}
 
 	public centerizeOuter() {
@@ -296,6 +276,28 @@ export class WhiteBoxComponent extends CellComponent {
 	public onPortMouseLeave(cb: (port: PortModel, x: number, y: number) => void) {
 		this.portMouseLeft.subscribe(({port, x, y}) => {
 			cb(port, x, y);
+		});
+	}
+
+	private attachEventHandlers() {
+		this.onDblClick((_event: Event, x: number, y: number) => {
+			this.blueprintSelect = new BlueprintSelectComponent(this.paperView, this.blueprint, {x, y});
+		});
+		let portInfo: AttachableComponent;
+		this.onPortMouseEnter((port: PortModel, x: number, y: number) => {
+			portInfo = this
+				.createComponent({x: x + 2, y: y + 2, align: "tl"})
+				.mount({
+					view: () => m(PortInfo, {port}),
+				});
+		});
+		this.onPortMouseLeave(() => portInfo.destroy());
+
+		this.paperView.getPaper().on("blank:pointerclick cell:pointerclick", () => {
+			if (this.blueprintSelect) {
+				this.blueprintSelect.destroy();
+				this.blueprintSelect = null;
+			}
 		});
 	}
 
@@ -599,25 +601,6 @@ export interface Attrs {
 	port: PortModel;
 }
 
-class PortInfo implements ClassComponent<Attrs> {
-	// Note that class methods cannot infer parameter types
-	public oninit() {
-	}
-
-	public view({attrs}: CVnode<Attrs>) {
-		const port = attrs.port;
-		const portType = TypeIdentifier[port.getTypeIdentifier()].toLowerCase();
-
-		return m(".sl-port-info",
-			m(".sl-port-type", {
-					class: `sl-type-${portType}`,
-				},
-				portType),
-			m(".sl-port-name", port.getName()),
-		);
-	}
-}
-
 export namespace WhiteBoxComponent {
 	import RectangleSelectors = shapes.standard.RectangleSelectors;
 
@@ -658,5 +641,24 @@ export namespace WhiteBoxComponent {
 			this.attr("draggable", false);
 			this.set("obstacle", false);
 		}
+	}
+}
+
+class PortInfo implements ClassComponent<Attrs> {
+	// Note that class methods cannot infer parameter types
+	public oninit() {
+	}
+
+	public view({attrs}: CVnode<Attrs>) {
+		const port = attrs.port;
+		const portType = TypeIdentifier[port.getTypeIdentifier()].toLowerCase();
+
+		return m(".sl-port-info",
+			m(".sl-port-type", {
+					class: `sl-type-${portType}`,
+				},
+				portType),
+			m(".sl-port-name", port.getName()),
+		);
 	}
 }

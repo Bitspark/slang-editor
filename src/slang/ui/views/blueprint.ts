@@ -1,12 +1,10 @@
 import {dia} from "jointjs";
-import m, {ClassComponent, CVnode} from "mithril";
 import {XY} from "../../core/definitions/geometry";
 import {TypeIdentifier} from "../../core/definitions/type";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {LandscapeModel} from "../../core/models/landscape";
 import {GenericPortModel, GenericSpecifications, PortModel} from "../../core/models/port";
 import {PropertyAssignments} from "../../core/property";
-import {AttachableComponent} from "../components/base";
 import {BlackBoxShape} from "../components/blackbox";
 import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
@@ -117,32 +115,12 @@ export class BlueprintView extends PaperView {
 	}
 
 	private attachEventHandlers() {
-		this.whiteBox.onDblClick((_event: Event, x: number, y: number) => {
-			this.blueprintSelect = new BlueprintSelectComponent(this, {x, y});
-		});
-		let portInfo: AttachableComponent;
-		this.whiteBox.onPortMouseEnter((port: PortModel, x: number, y: number) => {
-			portInfo = this.whiteBox
-				.createComponent({x: x + 2, y: y + 2, align: "tl"})
-				.mount({
-					view: () => m(PortInfo, {port}),
-				});
-		});
-		this.whiteBox.onPortMouseLeave(() => portInfo.destroy());
-
 		this.graph.on("change:position change:size", (cell: dia.Cell) => {
 			// Moving around inner operators
 			if (!(cell instanceof BlackBoxShape)) {
 				return;
 			}
 			this.fitOuter(false);
-		});
-
-		this.getPaper().on("blank:pointerclick cell:pointerclick", () => {
-			if (this.blueprintSelect) {
-				this.blueprintSelect.destroy();
-				this.blueprintSelect = null;
-			}
 		});
 	}
 
@@ -177,28 +155,5 @@ export class BlueprintView extends PaperView {
 
 		const valueOperator = this.blueprint.createOperator(null, valueBlueprint, propAssigns, genSpeci, {position: xy});
 		valueOperator.getPortOut()!.connect(portDst);
-	}
-}
-
-export interface Attrs {
-	port: PortModel;
-}
-
-class PortInfo implements ClassComponent<Attrs> {
-	// Note that class methods cannot infer parameter types
-	public oninit() {
-	}
-
-	public view({attrs}: CVnode<Attrs>) {
-		const port = attrs.port;
-		const portType = TypeIdentifier[port.getTypeIdentifier()].toLowerCase();
-
-		return m(".sl-port-info",
-			m(".sl-port-type", {
-					class: `sl-type-${portType}`,
-				},
-				portType),
-			m(".sl-port-name", port.getName()),
-		);
 	}
 }

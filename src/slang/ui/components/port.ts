@@ -1,8 +1,9 @@
-import {attributes, dia, g} from "jointjs";
+import {attributes, dia} from "jointjs";
 import {Styles} from "../../../styles/studio";
 import {TypeIdentifier} from "../../core/definitions/type";
 import {PortModel} from "../../core/models/port";
-import {PortGroupComponent, PortGroupPosition} from "./port-group";
+
+export type PortGroupPosition = "top" | "right" | "bottom" | "left";
 
 /**
  * Component representing a Slang port.
@@ -65,19 +66,18 @@ export class PortComponent {
 		return attrs;
 	}
 
-	private position: g.PlainPoint | undefined;
 	private readonly portElement: dia.Element.Port = {};
 
-	constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent) {
+	constructor(private readonly port: PortModel, groupName: string, groupPosition: PortGroupPosition) {
 		if (port.isGeneric()) {
 			this.portElement.id = `${port.getIdentity()}.*`;
 		} else {
 			this.portElement.id = `${port.getIdentity()}`;
 		}
-		this.portElement.group = parent.getName();
+		this.portElement.group = groupName;
 		this.portElement.markup = PortComponent.getPortMarkup(port);
 		this.portElement.attrs = {
-			path: PortComponent.getPortAttributes(parent.getGroupPosition(), port),
+			path: PortComponent.getPortAttributes(groupPosition, port),
 			g: {
 				magnet: true,
 			},
@@ -90,17 +90,5 @@ export class PortComponent {
 
 	public getModel(): PortModel {
 		return this.port;
-	}
-
-	public setPosition(position: g.PlainPoint) {
-		this.position = position;
-	}
-
-	public getPosition(): g.PlainPoint | undefined {
-		return this.position;
-	}
-
-	public getGroup(): PortGroupComponent {
-		return this.parent;
 	}
 }

@@ -3,9 +3,7 @@ import {Styles} from "../../../styles/studio";
 import {TypeIdentifier} from "../../core/definitions/type";
 import {OperatorModel} from "../../core/models/operator";
 import {PortModel} from "../../core/models/port";
-import {PortComponent} from "./port";
-
-export type PortGroupPosition = "top" | "right" | "bottom" | "left";
+import {PortComponent, PortGroupPosition} from "./port";
 
 function createPortItems(parent: PortGroupComponent, position: PortGroupPosition, port: PortModel, createGhostPorts: boolean): PortComponent[] {
 	const portItems: PortComponent[] = [];
@@ -13,7 +11,7 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
 	switch (port.getTypeIdentifier()) {
 		case TypeIdentifier.Map:
 			if (port.isCollapsed()) {
-				portItems.push(new PortComponent(port, parent));
+				portItems.push(new PortComponent(port, parent.getName(), parent.getGroupPosition()));
 				break;
 			}
 			for (const sub of port.getMapSubs()) {
@@ -29,11 +27,11 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
 			break;
 
 		default:
-			portItems.push(new PortComponent(port, parent));
+			portItems.push(new PortComponent(port, parent.getName(), parent.getGroupPosition()));
 	}
 
 	if (createGhostPorts && port.isGeneric()) {
-		portItems.push(new PortComponent(port, parent));
+		portItems.push(new PortComponent(port, parent.getName(), parent.getGroupPosition()));
 	}
 
 	return portItems;
@@ -95,7 +93,6 @@ export class PortGroupComponent {
 						break;
 				}
 
-				portComponents[index].setPosition(portPosition);
 				return new g.Point(portPosition);
 			});
 		};

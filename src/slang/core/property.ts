@@ -125,3 +125,76 @@ export class PropertyAssignments {
 		return propVal;
 	}
 }
+
+export class PropertyEvaluator {
+	public static expand(str: string, propAssigns?: PropertyAssignments): string[] {
+		let exprs = [str];
+
+		if (propAssigns) {
+			for (const expr of exprs) {
+				const parts = /{(.*?)}/.exec(expr);
+				if (!parts) {
+					break;
+				}
+
+				// This could be extended with more complex logic in the future
+				const vals = this.expandExpression(parts[1], propAssigns);
+
+				// Actual replacement
+				const newExprs = [];
+				for (const val of vals) {
+					for (const e of exprs) {
+						newExprs.push(e.replace(parts[0], val));
+					}
+				}
+				exprs = newExprs;
+			}
+		}
+
+		return exprs;
+	}
+
+	public static expandType(type: SlangType, propAssigns: PropertyAssignments): SlangType {
+		switch (type.getTypeIdentifier()) {
+			case TypeIdentifier.Map:
+				for (const [subName, subType] of type.getMapSubs()) {
+					for (const expSubName of PropertyEvaluator.expand(subName, propAssigns)) {
+						type.addMapSub(expSubName, PropertyEvaluator.expandType(subType, propAssigns));
+					}
+				}
+				break;
+			case TypeIdentifier.Stream:
+				type.setStreamSub(PropertyEvaluator.expandType(type.getStreamSub(), propAssigns));
+				break;
+			case TypeIdentifier.Generic:
+				type.setGenericIdentifier(type.getGenericIdentifier());
+				break;
+		}
+
+		return type;
+	}
+
+	private static expandExpression(exprPart: string, propAssigns: PropertyAssignments): string[] {
+		const vals: string[] = [];
+
+		if (!propAssigns.isDefined(exprPart)) {
+			return [];
+		}
+
+		const propAssign = propAssigns.get(exprPart);
+		const propValue: any = propAssign.getValue();
+
+		if (propAssign.isStream()) {
+			if (typeof propValue === "string" && (propValue as string).startsWith("$")) {
+				vals.push(`{${propValue.substr(1)}}`);
+			} else {
+				for (const el of propValue) {
+					vals.push((typeof el === "string") ? el : JSON.stringify(el));
+				}
+			}
+		} else {
+			vals.push((typeof propValue === "string") ? propValue : JSON.stringify(propValue));
+		}
+		return vals;
+	}
+}

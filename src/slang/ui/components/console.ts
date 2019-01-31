@@ -1,16 +1,11 @@
 import m, {ClassComponent, CVnode} from "mithril";
 
 import {SlangType, SlangTypeDef, SlangTypeValue, TypeIdentifier} from "../../core/definitions/type";
+import {ConsoleValueType, InputValueType, OutputValueType} from "../interfaces/console";
 import {BINARY_VALUE_TYPE} from "./console/binary";
 import {FILE_VALUE_TYPE, IMAGE_VALUE_TYPE} from "./console/file";
 import {GRAPH_VALUE_TYPE} from "./console/graph";
 import {Tk} from "./toolkit";
-
-export interface ConsoleValueType<T> {
-	typeDef: SlangTypeDef;
-	input?: Input.ValueType<T>;
-	output?: Output.ValueType<T>;
-}
 
 export class ConsoleValueTypeManager {
 
@@ -22,7 +17,7 @@ export class ConsoleValueTypeManager {
 		}
 	}
 
-	public static findInput(type: SlangType): Input.ValueType<any> | undefined {
+	public static findInput(type: SlangType): InputValueType<any> | undefined {
 		const foundInpComps = ConsoleValueTypeManager.components
 			.filter((comp: ConsoleValueType<any>) => !!comp.input && SlangTypeDef.isEqual(comp.typeDef, type.getTypeDef()));
 		if (foundInpComps.length) {
@@ -31,7 +26,7 @@ export class ConsoleValueTypeManager {
 		return undefined;
 	}
 
-	public static findOutput(type: SlangType): Output.ValueType<any> | undefined {
+	public static findOutput(type: SlangType): OutputValueType<any> | undefined {
 		const foundOutComps = ConsoleValueTypeManager.components
 			.filter((comp: ConsoleValueType<any>) => !!comp.output && SlangTypeDef.isEqual(comp.typeDef, type.getTypeDef()));
 		if (foundOutComps.length) {
@@ -43,13 +38,6 @@ export class ConsoleValueTypeManager {
 }
 
 export namespace Input {
-	export interface ValueTypeAttrs<T> extends Tk.InputAttrs<T> {
-	}
-
-	export abstract class ValueType<T> implements Tk.Input<T> {
-		public abstract view(vnode: m.CVnode<ValueTypeAttrs<T>>): m.Children | void | null;
-	}
-
 	interface ConsoleEntryAttrs extends Tk.InputAttrs<any> {
 		type: SlangType;
 	}
@@ -218,20 +206,6 @@ export namespace Input {
 }
 
 export namespace Output {
-	export interface ValueTypeAttrs<T> {
-		value: T;
-		type: SlangType;
-	}
-
-	export abstract class ValueType<T> implements ClassComponent<ValueTypeAttrs<T>> {
-		public oncreate?(_vnode: m.CVnodeDOM<ValueTypeAttrs<T>>): any {
-		}
-
-		public onupdate?(_vnode: m.CVnodeDOM<ValueTypeAttrs<T>>): any {
-		}
-
-		public abstract view(vnode: m.CVnode<ValueTypeAttrs<T>>): m.Children | void | null;
-	}
 
 	export class ConsoleEntry implements ClassComponent<{ value: any, type: SlangType }> {
 

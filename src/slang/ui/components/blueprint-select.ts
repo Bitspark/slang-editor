@@ -4,7 +4,6 @@ import {ClassComponent, CVnode} from "mithril";
 import {OperatorGeometry, XY} from "../../core/definitions/geometry";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {LandscapeModel} from "../../core/models/landscape";
-import {BlueprintView} from "../views/blueprint";
 import {AttachableComponent, CellComponent} from "./base";
 import {BlackBoxShape} from "./blackbox";
 import {MithrilKeyboardEvent, MithrilMouseEvent, Tk} from "./toolkit";
@@ -14,6 +13,7 @@ import ListHead = Tk.ListHead;
 import StringInput = Tk.StringInput;
 import ListItem = Tk.ListItem;
 import List = Tk.List;
+import {PaperView} from "../views/paper-view";
 
 export interface Attrs {
 	onSelect: (bp: BlueprintModel) => void;
@@ -126,14 +126,12 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 
 export class BlueprintSelectComponent extends CellComponent {
 	protected shape: BlackBoxShape;
-	private readonly blueprint: BlueprintModel;
 	private readonly landscape: LandscapeModel;
 	private readonly menu: AttachableComponent;
 	private filterExpr: string = "";
 
-	constructor(blueprintView: BlueprintView, {x, y}: XY) {
-		super(blueprintView, {x, y});
-		this.blueprint = blueprintView.getBlueprint();
+	constructor(paperView: PaperView, private readonly blueprint: BlueprintModel, {x, y}: XY) {
+		super(paperView, {x, y});
 		this.landscape = this.blueprint.getAncestorNode(LandscapeModel)!;
 		this.shape = this.placeGhostRect({x, y});
 		this.menu = this.createComponent({x: 0, y: 0, align: "tl"})

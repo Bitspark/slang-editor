@@ -1,6 +1,6 @@
 import m, {CVnode} from "mithril";
 import {TypeIdentifier} from "../../../core/definitions/type";
-import {ConsoleValueType, Input, Output} from "../console";
+import {ConsoleValueType, IInputValueTypeAttrs, IOutputValueTypeAttrs} from "../../interfaces/console";
 import {Tk} from "../toolkit";
 
 function selectFile(file: File, onInput: (data: { content: string, name: string }) => void) {
@@ -27,7 +27,7 @@ export const FILE_VALUE_TYPE: ConsoleValueType<{ file: string, name: string }> =
 	},
 
 	input: {
-		view({attrs}: CVnode<Input.ValueTypeAttrs<{ file: string, name: string }>>) {
+		view({attrs}: CVnode<IInputValueTypeAttrs<{ file: string, name: string }>>) {
 			const origOnInput = attrs.onInput;
 			return m(Tk.FileInput, Object.assign(attrs, {
 				initValue: undefined,
@@ -51,7 +51,7 @@ export const IMAGE_VALUE_TYPE: ConsoleValueType<{ image: string, name: string }>
 	},
 
 	input: {
-		view({attrs}: CVnode<Input.ValueTypeAttrs<{ image: string, name: string }>>) {
+		view({attrs}: CVnode<IInputValueTypeAttrs<{ image: string, name: string }>>) {
 			const origOnInput = attrs.onInput;
 			return m(Tk.ImageInput, Object.assign(attrs, {
 				initValue: undefined,
@@ -65,7 +65,7 @@ export const IMAGE_VALUE_TYPE: ConsoleValueType<{ image: string, name: string }>
 	},
 
 	output: {
-		view({}: CVnode<Output.ValueTypeAttrs<{ image: string, name: string }>>) {
+		view({}: CVnode<IOutputValueTypeAttrs<{ image: string, name: string }>>) {
 			return m("img");
 		},
 	},

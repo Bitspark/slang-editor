@@ -1,5 +1,4 @@
 import {ComponentFactory} from "./factory";
-import {View} from "./views/view";
 
 export interface IView {
 	resize(width: number, height: number): void;
@@ -27,7 +26,7 @@ export class ViewFrame {
 		});
 	}
 
-	public setView(view: View) {
+	public setView(view: IView) {
 		this.view = view;
 		view.resize(this.container.clientWidth, this.container.clientHeight);
 	}

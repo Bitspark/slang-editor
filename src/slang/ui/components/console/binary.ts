@@ -1,6 +1,6 @@
 import m, {CVnode} from "mithril";
 import {TypeIdentifier} from "../../../core/definitions/type";
-import {ConsoleValueType, Input} from "../console";
+import {ConsoleValueType, IInputValueTypeAttrs} from "../../interfaces/console";
 import {Tk} from "../toolkit";
 
 function pre(slangValue: string | undefined): string | undefined {
@@ -20,7 +20,7 @@ export const BINARY_VALUE_TYPE: ConsoleValueType<string> = {
 	},
 
 	input: {
-		view({attrs}: CVnode<Input.ValueTypeAttrs<string>>) {
+		view({attrs}: CVnode<IInputValueTypeAttrs<string>>) {
 			const origOnInput = attrs.onInput;
 			return m(Tk.StringInput, Object.assign(attrs, {
 					initValue: pre(attrs.initValue),

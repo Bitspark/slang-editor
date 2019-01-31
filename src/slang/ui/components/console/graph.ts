@@ -2,7 +2,7 @@ import m, {CVnode, CVnodeDOM} from "mithril";
 import * as Plotly from "plotly.js";
 import {Config, ScatterData} from "plotly.js";
 import {TypeIdentifier} from "../../../core/definitions/type";
-import {ConsoleValueType, Output} from "../console";
+import {ConsoleValueType, IOutputValueTypeAttrs} from "../../interfaces/console";
 
 type GraphType = [{ name: string, data: [{ x: string, y: string }] }];
 
@@ -33,7 +33,7 @@ export const GRAPH_VALUE_TYPE: ConsoleValueType<GraphType> = {
 	},
 
 	output: {
-		oncreate({attrs, dom}: CVnodeDOM<Output.ValueTypeAttrs<GraphType>>) {
+		oncreate({attrs, dom}: CVnodeDOM<IOutputValueTypeAttrs<GraphType>>) {
 			const graphData = attrs.value.map(({name, data}) => {
 				return {
 					x: data.map(({x}) => x),
@@ -57,7 +57,7 @@ export const GRAPH_VALUE_TYPE: ConsoleValueType<GraphType> = {
 			m.redraw();
 		},
 
-		view({}: CVnode<Output.ValueTypeAttrs<GraphType>>): m.Children | void | null {
+		view({}: CVnode<IOutputValueTypeAttrs<GraphType>>): m.Children | void | null {
 			return m(".sl-graph");
 		},
 	},
