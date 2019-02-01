@@ -109,6 +109,15 @@
                 "pathNot": "^src/(slang/(ui|core|definitions)|styles)"
             }
         },
+        {
+            "name": "illegal-directory-structure",
+            "comment": "",
+            "severity": "error",
+            "from": {
+                "pathNot": "^src/(slang/(app.ts|slang.ts|core|definitions|ui)|styles)"
+            },
+            "to": {}
+        },
         /* recommended default rules: */
         {
             "name": "not-to-test",
