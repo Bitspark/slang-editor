@@ -1,4 +1,5 @@
 import {dia, shapes} from "jointjs";
+
 import {Styles} from "../../../styles/studio";
 import {PortModel} from "../../core/models/port";
 import {SlangSubject} from "../../core/utils/events";

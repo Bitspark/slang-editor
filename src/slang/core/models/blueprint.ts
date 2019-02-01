@@ -1,7 +1,7 @@
 /* tslint:disable:no-circular-imports */
 
-import {OperatorGeometry} from "../definitions/geometry";
-import {SlangTypeValue, TypeIdentifier} from "../definitions/type";
+import {OperatorGeometry} from "../../definitions/geometry";
+import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../utils/events";
 import {SlangParsing} from "../utils/parsing";
 import {PropertyAssignments, PropertyModel} from "../utils/property";

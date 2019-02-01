@@ -1,8 +1,8 @@
 import {dia, g} from "jointjs";
 import {Styles} from "../../../styles/studio";
-import {TypeIdentifier} from "../../core/definitions/type";
 import {OperatorModel} from "../../core/models/operator";
 import {PortModel} from "../../core/models/port";
+import {TypeIdentifier} from "../../definitions/type";
 import {PortComponent, PortGroupPosition} from "./port";
 
 function createPortItems(parent: PortGroupComponent, position: PortGroupPosition, port: PortModel, createGhostPorts: boolean): PortComponent[] {

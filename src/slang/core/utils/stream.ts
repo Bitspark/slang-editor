@@ -1,5 +1,5 @@
 import {Subscription} from "rxjs";
-import {SlangType, TypeIdentifier} from "../definitions/type";
+import {SlangType, TypeIdentifier} from "../../definitions/type";
 import {GenericPortModel, PortModel} from "../models/port";
 import {PortOwner} from "../models/port-owner";
 import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "./events";

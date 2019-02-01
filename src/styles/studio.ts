@@ -1,4 +1,4 @@
-import {TypeIdentifier} from "../slang/core/definitions/type";
+import {TypeIdentifier} from "../slang/definitions/type";
 
 export namespace Styles {
 

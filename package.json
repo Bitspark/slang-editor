@@ -8,6 +8,7 @@
     "start-embedded": "npm start -- --env.slang-mode embedded",
     "build-embedded": "webpack --config webpack/webpack.config.prod.js --colors --env.slang-mode embedded",
     "lint": "tslint -p tsconfig.json -c tslint.json src/**/*.ts",
+    "deps": "dependency-cruise --exclude \"^node_modules\" --validate -- ./src/slang",
     "test": "jasmine-ts"
   },
   "repository": {
@@ -53,6 +54,7 @@
     "clean-webpack-plugin": "^1.0.1",
     "copy-webpack-plugin": "^4.6.0",
     "css-loader": "^2.1.0",
+    "dependency-cruiser": "^4.12.1",
     "eslint": "^5.8.0",
     "eslint-loader": "^2.1.1",
     "file-loader": "^3.0.1",

@@ -1,6 +1,7 @@
 import {dia, g, util} from "jointjs";
-import {XY} from "../../core/definitions/geometry";
+
 import {SlangSubjectTrigger} from "../../core/utils/events";
+import {XY} from "../../definitions/geometry";
 import {ViewFrame} from "../frame";
 import {View} from "./view";
 

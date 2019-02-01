@@ -1,7 +1,7 @@
+import {dia} from "jointjs";
 import m from "mithril";
 
-import {dia} from "jointjs";
-import {XY} from "../../core/definitions/geometry";
+import {XY} from "../../definitions/geometry";
 import {ComponentFactory} from "../factory";
 import {PaperView} from "../views/paper-view";
 import {Tk} from "./toolkit";

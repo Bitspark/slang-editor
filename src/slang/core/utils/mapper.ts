@@ -3,8 +3,8 @@ import {
 	ConnectionsApiResponse, GenericSpecificationsApiResponse,
 	OperatorApiResponse, PortGroupApiResponse, PortGroupsApiResponse,
 	PropertyApiResponse, PropertyAssignmentsApiResponse, TypeDefApiResponse,
-} from "../definitions/api";
-import {SlangType, TypeIdentifier} from "../definitions/type";
+} from "../../definitions/api";
+import {SlangType, TypeIdentifier} from "../../definitions/type";
 import {BlueprintModel, BlueprintType} from "../models/blueprint";
 import {BlueprintDelegateModel, OperatorDelegateModel} from "../models/delegate";
 import {LandscapeModel} from "../models/landscape";

@@ -1,7 +1,7 @@
 /* tslint:disable:no-circular-imports */
 
 import {Subscription} from "rxjs";
-import {SlangType, TypeIdentifier} from "../definitions/type";
+import {SlangType, TypeIdentifier} from "../../definitions/type";
 import {canConnectTo} from "../utils/connection-check";
 import {SlangBehaviorSubject, SlangSubject} from "../utils/events";
 import {StreamPort} from "../utils/stream";

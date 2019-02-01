@@ -4,7 +4,7 @@ import {BlueprintModel} from "../core/models/blueprint";
 import {OperatorModel} from "../core/models/operator";
 import {OperatorBoxComponent} from "./components/blackbox";
 import {DashboardModuleComponent, PropertyFormDashboardModuleComponent} from "./components/dashboard";
-import {CtorBlackBoxShape} from "./interfaces/backbox";
+import {CtorBlackBoxShape} from "./interfaces/blackbox";
 import {PaperView} from "./views/paper-view";
 
 export class ComponentFactory {

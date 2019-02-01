@@ -1,6 +1,6 @@
 import m, {ClassComponent} from "mithril";
 
-import {SlangType, SlangTypeDef} from "../../core/definitions/type";
+import {SlangType, SlangTypeDef} from "../../definitions/type";
 import {Tk} from "../components/toolkit";
 
 export interface ConsoleValueType<T> {

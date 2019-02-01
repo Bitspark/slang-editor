@@ -17,6 +17,9 @@ jobs:
           name: Lint
           command: npm run lint
       - run:
+          name: Dependencies
+          command: npm run deps
+      - run:
           name: Test
           command: npm test
       - run:

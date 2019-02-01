@@ -1,12 +1,12 @@
 import {SlangApp} from "../../../slang/app";
-import {TypeIdentifier} from "../../../slang/core/definitions/type";
 import {AppModel} from "../../../slang/core/models/app";
 import {BlueprintModel} from "../../../slang/core/models/blueprint";
 import {LandscapeModel} from "../../../slang/core/models/landscape";
 import {OperatorModel} from "../../../slang/core/models/operator";
+import {TypeIdentifier} from "../../../slang/definitions/type";
 import {BlackBoxShape} from "../../../slang/ui/components/blackbox";
 import {ComponentFactory} from "../../../slang/ui/factory";
-import {CtorBlackBoxShape, IBlackBoxShapeAttrs} from "../../../slang/ui/interfaces/backbox";
+import {CtorBlackBoxShape, IBlackBoxShapeAttrs} from "../../../slang/ui/interfaces/blackbox";
 
 export class OperatorDataApp extends SlangApp {
 	constructor(app: AppModel, componentFactory: ComponentFactory) {

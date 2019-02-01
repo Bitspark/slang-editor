@@ -1,6 +1,6 @@
 import m, {ClassComponent, CVnode} from "mithril";
 
-import {SlangType, SlangTypeDef, SlangTypeValue, TypeIdentifier} from "../../core/definitions/type";
+import {SlangType, SlangTypeDef, SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 import {ConsoleValueType, InputValueType, OutputValueType} from "../interfaces/console";
 import {BINARY_VALUE_TYPE} from "./console/binary";
 import {FILE_VALUE_TYPE, IMAGE_VALUE_TYPE} from "./console/file";

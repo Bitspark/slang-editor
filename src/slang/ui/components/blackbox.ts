@@ -1,14 +1,14 @@
+import {dia, g, shapes} from "jointjs";
 import m from "mithril";
 
-import {dia, g, shapes} from "jointjs";
 import {Styles} from "../../../styles/studio";
-import {XY} from "../../core/definitions/geometry";
 import {BlackBox} from "../../core/models/blackbox";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {OperatorModel} from "../../core/models/operator";
 import {PortModel} from "../../core/models/port";
 import {SlangSubject} from "../../core/utils/events";
-import {IBlackBoxShape, IBlackBoxShapeAttrs} from "../interfaces/backbox";
+import {XY} from "../../definitions/geometry";
+import {IBlackBoxShape, IBlackBoxShapeAttrs} from "../interfaces/blackbox";
 import {PaperView} from "../views/paper-view";
 import {AttachableComponent, CellComponent} from "./base";
 import {PortGroupComponent} from "./port-group";

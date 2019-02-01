@@ -1,6 +1,6 @@
 /* tslint:disable:no-circular-imports */
 
-import {OperatorGeometry, XY} from "../definitions/geometry";
+import {OperatorGeometry, XY} from "../../definitions/geometry";
 import {SlangBehaviorSubject, SlangSubjectTrigger} from "../utils/events";
 import {PropertyAssignment, PropertyAssignments, PropertyModel} from "../utils/property";
 import {BlackBox} from "./blackbox";
