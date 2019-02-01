@@ -184,7 +184,11 @@ export abstract class SlangNode {
 		childNode.subscribeDestroyed(() => {
 			this.children.nextRemove(childNode);
 		});
+		childNode.created();
 		return childNode;
+	}
+
+	protected created(): void {
 	}
 
 	private nextId(): string {

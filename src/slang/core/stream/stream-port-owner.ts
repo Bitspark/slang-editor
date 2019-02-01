@@ -1,28 +1,36 @@
+/* tslint:disable:no-circular-imports */
+
 import {Subscription} from "rxjs";
 import {GenericPortModel} from "../models/abstract/port";
 import {PortOwner} from "../models/abstract/port-owner";
 import {SlangBehaviorSubject, SlangSubjectTrigger} from "../models/abstract/utils/events";
+import {IStreamPortOwner} from "./abstract";
+import {StreamPort} from "./stream-port";
 import {StreamType} from "./stream-type";
 
-export class StreamPortOwner {
+export class StreamPortOwner implements IStreamPortOwner {
 
 	private readonly baseStreamType = new SlangBehaviorSubject<StreamType | null>("base-stream-type", null);
 	private readonly propagateStreamTypeRequested = new SlangSubjectTrigger("base-stream-propagate");
 	private readonly refreshStreamTypeRequested = new SlangSubjectTrigger("base-stream-propagate");
 	private markedForReset: boolean = false;
 	private baseStreamTypeSubscription: Subscription | null = null;
+	private portOwner!: PortOwner;
 
-	constructor(private readonly portOwner: PortOwner, private readonly streamSource: boolean) {
-		portOwner.subscribeChildCreated(GenericPortModel, (port) => {
+	constructor(private readonly streamSource: boolean) {
+	}
+
+	public initialize(portOwner: PortOwner): void {
+		this.portOwner = portOwner;
+
+		this.portOwner.subscribeChildCreated(GenericPortModel, (port) => {
 			if (!this.isStreamSource()) {
-				port.getStreamPort().subscribeStreamTypeChanged((streamType) => {
+				(port.getStreamPort() as StreamPort).subscribeStreamTypeChanged((streamType) => {
 					this.setBaseStream(streamType);
 				});
 			}
 		});
-	}
 
-	public initialize(): void {
 		if (this.isStreamSource()) {
 			this.portOwner.subscribeChildCreated(GenericPortModel, (port) => {
 				if (port.isSource()) {

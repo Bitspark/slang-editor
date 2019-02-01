@@ -2,6 +2,7 @@
 
 import {OperatorGeometry} from "../../definitions/geometry";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
+import {StreamPortOwner} from "../stream/stream-port-owner";
 import {SlangParsing} from "../utils/parsing";
 import {BlackBox} from "./abstract/blackbox";
 import {PortDirection, PortModel, PortModelArgs} from "./abstract/port";
@@ -127,7 +128,7 @@ export class BlueprintModel extends BlackBox {
 	private genericIdentifiers: Set<string>;
 
 	constructor(parent: LandscapeModel, {fullName, type, geometry}: BlueprintModelArgs) {
-		super(parent, true);
+		super(parent, new StreamPortOwner(true));
 		this.fullName = fullName;
 		this.type = type;
 		this.hierarchy = fullName.split(".");
@@ -514,6 +515,10 @@ export class BlueprintModel extends BlackBox {
 
 	public subscribeOutputPushed(cb: (outputData: SlangTypeValue) => void, until?: SlangSubject<any>): void {
 		this.outputPushed.subscribe(cb, until);
+	}
+
+	protected created(): void {
+		(this.getStreamPortOwner() as StreamPortOwner).initialize(this);
 	}
 
 	private getRandomOperatorName(blueprint: BlueprintModel): string {

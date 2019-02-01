@@ -1,17 +1,13 @@
 /* tslint:disable:no-circular-imports */
 
-import {StreamPortOwner} from "../../stream/stream-port-owner";
+import {IStreamPortOwner} from "../../stream/abstract";
 import {SlangNode} from "./node";
 import {GenericPortModel, PortModel, PortModelArgs} from "./port";
 
 export abstract class PortOwner extends SlangNode {
 
-	private readonly streamPortOwner: StreamPortOwner;
-
-	protected constructor(parent: SlangNode, streamSource: boolean) {
+	protected constructor(parent: SlangNode, private readonly streamPortOwner: IStreamPortOwner) {
 		super(parent);
-		this.streamPortOwner = new StreamPortOwner(this, streamSource);
-		this.streamPortOwner.initialize();
 	}
 
 	public getPortIn(): PortModel | null {
@@ -26,7 +22,7 @@ export abstract class PortOwner extends SlangNode {
 		return this.getChildNodes(GenericPortModel);
 	}
 
-	public getStreamPortOwner(): StreamPortOwner {
+	public getStreamPortOwner(): IStreamPortOwner {
 		return this.streamPortOwner;
 	}
 

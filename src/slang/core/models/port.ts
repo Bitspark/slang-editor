@@ -1,5 +1,6 @@
 /* tslint:disable:no-circular-imports */
 
+import {StreamPort} from "../stream/stream-port";
 import {canConnectTo} from "../utils/connection-check";
 import {BlackBox} from "./abstract/blackbox";
 import {GenericPortModel, PortModel, PortModelArgs} from "./abstract/port";
@@ -10,7 +11,7 @@ import {OperatorModel} from "./operator";
 
 export class BlueprintPortModel extends GenericPortModel<BlueprintModel | BlueprintDelegateModel> {
 	public constructor(parent: BlueprintModel | BlueprintDelegateModel | BlueprintPortModel, args: PortModelArgs) {
-		super(parent, args, BlueprintPortModel);
+		super(parent, args, BlueprintPortModel, StreamPort);
 	}
 
 	public isSource(): boolean {
@@ -28,7 +29,7 @@ export class BlueprintPortModel extends GenericPortModel<BlueprintModel | Bluepr
 
 export class OperatorPortModel extends GenericPortModel<OperatorModel | OperatorDelegateModel> {
 	public constructor(parent: OperatorModel | OperatorDelegateModel | OperatorPortModel, args: PortModelArgs) {
-		super(parent, args, OperatorPortModel);
+		super(parent, args, OperatorPortModel, StreamPort);
 	}
 
 	public isSource(): boolean {

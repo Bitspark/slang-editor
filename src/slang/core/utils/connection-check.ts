@@ -1,9 +1,9 @@
 import {SlangType, TypeIdentifier} from "../../definitions/type";
 import {PortModel} from "../models/abstract/port";
 import {PortOwner} from "../models/abstract/port-owner";
-import {OperatorDelegateModel} from "../models/delegate";
-import {OperatorModel} from "../models/operator";
-import {containsMisplacedStreamTypeTo, StreamType} from "../stream/stream-type";
+// import {OperatorDelegateModel} from "../models/delegate";
+// import {OperatorModel} from "../models/operator";
+// import {containsMisplacedStreamTypeTo, StreamType} from "./stream";
 
 function typesStreamCompatible(streamTypeA: SlangType, streamTypeB: SlangType): boolean {
 	const subA = streamTypeA.getStreamSub();
@@ -42,93 +42,93 @@ function typesCompatibleTo(sourceType: SlangType, destinationType: SlangType): b
 	return sourceType.getTypeIdentifier() === destinationType.getTypeIdentifier();
 }
 
-function fluentStreamCompatibleTo(fluentStream: StreamType, stream: StreamType): boolean {
-	if (stream.hasPlaceholderRoot()) {
-		// Both streams are fluent
-		return !containsMisplacedStreamTypeTo(fluentStream, stream) && !containsMisplacedStreamTypeTo(stream, fluentStream);
-	}
+// function fluentStreamCompatibleTo(fluentStream: StreamType, stream: StreamType): boolean {
+// 	if (stream.hasPlaceholderRoot()) {
+// 		// Both streams are fluent
+// 		return !containsMisplacedStreamTypeTo(fluentStream, stream) && !containsMisplacedStreamTypeTo(stream, fluentStream);
+// 	}
+//
+// 	// Non-fluent stream must have at least the depth of the fluent stream
+// 	return stream.getStreamDepth() >= fluentStream.getStreamDepth();
+// }
 
-	// Non-fluent stream must have at least the depth of the fluent stream
-	return stream.getStreamDepth() >= fluentStream.getStreamDepth();
-}
+// function collectDelegateStreams(stream: StreamType): Set<StreamType> {
+// 	const streams = new Set<StreamType>();
+//
+// 	const rootStream = stream.getRootStream();
+// 	if (!rootStream) {
+// 		return streams;
+// 	}
+//
+// 	const rootSource = rootStream.getSource();
+// 	if (!rootSource) {
+// 		return streams;
+// 	}
+//
+// 	const rootOwner = rootSource.getOwner();
+// 	if (rootOwner instanceof OperatorDelegateModel) {
+// 		const rootOperator = rootOwner.getAncestorNode(OperatorModel);
+// 		if (rootOperator) {
+// 			const operatorRootStream = rootOperator.getStreamPortOwner().getBaseStreamType();
+// 			if (operatorRootStream) {
+// 				streams.add(operatorRootStream);
+// 				for (const ancestorStream of collectDelegateStreams(operatorRootStream)) {
+// 					streams.add(ancestorStream);
+// 				}
+// 			}
+// 		}
+// 	}
+//
+// 	return streams;
+// }
 
-function collectDelegateStreams(stream: StreamType): Set<StreamType> {
-	const streams = new Set<StreamType>();
+// function delegateStreamCompatibleTo(rootStream: StreamType | null, stream: StreamType | null): boolean {
+// 	if (!rootStream || !stream) {
+// 		return true;
+// 	}
+//
+// 	const rootStreams = collectDelegateStreams(rootStream);
+//
+// 	let baseStream: StreamType | null = stream;
+// 	while (baseStream) {
+// 		if (rootStreams.has(baseStream)) {
+// 			return false;
+// 		}
+// 		baseStream = baseStream.getBaseStreamOrNull();
+// 	}
+//
+// 	return true;
+// }
 
-	const rootStream = stream.getRootStream();
-	if (!rootStream) {
-		return streams;
-	}
-
-	const rootSource = rootStream.getSource();
-	if (!rootSource) {
-		return streams;
-	}
-
-	const rootOwner = rootSource.getOwner();
-	if (rootOwner instanceof OperatorDelegateModel) {
-		const rootOperator = rootOwner.getAncestorNode(OperatorModel);
-		if (rootOperator) {
-			const operatorRootStream = rootOperator.getStreamPortOwner().getBaseStreamType();
-			if (operatorRootStream) {
-				streams.add(operatorRootStream);
-				for (const ancestorStream of collectDelegateStreams(operatorRootStream)) {
-					streams.add(ancestorStream);
-				}
-			}
-		}
-	}
-
-	return streams;
-}
-
-function delegateStreamCompatibleTo(rootStream: StreamType | null, stream: StreamType | null): boolean {
-	if (!rootStream || !stream) {
-		return true;
-	}
-
-	const rootStreams = collectDelegateStreams(rootStream);
-
-	let baseStream: StreamType | null = stream;
-	while (baseStream) {
-		if (rootStreams.has(baseStream)) {
-			return false;
-		}
-		baseStream = baseStream.getBaseStreamOrNull();
-	}
-
-	return true;
-}
-
-function delegateStreamCompatible(streamA: StreamType, streamB: StreamType): boolean {
-	return delegateStreamCompatibleTo(streamA, streamB) && delegateStreamCompatibleTo(streamB, streamA);
-}
-
-function streamsCompatible(streamA: StreamType | null, streamB: StreamType | null): boolean {
-	if (!streamA || !streamB) {
-		return !streamA && !streamB;
-	}
-
-	if (streamA === streamB) {
-		// Identical stream types
-		return true;
-	}
-
-	if (!streamA.isPlaceholder() && !streamB.isPlaceholder()) {
-		// Incompatible stream types
-		return false;
-	}
-
-	if (streamA.hasPlaceholderRoot()) {
-		return fluentStreamCompatibleTo(streamA, streamB);
-	}
-
-	if (streamB.hasPlaceholderRoot()) {
-		return fluentStreamCompatibleTo(streamB, streamA);
-	}
-
-	return streamsCompatible(streamA.getBaseStreamOrNull(), streamB.getBaseStreamOrNull());
-}
+// function delegateStreamCompatible(streamA: StreamType, streamB: StreamType): boolean {
+// 	return delegateStreamCompatibleTo(streamA, streamB) && delegateStreamCompatibleTo(streamB, streamA);
+// }
+//
+// function streamsCompatible(streamA: StreamType | null, streamB: StreamType | null): boolean {
+// 	if (!streamA || !streamB) {
+// 		return !streamA && !streamB;
+// 	}
+//
+// 	if (streamA === streamB) {
+// 		// Identical stream types
+// 		return true;
+// 	}
+//
+// 	if (!streamA.isPlaceholder() && !streamB.isPlaceholder()) {
+// 		// Incompatible stream types
+// 		return false;
+// 	}
+//
+// 	if (streamA.hasPlaceholderRoot()) {
+// 		return fluentStreamCompatibleTo(streamA, streamB);
+// 	}
+//
+// 	if (streamB.hasPlaceholderRoot()) {
+// 		return fluentStreamCompatibleTo(streamB, streamA);
+// 	}
+//
+// 	return streamsCompatible(streamA.getBaseStreamOrNull(), streamB.getBaseStreamOrNull());
+// }
 
 function collectAncestorOwners(port: PortModel, owners: Set<PortOwner>) {
 	const owner = port.getOwner();
@@ -136,9 +136,9 @@ function collectAncestorOwners(port: PortModel, owners: Set<PortOwner>) {
 		return;
 	}
 
-	if (port.getOwner().getStreamPortOwner().isStreamSource()) {
-		return;
-	}
+	// if (port.getOwner().getStreamPortOwner().isStreamSource()) {
+	// 	return;
+	// }
 
 	owners.add(owner);
 
@@ -159,17 +159,17 @@ function cycleCompatibleTo(source: PortModel, destination: PortModel): boolean {
 	return !ancestorOwners.has(destination.getOwner());
 }
 
-function genericCompatible(streamTypeA: PortModel, streamTypeB: PortModel): boolean {
-	if (streamTypeA.isGeneric()) {
-		return genericCompatibleTo(streamTypeB.getStreamPort().getStreamType(), streamTypeA.getStreamPort().getStreamType());
-	}
+// function genericCompatible(streamTypeA: PortModel, streamTypeB: PortModel): boolean {
+// 	if (streamTypeA.isGeneric()) {
+// 		return genericCompatibleTo(streamTypeB.getStreamPort().getStreamType(), streamTypeA.getStreamPort().getStreamType());
+// 	}
+//
+// 	return genericCompatibleTo(streamTypeA.getStreamPort().getStreamType(), streamTypeB.getStreamPort().getStreamType());
+// }
 
-	return genericCompatibleTo(streamTypeA.getStreamPort().getStreamType(), streamTypeB.getStreamPort().getStreamType());
-}
-
-function genericCompatibleTo(streamType: StreamType, genericStreamType: StreamType): boolean {
-	return genericStreamType.getStreamStep(streamType)[1] !== -1;
-}
+// function genericCompatibleTo(streamType: StreamType, genericStreamType: StreamType): boolean {
+// 	return genericStreamType.getStreamStep(streamType)[1] !== -1;
+// }
 
 export function canConnectTo(source: PortModel, destination: PortModel): boolean {
 	if (!source.isSource() || !destination.isDestination()) {
@@ -197,25 +197,25 @@ export function canConnectTo(source: PortModel, destination: PortModel): boolean
 		return false;
 	}
 
-	const sourceStream = source.getStreamPort().getStreamType();
-	const destinationStream = destination.getStreamPort().getStreamType();
+	// const sourceStream = source.getStreamPort().getStreamType();
+	// const destinationStream = destination.getStreamPort().getStreamType();
 
-	if (!delegateStreamCompatible(sourceStream, destinationStream)) {
-		return false;
-	}
+	// if (!delegateStreamCompatible(sourceStream, destinationStream)) {
+	// 	return false;
+	// }
 
 	if (!source.isGeneric() && !destination.isGeneric()) {
 		if (!typesCompatibleTo(source.getType(), destination.getType())) {
 			return false;
 		}
 
-		if (!streamsCompatible(sourceStream, destinationStream)) {
-			return false;
-		}
+		// if (!streamsCompatible(sourceStream, destinationStream)) {
+		// 	return false;
+		// }
 	} else {
-		if (!genericCompatible(source, destination)) {
-			return false;
-		}
+		// if (!genericCompatible(source, destination)) {
+		// 	return false;
+		// }
 	}
 
 	return true;

@@ -1,5 +1,6 @@
 /* tslint:disable:no-circular-imports */
 
+import {IStreamPortOwner} from "../../stream/abstract";
 import {BlackBox} from "./blackbox";
 import {PortOwner} from "./port-owner";
 import {Connections} from "./utils/connections";
@@ -7,8 +8,8 @@ import {Connections} from "./utils/connections";
 export type DelegateModel = GenericDelegateModel<BlackBox>;
 
 export abstract class GenericDelegateModel<B extends BlackBox> extends PortOwner {
-	protected constructor(parent: B, private name: string, streamSource: boolean) {
-		super(parent, streamSource);
+	protected constructor(parent: B, private name: string, streamPortOwner: IStreamPortOwner) {
+		super(parent, streamPortOwner);
 	}
 
 	public getName(): string {

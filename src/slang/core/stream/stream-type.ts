@@ -1,6 +1,8 @@
 import {Subscription} from "rxjs";
 import {PortModel} from "../models/abstract/port";
 import {SlangSubject, SlangSubjectTrigger} from "../models/abstract/utils/events";
+import {IStreamType} from "./abstract";
+import {StreamPortOwner} from "./stream-port-owner";
 
 export function containsMisplacedStreamTypeTo(searchStream: StreamType, stream: StreamType): boolean {
 	let baseStream: StreamType | null = searchStream;
@@ -16,7 +18,7 @@ export function containsMisplacedStreamTypeTo(searchStream: StreamType, stream: 
 	return false;
 }
 
-export class StreamType {
+export class StreamType implements IStreamType {
 
 	public static refreshActive = true;
 
@@ -242,7 +244,7 @@ export class StreamType {
 
 	private resetStreamTypeRoot() {
 		StreamType.refreshActive = false;
-		const streamPortOwner = this.source!.getOwner().getStreamPortOwner();
+		const streamPortOwner = this.source!.getOwner().getStreamPortOwner() as StreamPortOwner;
 		if (streamPortOwner && streamPortOwner.isStreamSource()) {
 			streamPortOwner.setMarkedForReset(true);
 		}
