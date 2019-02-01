@@ -1,5 +1,5 @@
 import {g} from "jointjs";
-import {PortModel} from "../../core/models/port";
+import {PortModel} from "../../core/models/abstract/port";
 
 function movePoint(p: g.PlainPoint, i: number, total: number): g.PlainPoint {
 	if (total <= 1) {

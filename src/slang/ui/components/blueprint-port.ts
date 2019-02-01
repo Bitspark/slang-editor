@@ -1,8 +1,8 @@
 import {dia, shapes} from "jointjs";
 
 import {Styles} from "../../../styles/studio";
-import {PortModel} from "../../core/models/port";
-import {SlangSubject} from "../../core/utils/events";
+import {PortModel} from "../../core/models/abstract/port";
+import {SlangSubject} from "../../core/models/abstract/utils/events";
 import {PortGroupPosition} from "./port";
 import {PortGroupComponent} from "./port-group";
 

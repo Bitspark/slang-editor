@@ -7,6 +7,7 @@
     "start": "webpack-dev-server --open --config webpack/webpack.config.dev.js",
     "start-embedded": "npm start -- --env.slang-mode embedded",
     "build-embedded": "webpack --config webpack/webpack.config.prod.js --colors --env.slang-mode embedded",
+    "lint-fix": "tslint --fix -p tsconfig.json -c tslint.json src/**/*.ts -t verbose",
     "lint": "tslint -p tsconfig.json -c tslint.json src/**/*.ts",
     "deps": "dependency-cruise --exclude \"^node_modules\" --validate -- ./src/slang",
     "test": "jasmine-ts"

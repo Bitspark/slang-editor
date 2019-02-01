@@ -5,19 +5,15 @@ import {
 	PropertyApiResponse, PropertyAssignmentsApiResponse, TypeDefApiResponse,
 } from "../../definitions/api";
 import {SlangType, TypeIdentifier} from "../../definitions/type";
+import {PortDirection, PortModel} from "../models/abstract/port";
+import {IConnection} from "../models/abstract/utils/connections";
+import {GenericSpecifications} from "../models/abstract/utils/generics";
+import {PropertyAssignment, PropertyAssignments, PropertyModel} from "../models/abstract/utils/properties";
 import {BlueprintModel, BlueprintType} from "../models/blueprint";
 import {BlueprintDelegateModel, OperatorDelegateModel} from "../models/delegate";
 import {LandscapeModel} from "../models/landscape";
 import {OperatorModel} from "../models/operator";
-import {
-	BlueprintPortModel,
-	Connection,
-	GenericSpecifications,
-	OperatorPortModel,
-	PortDirection,
-	PortModel,
-} from "../models/port";
-import {PropertyAssignment, PropertyAssignments, PropertyModel} from "./property";
+import {BlueprintPortModel, OperatorPortModel} from "../models/port";
 
 /*
 \
@@ -69,7 +65,7 @@ export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApi
 			(result, property) => {
 				result[property.getName()] = typeModelToJSON(property.getType());
 			}),
-		connections: iter2map<Connection, ConnectionsApiResponse>(blueprint.getConnectionsTo().getIterator(),
+		connections: iter2map<IConnection, ConnectionsApiResponse>(blueprint.getConnectionsTo().getIterator(),
 			(result: ConnectionsApiResponse, connection) => {
 				const srcPortRef = getFullPortRef(connection.source);
 				const dstPortRef = getFullPortRef(connection.destination);

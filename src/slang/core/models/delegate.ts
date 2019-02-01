@@ -1,33 +1,10 @@
 /* tslint:disable:no-circular-imports */
 
-import {BlackBox} from "./blackbox";
+import {GenericDelegateModel} from "./abstract/delegate";
+import {PortModelArgs} from "./abstract/port";
 import {BlueprintModel} from "./blueprint";
 import {OperatorModel} from "./operator";
-import {BlueprintPortModel, Connections, OperatorPortModel, PortModelArgs} from "./port";
-import {PortOwner} from "./port-owner";
-
-export abstract class GenericDelegateModel<B extends BlackBox> extends PortOwner {
-	protected constructor(parent: B, private name: string, streamSource: boolean) {
-		super(parent, streamSource);
-	}
-
-	public getName(): string {
-		return this.name;
-	}
-
-	public getConnectionsTo(): Connections {
-		const connections = new Connections();
-
-		// First, handle operator out-ports
-		if (this.getPortOut()) {
-			connections.addConnections(this.getPortOut()!.getConnectionsTo());
-		}
-
-		return connections;
-	}
-}
-
-export type DelegateModel = GenericDelegateModel<BlackBox>;
+import {BlueprintPortModel, OperatorPortModel} from "./port";
 
 export interface BlueprintDelegateModelArgs { name: string; }
 

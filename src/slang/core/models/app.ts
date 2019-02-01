@@ -1,9 +1,9 @@
 /* tslint:disable:no-circular-imports */
 
-import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../utils/events";
+import {SlangNode} from "./abstract/node";
+import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "./abstract/utils/events";
 import {BlueprintModel} from "./blueprint";
 import {LandscapeModel} from "./landscape";
-import {SlangNode} from "./node";
 
 export interface AppModelArgs { name: string; }
 

@@ -2,11 +2,13 @@ import {dia, g, shapes} from "jointjs";
 import m, {ClassComponent, CVnode} from "mithril";
 
 import {Styles} from "../../../styles/studio";
+import {GenericPortModel, PortModel} from "../../core/models/abstract/port";
+import {IConnection} from "../../core/models/abstract/utils/connections";
+import {SlangSubject} from "../../core/models/abstract/utils/events";
 import {BlueprintInstance, BlueprintModel} from "../../core/models/blueprint";
 import {BlueprintDelegateModel} from "../../core/models/delegate";
 import {OperatorModel} from "../../core/models/operator";
-import {BlueprintPortModel, Connection, GenericPortModel, PortModel} from "../../core/models/port";
-import {SlangSubject} from "../../core/utils/events";
+import {BlueprintPortModel} from "../../core/models/port";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 import {PaperView} from "../views/paper-view";
 import {AttachableComponent, CellComponent} from "./base";
@@ -528,7 +530,7 @@ export class WhiteBoxComponent extends CellComponent {
 		return portComponent;
 	}
 
-	private addConnection(connection: Connection) {
+	private addConnection(connection: IConnection) {
 		const connectionComponent = new ConnectionComponent(this.paperView, connection);
 		this.connections.push(connectionComponent);
 	}
@@ -583,7 +585,7 @@ export class WhiteBoxComponent extends CellComponent {
 		});
 	}
 
-	private removeConnection(connection: Connection) {
+	private removeConnection(connection: IConnection) {
 		const linkId = ConnectionComponent.getLinkId(connection);
 		const link = ConnectionComponent.findLink(this.paperView, connection);
 		if (link) {

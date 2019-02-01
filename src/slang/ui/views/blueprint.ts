@@ -1,9 +1,10 @@
 import {dia} from "jointjs";
 
+import {GenericPortModel, PortModel} from "../../core/models/abstract/port";
+import {GenericSpecifications} from "../../core/models/abstract/utils/generics";
+import {PropertyAssignments} from "../../core/models/abstract/utils/properties";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {LandscapeModel} from "../../core/models/landscape";
-import {GenericPortModel, GenericSpecifications, PortModel} from "../../core/models/port";
-import {PropertyAssignments} from "../../core/utils/property";
 import {XY} from "../../definitions/geometry";
 import {TypeIdentifier} from "../../definitions/type";
 import {BlackBoxShape} from "../components/blackbox";

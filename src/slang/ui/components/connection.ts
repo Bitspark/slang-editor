@@ -1,11 +1,12 @@
 import {dia} from "jointjs";
 
 import {Styles} from "../../../styles/studio";
-import {BlackBox} from "../../core/models/blackbox";
+import {BlackBox} from "../../core/models/abstract/blackbox";
+import {PortModel} from "../../core/models/abstract/port";
+import {PortOwner} from "../../core/models/abstract/port-owner";
+import {IConnection} from "../../core/models/abstract/utils/connections";
 import {BlueprintModel} from "../../core/models/blueprint";
-import {Connection, PortModel} from "../../core/models/port";
-import {PortOwner} from "../../core/models/port-owner";
-import {StreamType} from "../../core/utils/stream";
+import {StreamType} from "../../core/stream/stream-type";
 import {TypeIdentifier} from "../../definitions/type";
 import {slangConnector} from "../link/connector";
 import {slangRouter} from "../link/router";
@@ -52,7 +53,7 @@ export class ConnectionComponent extends CellComponent {
 		return link;
 	}
 
-	public static getBoxOwnerIds(connection: Connection): [string, string] {
+	public static getBoxOwnerIds(connection: IConnection): [string, string] {
 		const sourceOwner = connection.source.getAncestorNode(BlackBox);
 		const destinationOwner = connection.destination.getAncestorNode(BlackBox);
 
@@ -76,11 +77,11 @@ export class ConnectionComponent extends CellComponent {
 		return [sourceIdentity, destinationIdentity];
 	}
 
-	public static getLinkId(connection: Connection): string {
+	public static getLinkId(connection: IConnection): string {
 		return `${connection.source.getIdentity()}:${connection.destination.getIdentity()}`;
 	}
 
-	public static findLink(paperView: PaperView, connection: Connection): dia.Link | undefined {
+	public static findLink(paperView: PaperView, connection: IConnection): dia.Link | undefined {
 		const linkId = ConnectionComponent.getLinkId(connection);
 		const link = paperView.getCell(linkId);
 
@@ -123,7 +124,7 @@ export class ConnectionComponent extends CellComponent {
 	protected shape: dia.Link;
 	private readonly id: string;
 
-	constructor(paperView: PaperView, private connection: Connection) {
+	constructor(paperView: PaperView, private connection: IConnection) {
 		super(paperView, {x: 0, y: 0});
 		const ownerIds = ConnectionComponent.getBoxOwnerIds(connection);
 		this.id = ConnectionComponent.getLinkId(connection);
@@ -180,7 +181,7 @@ export class ConnectionComponent extends CellComponent {
 		return this.id;
 	}
 
-	public getConnection(): Connection {
+	public getConnection(): IConnection {
 		return this.connection;
 	}
 

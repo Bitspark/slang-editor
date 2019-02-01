@@ -88,6 +88,17 @@
             }
         },
         {
+            "name": "illegal-abstract-model-dependency",
+            "comment": "",
+            "severity": "error",
+            "from": {
+                "path": "^src/slang/core/models/abstract"
+            },
+            "to": {
+                "pathNot": "^src/slang/(definitions|core/models/abstract)"
+            }
+        },
+        {
             "name": "illegal-core-dependency",
             "comment": "",
             "severity": "error",
