@@ -60,9 +60,12 @@ export class WhiteBoxComponent extends CellComponent {
 			blueprint.Size = this.shape.size();
 		});
 
+		this.paperView.getPaper().on("cell:pointerdown", () => {
+			this.clearPortInfos()
+		});
+
 		this.shape.on("pointerclick",
 			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
-				this.clearPortInfos()
 				this.clicked.next({event, x, y});
 			});
 		this.shape.on("pointerdblclick",
