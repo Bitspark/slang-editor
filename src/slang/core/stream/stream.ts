@@ -1,4 +1,5 @@
 import {Subscription} from "rxjs";
+
 import {SlangType, TypeIdentifier} from "../../definitions/type";
 import {GenericPortModel, PortModel} from "../model/abstract/port";
 import {PortOwner} from "../model/abstract/port-owner";

@@ -92,10 +92,10 @@
 			"comment": "",
 			"severity": "error",
 			"from": {
-				"path": "^src/slang/core/models/abstract"
+				"path": "^src/slang/core/model/abstract"
 			},
 			"to": {
-				"pathNot": "^src/slang/(definitions|core/models/abstract)"
+				"pathNot": "^src/slang/(definitions|core/model/abstract)"
 			}
 		},
 		{

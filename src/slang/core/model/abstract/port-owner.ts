@@ -1,5 +1,4 @@
 import {StreamPortOwner} from "../../stream/stream";
-import {OperatorPortModel} from "../port";
 import {SlangNode} from "./nodes";
 import {GenericPortModel, PortDirection, PortModel, PortModelArgs} from "./port";
 import {PropertyAssignments, PropertyEvaluator} from "./utils/properties";
@@ -33,7 +32,7 @@ export abstract class PortOwner extends SlangNode {
 	public reconstructPorts(properties: PropertyAssignments, ports: Iterable<PortModel>, portCtor: new(p: GenericPortModel<this> | this, args: PortModelArgs) => PortModel) {
 		const obsoletePorts = new Set(this.getPorts());
 		for (const port of ports) {
-			const poPort = (port.getDirection() === PortDirection.In ? this.getPortIn() : this.getPortOut()) as OperatorPortModel;
+			const poPort = (port.getDirection() === PortDirection.In ? this.getPortIn() : this.getPortOut());
 			if (!poPort) {
 				this.createPort({
 					name: "",

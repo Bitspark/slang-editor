@@ -3,7 +3,6 @@ import {Subscription} from "rxjs";
 import {SlangType, TypeIdentifier} from "../../../definitions/type";
 import {StreamPort} from "../../stream/stream";
 import {canConnectTo} from "../../utils/connection-check";
-import {BlueprintModel} from "../blueprint";
 import {BlackBox} from "./blackbox";
 import {SlangNode} from "./nodes";
 import {PortOwner} from "./port-owner";
@@ -246,7 +245,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		}
 		const streamSub = this.getChildNode(GenericPortModel);
 		if (!streamSub) {
-			throw new Error(`stream port not having sub stream port (${this.getAncestorNode(BlueprintModel)!.getFullName()}/${this.getOwnerName()})': ${this.getPortReference()}`);
+			throw new Error(`stream port not having sub stream port`);
 		}
 		return streamSub;
 	}
