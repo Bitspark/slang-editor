@@ -5,7 +5,7 @@
 		"module": "commonjs",
 		"target": "es6",
 		"jsx": "preserve",
-		"allowJs": true,
+		"allowJs": false,
 		"esModuleInterop": true,
 		"moduleResolution": "node",
 		"removeComments": true,

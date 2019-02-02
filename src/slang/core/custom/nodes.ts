@@ -10,6 +10,7 @@ import {PropertyAssignments} from "../model/property";
 import {SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "./events";
 import {GenericSpecifications} from "./generics";
 import {StreamPortOwner} from "./stream";
+import {PropertyEvaluator} from "./utils";
 
 // tslint:disable-next-line
 type Type<T> = Function & { prototype: T };
@@ -235,12 +236,12 @@ export abstract class PortOwner extends SlangNode {
 			if (!poPort) {
 				this.createPort({
 					name: "",
-					type: port.getType().expand(properties),
+					type: PropertyEvaluator.expandType(port.getType(), properties),
 					direction: port.getDirection(),
 				});
 			} else {
 				poPort.reconstruct(
-					port.getType().expand(properties),
+					PropertyEvaluator.expandType(port.getType(), properties),
 					portCtor as (new(p: GenericPortModel<PortOwner> | PortOwner, args: PortModelArgs) => PortModel),
 					port.getDirection());
 				// TODO: Investigate why explicit cast to (new(p: GenericPortModel<PortOwner> | PortOwner, args: PortModelArgs) => PortModel) is necessary

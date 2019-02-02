@@ -1,4 +1,4 @@
-import {OperatorGeometry} from "../model/operator";
+import {OperatorGeometry} from "../core/model/operator";
 import {SlangTypeValue} from "./type";
 
 export interface TypeDefApiResponse {

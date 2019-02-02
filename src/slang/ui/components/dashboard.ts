@@ -1,9 +1,9 @@
 import m, {ClassComponent, CVnode} from "mithril";
 
-import {isUndefined, SlangType, SlangTypeValue} from "../../custom/type";
-import {BlueprintModel} from "../../model/blueprint";
-import {OperatorModel} from "../../model/operator";
-import {PropertyAssignments} from "../../model/property";
+import {BlueprintModel} from "../../core/model/blueprint";
+import {OperatorModel} from "../../core/model/operator";
+import {PropertyAssignments} from "../../core/model/property";
+import {isUndefined, SlangType, SlangTypeValue} from "../../definitions/type";
 import {Input} from "./console";
 import {COMPONENT_FACTORY} from "./factory";
 import {Tk} from "./toolkit";

@@ -1,11 +1,11 @@
 import {Subscription} from "rxjs";
+import {SlangType, TypeIdentifier} from "../../definitions/type";
 import {canConnectTo} from "../custom/connection-check";
 import {Connections} from "../custom/connections";
 import {SlangSubject} from "../custom/events";
 import {GenericSpecifications} from "../custom/generics";
 import {BlackBox, PortOwner, SlangNode} from "../custom/nodes";
 import {StreamPort} from "../custom/stream";
-import {SlangType, TypeIdentifier} from "../custom/type";
 import {BlueprintFakeGeneric, BlueprintModel} from "./blueprint";
 import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
 import {OperatorModel} from "./operator";

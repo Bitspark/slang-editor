@@ -1,12 +1,12 @@
 import {dia} from "jointjs";
 
 import {Styles} from "../../../styles/studio";
-import {Connection} from "../../custom/connections";
-import {BlackBox, PortOwner} from "../../custom/nodes";
-import {StreamType} from "../../custom/stream";
-import {TypeIdentifier} from "../../custom/type";
-import {BlueprintModel} from "../../model/blueprint";
-import {PortModel} from "../../model/port";
+import {Connection} from "../../core/custom/connections";
+import {BlackBox, PortOwner} from "../../core/custom/nodes";
+import {StreamType} from "../../core/custom/stream";
+import {BlueprintModel} from "../../core/model/blueprint";
+import {PortModel} from "../../core/model/port";
+import {TypeIdentifier} from "../../definitions/type";
 import {slangConnector} from "../link/connector";
 import {slangRouter} from "../link/router";
 import {PaperView} from "../views/paper-view";

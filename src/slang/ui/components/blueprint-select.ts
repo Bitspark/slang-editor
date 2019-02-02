@@ -1,9 +1,9 @@
 import m from "mithril";
 import {ClassComponent, CVnode} from "mithril";
 
-import {BlueprintModel} from "../../model/blueprint";
-import {LandscapeModel} from "../../model/landscape";
-import {OperatorGeometry, XY} from "../../model/operator";
+import {BlueprintModel} from "../../core/model/blueprint";
+import {LandscapeModel} from "../../core/model/landscape";
+import {OperatorGeometry, XY} from "../../core/model/operator";
 import {BlueprintView} from "../views/blueprint";
 import {AttachableComponent, CellComponent} from "./base";
 import {BlackBoxShape} from "./blackbox";

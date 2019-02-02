@@ -1,7 +1,7 @@
 import {dia} from "jointjs";
 import m from "mithril";
 
-import {XY} from "../../model/operator";
+import {XY} from "../../core/model/operator";
 import {PaperView} from "../views/paper-view";
 import {Tk} from "./toolkit";
 

@@ -1,7 +1,7 @@
 import {Subscription} from "rxjs";
+import {SlangType} from "../../definitions/type";
 import {PortModel} from "../model/port";
 import {SlangBehaviorSubject, SlangSubject} from "./events";
-import {SlangType} from "./type";
 
 export class GenericSpecifications {
 	private readonly genericsChanged = new SlangSubject<[string, SlangType | null]>("specifications-changed");

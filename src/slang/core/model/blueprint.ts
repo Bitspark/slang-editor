@@ -1,9 +1,9 @@
+import {SlangParsing} from "../../definitions/parsing";
+import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 import {Connections} from "../custom/connections";
 import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../custom/events";
 import {GenericSpecifications} from "../custom/generics";
 import {BlackBox} from "../custom/nodes";
-import {SlangParsing} from "../custom/parsing";
-import {SlangTypeValue, TypeIdentifier} from "../custom/type";
 import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
 import {LandscapeModel} from "./landscape";
 import {OperatorGeometry, OperatorModel} from "./operator";

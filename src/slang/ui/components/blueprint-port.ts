@@ -1,7 +1,7 @@
 import {dia, shapes} from "jointjs";
 import {Styles} from "../../../styles/studio";
-import {SlangSubject} from "../../custom/events";
-import {PortModel} from "../../model/port";
+import {SlangSubject} from "../../core/custom/events";
+import {PortModel} from "../../core/model/port";
 import {PortGroupComponent, PortGroupPosition} from "./port-group";
 
 export class IsolatedBlueprintPortComponent {

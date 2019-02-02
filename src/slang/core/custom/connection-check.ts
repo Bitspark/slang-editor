@@ -1,9 +1,9 @@
+import {SlangType, TypeIdentifier} from "../../definitions/type";
 import {OperatorDelegateModel} from "../model/delegate";
 import {OperatorModel} from "../model/operator";
 import {PortModel} from "../model/port";
 import {PortOwner} from "./nodes";
 import {containsMisplacedStreamTypeTo, StreamType} from "./stream";
-import {SlangType, TypeIdentifier} from "./type";
 
 function typesStreamCompatible(streamTypeA: SlangType, streamTypeB: SlangType): boolean {
 	const subA = streamTypeA.getStreamSub();

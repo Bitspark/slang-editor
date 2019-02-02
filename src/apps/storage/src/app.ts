@@ -1,9 +1,9 @@
 import {SlangApp} from "../../../slang/app";
-import {ApiService, BlueprintApiResponse} from "../../../slang/custom/api";
-import {blueprintModelToJSON, fillLandscape} from "../../../slang/custom/mapper";
-import {AppModel} from "../../../slang/model/app";
-import {BlueprintModel} from "../../../slang/model/blueprint";
-import {LandscapeModel} from "../../../slang/model/landscape";
+import {blueprintModelToJSON, fillLandscape} from "../../../slang/core/custom/mapper";
+import {AppModel} from "../../../slang/core/model/app";
+import {BlueprintModel} from "../../../slang/core/model/blueprint";
+import {LandscapeModel} from "../../../slang/core/model/landscape";
+import {ApiService, BlueprintApiResponse} from "../../../slang/definitions/api";
 import {ComponentFactory} from "../../../slang/ui/components/factory";
 
 export class APIStorageApp extends SlangApp {

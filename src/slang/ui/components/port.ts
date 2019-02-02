@@ -1,7 +1,7 @@
 import {attributes, dia, g} from "jointjs";
 import {Styles} from "../../../styles/studio";
-import {TypeIdentifier} from "../../custom/type";
-import {PortModel} from "../../model/port";
+import {PortModel} from "../../core/model/port";
+import {TypeIdentifier} from "../../definitions/type";
 import {PortGroupComponent, PortGroupPosition} from "./port-group";
 
 /**

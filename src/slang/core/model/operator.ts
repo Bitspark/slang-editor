@@ -1,9 +1,9 @@
 import {Subscription} from "rxjs";
+import {SlangTypeValue} from "../../definitions/type";
 import {Connections} from "../custom/connections";
 import {SlangBehaviorSubject} from "../custom/events";
 import {GenericSpecifications} from "../custom/generics";
 import {BlackBox} from "../custom/nodes";
-import {SlangTypeValue} from "../custom/type";
 import {PropertyEvaluator} from "../custom/utils";
 import {BlueprintModel, BlueprintType} from "./blueprint";
 import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
@@ -176,7 +176,7 @@ export class OperatorModel extends BlackBox {
 					for (const port of newDelegate.getPorts()) {
 						newDelegate.createPort({
 							name: "",
-							type: port.getType().expand(properties),
+							type: PropertyEvaluator.expandType(port.getType(), properties),
 							direction: port.getDirection(),
 						});
 					}

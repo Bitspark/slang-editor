@@ -1,9 +1,3 @@
-import {BlueprintModel, BlueprintType} from "../model/blueprint";
-import {BlueprintDelegateModel, OperatorDelegateModel} from "../model/delegate";
-import {LandscapeModel} from "../model/landscape";
-import {OperatorModel} from "../model/operator";
-import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel} from "../model/port";
-import {PropertyAssignment, PropertyAssignments, PropertyModel} from "../model/property";
 import {
 	BlueprintApiResponse,
 	BlueprintDefApiResponse, ConnectionsApiResponse,
@@ -12,10 +6,16 @@ import {
 	PropertyApiResponse,
 	PropertyAssignmentsApiResponse,
 	TypeDefApiResponse,
-} from "./api";
+} from "../../definitions/api";
+import {SlangType, TypeIdentifier} from "../../definitions/type";
+import {BlueprintModel, BlueprintType} from "../model/blueprint";
+import {BlueprintDelegateModel, OperatorDelegateModel} from "../model/delegate";
+import {LandscapeModel} from "../model/landscape";
+import {OperatorModel} from "../model/operator";
+import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel} from "../model/port";
+import {PropertyAssignment, PropertyAssignments, PropertyModel} from "../model/property";
 import {Connection} from "./connections";
 import {GenericSpecifications} from "./generics";
-import {SlangType, TypeIdentifier} from "./type";
 
 /*
 \
