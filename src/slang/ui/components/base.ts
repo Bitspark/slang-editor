@@ -1,10 +1,11 @@
 import {dia} from "jointjs";
 import m from "mithril";
 
-import Container = Tk.Container;
 import {XY} from "../../model/operator";
 import {PaperView} from "../views/paper-view";
 import {Tk} from "./toolkit";
+
+import Container = Tk.Container;
 
 export type Alignment =
 	"tl" | "t" | "tr" |
