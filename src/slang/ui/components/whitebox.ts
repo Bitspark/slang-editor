@@ -38,6 +38,8 @@ export class WhiteBoxComponent extends CellComponent {
 
 	private readonly operators: Array<BlackBoxComponent> = [];
 	private readonly connections: Array<ConnectionComponent> = [];
+	private readonly portInfos: Array<AttachableComponent> = [];
+
 	private readonly ports = {
 		top: [] as Array<IsolatedBlueprintPortComponent>,
 		bottom: [] as Array<IsolatedBlueprintPortComponent>,
@@ -56,6 +58,10 @@ export class WhiteBoxComponent extends CellComponent {
 
 		this.shape.on("change:size", () => {
 			blueprint.Size = this.shape.size();
+		});
+
+		this.paperView.getPaper().on("cell:pointerdown", () => {
+			this.clearPortInfos()
 		});
 
 		this.shape.on("pointerclick",
@@ -544,17 +550,36 @@ export class WhiteBoxComponent extends CellComponent {
 
 	private attachPortInfo(portOwnerComp: OperatorBoxComponent | IsolatedBlueprintPortComponent) {
 		const that = this;
-		let portInfo: AttachableComponent;
 		portOwnerComp.onPortMouseEnter((port: PortModel, x: number, y: number) => {
-			portInfo = that
+			// in order to avoid multiple portInfos to be drawn we keep track of them and clear them out if needed
+			// since there are so many different events that can and should trigger a dismissal this solution is not
+			// really future proof.
+			// IMO a better solution would be to keep track of things that can be dismissed and destroy those
+			// once a dismissive action is trigger e.g. ESC or point and click to blank
+			that.clearPortInfos();
+			let portInfo = that
 				.createComponent({x: x, y: y + 2, align: "tl"})
 				.mount({
 					view: () => m(PortInfo, {port})
 				});
+			that.trackPortInfo(portInfo)
 		});
 		portOwnerComp.onPortMouseLeave(() => {
-			portInfo.destroy();
+			that.clearPortInfos()
 		});
+	}
+
+	private trackPortInfo(portInfo: AttachableComponent) {
+		this.portInfos.push(portInfo)
+	}
+
+	private clearPortInfos() {
+		while (this.portInfos.length > 0) {
+			let oldPortInfo = this.portInfos.pop()
+			if (oldPortInfo) {
+				oldPortInfo.destroy()
+			}
+		}
 	}
 
 	private removeConnection(connection: Connection) {
