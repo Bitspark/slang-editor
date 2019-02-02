@@ -29,12 +29,11 @@ jobs:
         name: Test
         command: npm test
 
-
 workflows:
   version: 2
   build_and_test:
     jobs:
       - build
       - test:
-        requires:
-          - build
+          requires:
+            - build
