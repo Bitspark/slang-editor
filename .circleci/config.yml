@@ -17,6 +17,30 @@ jobs:
           name: build
           command: npm run-script build
 
+  lint:
+    working_directory: ~/slang-studio
+    docker:
+      - image: bitspark/slang-ci:latest
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: Test
+          command: npm run lint
+
+  deps:
+    working_directory: ~/slang-studio
+    docker:
+      - image: bitspark/slang-ci:latest
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: Test
+          command: npm run deps
+
   test:
     working_directory: ~/slang-studio
     docker:
@@ -34,6 +58,12 @@ workflows:
   build_and_test:
     jobs:
       - build
+      - lint:
+          requires:
+            - build
+      - deps:
+          requires:
+            - build
       - test:
           requires:
             - build

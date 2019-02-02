@@ -1,0 +1,171 @@
+{
+	"extends": [
+		"tslint:recommended",
+		"tslint-eslint-rules",
+		"tslint-consistent-codestyle",
+		"tslint-no-circular-imports"
+	],
+	"rules": {
+		// Rules from plain tslint
+		"no-parameter-reassignment": true,
+		"no-switch-case-fall-through": true,
+		"number-literal-format": true,
+		"no-unnecessary-qualifier": true,
+		"curly": true,
+		"indent": [
+			true,
+			"tabs",
+			2
+		],
+		"no-console": [
+			true,
+			"log",
+			"warn"
+		],
+		"no-empty": [
+			true,
+			"allow-empty-functions"
+		],
+		"no-unused-expression": [
+			true,
+			"allow-new"
+		],
+		"typedef-whitespace": [
+			true,
+			{
+				"call-signature": "nospace",
+				"index-signature": "nospace",
+				"parameter": "nospace",
+				"property-declaration": "nospace",
+				"variable-declaration": "nospace"
+			},
+			{
+				"call-signature": "onespace",
+				"index-signature": "onespace",
+				"parameter": "onespace",
+				"property-declaration": "onespace",
+				"variable-declaration": "onespace"
+			}
+		],
+		"no-consecutive-blank-lines": [
+			true,
+			1
+		],
+		"one-line": [
+			true,
+			"check-catch",
+			"check-finally",
+			"check-else",
+			"check-open-brace",
+			"check-whitespace"
+		],
+		// Rules from tslint-eslint-rules
+		"no-constant-condition": true,
+		"no-inner-declarations": true,
+		"no-irregular-whitespace": true,
+		"no-unexpected-multiline": true,
+		"valid-typeof": true,
+		"cyclomatic-complexity": [
+			true,
+			20
+		],
+		"block-spacing": true,
+		"brace-style": [
+			true,
+			"1tbs"
+		],
+		"object-curly-spacing": [
+			true,
+			"never"
+		],
+		"ter-computed-property-spacing": true,
+		"array-bracket-spacing": [
+			true,
+			"never"
+		],
+		"ter-func-call-spacing": true,
+		"ter-no-mixed-spaces-and-tabs": true,
+		"space-in-parens": [
+			true,
+			"never"
+		],
+		// Rules from tslint-consistent-codestyle
+		// "early-exit": true,
+		// "no-unnecessary-else": true,
+		// "no-collapsible-if": true,
+		"no-else-after-return": true,
+		"no-unused": true,
+		"naming-convention": [
+			true,
+			{
+				"type": "default",
+				"format": "camelCase",
+				"leadingUnderscore": "forbid",
+				"trailingUnderscore": "forbid"
+			},
+			{
+				"type": "parameter",
+				"modifiers": "unused",
+				"leadingUnderscore": "require"
+			},
+			{
+				"type": "type",
+				"format": "PascalCase"
+			},
+			{
+				"type": "enumMember",
+				"format": "PascalCase"
+			},
+			{
+				"type": "genericTypeParameter"
+			},
+			{
+				"type": "property",
+				"modifiers": [
+					"public",
+					"static",
+					"const"
+				],
+				"format": "UPPER_CASE"
+			},
+			{
+				"type": "functionVariable",
+				"modifiers": [
+					"export",
+					"const"
+				],
+				"format": "camelCase"
+			},
+			{
+				"type": "variable",
+				"modifiers": [
+					"export",
+					"const"
+				],
+				"format": "UPPER_CASE"
+			},
+			{
+				"type": "variable",
+				"modifiers": [
+					"global",
+					"const"
+				],
+				"format": [
+					"camelCase",
+					"UPPER_CASE"
+				]
+			}
+		],
+		// Rules from tslint-no-circular-imports
+		"no-circular-imports": true,
+		// Disabled from tslint:recommended
+		"variable-name": false,
+		"interface-name": false,
+		"object-literal-sort-keys": false,
+		"max-line-length": false,
+		"max-classes-per-file": false,
+		"no-namespace": false
+	},
+	"linterOptions": {
+	}
+}
