@@ -419,7 +419,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 	public getConnectionsTo(): Connections {
 		const connections = new Connections();
-		if (!this.isDirectionOut()) {
+		if (!this.isSource()) {
 			return connections;
 		}
 		connections.addAll(this.getDirectConnectionsTo());

@@ -346,7 +346,7 @@ if (!geometry) {
 	public getConnectionsTo(): Connections {
 		const connections = new Connections();
 
-		// First, handle operator in-ports
+		// First, handle blueprint in-ports
 		const portIn = this.getPortIn();
 		if (portIn) {
 			connections.addAll(portIn.getConnectionsTo());
