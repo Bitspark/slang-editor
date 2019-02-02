@@ -1,14 +1,14 @@
 import {Subscription} from "rxjs";
 import {SlangTypeValue} from "../../definitions/type";
-import {Connections} from "../custom/connections";
-import {SlangBehaviorSubject} from "../custom/events";
-import {GenericSpecifications} from "../custom/generics";
-import {BlackBox} from "../custom/nodes";
-import {PropertyEvaluator} from "../custom/utils";
+import {BlackBox} from "./abstract/blackbox";
+import {PortModelArgs} from "./abstract/port";
+import {Connections} from "./abstract/utils/connections";
+import {SlangBehaviorSubject} from "./abstract/utils/events";
+import {GenericSpecifications} from "./abstract/utils/generics";
+import {PropertyAssignments, PropertyEvaluator, PropertyModel} from "./abstract/utils/properties";
 import {BlueprintModel, BlueprintType} from "./blueprint";
 import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
-import {OperatorPortModel, PortModelArgs} from "./port";
-import {PropertyAssignments, PropertyModel} from "./property";
+import {OperatorPortModel} from "./port";
 
 export interface XY {
 	x: number;

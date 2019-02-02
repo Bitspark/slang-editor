@@ -2,12 +2,13 @@ import {dia, g, layout, shapes} from "jointjs";
 import m, {ClassComponent, CVnode} from "mithril";
 
 import {Styles} from "../../../styles/studio";
-import {Connection} from "../../core/custom/connections";
-import {SlangSubject} from "../../core/custom/events";
+import {GenericPortModel, PortModel} from "../../core/model/abstract/port";
+import {Connection} from "../../core/model/abstract/utils/connections";
+import {SlangSubject} from "../../core/model/abstract/utils/events";
 import {BlueprintInstance, BlueprintModel} from "../../core/model/blueprint";
 import {BlueprintDelegateModel} from "../../core/model/delegate";
 import {OperatorModel} from "../../core/model/operator";
-import {BlueprintPortModel, GenericPortModel, PortModel} from "../../core/model/port";
+import {BlueprintPortModel} from "../../core/model/port";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 import {PaperView} from "../views/paper-view";
 import {AttachableComponent, CellComponent} from "./base";

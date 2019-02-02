@@ -1,6 +1,7 @@
 import {SlangApp} from "../../../slang/app";
+import {PortModel} from "../../../slang/core/model/abstract/port";
 import {AppModel} from "../../../slang/core/model/app";
-import {OperatorPortModel, PortModel} from "../../../slang/core/model/port";
+import {OperatorPortModel} from "../../../slang/core/model/port";
 import {TypeIdentifier} from "../../../slang/definitions/type";
 import {ComponentFactory} from "../../../slang/ui/components/factory";
 

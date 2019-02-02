@@ -2,11 +2,11 @@ import {dia, g, shapes} from "jointjs";
 import m from "mithril";
 
 import {Styles} from "../../../styles/studio";
-import {SlangSubject} from "../../core/custom/events";
-import {BlackBox} from "../../core/custom/nodes";
+import {BlackBox} from "../../core/model/abstract/blackbox";
+import {PortModel} from "../../core/model/abstract/port";
+import {SlangSubject} from "../../core/model/abstract/utils/events";
 import {BlueprintModel} from "../../core/model/blueprint";
 import {OperatorModel, XY} from "../../core/model/operator";
-import {PortModel} from "../../core/model/port";
 import {PaperView} from "../views/paper-view";
 import {AttachableComponent, CellComponent} from "./base";
 import {COMPONENT_FACTORY} from "./factory";

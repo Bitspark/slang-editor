@@ -1,8 +1,8 @@
 import {dia, shapes} from "jointjs";
 
+import {PortDirection} from "../../core/model/abstract/port";
 import {BlueprintModel, BlueprintType} from "../../core/model/blueprint";
 import {LandscapeModel} from "../../core/model/landscape";
-import {PortDirection} from "../../core/model/port";
 import {SlangType, TypeIdentifier} from "../../definitions/type";
 import {BlackBoxShape, BlueprintBoxComponent} from "../components/blackbox";
 import {ViewFrame} from "../frame";

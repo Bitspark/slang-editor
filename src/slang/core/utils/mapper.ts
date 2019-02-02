@@ -8,14 +8,15 @@ import {
 	TypeDefApiResponse,
 } from "../../definitions/api";
 import {SlangType, TypeIdentifier} from "../../definitions/type";
+import {PortDirection, PortModel} from "../model/abstract/port";
+import {Connection} from "../model/abstract/utils/connections";
+import {GenericSpecifications} from "../model/abstract/utils/generics";
+import {PropertyAssignment, PropertyAssignments, PropertyModel} from "../model/abstract/utils/properties";
 import {BlueprintModel, BlueprintType} from "../model/blueprint";
 import {BlueprintDelegateModel, OperatorDelegateModel} from "../model/delegate";
 import {LandscapeModel} from "../model/landscape";
 import {OperatorModel} from "../model/operator";
-import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel} from "../model/port";
-import {PropertyAssignment, PropertyAssignments, PropertyModel} from "../model/property";
-import {Connection} from "./connections";
-import {GenericSpecifications} from "./generics";
+import {BlueprintPortModel, OperatorPortModel} from "../model/port";
 
 /*
 \

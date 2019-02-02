@@ -1,12 +1,12 @@
 import {dia} from "jointjs";
 import m, {ClassComponent, CVnode} from "mithril";
 
-import {GenericSpecifications} from "../../core/custom/generics";
+import {GenericPortModel, PortModel} from "../../core/model/abstract/port";
+import {GenericSpecifications} from "../../core/model/abstract/utils/generics";
+import {PropertyAssignments} from "../../core/model/abstract/utils/properties";
 import {BlueprintModel} from "../../core/model/blueprint";
 import {LandscapeModel} from "../../core/model/landscape";
 import {XY} from "../../core/model/operator";
-import {GenericPortModel, PortModel} from "../../core/model/port";
-import {PropertyAssignments} from "../../core/model/property";
 import {TypeIdentifier} from "../../definitions/type";
 import {AttachableComponent} from "../components/base";
 import {BlackBoxShape} from "../components/blackbox";

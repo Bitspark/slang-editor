@@ -1,5 +1,5 @@
 import {BehaviorSubject, Subject, Subscription} from "rxjs";
-import {SlangNode} from "./nodes";
+import {SlangNode} from "../nodes";
 
 abstract class BaseSlangSubject {
 

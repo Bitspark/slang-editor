@@ -1,5 +1,5 @@
 import {dia, g, shapes, util} from "jointjs";
-import {SlangSubjectTrigger} from "../../core/custom/events";
+import {SlangSubjectTrigger} from "../../core/model/abstract/utils/events";
 import {XY} from "../../core/model/operator";
 import {ViewFrame} from "../frame";
 import {View} from "./view";

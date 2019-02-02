@@ -1,8 +1,8 @@
 import {Subscription} from "rxjs";
 import {SlangType, TypeIdentifier} from "../../definitions/type";
-import {GenericPortModel, PortModel} from "../model/port";
-import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "./events";
-import {PortOwner} from "./nodes";
+import {GenericPortModel, PortModel} from "../model/abstract/port";
+import {PortOwner} from "../model/abstract/port-owner";
+import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../model/abstract/utils/events";
 
 export class StreamType {
 

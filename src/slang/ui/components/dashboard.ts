@@ -1,8 +1,8 @@
 import m, {ClassComponent, CVnode} from "mithril";
 
+import {PropertyAssignments} from "../../core/model/abstract/utils/properties";
 import {BlueprintModel} from "../../core/model/blueprint";
 import {OperatorModel} from "../../core/model/operator";
-import {PropertyAssignments} from "../../core/model/property";
 import {isUndefined, SlangType, SlangTypeValue} from "../../definitions/type";
 import {Input} from "./console";
 import {COMPONENT_FACTORY} from "./factory";

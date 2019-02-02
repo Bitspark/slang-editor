@@ -1,16 +1,4 @@
-import {DelegateModel} from "../model/delegate";
-import {
-	GenericPortModel,
-	OperatorPortModel,
-	PortDirection,
-	PortModel,
-	PortModelArgs,
-} from "../model/port";
-import {PropertyAssignments} from "../model/property";
-import {SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "./events";
-import {GenericSpecifications} from "./generics";
-import {StreamPortOwner} from "./stream";
-import {PropertyEvaluator} from "./utils";
+import {SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "./utils/events";
 
 // tslint:disable-next-line
 type Type<T> = Function & { prototype: T };
@@ -200,69 +188,5 @@ export abstract class SlangNode {
 		this.lastId = Number(Number.parseInt(this.lastId, 16) + 1).toString(16);
 		return this.lastId;
 	}
-
-}
-
-export abstract class PortOwner extends SlangNode {
-
-	private readonly streamPortOwner: StreamPortOwner;
-
-	protected constructor(parent: SlangNode, streamSource: boolean) {
-		super(parent);
-		this.streamPortOwner = new StreamPortOwner(this, streamSource);
-		this.streamPortOwner.initialize();
-	}
-
-	public getPortIn(): PortModel | null {
-		return this.scanChildNode(GenericPortModel, (p) => p.isDirectionIn()) || null;
-	}
-
-	public getPortOut(): PortModel | null {
-		return this.scanChildNode(GenericPortModel, (p) => p.isDirectionOut()) || null;
-	}
-
-	public getPorts(): IterableIterator<PortModel> {
-		return this.getChildNodes(GenericPortModel);
-	}
-
-	public getStreamPortOwner(): StreamPortOwner {
-		return this.streamPortOwner;
-	}
-
-	public reconstructPorts(properties: PropertyAssignments, ports: Iterable<PortModel>, portCtor: new(p: GenericPortModel<this> | this, args: PortModelArgs) => PortModel) {
-		const obsoletePorts = new Set(this.getPorts());
-		for (const port of ports) {
-			const poPort = (port.getDirection() === PortDirection.In ? this.getPortIn() : this.getPortOut()) as OperatorPortModel;
-			if (!poPort) {
-				this.createPort({
-					name: "",
-					type: PropertyEvaluator.expandType(port.getType(), properties),
-					direction: port.getDirection(),
-				});
-			} else {
-				poPort.reconstruct(
-					PropertyEvaluator.expandType(port.getType(), properties),
-					portCtor as (new(p: GenericPortModel<PortOwner> | PortOwner, args: PortModelArgs) => PortModel),
-					port.getDirection());
-				// TODO: Investigate why explicit cast to (new(p: GenericPortModel<PortOwner> | PortOwner, args: PortModelArgs) => PortModel) is necessary
-				obsoletePorts.delete(poPort);
-			}
-		}
-		obsoletePorts.forEach((obsoletePort) => obsoletePort.destroy());
-	}
-
-	protected abstract createPort(args: PortModelArgs): PortModel;
-
-}
-
-export abstract class BlackBox extends PortOwner {
-
-	public abstract getDisplayName(): string;
-
-	public abstract findDelegate(name: string): DelegateModel | undefined;
-
-	public abstract getDelegates(): IterableIterator<DelegateModel>;
-
-	public abstract getGenerics(): GenericSpecifications;
 
 }
