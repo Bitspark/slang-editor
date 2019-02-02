@@ -12,7 +12,7 @@ export class PortComponent {
 	private position: g.PlainPoint | undefined;
 	private readonly portElement: dia.Element.Port = {};
 
-	constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent, private readonly ghost: boolean, isBlackBox: boolean) {
+	constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent, readonly ghost: boolean, isBlackBox: boolean) {
 		if (ghost) {
 			this.portElement.id = `${port.getIdentity()}.*`;
 		} else {

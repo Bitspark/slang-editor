@@ -211,7 +211,8 @@ export function canConnectTo(source: PortModel, destination: PortModel): boolean
 		return false;
 	}
 
-	if (!source.isGenericLike() && !destination.isGenericLike()) {
+	if ((!source.isGenericLike() || source.getType().isElementaryPort()) &&
+		(!destination.isGenericLike() || destination.getType().isElementaryPort())) {
 		if (!typesCompatibleTo(source.getType(), destination.getType())) {
 			return false;
 		}

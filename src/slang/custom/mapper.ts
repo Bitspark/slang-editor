@@ -239,17 +239,25 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
 		const connections = bpDef.connections;
 		if (connections) {
 			Object.keys(connections).forEach((sourcePortReference: string) => {
+				const sourcePort = outerBlueprint.resolvePortReference(sourcePortReference);
+				if (!sourcePort) {
+					console.error(`${outerBlueprint.getFullName()}: port ${sourcePortReference} cannot be resolved`);
+					return;
+				}
+				
 				const destinationPortReferences = connections[sourcePortReference];
 				for (const destinationPortReference of destinationPortReferences) {
-					const sourcePort = outerBlueprint.resolvePortReference(sourcePortReference);
 					const destinationPort = outerBlueprint.resolvePortReference(destinationPortReference);
-					if (!sourcePort) {
-						throw `source port ${sourcePortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
-					}
 					if (!destinationPort) {
-						throw `destination port ${destinationPortReference} of blueprint ${outerBlueprint.getFullName()} cannot be resolved`;
+						console.error(`${outerBlueprint.getFullName()}: port ${destinationPortReference} cannot be resolved`);
+						continue;
 					}
-					sourcePort.connect(destinationPort, false);
+					
+					try {
+						sourcePort.connect(destinationPort, false);
+					} catch (e) {
+						console.error(`${outerBlueprint.getFullName()}: ${sourcePort.getPortReference()} -> ${destinationPort.getPortReference()} - ${e.toString()}`);
+					}
 				}
 			});
 		}
