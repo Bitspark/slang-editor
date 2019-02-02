@@ -1,5 +1,5 @@
-import {copySlangTypeValue, SlangType, SlangTypeValue, TypeIdentifier} from "../custom/type";
 import {GenericSpecifications} from "../custom/generics";
+import {copySlangTypeValue, SlangType, SlangTypeValue, TypeIdentifier} from "../custom/type";
 
 export class PropertyModel {
 	public constructor(private name: string, private type: SlangType) {
@@ -27,7 +27,7 @@ export class PropertyAssignment {
 			if (!generics) {
 				throw new Error(`need generic specifications when having generic properties`);
 			}
-			generics.subscribeGenericTypeChanged(propertyType.getGenericIdentifier(), type => {
+			generics.subscribeGenericTypeChanged(propertyType.getGenericIdentifier(), (type) => {
 				this.type = type;
 			});
 		} else {
@@ -56,7 +56,7 @@ export class PropertyAssignment {
 	}
 
 	public isEqual(other: PropertyAssignment): boolean {
-		return this.property === other.property && this.value == other.value;
+		return this.property === other.property && this.value === other.value;
 	}
 
 	public assign(value: SlangTypeValue | undefined) {
@@ -67,11 +67,11 @@ export class PropertyAssignment {
 export class PropertyAssignments {
 	private readonly assignments: Map<string, PropertyAssignment>;
 
-	public constructor(private properties: Array<PropertyModel>, generics: GenericSpecifications) {
+	public constructor(private properties: PropertyModel[], generics: GenericSpecifications) {
 		this.assignments = new Map<string, PropertyAssignment>(
 			properties.map<[string, PropertyAssignment]>(
-				property => [property.getName(), new PropertyAssignment(property, undefined, generics)]
-			)
+				(property) => [property.getName(), new PropertyAssignment(property, undefined, generics)],
+			),
 		);
 	}
 
@@ -89,7 +89,7 @@ export class PropertyAssignments {
 
 	public isEqual(other: PropertyAssignments): boolean {
 		if (this.assignments.size !== other.assignments.size) {
-			return false
+			return false;
 		}
 
 		for (const propAssign of this.getAssignments()) {
@@ -110,17 +110,11 @@ export class PropertyAssignments {
 	}
 
 	public get(property: PropertyModel | string): PropertyAssignment {
-		if (property instanceof PropertyModel) {
-			property = property.getName();
-		}
-		return this.getByName(property);
+		return this.getByName((property instanceof PropertyModel) ? property.getName() : property);
 	}
 
 	public isDefined(propertyName: string | PropertyModel): boolean {
-		if (propertyName instanceof PropertyModel) {
-			propertyName = propertyName.getName();
-		}
-		const propAssign = this.assignments.get(propertyName);
+		const propAssign = this.assignments.get((propertyName instanceof PropertyModel) ? propertyName.getName() : propertyName);
 		return !!propAssign && !!propAssign.getValue();
 	}
 

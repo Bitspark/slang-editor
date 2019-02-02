@@ -1,9 +1,9 @@
-import {PortModel} from "../model/port";
-import {SlangType, TypeIdentifier} from "./type";
-import {containsMisplacedStreamTypeTo, StreamType} from "./stream";
-import {PortOwner} from "./nodes";
 import {OperatorDelegateModel} from "../model/delegate";
 import {OperatorModel} from "../model/operator";
+import {PortModel} from "../model/port";
+import {PortOwner} from "./nodes";
+import {containsMisplacedStreamTypeTo, StreamType} from "./stream";
+import {SlangType, TypeIdentifier} from "./type";
 
 function typesStreamCompatible(streamTypeA: SlangType, streamTypeB: SlangType): boolean {
 	const subA = streamTypeA.getStreamSub();
@@ -13,7 +13,7 @@ function typesStreamCompatible(streamTypeA: SlangType, streamTypeB: SlangType): 
 
 function typesMapCompatibleTo(mapTypeA: SlangType, mapTypeB: SlangType): boolean {
 	for (const subA of mapTypeA.getMapSubs()) {
-		const subB = Array.from(mapTypeB.getMapSubs()).find(subB => subB[0] === subA[0]);
+		const subB = Array.from(mapTypeB.getMapSubs()).find((sub) => sub[0] === subA[0]);
 		if (!subB || !typesCompatibleTo(subA[1], subB[1])) {
 			return false;
 		}
@@ -36,7 +36,6 @@ function typesCompatibleTo(sourceType: SlangType, destinationType: SlangType): b
 		return true;
 	}
 
-
 	if (sourceType.isMap() && destinationType.isMap()) {
 		return typesMapCompatibleTo(sourceType, destinationType);
 	}
@@ -56,10 +55,9 @@ function fluentStreamCompatibleTo(fluentStream: StreamType, stream: StreamType):
 	if (stream.hasPlaceholderRoot()) {
 		// Both streams are fluent
 		return !containsMisplacedStreamTypeTo(fluentStream, stream) && !containsMisplacedStreamTypeTo(stream, fluentStream);
-	} else {
-		// Non-fluent stream must have at least the depth of the fluent stream
-		return stream.getStreamDepth() >= fluentStream.getStreamDepth();
 	}
+	// Non-fluent stream must have at least the depth of the fluent stream
+	return stream.getStreamDepth() >= fluentStream.getStreamDepth();
 }
 
 function collectDelegateStreams(stream: StreamType): Set<StreamType> {
@@ -77,17 +75,23 @@ function collectDelegateStreams(stream: StreamType): Set<StreamType> {
 
 	const rootOwner = rootSource.getOwner();
 
-	if (rootOwner instanceof OperatorDelegateModel) {
-		const rootBlackBox = rootOwner.getAncestorNode(OperatorModel);
-		if (rootBlackBox) {
-			const rootStream = rootBlackBox.getStreamPortOwner().getBaseStreamType();
-			if (rootStream) {
-				streams.add(rootStream);
-				for (const ancestorStream of collectDelegateStreams(rootStream)) {
-					streams.add(ancestorStream);
-				}
-			}
-		}
+	if (!(rootOwner instanceof OperatorDelegateModel)) {
+		return streams;
+	}
+
+	const rootOperator = rootOwner.getAncestorNode(OperatorModel);
+	if (!rootOperator) {
+		return streams;
+	}
+
+	const rootOperatorStream = rootOperator.getStreamPortOwner().getBaseStreamType();
+	if (!rootOperatorStream) {
+		return streams;
+	}
+
+	streams.add(rootOperatorStream);
+	for (const ancestorStream of collectDelegateStreams(rootOperatorStream)) {
+		streams.add(ancestorStream);
 	}
 
 	return streams;
@@ -173,9 +177,9 @@ function cycleCompatibleTo(source: PortModel, destination: PortModel): boolean {
 function streamsGenericLikeCompatible(portA: PortModel, portB: PortModel): boolean {
 	if (portA.isGenericLike()) {
 		return streamsGenericLikeCompatibleTo(portB.getStreamPort().getStreamType(), portA.getStreamPort().getStreamType());
-	} else {
-		return streamsGenericLikeCompatibleTo(portA.getStreamPort().getStreamType(), portB.getStreamPort().getStreamType());
 	}
+	return streamsGenericLikeCompatibleTo(portA.getStreamPort().getStreamType(), portB.getStreamPort().getStreamType());
+
 }
 
 function streamsGenericLikeCompatibleTo(streamType: StreamType, genericStreamType: StreamType): boolean {

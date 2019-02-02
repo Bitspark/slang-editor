@@ -5,19 +5,19 @@ function movePoint(p: g.PlainPoint, i: number, total: number): g.PlainPoint {
 	if (total <= 1) {
 		return p;
 	}
-	const dist = 2.0;
+	const dist = 2;
 	const move = (i - 0.5 * (total - 1)) * dist;
 	const x = Math.round(p.x + move);
 	const y = p.y;
 	return {x, y};
 }
 
-function slangConnectorFunction(sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: Array<g.PlainPoint>, lines: number): string {
+function slangConnectorFunction(sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: g.PlainPoint[], lines: number): string {
 	let svg = "";
 	for (let i = 0; i < lines; i++) {
 		const sourcePointI = movePoint(sourcePoint, i, lines);
 		const targetPointI = movePoint(targetPoint, i, lines);
-		const routeI = route.map(p => movePoint(p, i, lines));
+		const routeI = route.map((p) => movePoint(p, i, lines));
 
 		const offset = 10;
 		const path = new g.Path();
@@ -27,7 +27,7 @@ function slangConnectorFunction(sourcePoint: g.PlainPoint, targetPoint: g.PlainP
 		const oneThird = 1 / 3;
 		const twoThird = 2 / 3;
 
-		let nextDistance: number | undefined = undefined;
+		let nextDistance: number | undefined;
 		for (let index = 0, n = routeI.length; index < n; index++) {
 
 			const curr = new g.Point(routeI[index]);
@@ -62,6 +62,6 @@ function slangConnectorFunction(sourcePoint: g.PlainPoint, targetPoint: g.PlainP
 	return svg;
 }
 
-export function slangConnector(_sourcePort: PortModel, _destinationPort: PortModel | null, lines: number): (sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: Array<g.PlainPoint>, opt: any) => string {
-	return (sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: Array<g.PlainPoint>) => slangConnectorFunction(sourcePoint, targetPoint, route, lines);
+export function slangConnector(_sourcePort: PortModel, _destinationPort: PortModel | null, lines: number): (sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: g.PlainPoint[], opt: any) => string {
+	return (sourcePoint: g.PlainPoint, targetPoint: g.PlainPoint, route: g.PlainPoint[]) => slangConnectorFunction(sourcePoint, targetPoint, route, lines);
 }

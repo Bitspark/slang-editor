@@ -1,3 +1,9 @@
+import {BlueprintModel, BlueprintType} from "../model/blueprint";
+import {BlueprintDelegateModel, OperatorDelegateModel} from "../model/delegate";
+import {LandscapeModel} from "../model/landscape";
+import {OperatorModel} from "../model/operator";
+import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel} from "../model/port";
+import {PropertyAssignment, PropertyAssignments, PropertyModel} from "../model/property";
 import {
 	BlueprintApiResponse,
 	BlueprintDefApiResponse, ConnectionsApiResponse,
@@ -5,17 +11,11 @@ import {
 	PortGroupsApiResponse,
 	PropertyApiResponse,
 	PropertyAssignmentsApiResponse,
-	TypeDefApiResponse
+	TypeDefApiResponse,
 } from "./api";
-import {TypeIdentifier, SlangType} from "./type";
-import {GenericSpecifications} from "./generics";
 import {Connection} from "./connections";
-import {BlueprintModel, BlueprintType} from "../model/blueprint";
-import {LandscapeModel} from "../model/landscape";
-import {BlueprintDelegateModel, OperatorDelegateModel} from "../model/delegate";
-import {BlueprintPortModel, OperatorPortModel, PortDirection, PortModel} from "../model/port";
-import {PropertyAssignment, PropertyAssignments, PropertyModel} from "../model/property";
-import {OperatorModel} from "../model/operator";
+import {GenericSpecifications} from "./generics";
+import {SlangType, TypeIdentifier} from "./type";
 
 /*
 \
@@ -46,7 +46,7 @@ export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApi
 					if (!result.geometry) {
 						result.geometry = blueprintGeometry.port;
 					}
-				})
+				}),
 		},
 		delegates: iter2map<BlueprintDelegateModel, PortGroupsApiResponse>(blueprint.getDelegates(),
 			(result, delegate) => {
@@ -123,11 +123,11 @@ function typeModelToJSON(type: SlangType): TypeDefApiResponse {
 export function getFullPortRef(port: PortModel): string {
 	if (port instanceof BlueprintPortModel) {
 		return blueprintPortRef(port);
-	} else if (port instanceof OperatorPortModel) {
-		return operatorPortDef(port);
-	} else {
-		throw new Error("unexpected port model");
 	}
+	if (port instanceof OperatorPortModel) {
+		return operatorPortDef(port);
+	}
+	throw new Error("unexpected port model");
 }
 
 function blueprintPortRef(port: BlueprintPortModel): string {
@@ -142,9 +142,9 @@ function blueprintPortRef(port: BlueprintPortModel): string {
 
 	if (port.isDirectionIn()) {
 		return `${portRef}(${ownerRefParts.join(".")}`;
-	} else {
-		return `${ownerRefParts.join(".")})${portRef}`;
 	}
+	return `${ownerRefParts.join(".")})${portRef}`;
+
 }
 
 function operatorPortDef(port: OperatorPortModel): string {
@@ -165,9 +165,8 @@ function operatorPortDef(port: OperatorPortModel): string {
 	const ownerRef = ownerRefParts.join(".");
 	if (port.isDirectionIn()) {
 		return `${portRef}(${ownerRef}`;
-	} else {
-		return `${ownerRef})${portRef}`;
 	}
+	return `${ownerRef})${portRef}`;
 
 }
 
@@ -181,10 +180,10 @@ function fromTypeIdentifier(t: TypeIdentifier): "string" | "number" | "boolean" 
   \
  */
 
-export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<BlueprintApiResponse>) {
+export function fillLandscape(landscape: LandscapeModel, bpDataList: BlueprintApiResponse[]) {
 	const blueprintToOperator = new Map<BlueprintModel, BlueprintDefApiResponse>();
 	// 1) Add Blueprints
-	bpDataList.forEach(bpData => {
+	bpDataList.forEach((bpData) => {
 		const type: BlueprintType | null = ({
 			local: BlueprintType.Local,
 			library: BlueprintType.Library,
@@ -197,7 +196,7 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
 
 		const services = bpData.def.services;
 		const bpGeo = bpData.def.geometry;
-		const geometry = (services && bpGeo) ? Object.assign(bpGeo, {"port": services.main.geometry!}) : undefined;
+		const geometry = (services && bpGeo) ? Object.assign(bpGeo, {port: services.main.geometry!}) : undefined;
 
 		const blueprint = landscape.createBlueprint({fullName: bpData.name, type, geometry});
 		if (services) {
@@ -244,7 +243,7 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
 					console.error(`${outerBlueprint.getFullName()}: port ${sourcePortReference} cannot be resolved`);
 					return;
 				}
-				
+
 				const destinationPortReferences = connections[sourcePortReference];
 				for (const destinationPortReference of destinationPortReferences) {
 					const destinationPort = outerBlueprint.resolvePortReference(destinationPortReference);
@@ -252,7 +251,7 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: Array<Bluep
 						console.error(`${outerBlueprint.getFullName()}: port ${destinationPortReference} cannot be resolved`);
 						continue;
 					}
-					
+
 					try {
 						sourcePort.connect(destinationPort, false);
 					} catch (e) {
@@ -278,7 +277,7 @@ function toTypeIdentifier(typeName: string): TypeIdentifier {
 	} as { [_: string]: TypeIdentifier })[typeName];
 
 	if (type === null) {
-		throw `unknown property type '${TypeIdentifier[type]}'`;
+		throw new Error(`unknown property type '${TypeIdentifier[type]}'`);
 	}
 
 	return type;
@@ -286,7 +285,7 @@ function toTypeIdentifier(typeName: string): TypeIdentifier {
 
 function setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupsApiResponse) {
 	Object.keys(delegates).forEach((delegateName: string) => {
-		blueprint.createDelegate({name: delegateName}, delegate => {
+		blueprint.createDelegate({name: delegateName}, (delegate) => {
 			createPort(delegates[delegateName].in, delegate, PortDirection.In);
 			createPort(delegates[delegateName].out, delegate, PortDirection.Out);
 		});
@@ -294,7 +293,7 @@ function setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupsA
 }
 
 function createPort(typeDef: TypeDefApiResponse, owner: BlueprintModel | BlueprintDelegateModel, direction: PortDirection): BlueprintPortModel {
-	return owner.createPort({name: "", type: createTypeModel(typeDef), direction,});
+	return owner.createPort({name: "", type: createTypeModel(typeDef), direction});
 }
 
 function createTypeModel(typeDef: TypeDefApiResponse): SlangType {
@@ -318,8 +317,8 @@ function createTypeModel(typeDef: TypeDefApiResponse): SlangType {
 }
 
 function setBlueprintServices(blueprint: BlueprintModel, services: PortGroupsApiResponse) {
-	const portInDef: TypeDefApiResponse = services["main"].in;
-	const portOutDef: TypeDefApiResponse = services["main"].out;
+	const portInDef: TypeDefApiResponse = services.main.in;
+	const portOutDef: TypeDefApiResponse = services.main.out;
 	createPort(portInDef, blueprint, PortDirection.In);
 	createPort(portOutDef, blueprint, PortDirection.Out);
 }
@@ -349,4 +348,3 @@ function createGenericSpecifications(blueprint: BlueprintModel, genericsData: Ge
 	}
 	return generics;
 }
-

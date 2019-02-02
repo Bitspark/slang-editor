@@ -2,7 +2,7 @@ import {TypeIdentifier} from "../slang/custom/type";
 
 export namespace Styles {
 
-	const TypeColors: { [key in TypeIdentifier | "ghost"]: string } = {
+	const typeColors: { [key in TypeIdentifier | "ghost"]: string } = {
 		[TypeIdentifier.Number]: "#2e49b3",
 		[TypeIdentifier.String]: "#a52e2e",
 		[TypeIdentifier.Boolean]: "#cb8000",
@@ -22,34 +22,34 @@ export namespace Styles {
 	}
 
 	export namespace Connection {
-		class Connection {
+		class BaseConnection {
 			public static strokeWidth = 1;
-			public static stroke = (type: TypeIdentifier | "ghost"): string => TypeColors[type];
 			public static vectorEffect = "default";
+			public static stroke = (type: TypeIdentifier | "ghost"): string => typeColors[type];
 		}
 
-		export class Ordinary extends Connection {
+		export class OrdinaryConnection extends BaseConnection {
 			public static strokeOpacity = 1;
 
 		}
 
-		export class Ghost extends Connection {
+		export class GhostConnection extends BaseConnection {
 			public static strokeOpacity = 0.3;
 		}
 	}
 
 	export class PortGroup {
 		public static portSpacing = 10;
-		public static TranslationIn = 4;
-		public static TranslationOut = -4;
+		public static translationIn = 4;
+		public static translationOut = -4;
 	}
 
 	export class BlueprintPort {
 		public static transformations = {
-			"top": "translate(0 -20)",
-			"right": "translate(-40 0)",
-			"bottom": "translate(0 20)",
-			"left": "translate(40 0)",
+			top: "translate(0 -20)",
+			right: "translate(-40 0)",
+			bottom: "translate(0 20)",
+			left: "translate(40 0)",
 		};
 	}
 
@@ -63,7 +63,7 @@ export namespace Styles {
 				dx: 0,
 				dy: 0,
 				blur: 1,
-			}
+			},
 		};
 	}
 
@@ -81,12 +81,12 @@ export namespace Styles {
 	}
 
 	export class Defaults {
-		public static BlackBox = {
-			size: Styles.BlackBox.size,
+		public static blackBox = {
+			size: BlackBox.size,
 			attrs: {
 				body: {
-					rx: Styles.BlackBox.rx,
-					ry: Styles.BlackBox.ry,
+					rx: BlackBox.rx,
+					ry: BlackBox.ry,
 					class: "sl-rectangle",
 				},
 				label: {
@@ -96,17 +96,17 @@ export namespace Styles {
 			},
 		};
 
-		public static Outer = {
+		public static outer = {
 			attrs: {
 				root: {
 					class: "joint-cell joint-element sl-outer",
 				},
 				body: {
-					rx: Styles.Outer.rx,
-					ry: Styles.Outer.ry,
+					rx: Outer.rx,
+					ry: Outer.ry,
 					class: "sl-rectangle",
 					cursor: "default",
-					filter: Styles.Outer.filter,
+					filter: Outer.filter,
 				},
 			},
 		};

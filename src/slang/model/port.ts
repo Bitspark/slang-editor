@@ -1,15 +1,14 @@
-import {BlueprintFakeGeneric, BlueprintModel} from "./blueprint";
-import {OperatorModel} from "./operator";
-import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
-import {BlackBox, PortOwner, SlangNode} from "../custom/nodes";
-import {Connections} from "../custom/connections";
-import {SlangType, TypeIdentifier} from "../custom/type";
-import {SlangSubject} from "../custom/events";
-import {StreamPort} from "../custom/stream";
-import {canConnectTo} from "../custom/connection-check";
-import {GenericSpecifications} from "../custom/generics";
-
 import {Subscription} from "rxjs";
+import {canConnectTo} from "../custom/connection-check";
+import {Connections} from "../custom/connections";
+import {SlangSubject} from "../custom/events";
+import {GenericSpecifications} from "../custom/generics";
+import {BlackBox, PortOwner, SlangNode} from "../custom/nodes";
+import {StreamPort} from "../custom/stream";
+import {SlangType, TypeIdentifier} from "../custom/type";
+import {BlueprintFakeGeneric, BlueprintModel} from "./blueprint";
+import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
+import {OperatorModel} from "./operator";
 
 export enum PortDirection {
 	In, // 0
@@ -24,6 +23,8 @@ interface PortGenerics {
 
 export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
+	protected connectedWith: PortModel[] = [];
+
 	// Topics
 	// self
 	private readonly connected = new SlangSubject<PortModel>("connected");
@@ -36,32 +37,22 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	private genericIdentifier?: string;
 	private streamDepth = 0;
 
-	// null, if this port is not a generic port
-	// Set, if this port is a generic or a fake generic (in case of blueprints)
-	protected readonly generics: PortGenerics | null;
-
-	protected connectedWith: Array<PortModel> = [];
-
 	// Mixins
 	private readonly streamPort: StreamPort;
 
-	protected constructor(parent: GenericPortModel<O> | O,
-						  {type, name, direction,}: PortModelArgs,
-						  P: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel,
-						  generics: PortGenerics | null) {
+	protected constructor(parent: GenericPortModel<O> | O, {type, name, direction}: PortModelArgs, portCtor: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel, protected readonly generics: PortGenerics | null) {
 		super(parent);
 		this.name = name;
 		this.direction = direction;
-		this.generics = generics;
 
 		this.streamPort = new StreamPort(this);
-		this.reconstruct(type, P, direction);
+		this.reconstruct(type, portCtor, direction);
 
-		this.subscribeConnected(port => {
+		this.subscribeConnected((port) => {
 			this.connectedWith.push(port);
 		});
 
-		this.subscribeDisconnected(port => {
+		this.subscribeDisconnected((port) => {
 			const idxT = this.connectedWith.indexOf(port);
 			if (idxT === -1) {
 				throw new Error(`inconsistency: not connected with that port`);
@@ -71,17 +62,16 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 		this.subscribeDestroyed(() => {
 			this.disconnectAll();
-
-			if (this.isGenericLikeDescent()) {
-				const generics = this.fetchGenerics();
-				generics.specifications.unregisterPort(generics.identifier, this);
-			}
 		});
 
 		if (this.isGenericLikeDescent()) {
-			const generics = this.fetchGenerics();
-			const specifications = generics.specifications;
-			const identifier = generics.identifier;
+			const fetchedGenerics = this.fetchGenerics();
+			const specifications = fetchedGenerics.specifications;
+			const identifier = fetchedGenerics.identifier;
+
+			this.subscribeDestroyed(() => {
+				fetchedGenerics.specifications.unregisterPort(fetchedGenerics.identifier, this);
+			});
 
 			this.subscribeDisconnected(() => {
 				if (this.connectedWith.length === 0) {
@@ -94,9 +84,9 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 			if (this.isGenericLike()) {
 				specifications.registerPort(identifier, this);
-				specifications.subscribeGenericTypeChanged(identifier, type => {
-					if (type) {
-						this.reconstruct(type, P, this.direction);
+				specifications.subscribeGenericTypeChanged(identifier, (newType) => {
+					if (newType) {
+						this.reconstruct(newType, portCtor, this.direction);
 					} else {
 						this.typeIdentifier = TypeIdentifier.Unspecified;
 						this.genericIdentifier = undefined;
@@ -108,34 +98,37 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		this.streamPort.initialize();
 	}
 
-	public reconstruct(type: SlangType, P: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel, direction: PortDirection): void {
+	public reconstruct(type: SlangType, portCtor: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel, direction: PortDirection): void {
 		if (this.typeIdentifier !== type.getTypeIdentifier()) {
 			this.typeIdentifier = type.getTypeIdentifier();
 
 			switch (this.typeIdentifier) {
-				case TypeIdentifier.Map:
+				case TypeIdentifier.Map: {
 					for (const [subName, subType] of type.getMapSubs()) {
-						this.createChildNode(P, {name: subName, type: subType, direction,});
+						this.createChildNode(portCtor, {name: subName, type: subType, direction});
 					}
 					break;
-				case TypeIdentifier.Stream:
+				}
+				case TypeIdentifier.Stream: {
 					const subType = type.getStreamSub();
-					this.createChildNode(P, {name: "~", type: subType, direction,});
+					this.createChildNode(portCtor, {name: "~", type: subType, direction});
 					break;
-				case TypeIdentifier.Generic:
+				}
+				case TypeIdentifier.Generic: {
 					this.genericIdentifier = type.getGenericIdentifier();
 					break;
+				}
 			}
 		} else {
 			switch (this.typeIdentifier) {
-				case TypeIdentifier.Map:
+				case TypeIdentifier.Map: {
 					const subs = Array.from(this.getMapSubs());
 					for (const [subName, subType] of type.getMapSubs()) {
-						const sub = subs.find(s => s.getName() === subName);
+						const sub = subs.find((s) => s.getName() === subName);
 						if (sub) {
-							sub.reconstruct(subType, P, direction);
+							sub.reconstruct(subType, portCtor, direction);
 						} else {
-							this.createChildNode(P, {name: subName, type: subType, direction,});
+							this.createChildNode(portCtor, {name: subName, type: subType, direction});
 						}
 					}
 					for (const sub of this.getMapSubs()) {
@@ -144,13 +137,16 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 						}
 					}
 					break;
-				case TypeIdentifier.Stream:
+				}
+				case TypeIdentifier.Stream: {
 					const subType = type.getStreamSub();
-					this.getStreamSub().reconstruct(subType, P, direction);
+					this.getStreamSub().reconstruct(subType, portCtor, direction);
 					break;
-				case TypeIdentifier.Generic:
+				}
+				case TypeIdentifier.Generic: {
 					this.genericIdentifier = type.getGenericIdentifier();
 					break;
+				}
 			}
 		}
 	}
@@ -174,7 +170,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		if (this.typeIdentifier !== TypeIdentifier.Map) {
 			throw new Error(`accessing map sub port of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);
 		}
-		const mapSub = this.scanChildNode(GenericPortModel, port => port.getName() === name);
+		const mapSub = this.scanChildNode(GenericPortModel, (port) => port.getName() === name);
 		if (!mapSub) {
 			throw new Error(`map sub port '${name}' not found: '${this.getIdentity()}'`);
 		}
@@ -202,17 +198,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			throw new Error(`generic identifier missing`);
 		}
 		return this.genericIdentifier;
-	}
-
-	private fetchGenerics(): PortGenerics {
-		if (!!this.generics) {
-			return this.generics;
-		}
-		const parent = this.getParentNode();
-		if (parent instanceof GenericPortModel) {
-			return parent.fetchGenerics();
-		}
-		throw new Error(`no generics defined`);
 	}
 
 	public isGenericLike(): boolean {
@@ -250,9 +235,8 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		const ownerBox = this.getAncestorNode(BlackBox);
 		if (ownerBox) {
 			return ownerBox.getDisplayName();
-		} else {
-			return "unknown";
 		}
+		return "unknown";
 	}
 
 	public getStreamSub(): GenericPortModel<O> {
@@ -369,29 +353,18 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 	public getDescendantPorts(): Array<GenericPortModel<O>> {
 		const ports: Array<GenericPortModel<O>> = [this];
-		if (this.typeIdentifier == TypeIdentifier.Map) {
+		if (this.typeIdentifier === TypeIdentifier.Map) {
 			const subs = this.getMapSubs();
 			for (const sub of subs) {
 				ports.push.apply(ports, sub.getDescendantPorts());
 			}
-		} else if (this.typeIdentifier == TypeIdentifier.Stream) {
+		} else if (this.typeIdentifier === TypeIdentifier.Stream) {
 			const sub = this.getStreamSub();
 			if (sub) {
 				ports.push.apply(ports, sub.getDescendantPorts());
 			}
 		}
 		return ports;
-	}
-
-	private getDirectConnectionsTo(): Connections {
-		const connections = new Connections();
-		if (!this.isSource()) {
-			return connections;
-		}
-		for (const connectedWith of this.connectedWith) {
-			connections.add({source: this, destination: connectedWith});
-		}
-		return connections;
 	}
 
 	public getDirectConnections(): Connections {
@@ -446,18 +419,22 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		if (!(parent instanceof GenericPortModel)) {
 			return "";
 		}
+
 		const parentRefString = parent.getPortReference();
 		if (parent.getTypeIdentifier() === TypeIdentifier.Map) {
 			if (parentRefString === "") {
 				return this.getName();
 			}
 			return parentRefString + "." + this.getName();
-		} else if (parent.getTypeIdentifier() === TypeIdentifier.Stream) {
+		}
+
+		if (parent.getTypeIdentifier() === TypeIdentifier.Stream) {
 			if (parentRefString === "") {
 				return "~";
 			}
 			return parentRefString + ".~";
 		}
+
 		return parentRefString;
 	}
 
@@ -510,7 +487,66 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		}
 	}
 
-	private findGenericPort(portId: Array<string>): PortModel {
+	public canConnect(other: PortModel): boolean {
+		if (this.isSource()) {
+			return canConnectTo(this, other);
+		}
+		return canConnectTo(other, this);
+
+	}
+
+	public connect(other: PortModel, createGenerics: boolean) {
+		if (this.isSource()) {
+			this.connectTo(other, createGenerics);
+		} else {
+			other.connectTo(this, createGenerics);
+		}
+	}
+
+	public isConnected(): boolean {
+		return this.connectedWith.length > 0;
+	}
+
+	public isConnectedWith(other: PortModel): boolean {
+		return this.connectedWith.indexOf(other) !== -1;
+	}
+
+	// Subscriptions
+
+	public subscribeConnected(cb: (other: PortModel) => void): Subscription {
+		this.connectedWith.forEach((port) => {
+			cb(port);
+		});
+		return this.connected.subscribe(cb);
+	}
+
+	public subscribeDisconnected(cb: (other: PortModel) => void): void {
+		this.disconnected.subscribe(cb);
+	}
+
+	private fetchGenerics(): PortGenerics {
+		if (!!this.generics) {
+			return this.generics;
+		}
+		const parent = this.getParentNode();
+		if (parent instanceof GenericPortModel) {
+			return parent.fetchGenerics();
+		}
+		throw new Error(`no generics defined`);
+	}
+
+	private getDirectConnectionsTo(): Connections {
+		const connections = new Connections();
+		if (!this.isSource()) {
+			return connections;
+		}
+		for (const connectedWith of this.connectedWith) {
+			connections.add({source: this, destination: connectedWith});
+		}
+		return connections;
+	}
+
+	private findGenericPort(portId: string[]): PortModel {
 		if (portId.length === 0) {
 			return this;
 		}
@@ -523,9 +559,9 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 		if (nextPortId === "~") {
 			return this.getStreamSub().findGenericPort(portId);
-		} else {
-			return this.findMapSub(nextPortId).findGenericPort(portId);
 		}
+		return this.findMapSub(nextPortId).findGenericPort(portId);
+
 	}
 
 	private createDescendingGenericPort(other: PortModel): PortModel {
@@ -597,48 +633,15 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				break;
 		}
 	}
-
-	public canConnect(other: PortModel): boolean {
-		if (this.isSource()) {
-			return canConnectTo(this, other);
-		} else {
-			return canConnectTo(other, this);
-		}
-	}
-
-	public connect(other: PortModel, createGenerics: boolean) {
-		if (this.isSource()) {
-			this.connectTo(other, createGenerics);
-		} else {
-			other.connectTo(this, createGenerics);
-		}
-	}
-
-	public isConnected(): boolean {
-		return this.connectedWith.length > 0;
-	}
-
-	public isConnectedWith(other: PortModel): boolean {
-		return this.connectedWith.indexOf(other) !== -1;
-	}
-
-	// Subscriptions
-
-	public subscribeConnected(cb: (other: PortModel) => void): Subscription {
-		this.connectedWith.forEach(port => {
-			cb(port);
-		});
-		return this.connected.subscribe(cb);
-	}
-
-	public subscribeDisconnected(cb: (other: PortModel) => void): void {
-		this.disconnected.subscribe(cb);
-	}
 }
 
-export type PortModel = GenericPortModel<PortOwner>
+export type PortModel = GenericPortModel<PortOwner>;
 
-export type PortModelArgs = { name: string, type: SlangType, direction: PortDirection, };
+export interface PortModelArgs {
+	name: string;
+	type: SlangType;
+	direction: PortDirection;
+}
 
 export class BlueprintPortModel extends GenericPortModel<BlueprintModel | BlueprintDelegateModel> {
 	public constructor(parent: BlueprintModel | BlueprintDelegateModel | BlueprintPortModel, args: PortModelArgs) {
@@ -647,7 +650,7 @@ export class BlueprintPortModel extends GenericPortModel<BlueprintModel | Bluepr
 			const specifications = parent.getGenerics();
 			const identifier = args.direction === PortDirection.In ? BlueprintFakeGeneric.In : BlueprintFakeGeneric.Out;
 			specifications.specify(identifier, args.type);
-			generics = {specifications, identifier, fake: true,};
+			generics = {specifications, identifier, fake: true};
 		}
 
 		super(parent, args, BlueprintPortModel, generics);

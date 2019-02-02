@@ -1,16 +1,17 @@
+import {DelegateModel} from "../model/delegate";
 import {
 	GenericPortModel,
 	OperatorPortModel,
 	PortDirection,
 	PortModel,
-	PortModelArgs
+	PortModelArgs,
 } from "../model/port";
-import {DelegateModel} from "../model/delegate";
-import {SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "./events";
-import {StreamPortOwner} from "./stream";
-import {GenericSpecifications} from "./generics";
 import {PropertyAssignments} from "../model/property";
+import {SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "./events";
+import {GenericSpecifications} from "./generics";
+import {StreamPortOwner} from "./stream";
 
+// tslint:disable-next-line
 type Type<T> = Function & { prototype: T };
 
 export type Types<T> = [Type<T>, ...Array<Type<T>>] | Type<T>;
@@ -41,9 +42,8 @@ export abstract class SlangNode {
 	public getIdentity(): string {
 		if (this.parent) {
 			return this.parent.getIdentity() + "." + this.id;
-		} else {
-			return "SL";
 		}
+		return "SL";
 	}
 
 	public getScopedIdentity(): string {
@@ -80,10 +80,9 @@ export abstract class SlangNode {
 	}
 
 	public getChildNodes<T extends SlangNode>(types: Types<T>): IterableIterator<T> {
-		types = getTypes(types);
-		const children: Array<T> = [];
+		const children: T[] = [];
 		for (const childNode of this.children.getNodes()) {
-			for (const t of types) {
+			for (const t of getTypes(types)) {
 				if (childNode instanceof t) {
 					children.push(childNode as T);
 					break;
@@ -94,12 +93,11 @@ export abstract class SlangNode {
 	}
 
 	public getChildNode<T extends SlangNode>(types: Types<T>): T | null {
-		types = getTypes(types);
 		if (this.children.size() === 0) {
 			return null;
 		}
 		for (const childNode of this.children.getNodes()) {
-			for (const t of types) {
+			for (const t of getTypes(types)) {
 				if (childNode instanceof t) {
 					return childNode as T;
 				}
@@ -122,8 +120,7 @@ export abstract class SlangNode {
 	}
 
 	public getAncestorNode<T extends SlangNode>(types: Types<T>): T | undefined {
-		types = getTypes(types);
-		for (const t of types) {
+		for (const t of getTypes(types)) {
 			if (this instanceof t) {
 				return this as any;
 			}
@@ -139,10 +136,9 @@ export abstract class SlangNode {
 	}
 
 	public getDescendantNodes<T extends SlangNode>(types: Types<T>): IterableIterator<T> {
-		types = getTypes(types);
-		const children: Array<T> = [];
+		const children: T[] = [];
 		for (const childNode of this.getChildNodes(SlangNode)) {
-			for (const t of types) {
+			for (const t of getTypes(types)) {
 				if (childNode instanceof t) {
 					children.push(childNode as T);
 					break;
@@ -155,16 +151,6 @@ export abstract class SlangNode {
 		return children.values();
 	}
 
-	protected createChildNode<T extends SlangNode, A>(ctor: new(parent: this, args: A) => T, args: A, cb?: (child: T) => void): T {
-		const childNode = new ctor(this, args);
-		childNode.id = this.nextId();
-		this.children.nextAdd(childNode, cb);
-		childNode.subscribeDestroyed(() => {
-			this.children.nextRemove(childNode);
-		});
-		return childNode;
-	}
-
 	public destroy() {
 		for (const child of this.getChildNodes(SlangNode)) {
 			child.destroy();
@@ -172,15 +158,10 @@ export abstract class SlangNode {
 		this.destroyed.next();
 	}
 
-	private nextId(): string {
-		this.lastId = Number(Number.parseInt(this.lastId, 16) + 1).toString(16);
-		return this.lastId;
-	}
-
 	// Events
 
 	public subscribeChildCreated<T extends SlangNode>(types: Types<T>, cb: (child: T) => void) {
-		this.children.subscribeAdded(child => {
+		this.children.subscribeAdded((child) => {
 			for (const type of getTypes(types)) {
 				if (child instanceof type) {
 					cb(child as T);
@@ -190,7 +171,7 @@ export abstract class SlangNode {
 	}
 
 	public subscribeDescendantCreated<T extends SlangNode>(types: Types<T>, cb: (child: T) => void) {
-		this.children.subscribeAdded(child => {
+		this.children.subscribeAdded((child) => {
 			for (const type of getTypes(types)) {
 				if (child instanceof type) {
 					cb(child as T);
@@ -202,6 +183,21 @@ export abstract class SlangNode {
 
 	public subscribeDestroyed(cb: () => void): void {
 		this.destroyed.subscribe(cb);
+	}
+
+	protected createChildNode<T extends SlangNode, A>(ctor: new(parent: this, args: A) => T, args: A, cb?: (child: T) => void): T {
+		const childNode = new ctor(this, args);
+		childNode.id = this.nextId();
+		this.children.nextAdd(childNode, cb);
+		childNode.subscribeDestroyed(() => {
+			this.children.nextRemove(childNode);
+		});
+		return childNode;
+	}
+
+	private nextId(): string {
+		this.lastId = Number(Number.parseInt(this.lastId, 16) + 1).toString(16);
+		return this.lastId;
 	}
 
 }
@@ -216,14 +212,12 @@ export abstract class PortOwner extends SlangNode {
 		this.streamPortOwner.initialize();
 	}
 
-	protected abstract createPort(args: PortModelArgs): PortModel;
-
 	public getPortIn(): PortModel | null {
-		return this.scanChildNode(GenericPortModel, p => p.isDirectionIn()) || null;
+		return this.scanChildNode(GenericPortModel, (p) => p.isDirectionIn()) || null;
 	}
 
 	public getPortOut(): PortModel | null {
-		return this.scanChildNode(GenericPortModel, p => p.isDirectionOut()) || null;
+		return this.scanChildNode(GenericPortModel, (p) => p.isDirectionOut()) || null;
 	}
 
 	public getPorts(): IterableIterator<PortModel> {
@@ -234,7 +228,7 @@ export abstract class PortOwner extends SlangNode {
 		return this.streamPortOwner;
 	}
 
-	public reconstructPorts(properties: PropertyAssignments, ports: Iterable<PortModel>, P: new(p: GenericPortModel<this> | this, args: PortModelArgs) => PortModel) {
+	public reconstructPorts(properties: PropertyAssignments, ports: Iterable<PortModel>, portCtor: new(p: GenericPortModel<this> | this, args: PortModelArgs) => PortModel) {
 		const obsoletePorts = new Set(this.getPorts());
 		for (const port of ports) {
 			const poPort = (port.getDirection() === PortDirection.In ? this.getPortIn() : this.getPortOut()) as OperatorPortModel;
@@ -247,25 +241,27 @@ export abstract class PortOwner extends SlangNode {
 			} else {
 				poPort.reconstruct(
 					port.getType().expand(properties),
-					P as (new(p: GenericPortModel<PortOwner> | PortOwner, args: PortModelArgs) => PortModel),
+					portCtor as (new(p: GenericPortModel<PortOwner> | PortOwner, args: PortModelArgs) => PortModel),
 					port.getDirection());
 				// TODO: Investigate why explicit cast to (new(p: GenericPortModel<PortOwner> | PortOwner, args: PortModelArgs) => PortModel) is necessary
 				obsoletePorts.delete(poPort);
 			}
 		}
-		obsoletePorts.forEach(obsoletePort => obsoletePort.destroy());
+		obsoletePorts.forEach((obsoletePort) => obsoletePort.destroy());
 	}
+
+	protected abstract createPort(args: PortModelArgs): PortModel;
 
 }
 
 export abstract class BlackBox extends PortOwner {
 
-	abstract getDisplayName(): string;
+	public abstract getDisplayName(): string;
 
-	abstract findDelegate(name: string): DelegateModel | undefined;
+	public abstract findDelegate(name: string): DelegateModel | undefined;
 
-	abstract getDelegates(): IterableIterator<DelegateModel>;
+	public abstract getDelegates(): IterableIterator<DelegateModel>;
 
-	abstract getGenerics(): GenericSpecifications;
+	public abstract getGenerics(): GenericSpecifications;
 
 }

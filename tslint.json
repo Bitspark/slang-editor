@@ -157,7 +157,7 @@
 			}
 		],
 		// Rules from tslint-no-circular-imports
-		"no-circular-imports": true,
+		"no-circular-imports": false,
 		// Disabled from tslint:recommended
 		"variable-name": false,
 		"interface-name": false,

@@ -1,5 +1,5 @@
-import {PropertyEvaluator} from "./utils";
 import {PropertyAssignments} from "../model/property";
+import {PropertyEvaluator} from "./utils";
 
 export enum TypeIdentifier {
 	Unspecified, // 0
@@ -15,33 +15,35 @@ export enum TypeIdentifier {
 }
 
 interface SlangTypeDefStream {
-	type: TypeIdentifier.Stream
-	stream: SlangTypeDef
+	type: TypeIdentifier.Stream;
+	stream: SlangTypeDef;
 }
 
 interface SlangTypeDefMap {
-	type: TypeIdentifier.Map
+	type: TypeIdentifier.Map;
 	map: {
 		[subName: string]: SlangTypeDef,
-	}
+	};
 }
 
 interface SlangTypeDefGeneric {
-	type: TypeIdentifier.Generic
-	generic: string
+	type: TypeIdentifier.Generic;
+	generic: string;
 }
 
 interface SlangTypeDefPrimitive {
-	type: TypeIdentifier.String | TypeIdentifier.Number | TypeIdentifier.Boolean | TypeIdentifier.Binary | TypeIdentifier.Trigger | TypeIdentifier.Primitive | TypeIdentifier.Unspecified
+	type: TypeIdentifier.String | TypeIdentifier.Number | TypeIdentifier.Boolean | TypeIdentifier.Binary | TypeIdentifier.Trigger | TypeIdentifier.Primitive | TypeIdentifier.Unspecified;
 }
-
 
 export type SlangTypeDef = SlangTypeDefPrimitive | SlangTypeDefGeneric | SlangTypeDefMap | SlangTypeDefStream;
 
 interface SlangTypeStream extends Array<SlangTypeValue> {
 }
 
-type SlangTypeMap = { [sub: string]: SlangTypeValue };
+interface SlangTypeMap {
+	[sub: string]: SlangTypeValue;
+}
+
 export type SlangTypeValue = SlangTypeMap | SlangTypeStream | string | number | boolean | null;
 
 export function copySlangTypeValue(v: SlangTypeValue): SlangTypeValue {
@@ -56,6 +58,9 @@ export function copySlangTypeValue(v: SlangTypeValue): SlangTypeValue {
 	const vcp: SlangTypeMap = {};
 	const vmp = v as SlangTypeMap;
 	for (const sub in vmp) {
+		if (!vmp.hasOwnProperty(sub)) {
+			continue;
+		}
 		vcp[sub] = copySlangTypeValue(vmp[sub]);
 	}
 	return vcp;
@@ -81,7 +86,7 @@ export namespace SlangTypeDef {
 
 				const bMap = b.map;
 
-				for (let propKey in aMap) {
+				for (const propKey in aMap) {
 					if (aMap.hasOwnProperty(propKey)) {
 						if (bMap.hasOwnProperty(propKey)) {
 							if (!isEqual(aMap[propKey], bMap[propKey])) {
@@ -113,6 +118,7 @@ export namespace SlangTypeDef {
 }
 
 export class SlangType {
+
 	private readonly mapSubs: Map<string, SlangType> | undefined;
 	private genericIdentifier?: string;
 	private streamSub: SlangType | undefined;
@@ -122,11 +128,11 @@ export class SlangType {
 			this.mapSubs = new Map<string, SlangType>();
 		}
 	}
-	
+
 	public getParent(): SlangType | null {
 		return this.parent;
 	}
-	
+
 	public getTypeDef(): SlangTypeDef {
 		switch (this.typeIdentifier) {
 			case TypeIdentifier.Map:
@@ -135,7 +141,7 @@ export class SlangType {
 					map: Array.from(this.getMapSubs()).reduce((obj: any, [name, slType]) => {
 						obj[name] = slType.getTypeDef();
 						return obj;
-					}, {})
+					}, {}),
 				};
 			case TypeIdentifier.Stream:
 				return {
@@ -161,7 +167,8 @@ export class SlangType {
 				}
 			}
 			return true;
-		} else if (this.typeIdentifier === TypeIdentifier.Stream) {
+		}
+		if (this.typeIdentifier === TypeIdentifier.Stream) {
 			return this.getStreamSub().isVoid();
 		}
 
@@ -194,7 +201,8 @@ export class SlangType {
 				}
 			}
 			return newMap;
-		} else if (this.typeIdentifier === TypeIdentifier.Stream) {
+		}
+		if (this.typeIdentifier === TypeIdentifier.Stream) {
 			const newStream = new SlangType(this.parent, TypeIdentifier.Stream);
 			newStream.setStreamSub(this.getStreamSub().union(other.getStreamSub()));
 			return newStream;
@@ -221,16 +229,20 @@ export class SlangType {
 					return false;
 				}
 			}
-			for (const [subName,] of other.getMapSubs()) {
+			for (const [subName] of other.getMapSubs()) {
 				const sub = this.findMapSub(subName);
 				if (!sub) {
 					return false;
 				}
 			}
 			return true;
-		} else if (this.typeIdentifier === TypeIdentifier.Stream) {
+		}
+
+		if (this.typeIdentifier === TypeIdentifier.Stream) {
 			return this.getStreamSub().equals(other.getStreamSub());
-		} else if (this.typeIdentifier === TypeIdentifier.Generic) {
+		}
+
+		if (this.typeIdentifier === TypeIdentifier.Generic) {
 			return this.genericIdentifier === other.genericIdentifier;
 		}
 
@@ -278,7 +290,7 @@ export class SlangType {
 
 	public addMapSub(name: string, type: SlangType): SlangType {
 		if (this.typeIdentifier !== TypeIdentifier.Map) {
-			throw `add map sub type to a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+			throw new Error(`add map sub type to a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);
 		}
 		this.mapSubs!.set(name, type);
 		type.parent = this;
@@ -287,21 +299,21 @@ export class SlangType {
 
 	public findMapSub(name: string): SlangType | null {
 		if (this.typeIdentifier !== TypeIdentifier.Map) {
-			throw `find map sub type to a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+			throw new Error(`find map sub type to a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);
 		}
 		return this.mapSubs!.get(name) || null;
 	}
 
 	public getMapSubs(): IterableIterator<[string, SlangType]> {
 		if (this.typeIdentifier !== TypeIdentifier.Map) {
-			throw `access of map sub types of a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+			throw new Error(`access of map sub types of a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);
 		}
 		return this.mapSubs!.entries();
 	}
 
 	public setStreamSub(type: SlangType) {
 		if (this.typeIdentifier !== TypeIdentifier.Stream) {
-			throw `set stream sub type of a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+			throw new Error(`set stream sub type of a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);
 		}
 		type.parent = this;
 		this.streamSub = type;
@@ -309,17 +321,17 @@ export class SlangType {
 
 	public getStreamSub(): SlangType {
 		if (this.typeIdentifier !== TypeIdentifier.Stream) {
-			throw `access of stream type of a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+			throw new Error(`access of stream type of a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);
 		}
 		if (!this.streamSub) {
-			throw `stream type not having sub stream type`;
+			throw new Error(`stream type not having sub stream type`);
 		}
 		return this.streamSub;
 	}
 
 	public setGenericIdentifier(genericIdentifier: string) {
 		if (this.typeIdentifier !== TypeIdentifier.Generic) {
-			throw `set generic identifier of a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+			throw new Error(`set generic identifier of a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);
 		}
 		this.genericIdentifier = genericIdentifier;
 	}
@@ -341,7 +353,7 @@ export class SlangType {
 	public isElementaryPort(): boolean {
 		return this.isPrimitive() || this.isTrigger() || this.isGeneric();
 	}
-	
+
 	public isPrimitive(): boolean {
 		const primitiveTypes = [TypeIdentifier.String, TypeIdentifier.Number, TypeIdentifier.Boolean, TypeIdentifier.Binary, TypeIdentifier.Primitive];
 		return primitiveTypes.indexOf(this.getTypeIdentifier()) !== -1;
@@ -358,16 +370,12 @@ export class SlangType {
 	public isGeneric(): boolean {
 		return this.typeIdentifier === TypeIdentifier.Generic;
 	}
-	
+
 	public isTrigger(): boolean {
 		return this.typeIdentifier === TypeIdentifier.Trigger;
 	}
 
-	public toString(tab?: string): string {
-		if (!tab) {
-			tab = "";
-		}
-
+	public toString(tab = ""): string {
 		let str = TypeIdentifier[this.typeIdentifier] + "\n";
 		if (this.typeIdentifier === TypeIdentifier.Map) {
 			for (const sub of this.mapSubs!) {
@@ -382,17 +390,5 @@ export class SlangType {
 		}
 
 		return str;
-	}
-
-	public static Number(): SlangType {
-		return new SlangType(null, TypeIdentifier.Number);
-	}
-
-	public static String(): SlangType {
-		return new SlangType(null, TypeIdentifier.String);
-	}
-
-	public static Boolean(): SlangType {
-		return new SlangType(null, TypeIdentifier.Boolean);
 	}
 }

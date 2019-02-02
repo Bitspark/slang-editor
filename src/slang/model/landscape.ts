@@ -1,9 +1,10 @@
+import {SlangBehaviorSubject} from "../custom/events";
+import {SlangNode} from "../custom/nodes";
 import {AppModel} from "./app";
 import {BlueprintModel, BlueprintModelArgs} from "./blueprint";
-import {SlangNode} from "../custom/nodes";
-import {SlangBehaviorSubject} from "../custom/events";
 
-export type LandscapeModelArgs = {};
+// tslint:disable-next-line
+export interface LandscapeModelArgs {}
 
 export class LandscapeModel extends SlangNode {
 
@@ -14,7 +15,7 @@ export class LandscapeModel extends SlangNode {
 	}
 
 	public findBlueprint(fullName: string): BlueprintModel | undefined {
-		return this.scanChildNode(BlueprintModel, blueprint => blueprint.getFullName() === fullName);
+		return this.scanChildNode(BlueprintModel, (blueprint) => blueprint.getFullName() === fullName);
 	}
 
 	// Actions

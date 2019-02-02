@@ -1,19 +1,19 @@
+import {dia} from "jointjs";
 import m, {ClassComponent, CVnode} from "mithril";
-import {BlackBoxShape} from "../components/blackbox";
+import {GenericSpecifications} from "../../custom/generics";
+import {TypeIdentifier} from "../../custom/type";
 import {BlueprintModel} from "../../model/blueprint";
-import {ViewFrame} from "../frame";
-import {PaperView} from "./paper-view";
+import {LandscapeModel} from "../../model/landscape";
+import {XY} from "../../model/operator";
 import {GenericPortModel, PortModel} from "../../model/port";
+import {PropertyAssignments} from "../../model/property";
+import {AttachableComponent} from "../components/base";
+import {BlackBoxShape} from "../components/blackbox";
 import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {WhiteBoxComponent} from "../components/whitebox";
-import {dia} from "jointjs";
-import {AttachableComponent} from "../components/base";
-import {LandscapeModel} from "../../model/landscape";
-import {PropertyAssignments} from "../../model/property";
-import {GenericSpecifications} from "../../custom/generics";
-import {TypeIdentifier} from "../../custom/type";
-import {XY} from "../../model/operator";
+import {ViewFrame} from "../frame";
+import {PaperView} from "./paper-view";
 
 export class BlueprintView extends PaperView {
 	private readonly whiteBox: WhiteBoxComponent;
@@ -29,11 +29,15 @@ export class BlueprintView extends PaperView {
 		this.fit();
 	}
 
+	public getBlueprint(): BlueprintModel {
+		return this.blueprint;
+	}
+
 	protected createPaper(): dia.Paper {
 		const that = this;
 		const paper = super.createPaper({
 			linkPinning: true,
-			allowLink: function (linkView: dia.LinkView): boolean {
+			allowLink(linkView: dia.LinkView): boolean {
 				const magnetS = linkView.getEndMagnet("source");
 				if (!magnetS) {
 					return false;
@@ -71,12 +75,12 @@ export class BlueprintView extends PaperView {
 				if (port) {
 					const link = ConnectionComponent.createGhostLink(port);
 					link.on("remove", () => {
-						link.transition("attrs/.connection/stroke-opacity", 0.0);
+						link.transition("attrs/.connection/stroke-opacity", 0);
 					});
 					return link;
-				} else {
-					throw new Error(`could not find source port`);
 				}
+				throw new Error(`could not find source port`);
+
 			},
 			validateConnection: (_cellViewS: dia.CellView, magnetS: SVGElement, _cellViewT: dia.CellView, magnetT: SVGElement): boolean => {
 				const portS = that.getPortFromMagnet(magnetS);
@@ -89,7 +93,7 @@ export class BlueprintView extends PaperView {
 				}
 				return portS.canConnect(portT);
 			},
-			snapLinks: {radius: 75,},
+			snapLinks: {radius: 75},
 			markAvailable: true,
 		});
 		paper.on("tool:remove", (linkView: dia.LinkView): void => {
@@ -126,7 +130,7 @@ export class BlueprintView extends PaperView {
 			portInfo = this.whiteBox
 				.createComponent({x: x + 2, y: y + 2, align: "tl"})
 				.mount({
-					view: () => m(PortInfo, {port})
+					view: () => m(PortInfo, {port}),
 				});
 		});
 		this.whiteBox.onPortMouseLeave(() => portInfo.destroy());
@@ -179,22 +183,18 @@ export class BlueprintView extends PaperView {
 		const valueOperator = this.blueprint.createOperator(null, valueBlueprint, properties, generics, {position: xy});
 		valueOperator.getPortOut()!.connect(targetPort, false);
 	}
-
-	public getBlueprint(): BlueprintModel {
-		return this.blueprint;
-	}
 }
 
 export interface Attrs {
-	port: PortModel,
+	port: PortModel;
 }
 
 class PortInfo implements ClassComponent<Attrs> {
 	// Note that class methods cannot infer parameter types
-	oninit() {
+	public oninit() {
 	}
 
-	view({attrs}: CVnode<Attrs>) {
+	public view({attrs}: CVnode<Attrs>) {
 		const port = attrs.port;
 		const portType = TypeIdentifier[port.getTypeIdentifier()].toLowerCase();
 
@@ -203,8 +203,7 @@ class PortInfo implements ClassComponent<Attrs> {
 					class: `sl-type-${portType}`,
 				},
 				portType),
-			m(".sl-port-name", port.getName())
+			m(".sl-port-name", port.getName()),
 		);
 	}
 }
-

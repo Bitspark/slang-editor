@@ -1,14 +1,14 @@
-import {BlueprintModel, BlueprintType} from "./blueprint";
-import {OperatorPortModel, PortModelArgs} from "./port";
-import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
-import {PropertyAssignments, PropertyModel} from "./property";
-import {BlackBox} from "../custom/nodes";
-import {Connections} from "../custom/connections";
-import {GenericSpecifications} from "../custom/generics";
-import {SlangTypeValue} from "../custom/type";
 import {Subscription} from "rxjs";
+import {Connections} from "../custom/connections";
 import {SlangBehaviorSubject} from "../custom/events";
+import {GenericSpecifications} from "../custom/generics";
+import {BlackBox} from "../custom/nodes";
+import {SlangTypeValue} from "../custom/type";
 import {PropertyEvaluator} from "../custom/utils";
+import {BlueprintModel, BlueprintType} from "./blueprint";
+import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
+import {OperatorPortModel, PortModelArgs} from "./port";
+import {PropertyAssignments, PropertyModel} from "./property";
 
 export interface XY {
 	x: number;
@@ -27,10 +27,10 @@ export type OperatorModelArgs = {
 	properties: PropertyAssignments,
 	generics: GenericSpecifications,
 	geometry?: OperatorGeometry,
-}
+};
 
 export interface OperatorGeometry {
-	position: XY
+	position: XY;
 }
 
 export class OperatorModel extends BlackBox {
@@ -40,10 +40,10 @@ export class OperatorModel extends BlackBox {
 	private readonly name: string;
 	private readonly blueprint: BlueprintModel;
 	private geometry: OperatorGeometry | undefined;
-	
+
 	// Properties are one single subject
 	private readonly properties: SlangBehaviorSubject<PropertyAssignments>;
-	
+
 	// Generics have internal, fine-grained subjects
 	private readonly generics: GenericSpecifications;
 
@@ -83,7 +83,7 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public findDelegate(name: string): OperatorDelegateModel | undefined {
-		return this.scanChildNode(OperatorDelegateModel, delegate => delegate.getName() === name);
+		return this.scanChildNode(OperatorDelegateModel, (delegate) => delegate.getName() === name);
 	}
 
 	public hasProperties(): boolean {
@@ -102,11 +102,11 @@ export class OperatorModel extends BlackBox {
 		return this.properties.getValue().copy(this.generics);
 	}
 
-	public setProperties(properties: PropertyAssignments) {		
+	public setProperties(properties: PropertyAssignments) {
 		if (this.properties.getValue().isEqual(properties)) {
 			return;
 		}
-		
+
 		this.properties.next(properties);
 	}
 
@@ -132,7 +132,7 @@ export class OperatorModel extends BlackBox {
 
 		return connections;
 	}
-	
+
 	public getConnectionsTo(): Connections {
 		const connections = new Connections();
 
@@ -147,14 +147,14 @@ export class OperatorModel extends BlackBox {
 		return connections;
 	}
 
-	public get XY(): XY | undefined {
+	public get xy(): XY | undefined {
 		if (this.geometry) {
 			return this.geometry.position;
 		}
 		return undefined;
 	}
 
-	public set XY(xy: XY | undefined) {
+	public set xy(xy: XY | undefined) {
 		if (xy) {
 			if (!this.geometry) {
 				this.geometry = {position: xy};
@@ -163,10 +163,10 @@ export class OperatorModel extends BlackBox {
 			}
 		}
 	}
-	
+
 	public reconstruct(properties: PropertyAssignments) {
 		super.reconstructPorts(properties, this.blueprint.getPorts(), OperatorPortModel);
-		
+
 		const obsoleteDelegates = new Set(this.getDelegates());
 		for (const delegate of this.blueprint.getDelegates()) {
 			for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), properties)) {
@@ -187,14 +187,14 @@ export class OperatorModel extends BlackBox {
 				}
 			}
 		}
-		obsoleteDelegates.forEach(obsoleteDelegate => obsoleteDelegate.destroy());
+		obsoleteDelegates.forEach((obsoleteDelegate) => obsoleteDelegate.destroy());
 	}
 
 	// Actions
 	public createDelegate(args: OperatorDelegateModelArgs): OperatorDelegateModel {
 		return this.createChildNode(OperatorDelegateModel, args);
 	}
-	
+
 	public subscribePropertiesChanged(cb: (properties: PropertyAssignments) => void): Subscription {
 		return this.properties.subscribe(cb);
 	}

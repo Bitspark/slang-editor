@@ -1,7 +1,7 @@
 import {PropertyAssignments} from "../model/property";
 
 export class PropertyEvaluator {
-	public static expand(str: string, propAssigns?: PropertyAssignments): Array<string> {
+	public static expand(str: string, propAssigns?: PropertyAssignments): string[] {
 		let exprs = [str];
 
 		if (propAssigns) {
@@ -28,8 +28,8 @@ export class PropertyEvaluator {
 		return exprs;
 	}
 
-	private static expandExpr(exprPart: string, propAssigns: PropertyAssignments): Array<string> {
-		const vals: Array<string> = [];
+	private static expandExpr(exprPart: string, propAssigns: PropertyAssignments): string[] {
+		const vals: string[] = [];
 
 		if (!propAssigns.isDefined(exprPart)) {
 			return [];

@@ -1,22 +1,18 @@
-import {BlackBoxShape, OperatorBoxComponent} from "./blackbox";
-import {PaperView} from "../views/paper-view";
-import {OperatorModel} from "../../model/operator";
 import {BlueprintModel} from "../../model/blueprint";
-import {DashboardModuleComponent, PropertyFormDashboardModuleComponent,} from "./dashboard";
-
+import {OperatorModel} from "../../model/operator";
+import {PaperView} from "../views/paper-view";
+import {BlackBoxShape, OperatorBoxComponent} from "./blackbox";
+import {DashboardModuleComponent, PropertyFormDashboardModuleComponent} from "./dashboard";
 
 export class ComponentFactory {
 	private readonly blackBoxShape = new Map<BlueprintModel, typeof BlackBoxShape>();
 	private readonly opCompClasses = new Map<BlueprintModel, new (pv: PaperView, op: OperatorModel) => OperatorBoxComponent>();
 	private readonly opDashboardModuleClasses = new Map<BlueprintModel, Array<new() => DashboardModuleComponent>>();
 
-	public constructor() {
-	}
-
 	public createOperatorComponent(paperView: PaperView, operator: OperatorModel): OperatorBoxComponent {
 		const operatorCompClass = this.opCompClasses.get(operator.getBlueprint());
 		if (!operatorCompClass) {
-			//throw `missing operator component for "${operator.getBlueprint().getFullName()}"`
+			// throw `missing operator component for "${operator.getBlueprint().getFullName()}"`
 			return new OperatorBoxComponent(paperView, operator);
 		}
 		return new operatorCompClass(paperView, operator);
@@ -27,7 +23,7 @@ export class ComponentFactory {
 		if (!dashboardCompClass) {
 			return [PropertyFormDashboardModuleComponent];
 		}
-		return dashboardCompClass
+		return dashboardCompClass;
 	}
 
 	public getBlackBoxShape(blueprint: BlueprintModel): typeof BlackBoxShape {
@@ -35,7 +31,7 @@ export class ComponentFactory {
 		if (!newBlackBoxShape) {
 			return BlackBoxShape;
 		}
-		return newBlackBoxShape
+		return newBlackBoxShape;
 
 	}
 
@@ -52,4 +48,4 @@ export class ComponentFactory {
 	}
 }
 
-export const componentFactory = new ComponentFactory();
+export const COMPONENT_FACTORY = new ComponentFactory();

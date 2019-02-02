@@ -1,13 +1,13 @@
-import {PortComponent} from "./port";
 import {dia, g} from "jointjs";
-import {PortModel} from "../../model/port";
-import {TypeIdentifier} from "../../custom/type";
 import {Styles} from "../../../styles/studio";
+import {TypeIdentifier} from "../../custom/type";
+import {PortModel} from "../../model/port";
+import {PortComponent} from "./port";
 
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";
 
-function createPortItems(parent: PortGroupComponent, position: PortGroupPosition, port: PortModel, createGhostPorts: boolean, isBlackBox: boolean): Array<PortComponent> {
-	let portItems: Array<PortComponent> = [];
+function createPortItems(parent: PortGroupComponent, position: PortGroupPosition, port: PortModel, createGhostPorts: boolean, isBlackBox: boolean): PortComponent[] {
+	const portItems: PortComponent[] = [];
 
 	switch (port.getTypeIdentifier()) {
 		case TypeIdentifier.Map:
@@ -43,7 +43,61 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
  */
 export class PortGroupComponent {
 
-	private readonly ports: Array<PortComponent> = [];
+	// STATIC:
+
+	public static layoutFunction(portComponents: PortComponent[], position: PortGroupPosition, offset: number, space: number, isBlackBox: boolean): (ports: any[], elBBox: g.Rect, opt: any) => g.Point[] {
+		return (ports: PortComponent[], elBBox: g.Rect): g.Point[] => {
+			return ports.map((_port: PortComponent, index: number) => {
+				const count = ports.length;
+
+				let total = 0;
+				switch (position) {
+					case "top":
+					case "bottom":
+						total = elBBox.width;
+						break;
+					case "left":
+					case "right":
+						total = elBBox.height;
+						break;
+				}
+
+				const lengthAbs = (count - 1) * Styles.PortGroup.portSpacing;
+				const spaceAbs = space * total;
+				const offsetAbs = offset * total;
+				const positionAbs =
+					offsetAbs +
+					index * Styles.PortGroup.portSpacing +
+					(spaceAbs - lengthAbs) / 2;
+
+				let portPosition: g.PlainPoint = {x: 0, y: 0};
+
+				const portModel = portComponents[index].getModel();
+				const translate = portModel.isDirectionIn() ? Styles.PortGroup.translationIn : Styles.PortGroup.translationOut;
+				const factor = isBlackBox ? 1 : -1;
+
+				switch (position) {
+					case "top":
+						portPosition = {x: positionAbs, y: -factor * translate};
+						break;
+					case "bottom":
+						portPosition = {x: positionAbs, y: elBBox.height + factor * translate};
+						break;
+					case "left":
+						portPosition = {x: factor * translate, y: positionAbs};
+						break;
+					case "right":
+						portPosition = {x: elBBox.width - factor * translate, y: positionAbs};
+						break;
+				}
+
+				portComponents[index].setPosition(portPosition);
+				return new g.Point(portPosition);
+			});
+		};
+	}
+
+	private readonly ports: PortComponent[] = [];
 	private parentElement: dia.Element | null = null;
 	private portGroupElement: dia.Element.PortGroup = {};
 
@@ -53,7 +107,7 @@ export class PortGroupComponent {
 		private readonly groupPosition: PortGroupPosition,
 		start: number,
 		width: number,
-		private isBlackBox: boolean,) {
+		private isBlackBox: boolean) {
 		switch (groupPosition) {
 			case "top":
 				this.portGroupElement.position = PortGroupComponent.layoutFunction(this.ports, "top", start, width, isBlackBox) as any;
@@ -93,68 +147,14 @@ export class PortGroupComponent {
 			throw new Error(`need parent`);
 		}
 
-		parentElement.removePorts(this.ports.map(port => port.getPortElement()));
+		parentElement.removePorts(this.ports.map((port) => port.getPortElement()));
 
 		const ports = createPortItems(this, this.getGroupPosition(), this.port, drawGenerics, this.isBlackBox);
 
 		this.ports.length = 0;
 		this.ports.push.apply(this.ports, ports);
 
-		parentElement.addPorts(this.ports.map(port => port.getPortElement()));
-	}
-
-	// STATIC:
-
-	public static layoutFunction(portComponents: Array<PortComponent>, position: PortGroupPosition, offset: number, space: number, isBlackBox: boolean): (ports: Array<any>, elBBox: g.Rect, opt: any) => Array<g.Point> {
-		return function (ports: Array<PortComponent>, elBBox: g.Rect): Array<g.Point> {
-			return ports.map((_port: PortComponent, index: number, ports: Array<any>) => {
-				const count = ports.length;
-
-				let total = 0;
-				switch (position) {
-					case "top":
-					case "bottom":
-						total = elBBox.width;
-						break;
-					case "left":
-					case "right":
-						total = elBBox.height;
-						break;
-				}
-
-				const lengthAbs = (count - 1) * Styles.PortGroup.portSpacing;
-				const spaceAbs = space * total;
-				const offsetAbs = offset * total;
-				const positionAbs =
-					offsetAbs +
-					index * Styles.PortGroup.portSpacing +
-					(spaceAbs - lengthAbs) / 2;
-
-				let portPosition: g.PlainPoint = {x: 0, y: 0};
-
-				const portModel = portComponents[index].getModel();
-				const translate = portModel.isDirectionIn() ? Styles.PortGroup.TranslationIn : Styles.PortGroup.TranslationOut;
-				const factor = isBlackBox ? 1 : -1;
-
-				switch (position) {
-					case "top":
-						portPosition = {x: positionAbs, y: -factor * translate};
-						break;
-					case "bottom":
-						portPosition = {x: positionAbs, y: elBBox.height + factor * translate};
-						break;
-					case "left":
-						portPosition = {x: factor * translate, y: positionAbs};
-						break;
-					case "right":
-						portPosition = {x: elBBox.width - factor * translate, y: positionAbs};
-						break;
-				}
-
-				portComponents[index].setPosition(portPosition);
-				return new g.Point(portPosition);
-			});
-		};
+		parentElement.addPorts(this.ports.map((port) => port.getPortElement()));
 	}
 
 }
