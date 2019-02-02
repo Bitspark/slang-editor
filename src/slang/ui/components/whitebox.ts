@@ -561,7 +561,7 @@ export class WhiteBoxComponent extends CellComponent {
 				});
 			that.trackPortInfo(portInfo)
 		});
-		portOwnerComp.onPortMouseLeave((port: PortModel, x: number, y: number) => {
+		portOwnerComp.onPortMouseLeave(() => {
 			that.clearPortInfos()
 		});
 	}
