@@ -4,7 +4,7 @@ import {GenericSpecifications} from "./abstract/utils/generics";
 import {BlueprintModel, FAKE_GENERIC_VALUES} from "./blueprint";
 import {OperatorModel} from "./operator";
 import {BlueprintPortModel, OperatorPortModel} from "./port";
-import {StreamPortOwner} from "./stream-port-owner";
+import {StreamPortOwner} from "./stream";
 
 export interface BlueprintDelegateModelArgs { name: string; }
 

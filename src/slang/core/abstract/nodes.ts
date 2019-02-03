@@ -3,7 +3,7 @@ import {SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "./utils/events";
 // tslint:disable-next-line
 type Type<T> = Function & { prototype: T };
 
-export type Types<T> = [Type<T>, ...Array<Type<T>>] | Type<T>;
+type Types<T> = [Type<T>, ...Array<Type<T>>] | Type<T>;
 
 function getTypes<T>(types: Types<T>): [Type<T>, ...Array<Type<T>>] {
 	if (types instanceof Array) {

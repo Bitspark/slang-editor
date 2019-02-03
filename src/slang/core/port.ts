@@ -4,7 +4,7 @@ import {GenericPortModel, PortDirection, PortGenerics, PortModelArgs} from "./ab
 import {BlueprintFakeGeneric, BlueprintModel} from "./blueprint";
 import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
 import {OperatorModel} from "./operator";
-import {StreamPort} from "./stream-port";
+import {StreamPort} from "./stream";
 
 export class BlueprintPortModel extends GenericPortModel<BlueprintModel | BlueprintDelegateModel> {
 	public constructor(parent: BlueprintModel | BlueprintDelegateModel | BlueprintPortModel, args: PortModelArgs) {

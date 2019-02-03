@@ -1,8 +1,8 @@
 import {SlangType, TypeIdentifier} from "../../../definitions/type";
 
-import {GenericDelegateModel} from "../delegate";
+import {BlackBox} from "../blackbox";
 import {PortModel} from "../port";
-import {BlackBox, PortOwner} from "../port-owner";
+import {PortOwner} from "../port-owner";
 import {IStreamType} from "../stream";
 
 function typesStreamCompatible(streamTypeA: SlangType, streamTypeB: SlangType): boolean {
@@ -75,7 +75,7 @@ function collectDelegateStreams(stream: IStreamType): Set<IStreamType> {
 
 	const rootOwner = rootSource.getOwner();
 
-	if (!(rootOwner instanceof GenericDelegateModel)) {
+	if (!rootOwner.isDelegate()) {
 		return streams;
 	}
 

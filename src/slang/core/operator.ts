@@ -3,8 +3,8 @@ import {Subscription} from "rxjs";
 import {SlangTypeValue} from "../definitions/type";
 
 import {OperatorGeometry} from "../definitions/api";
+import {BlackBox} from "./abstract/blackbox";
 import {PortModelArgs} from "./abstract/port";
-import {BlackBox} from "./abstract/port-owner";
 import {Connections} from "./abstract/utils/connections";
 import {SlangBehaviorSubject} from "./abstract/utils/events";
 import {GenericSpecifications} from "./abstract/utils/generics";
@@ -12,7 +12,7 @@ import {PropertyAssignments, PropertyEvaluator, PropertyModel} from "./abstract/
 import {BlueprintModel, BlueprintType} from "./blueprint";
 import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
 import {OperatorPortModel} from "./port";
-import {StreamPortOwner} from "./stream-port-owner";
+import {StreamPortOwner} from "./stream";
 
 export interface XY {
 	x: number;

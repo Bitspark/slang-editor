@@ -2,8 +2,8 @@ import {OperatorGeometry} from "../definitions/api";
 import {SlangParsing} from "../definitions/parsing";
 import {SlangTypeValue, TypeIdentifier} from "../definitions/type";
 
+import {BlackBox} from "./abstract/blackbox";
 import {PortModel, PortModelArgs} from "./abstract/port";
-import {BlackBox} from "./abstract/port-owner";
 import {Connections} from "./abstract/utils/connections";
 import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "./abstract/utils/events";
 import {GenericSpecifications} from "./abstract/utils/generics";
@@ -12,7 +12,7 @@ import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
 import {LandscapeModel} from "./landscape";
 import {OperatorModel} from "./operator";
 import {BlueprintPortModel} from "./port";
-import {StreamPortOwner} from "./stream-port-owner";
+import {StreamPortOwner} from "./stream";
 
 export enum BlueprintType {
 	Local,

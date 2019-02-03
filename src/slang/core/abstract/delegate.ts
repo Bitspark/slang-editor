@@ -1,4 +1,5 @@
-import {BlackBox, PortOwner} from "./port-owner";
+import {BlackBox} from "./blackbox";
+import {PortOwner} from "./port-owner";
 import {IStreamPortOwner} from "./stream";
 import {Connections} from "./utils/connections";
 
@@ -29,6 +30,10 @@ export abstract class GenericDelegateModel<B extends BlackBox> extends PortOwner
 		}
 
 		return connections;
+	}
+
+	public isDelegate(): boolean {
+		return true;
 	}
 }
 

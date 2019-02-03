@@ -6,7 +6,7 @@ import {PortModel} from "../../core/abstract/port";
 import {PortOwner} from "../../core/abstract/port-owner";
 import {Connection} from "../../core/abstract/utils/connections";
 import {BlueprintModel} from "../../core/blueprint";
-import {StreamType} from "../../core/stream-type";
+import {StreamType} from "../../core/stream";
 import {TypeIdentifier} from "../../definitions/type";
 import {slangConnector} from "../link/connector";
 import {slangRouter} from "../link/router";

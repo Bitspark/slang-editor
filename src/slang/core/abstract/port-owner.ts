@@ -1,8 +1,6 @@
-import {DelegateModel} from "./delegate";
 import {SlangNode} from "./nodes";
 import {GenericPortModel, PortDirection, PortModel, PortModelArgs} from "./port";
 import {IStreamPortOwner} from "./stream";
-import {GenericSpecifications} from "./utils/generics";
 import {PropertyAssignments, PropertyEvaluator} from "./utils/properties";
 
 export abstract class PortOwner extends SlangNode {
@@ -50,18 +48,8 @@ export abstract class PortOwner extends SlangNode {
 		obsoletePorts.forEach((obsoletePort) => obsoletePort.destroy());
 	}
 
+	public abstract isDelegate(): boolean;
+
 	protected abstract createPort(args: PortModelArgs): PortModel;
-
-}
-
-export abstract class BlackBox extends PortOwner {
-
-	public abstract getDisplayName(): string;
-
-	public abstract findDelegate(name: string): DelegateModel | undefined;
-
-	public abstract getDelegates(): IterableIterator<DelegateModel>;
-
-	public abstract getGenerics(): GenericSpecifications;
 
 }
