@@ -1,11 +1,11 @@
 import {Subscription} from "rxjs";
 
-import {SlangType, TypeIdentifier} from "../../../definitions/type";
-import {StreamPort} from "../../stream/stream";
-import {canConnectTo} from "../../utils/connection-check";
-import {BlackBox} from "./blackbox";
+import {SlangType, TypeIdentifier} from "../../definitions/type";
+
 import {SlangNode} from "./nodes";
-import {PortOwner} from "./port-owner";
+import {BlackBox, PortOwner} from "./port-owner";
+import {IStreamPort} from "./stream";
+import {canConnectTo} from "./utils/connection-check";
 import {Connections} from "./utils/connections";
 import {SlangSubject} from "./utils/events";
 import {GenericSpecifications} from "./utils/generics";
@@ -38,14 +38,14 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	private streamDepth = 0;
 
 	// Mixins
-	private readonly streamPort: StreamPort;
+	private readonly streamPort: IStreamPort;
 
-	protected constructor(parent: GenericPortModel<O> | O, {type, name, direction}: PortModelArgs, portCtor: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel, protected readonly generics: PortGenerics | null) {
+	protected constructor(parent: GenericPortModel<O> | O, {type, name, direction}: PortModelArgs, portCtor: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel, protected readonly generics: PortGenerics | null, streamPortCtor: new(port: PortModel) => IStreamPort) {
 		super(parent);
 		this.name = name;
 		this.direction = direction;
 
-		this.streamPort = new StreamPort(this);
+		this.streamPort = new streamPortCtor(this);
 		this.reconstruct(type, portCtor, direction);
 
 		this.subscribeConnected((port) => {
@@ -155,7 +155,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		return this.connectedWith.values();
 	}
 
-	public getStreamPort(): StreamPort {
+	public getStreamPort(): IStreamPort {
 		return this.streamPort;
 	}
 
@@ -554,10 +554,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			return this;
 		}
 
-		const {type, portId} = this.streamPort.createGenericType(other);
+		// const {type, portId} = this.streamPort.createGenericType(other);
 
-		specifications.specify(identifier, type);
-		return this.findGenericPort(portId);
+		specifications.specify(identifier, other.getType());
+		return this.findGenericPort([]);
 	}
 
 	private connectDirectlyTo(destination: PortModel, createGenerics: boolean): void {

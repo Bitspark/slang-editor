@@ -1,5 +1,5 @@
-import {OperatorGeometry} from "../core/model/operator";
 import {SlangTypeValue} from "./type";
+import {XY} from "../core/operator";
 
 export interface TypeDefApiResponse {
 	type: "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic";
@@ -42,6 +42,10 @@ export interface GenericSpecificationsApiResponse {
 export interface DeploymentStatusApiResponse {
 	url: string;
 	handle: string;
+}
+
+export interface OperatorGeometry {
+	position: XY;
 }
 
 export interface OperatorApiResponse {

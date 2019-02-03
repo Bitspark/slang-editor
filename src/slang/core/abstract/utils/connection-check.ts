@@ -1,9 +1,9 @@
-import {SlangType, TypeIdentifier} from "../../definitions/type";
-import {PortModel} from "../model/abstract/port";
-import {PortOwner} from "../model/abstract/port-owner";
-import {OperatorDelegateModel} from "../model/delegate";
-import {OperatorModel} from "../model/operator";
-import {containsMisplacedStreamTypeTo, StreamType} from "../stream/stream";
+import {SlangType, TypeIdentifier} from "../../../definitions/type";
+
+import {GenericDelegateModel} from "../delegate";
+import {PortModel} from "../port";
+import {BlackBox, PortOwner} from "../port-owner";
+import {IStreamType} from "../stream";
 
 function typesStreamCompatible(streamTypeA: SlangType, streamTypeB: SlangType): boolean {
 	const subA = streamTypeA.getStreamSub();
@@ -51,17 +51,17 @@ function typesCompatibleTo(sourceType: SlangType, destinationType: SlangType): b
 	return sourceType.getTypeIdentifier() === destinationType.getTypeIdentifier();
 }
 
-function fluentStreamCompatibleTo(fluentStream: StreamType, stream: StreamType): boolean {
+function fluentStreamCompatibleTo(fluentStream: IStreamType, stream: IStreamType): boolean {
 	if (stream.hasPlaceholderRoot()) {
 		// Both streams are fluent
-		return !containsMisplacedStreamTypeTo(fluentStream, stream) && !containsMisplacedStreamTypeTo(stream, fluentStream);
+		return !stream.containsMisplacedStreamTypeTo(fluentStream) && !fluentStream.containsMisplacedStreamTypeTo(stream);
 	}
 	// Non-fluent stream must have at least the depth of the fluent stream
 	return stream.getStreamDepth() >= fluentStream.getStreamDepth();
 }
 
-function collectDelegateStreams(stream: StreamType): Set<StreamType> {
-	const streams = new Set<StreamType>();
+function collectDelegateStreams(stream: IStreamType): Set<IStreamType> {
+	const streams = new Set<IStreamType>();
 
 	const rootStream = stream.getRootStream();
 	if (!rootStream) {
@@ -75,11 +75,11 @@ function collectDelegateStreams(stream: StreamType): Set<StreamType> {
 
 	const rootOwner = rootSource.getOwner();
 
-	if (!(rootOwner instanceof OperatorDelegateModel)) {
+	if (!(rootOwner instanceof GenericDelegateModel)) {
 		return streams;
 	}
 
-	const rootOperator = rootOwner.getAncestorNode(OperatorModel);
+	const rootOperator = rootOwner.getAncestorNode(BlackBox);
 	if (!rootOperator) {
 		return streams;
 	}
@@ -97,14 +97,14 @@ function collectDelegateStreams(stream: StreamType): Set<StreamType> {
 	return streams;
 }
 
-function delegateStreamCompatibleTo(rootStream: StreamType | null, stream: StreamType | null): boolean {
+function delegateStreamCompatibleTo(rootStream: IStreamType | null, stream: IStreamType | null): boolean {
 	if (!rootStream || !stream) {
 		return true;
 	}
 
 	const rootStreams = collectDelegateStreams(rootStream);
 
-	let baseStream: StreamType | null = stream;
+	let baseStream: IStreamType | null = stream;
 	while (baseStream) {
 		if (rootStreams.has(baseStream)) {
 			return false;
@@ -115,11 +115,11 @@ function delegateStreamCompatibleTo(rootStream: StreamType | null, stream: Strea
 	return true;
 }
 
-function delegateStreamCompatible(streamA: StreamType, streamB: StreamType): boolean {
+function delegateStreamCompatible(streamA: IStreamType, streamB: IStreamType): boolean {
 	return delegateStreamCompatibleTo(streamA, streamB) && delegateStreamCompatibleTo(streamB, streamA);
 }
 
-function streamsCompatible(streamA: StreamType | null, streamB: StreamType | null): boolean {
+function streamsCompatible(streamA: IStreamType | null, streamB: IStreamType | null): boolean {
 	if (!streamA || !streamB) {
 		return !streamA && !streamB;
 	}
@@ -182,8 +182,8 @@ function streamsGenericLikeCompatible(portA: PortModel, portB: PortModel): boole
 
 }
 
-function streamsGenericLikeCompatibleTo(streamType: StreamType, genericStreamType: StreamType): boolean {
-	return genericStreamType.getStreamStep(streamType)[1] !== -1;
+function streamsGenericLikeCompatibleTo(streamType: IStreamType, genericStreamType: IStreamType): boolean {
+	return genericStreamType.compatibleTo(streamType);
 }
 
 export function canConnectTo(source: PortModel, destination: PortModel): boolean {

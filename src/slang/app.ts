@@ -1,4 +1,4 @@
-import {AppModel} from "./core/model/app";
+import {AppModel} from "./core/app";
 import {ComponentFactory} from "./ui/components/factory";
 
 export abstract class SlangApp {

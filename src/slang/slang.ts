@@ -1,7 +1,7 @@
 import "../styles/studio.scss";
 
-import {AppModel} from "./core/model/app";
-import {BlueprintModel, BlueprintType} from "./core/model/blueprint";
+import {AppModel} from "./core/app";
+import {BlueprintModel, BlueprintType} from "./core/blueprint";
 import {ViewFrame} from "./ui/frame";
 import {BlueprintView} from "./ui/views/blueprint";
 import {LandscapeView} from "./ui/views/landscape";

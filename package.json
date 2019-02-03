@@ -9,7 +9,8 @@
     "build-embedded": "webpack --config webpack/webpack.config.prod.js --colors --env.slang-mode embedded",
     "lint-fix": "tslint --fix -p tsconfig.json -c tslint.json src/**/*.ts -t verbose",
     "lint": "tslint -p tsconfig.json -c tslint.json src/**/*.ts",
-    "deps": "dependency-cruise --exclude \"^node_modules\" --validate -- ./src/slang",
+    "deps": "dependency-cruise --exclude \"^node_modules\" --validate .dependency-cruiser.json ./src/slang",
+    "deps-svg": "dependency-cruise --exclude \"^node_modules\" --output-type dot -- ./src/slang | dot -T svg > dependencygraph.svg",
     "test": "jasmine-ts"
   },
   "repository": {

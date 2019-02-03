@@ -1,6 +1,6 @@
 import {SlangApp} from "../../../slang/app";
-import {AppModel} from "../../../slang/core/model/app";
-import {BlueprintInstance, BlueprintModel} from "../../../slang/core/model/blueprint";
+import {AppModel} from "../../../slang/core/app";
+import {BlueprintInstance, BlueprintModel} from "../../../slang/core/blueprint";
 import {ApiService} from "../../../slang/definitions/api";
 import {SlangTypeValue} from "../../../slang/definitions/type";
 import {ComponentFactory} from "../../../slang/ui/components/factory";

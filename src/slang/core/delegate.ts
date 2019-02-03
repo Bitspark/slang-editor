@@ -4,13 +4,14 @@ import {GenericSpecifications} from "./abstract/utils/generics";
 import {BlueprintModel, FAKE_GENERIC_VALUES} from "./blueprint";
 import {OperatorModel} from "./operator";
 import {BlueprintPortModel, OperatorPortModel} from "./port";
+import {StreamPortOwner} from "./stream-port-owner";
 
 export interface BlueprintDelegateModelArgs { name: string; }
 
 export class BlueprintDelegateModel extends GenericDelegateModel<BlueprintModel> {
 	private readonly fakeGenerics = new GenericSpecifications(FAKE_GENERIC_VALUES);
 	constructor(owner: BlueprintModel, {name}: BlueprintDelegateModelArgs) {
-		super(owner, name, false);
+		super(owner, name, false, StreamPortOwner);
 	}
 
 	public createPort(args: PortModelArgs): BlueprintPortModel {
@@ -34,7 +35,7 @@ export interface OperatorDelegateModelArgs { name: string; }
 
 export class OperatorDelegateModel extends GenericDelegateModel<OperatorModel> {
 	constructor(owner: OperatorModel, {name}: OperatorDelegateModelArgs) {
-		super(owner, name, true);
+		super(owner, name, true, StreamPortOwner);
 	}
 
 	public createPort(args: PortModelArgs): OperatorPortModel {

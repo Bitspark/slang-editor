@@ -1,7 +1,10 @@
 import {Subscription} from "rxjs";
-import {SlangTypeValue} from "../../definitions/type";
-import {BlackBox} from "./abstract/blackbox";
+
+import {SlangTypeValue} from "../definitions/type";
+
+import {OperatorGeometry} from "../definitions/api";
 import {PortModelArgs} from "./abstract/port";
+import {BlackBox} from "./abstract/port-owner";
 import {Connections} from "./abstract/utils/connections";
 import {SlangBehaviorSubject} from "./abstract/utils/events";
 import {GenericSpecifications} from "./abstract/utils/generics";
@@ -9,6 +12,7 @@ import {PropertyAssignments, PropertyEvaluator, PropertyModel} from "./abstract/
 import {BlueprintModel, BlueprintType} from "./blueprint";
 import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
 import {OperatorPortModel} from "./port";
+import {StreamPortOwner} from "./stream-port-owner";
 
 export interface XY {
 	x: number;
@@ -29,10 +33,6 @@ export type OperatorModelArgs = {
 	geometry?: OperatorGeometry,
 };
 
-export interface OperatorGeometry {
-	position: XY;
-}
-
 export class OperatorModel extends BlackBox {
 
 	// Topics
@@ -48,7 +48,7 @@ export class OperatorModel extends BlackBox {
 	private readonly generics: GenericSpecifications;
 
 	constructor(parent: BlueprintModel, args: OperatorModelArgs) {
-		super(parent, false);
+		super(parent, false, StreamPortOwner);
 		this.name = args.name;
 		this.blueprint = args.blueprint;
 

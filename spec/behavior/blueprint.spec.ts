@@ -1,6 +1,6 @@
-import {AppModel} from "../../src/slang/core/model/app";
-import {LandscapeModel} from "../../src/slang/core/model/landscape";
-import {BlueprintType} from "../../src/slang/core/model/blueprint";
+import {AppModel} from "../../src/slang/core/app";
+import {LandscapeModel} from "../../src/slang/core/landscape";
+import {BlueprintType} from "../../src/slang/core/blueprint";
 
 import {TestStorageApp} from "../helpers/TestStorageApp";
 import data from "../resources/definitions.json";

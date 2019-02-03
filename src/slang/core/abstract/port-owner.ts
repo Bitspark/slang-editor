@@ -1,15 +1,17 @@
-import {StreamPortOwner} from "../../stream/stream";
+import {DelegateModel} from "./delegate";
 import {SlangNode} from "./nodes";
 import {GenericPortModel, PortDirection, PortModel, PortModelArgs} from "./port";
+import {IStreamPortOwner} from "./stream";
+import {GenericSpecifications} from "./utils/generics";
 import {PropertyAssignments, PropertyEvaluator} from "./utils/properties";
 
 export abstract class PortOwner extends SlangNode {
 
-	private readonly streamPortOwner: StreamPortOwner;
+	private readonly streamPortOwner: IStreamPortOwner;
 
-	protected constructor(parent: SlangNode, streamSource: boolean) {
+	protected constructor(parent: SlangNode, streamSource: boolean, streamPortCtor: new(portOwner: PortOwner, isSource: boolean) => IStreamPortOwner) {
 		super(parent);
-		this.streamPortOwner = new StreamPortOwner(this, streamSource);
+		this.streamPortOwner = new streamPortCtor(this, streamSource);
 		this.streamPortOwner.initialize();
 	}
 
@@ -25,7 +27,7 @@ export abstract class PortOwner extends SlangNode {
 		return this.getChildNodes(GenericPortModel);
 	}
 
-	public getStreamPortOwner(): StreamPortOwner {
+	public getStreamPortOwner(): IStreamPortOwner {
 		return this.streamPortOwner;
 	}
 
@@ -49,5 +51,17 @@ export abstract class PortOwner extends SlangNode {
 	}
 
 	protected abstract createPort(args: PortModelArgs): PortModel;
+
+}
+
+export abstract class BlackBox extends PortOwner {
+
+	public abstract getDisplayName(): string;
+
+	public abstract findDelegate(name: string): DelegateModel | undefined;
+
+	public abstract getDelegates(): IterableIterator<DelegateModel>;
+
+	public abstract getGenerics(): GenericSpecifications;
 
 }

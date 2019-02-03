@@ -1,15 +1,18 @@
-import {SlangParsing} from "../../definitions/parsing";
-import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
-import {BlackBox} from "./abstract/blackbox";
+import {OperatorGeometry} from "../definitions/api";
+import {SlangParsing} from "../definitions/parsing";
+import {SlangTypeValue, TypeIdentifier} from "../definitions/type";
+
 import {PortModel, PortModelArgs} from "./abstract/port";
+import {BlackBox} from "./abstract/port-owner";
 import {Connections} from "./abstract/utils/connections";
 import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "./abstract/utils/events";
 import {GenericSpecifications} from "./abstract/utils/generics";
 import {PropertyAssignments, PropertyModel} from "./abstract/utils/properties";
 import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
 import {LandscapeModel} from "./landscape";
-import {OperatorGeometry, OperatorModel} from "./operator";
+import {OperatorModel} from "./operator";
 import {BlueprintPortModel} from "./port";
+import {StreamPortOwner} from "./stream-port-owner";
 
 export enum BlueprintType {
 	Local,
@@ -133,7 +136,7 @@ export class BlueprintModel extends BlackBox {
 	private genericIdentifiers: Set<string>;
 
 	constructor(parent: LandscapeModel, {fullName, type, geometry}: BlueprintModelArgs) {
-		super(parent, true);
+		super(parent, true, StreamPortOwner);
 		this.fullName = fullName;
 		this.type = type;
 		this.hierarchy = fullName.split(".");

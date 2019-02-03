@@ -6,17 +6,18 @@ import {
 	PropertyApiResponse,
 	PropertyAssignmentsApiResponse,
 	TypeDefApiResponse,
-} from "../../definitions/api";
-import {SlangType, TypeIdentifier} from "../../definitions/type";
-import {PortDirection, PortModel} from "../model/abstract/port";
-import {Connection} from "../model/abstract/utils/connections";
-import {GenericSpecifications} from "../model/abstract/utils/generics";
-import {PropertyAssignment, PropertyAssignments, PropertyModel} from "../model/abstract/utils/properties";
-import {BlueprintModel, BlueprintType} from "../model/blueprint";
-import {BlueprintDelegateModel, OperatorDelegateModel} from "../model/delegate";
-import {LandscapeModel} from "../model/landscape";
-import {OperatorModel} from "../model/operator";
-import {BlueprintPortModel, OperatorPortModel} from "../model/port";
+} from "../definitions/api";
+import {SlangType, TypeIdentifier} from "../definitions/type";
+
+import {PortDirection, PortModel} from "./abstract/port";
+import {Connection} from "./abstract/utils/connections";
+import {GenericSpecifications} from "./abstract/utils/generics";
+import {PropertyAssignment, PropertyAssignments, PropertyModel} from "./abstract/utils/properties";
+import {BlueprintModel, BlueprintType} from "./blueprint";
+import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
+import {LandscapeModel} from "./landscape";
+import {OperatorModel} from "./operator";
+import {BlueprintPortModel, OperatorPortModel} from "./port";
 
 /*
 \
