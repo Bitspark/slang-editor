@@ -1,8 +1,13 @@
+// tslint:disable:no-circular-imports
+
 import {dia, g} from "jointjs";
 
 import {Styles} from "../../../styles/studio";
-import {PortModel} from "../../core/abstract/port";
+
 import {TypeIdentifier} from "../../definitions/type";
+
+import {PortModel} from "../../core/abstract/port";
+
 import {PortComponent} from "./port";
 
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";

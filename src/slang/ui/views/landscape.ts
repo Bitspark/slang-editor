@@ -1,9 +1,11 @@
 import {dia, shapes} from "jointjs";
 
+import {SlangType, TypeIdentifier} from "../../definitions/type";
+
 import {PortDirection} from "../../core/abstract/port";
 import {BlueprintModel, BlueprintType} from "../../core/blueprint";
 import {LandscapeModel} from "../../core/landscape";
-import {SlangType, TypeIdentifier} from "../../definitions/type";
+
 import {BlackBoxShape, BlueprintBoxComponent} from "../components/blackbox";
 import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";

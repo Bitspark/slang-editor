@@ -1,13 +1,17 @@
+// tslint:disable:no-circular-imports
+
 import {dia} from "jointjs";
 import m, {ClassComponent, CVnode} from "mithril";
+
+import {XY} from "../../definitions/api";
+import {TypeIdentifier} from "../../definitions/type";
 
 import {GenericPortModel, PortModel} from "../../core/abstract/port";
 import {GenericSpecifications} from "../../core/abstract/utils/generics";
 import {PropertyAssignments} from "../../core/abstract/utils/properties";
 import {BlueprintModel} from "../../core/blueprint";
 import {LandscapeModel} from "../../core/landscape";
-import {XY} from "../../core/operator";
-import {TypeIdentifier} from "../../definitions/type";
+
 import {AttachableComponent} from "../components/base";
 import {BlackBoxShape} from "../components/blackbox";
 import {BlueprintSelectComponent} from "../components/blueprint-select";

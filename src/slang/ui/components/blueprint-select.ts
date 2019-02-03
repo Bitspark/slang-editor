@@ -3,8 +3,7 @@ import {ClassComponent, CVnode} from "mithril";
 
 import {BlueprintModel} from "../../core/blueprint";
 import {LandscapeModel} from "../../core/landscape";
-import {XY} from "../../core/operator";
-import {OperatorGeometry} from "../../definitions/api";
+import {OperatorGeometry, XY} from "../../definitions/api";
 import {BlueprintView} from "../views/blueprint";
 import {AttachableComponent, CellComponent} from "./base";
 import {BlackBoxShape} from "./blackbox";

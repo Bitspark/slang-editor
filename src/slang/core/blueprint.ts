@@ -1,3 +1,5 @@
+// tslint:disable:no-circular-imports
+
 import {OperatorGeometry} from "../definitions/api";
 import {SlangParsing} from "../definitions/parsing";
 import {SlangTypeValue, TypeIdentifier} from "../definitions/type";

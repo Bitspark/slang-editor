@@ -1,5 +1,9 @@
 import {SlangTypeValue} from "./type";
-import {XY} from "../core/operator";
+
+export interface XY {
+	x: number;
+	y: number;
+}
 
 export interface TypeDefApiResponse {
 	type: "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic";

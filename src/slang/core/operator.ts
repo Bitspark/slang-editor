@@ -1,8 +1,10 @@
+// tslint:disable:no-circular-imports
+
 import {Subscription} from "rxjs";
 
 import {SlangTypeValue} from "../definitions/type";
 
-import {OperatorGeometry} from "../definitions/api";
+import {OperatorGeometry, XY} from "../definitions/api";
 import {BlackBox} from "./abstract/blackbox";
 import {PortModelArgs} from "./abstract/port";
 import {Connections} from "./abstract/utils/connections";
@@ -13,11 +15,6 @@ import {BlueprintModel, BlueprintType} from "./blueprint";
 import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
 import {OperatorPortModel} from "./port";
 import {StreamPortOwner} from "./stream";
-
-export interface XY {
-	x: number;
-	y: number;
-}
 
 export type OperatorModelArgs = {
 	name: string,

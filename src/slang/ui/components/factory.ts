@@ -1,5 +1,8 @@
+// tslint:disable:no-circular-imports
+
 import {BlueprintModel} from "../../core/blueprint";
 import {OperatorModel} from "../../core/operator";
+
 import {PaperView} from "../views/paper-view";
 import {BlackBoxShape, OperatorBoxComponent} from "./blackbox";
 import {DashboardModuleComponent, PropertyFormDashboardModuleComponent} from "./dashboard";

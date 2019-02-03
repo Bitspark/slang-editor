@@ -1,3 +1,5 @@
+// tslint:disable:no-circular-imports
+
 import {Subscription} from "rxjs";
 
 import {SlangType, TypeIdentifier} from "../../definitions/type";
