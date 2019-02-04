@@ -4,7 +4,8 @@ import {AppModel} from "./app";
 import {BlueprintModel, BlueprintModelArgs} from "./blueprint";
 
 // tslint:disable-next-line
-export interface LandscapeModelArgs {}
+export interface LandscapeModelArgs {
+}
 
 export class LandscapeModel extends SlangNode {
 
@@ -14,8 +15,12 @@ export class LandscapeModel extends SlangNode {
 		super(parent);
 	}
 
-	public findBlueprint(fullName: string): BlueprintModel | undefined {
-		return this.scanChildNode(BlueprintModel, (blueprint) => blueprint.getFullName() === fullName);
+	public findBlueprint(uuid: string): BlueprintModel | undefined {
+		if (uuid.indexOf(" ") >= 0 || uuid.split('-').length !== 5) {
+			// Valid uuid e.g.: "dc1aa556-d62e-4e07-adbb-53dc317481b0"
+			throw `given blueprint uuid is not valid: ${uuid}`;
+		}
+		return this.scanChildNode(BlueprintModel, (blueprint) => uuid === blueprint.getUUID());
 	}
 
 	// Actions

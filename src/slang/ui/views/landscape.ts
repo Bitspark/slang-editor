@@ -1,5 +1,6 @@
 import {dia, shapes} from "jointjs";
 
+
 import {SlangType} from "../../definitions/type";
 
 import {PortDirection} from "../../core/abstract/port";
@@ -9,6 +10,7 @@ import {LandscapeModel} from "../../core/models/landscape";
 import {BlackBoxShape, BlueprintBoxComponent} from "../components/blackbox";
 import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";
+import uuidv4 = require("uuid/v4");
 
 export class LandscapeView extends PaperView {
 
@@ -117,6 +119,7 @@ export class LandscapeView extends PaperView {
 
 		rect.on("pointerup", () => {
 			const newBlueprint = this.landscape.createBlueprint({
+				uuid: uuidv4(),
 				fullName: `Unnamed${new Date().getTime()}`,
 				type: BlueprintType.Local,
 			});

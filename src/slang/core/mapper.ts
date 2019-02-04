@@ -35,6 +35,8 @@ function iter2map<S, T>(iter: Iterable<S>, process: (result: T, curr: S) => void
 export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApiResponse {
 	const blueprintGeometry = blueprint.getGeometry();
 	return {
+		id: blueprint.getUUID(),
+		name: blueprint.getFullName(),
 		geometry: blueprintGeometry,
 		operators: iter2map<OperatorModel, { [_: string]: OperatorApiResponse }>(blueprint.getOperators(),
 			(result, operator) => {
@@ -196,11 +198,12 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: BlueprintAp
 			throw new Error(`unknown blueprint type '${bpData.type}'`);
 		}
 
-		const services = bpData.def.services;
-		const bpGeo = bpData.def.geometry;
+		const bpDef = bpData.def;
+		const services = bpDef.services;
+		const bpGeo = bpDef.geometry;
 		const geometry = (services && bpGeo) ? Object.assign(bpGeo, {port: services.main.geometry!}) : undefined;
 
-		const blueprint = landscape.createBlueprint({fullName: bpData.name, type, geometry});
+		const blueprint = landscape.createBlueprint({uuid: bpDef.id, fullName: bpDef.name, type, geometry});
 		if (services) {
 			setBlueprintServices(blueprint, services);
 		}
