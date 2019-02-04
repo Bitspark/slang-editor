@@ -1,5 +1,30 @@
 [
   {
+    "name": "Value",
+    "def": {
+      "services": {
+        "main": {
+          "in": {
+            "type": "trigger"
+          },
+          "out": {
+            "type": "generic",
+            "generic": "valueType"
+          }
+        }
+      },
+      "properties": {
+        "value": {
+          "type": "generic",
+          "generic": "valueType"
+        }
+      },
+      "operators": {},
+      "connections": {}
+    },
+    "type": "local"
+  },
+  {
     "name": "StringToString",
     "def": {
       "services": {
@@ -17,7 +42,6 @@
     },
     "type": "local"
   },
-
   {
     "name": "GenericToGeneric",
     "def": {

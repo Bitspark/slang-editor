@@ -147,18 +147,18 @@ export class PropertyEvaluator {
 		return exprs;
 	}
 
-	public static expandType(type: SlangType, propAssigns: PropertyAssignments): SlangType {
+	public static expandType(type: SlangType, properties: PropertyAssignments): SlangType {
 		const expandedType = new SlangType(type.getParent(), type.getTypeIdentifier());
 		switch (type.getTypeIdentifier()) {
 			case TypeIdentifier.Map:
 				for (const [subName, subType] of type.getMapSubs()) {
-					for (const expSubName of PropertyEvaluator.expand(subName, propAssigns)) {
-						expandedType.addMapSub(expSubName, PropertyEvaluator.expandType(subType, (propAssigns)));
+					for (const expSubName of PropertyEvaluator.expand(subName, properties)) {
+						expandedType.addMapSub(expSubName, PropertyEvaluator.expandType(subType, properties));
 					}
 				}
 				break;
 			case TypeIdentifier.Stream:
-				expandedType.setStreamSub(PropertyEvaluator.expandType(type.getStreamSub(), (propAssigns)));
+				expandedType.setStreamSub(PropertyEvaluator.expandType(type.getStreamSub(), properties));
 				break;
 			case TypeIdentifier.Generic:
 				expandedType.setGenericIdentifier(type.getGenericIdentifier());
