@@ -46,25 +46,11 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		this.name = name;
 		this.direction = direction;
 
+		this.subscribe();
+
 		this.streamPort = new StreamPort(this);
 		this.reconstruct(type, portCtor, direction);
 		this.streamPort.initialize();
-
-		this.subscribeConnected((port) => {
-			this.connectedWith.push(port);
-		});
-
-		this.subscribeDisconnected((port) => {
-			const idxT = this.connectedWith.indexOf(port);
-			if (idxT === -1) {
-				throw new Error(`inconsistency: not connected with that port`);
-			}
-			this.connectedWith.splice(idxT, 1);
-		});
-
-		this.subscribeDestroyed(() => {
-			this.disconnectAll();
-		});
 	}
 
 	public reconstruct(type: SlangType, portCtor: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel, direction: PortDirection, generic: boolean = false): void {
@@ -470,7 +456,25 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 	// Private methods
 
-	private subscribeGenerics(portCtor: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel) {
+	private subscribe(): void {
+		this.subscribeConnected((port) => {
+			this.connectedWith.push(port);
+		});
+
+		this.subscribeDisconnected((port) => {
+			const idxT = this.connectedWith.indexOf(port);
+			if (idxT === -1) {
+				throw new Error(`inconsistency: not connected with that port`);
+			}
+			this.connectedWith.splice(idxT, 1);
+		});
+
+		this.subscribeDestroyed(() => {
+			this.disconnectAll();
+		});
+	}
+
+	private subscribeGenerics(portCtor: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel): void {
 		const fetchedGenerics = this.fetchGenerics();
 		const specifications = fetchedGenerics.specifications;
 		const identifier = fetchedGenerics.identifier;
