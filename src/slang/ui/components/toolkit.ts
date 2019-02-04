@@ -1,11 +1,11 @@
 import m, {ClassComponent, CVnode, CVnodeDOM} from "mithril";
 
 export interface MithrilMouseEvent extends MouseEvent {
-	redraw: boolean
+	redraw: boolean;
 }
 
 export interface MithrilKeyboardEvent extends KeyboardEvent {
-	redraw: boolean
+	redraw: boolean;
 }
 
 export enum Keypress {
@@ -16,12 +16,12 @@ export enum Keypress {
 
 export namespace Tk {
 	interface ModalAttrs {
-		title?: string,
-		onClose?: () => void
+		title?: string;
+		onClose?: () => void;
 	}
 
 	export class Modal implements ClassComponent<ModalAttrs> {
-		view({children, attrs}: CVnode<ModalAttrs>) {
+		public view({children, attrs}: CVnode<ModalAttrs>) {
 			return m(".sl-modal",
 				m(".sl-modal-content",
 					attrs.title ? m("span", attrs.title) : undefined,
@@ -32,38 +32,38 @@ export namespace Tk {
 								attrs.onClose!();
 							} : undefined,
 						},
-						"X"
+						"X",
 					),
 					children));
 		}
 	}
 
 	export class Container implements ClassComponent<{}> {
-		view({children, attrs}: CVnode<any>) {
+		public view({children, attrs}: CVnode<any>) {
 			return m(".sl-container", attrs, children);
 		}
 	}
 
 	export class Box implements ClassComponent<{}> {
-		view({children}: CVnode<{}>) {
+		public view({children}: CVnode<{}>) {
 			return m(".sl-box", children);
 		}
 	}
 
 	interface ListAttrs {
-		class?: string
-		onMouseEnter?: (e: MithrilMouseEvent) => void
-		onMouseLeave?: (e: MithrilMouseEvent) => void
+		class?: string;
+		onMouseEnter?: (e: MithrilMouseEvent) => void;
+		onMouseLeave?: (e: MithrilMouseEvent) => void;
 		onKey?: {
 			[keyevent in keyof Keypress]: (e: MithrilKeyboardEvent) => void
-		}
+		};
 	}
 
 	export class List implements ClassComponent<ListAttrs> {
-		oninit() {
+		public oninit() {
 		}
 
-		view({children, attrs}: CVnode<ListAttrs>) {
+		public view({children, attrs}: CVnode<ListAttrs>) {
 			return m("ul.sl-list", {
 				class: attrs.class,
 			}, children);
@@ -71,17 +71,17 @@ export namespace Tk {
 	}
 
 	interface ListItemAttrs {
-		class?: string
-		onMouseEnter?: (e: MithrilMouseEvent) => void
-		onMouseLeave?: (e: MithrilMouseEvent) => void
-		onClick?: (e: MithrilMouseEvent) => void
+		class?: string;
+		onMouseEnter?: (e: MithrilMouseEvent) => void;
+		onMouseLeave?: (e: MithrilMouseEvent) => void;
+		onClick?: (e: MithrilMouseEvent) => void;
 	}
 
 	export class ListItem implements ClassComponent<ListItemAttrs> {
-		oninit() {
+		public oninit() {
 		}
 
-		view({children, attrs}: CVnode<ListItemAttrs>) {
+		public view({children, attrs}: CVnode<ListItemAttrs>) {
 			return m("li.sl-list-item", {
 				class: attrs.class,
 				onmouseenter: attrs.onMouseEnter,
@@ -92,10 +92,10 @@ export namespace Tk {
 	}
 
 	export class ListHead extends ListItem {
-		oninit() {
+		public oninit() {
 		}
 
-		view({children, attrs}: CVnode<ListItemAttrs>) {
+		public view({children, attrs}: CVnode<ListItemAttrs>) {
 			return m("li.sl-list-head", {
 				class: attrs.class,
 				onmouseenter: attrs.onMouseEnter,
@@ -106,21 +106,39 @@ export namespace Tk {
 	}
 
 	interface ButtonAttrs {
-		onClick?: (e: MithrilMouseEvent) => void
-		tooltip?: string
-		class?: string
-		notAllowed?: boolean
-		inactive?: boolean
-		full?: boolean
+		onClick?: (e: MithrilMouseEvent) => void;
+		tooltip?: string;
+		class?: string;
+		notAllowed?: boolean;
+		inactive?: boolean;
+		full?: boolean;
 	}
 
 	export class Button implements ClassComponent<ButtonAttrs> {
 		private alreadyClicked: boolean = false;
 		private bounceInterval = 500;
 
-		oninit() {
+		public oninit() {
 		}
 
+		public view({attrs, children}: CVnode<ButtonAttrs>) {
+			const that = this;
+
+			return m("a.sl-btn", {
+				class: that.getClass(attrs),
+				inacitve: that.isInactive(attrs),
+				onclick: (that.isClickable(attrs)) ? (e: MithrilMouseEvent) => {
+					if (!that.alreadyClicked) {
+						that.alreadyClicked = true;
+						attrs.onClick!(e);
+						setTimeout(() => {
+							that.alreadyClicked = false;
+						}, that.bounceInterval);
+					}
+				} : undefined,
+				tooltip: attrs.tooltip,
+			}, children);
+		}
 
 		private getClass(attrs: ButtonAttrs): string {
 			const cls = [];
@@ -147,35 +165,15 @@ export namespace Tk {
 		private isInactive(attrs: ButtonAttrs): boolean {
 			return !!attrs.notAllowed && !!attrs.inactive;
 		}
-
-
-		view({attrs, children}: CVnode<ButtonAttrs>) {
-			const that = this;
-
-			return m("a.sl-btn", {
-				class: that.getClass(attrs),
-				inacitve: that.isInactive(attrs),
-				onclick: (that.isClickable(attrs)) ? (e: MithrilMouseEvent) => {
-					if (!that.alreadyClicked) {
-						that.alreadyClicked = true;
-						attrs.onClick!(e);
-						setTimeout(() => {
-							that.alreadyClicked = false;
-						}, that.bounceInterval);
-					}
-				} : undefined,
-				tooltip: attrs.tooltip,
-			}, children);
-		}
 	}
 
 	export interface InputAttrs<T> {
-		label: string,
-		class: string,
-		autofocus?: boolean,
-		initValue?: T,
-		onInput: (value: T) => void,
-		onchange?: (file: File) => void,
+		label: string;
+		class: string;
+		autofocus?: boolean;
+		initValue?: T;
+		onInput: (value: T) => void;
+		onchange?: (file: File) => void;
 	}
 
 	export interface Input<T> extends ClassComponent<InputAttrs<T>> {
@@ -193,20 +191,20 @@ export namespace Tk {
 				[
 					labelText ? m("label",
 						{
-							for: labelName
+							for: labelName,
 						},
 						labelText,
 					) : undefined,
 					m(".sl-input-inner",
-						m(".sl-input-wrap", input)
-					)
-				]
-			)
+						m(".sl-input-wrap", input),
+					),
+				],
+			),
 		);
 	}
 
 	export class StringInput implements Input<string> {
-		view({attrs}: CVnode<InputAttrs<string>>) {
+		public view({attrs}: CVnode<InputAttrs<string>>) {
 			return wrapInput(attrs, m("input",
 				{
 					name: attrs.label,
@@ -217,17 +215,17 @@ export namespace Tk {
 							(v.dom as HTMLElement).focus();
 						}
 					},
-					oninput: m.withAttr("value", function (v: string) {
+					oninput: m.withAttr("value", (v: string) => {
 						attrs.onInput(v);
 					}),
-					autofocus: attrs.autofocus
-				}
+					autofocus: attrs.autofocus,
+				},
 			));
 		}
 	}
 
 	export class NumberInput implements Input<number> {
-		view({attrs}: CVnode<InputAttrs<number>>) {
+		public view({attrs}: CVnode<InputAttrs<number>>) {
 			return wrapInput(attrs, m("input",
 				{
 					name: attrs.label,
@@ -238,17 +236,17 @@ export namespace Tk {
 							(v.dom as HTMLElement).focus();
 						}
 					},
-					oninput: m.withAttr("value", function (v: number) {
+					oninput: m.withAttr("value", (v: number) => {
 						attrs.onInput(Number(v));
 					}),
-					autofocus: attrs.autofocus
-				}
+					autofocus: attrs.autofocus,
+				},
 			));
 		}
 	}
 
 	export class BooleanInput implements Input<boolean> {
-		view({attrs}: CVnode<InputAttrs<boolean>>) {
+		public view({attrs}: CVnode<InputAttrs<boolean>>) {
 			return wrapInput(attrs, m("input",
 				{
 					name: attrs.label,
@@ -259,11 +257,11 @@ export namespace Tk {
 							(v.dom as HTMLElement).focus();
 						}
 					},
-					oninput: m.withAttr("checked", function (v: boolean) {
+					oninput: m.withAttr("checked", (v: boolean) => {
 						attrs.onInput(v);
 					}),
-					autofocus: attrs.autofocus
-				}
+					autofocus: attrs.autofocus,
+				},
 			));
 		}
 	}
@@ -271,7 +269,7 @@ export namespace Tk {
 	export class FileInput implements Input<File> {
 		protected accept: string = "";
 
-		view({attrs}: CVnode<InputAttrs<File>>) {
+		public view({attrs}: CVnode<InputAttrs<File>>) {
 			return wrapInput(attrs, m("input",
 				{
 					name: attrs.label,
@@ -282,11 +280,11 @@ export namespace Tk {
 							(v.dom as HTMLElement).focus();
 						}
 					},
-					oninput: m.withAttr("files", function (files: Array<File>) {
+					oninput: m.withAttr("files", (files: File[]) => {
 						attrs.onInput(files[0]);
 					}),
-					autofocus: attrs.autofocus
-				}
+					autofocus: attrs.autofocus,
+				},
 			));
 		}
 	}
@@ -299,11 +297,11 @@ export namespace Tk {
 	}
 
 	export interface SelectInputAttrs extends InputAttrs<string> {
-		options: Array<string>
+		options: string[];
 	}
 
 	export class SelectInput implements ClassComponent<SelectInputAttrs> {
-		view({attrs}: CVnode<SelectInputAttrs>) {
+		public view({attrs}: CVnode<SelectInputAttrs>) {
 			return wrapInput(attrs, m("select",
 				{
 					name: attrs.label,
@@ -312,18 +310,17 @@ export namespace Tk {
 							(v.dom as HTMLElement).focus();
 						}
 					},
-					oninput: m.withAttr("value", function (v: string) {
+					oninput: m.withAttr("value", (v: string) => {
 						attrs.onInput(v);
 					}),
-					autofocus: attrs.autofocus
+					autofocus: attrs.autofocus,
 				},
 				attrs.options.map((opt) => {
 					return m("option", {
 						value: opt,
-					}, opt)
-				})
+					}, opt);
+				}),
 			));
 		}
 	}
-
 }

@@ -1,31 +1,37 @@
-import m from "mithril";
 import {dia, g, shapes} from "jointjs";
-import {BlackBox} from "../../custom/nodes";
-import {BlueprintModel} from "../../model/blueprint";
-import {OperatorModel, XY} from "../../model/operator";
-import {PortGroupComponent} from "./port-group";
+import m from "mithril";
+
 import {Styles} from "../../../styles/studio";
-import {AttachableComponent, CellComponent} from "./base";
+
+import {XY} from "../../definitions/api";
+
+import {BlackBox} from "../../core/abstract/blackbox";
+import {PortModel} from "../../core/abstract/port";
+import {SlangSubject} from "../../core/abstract/utils/events";
+import {BlueprintModel} from "../../core/models/blueprint";
+import {OperatorModel} from "../../core/models/operator";
 import {PaperView} from "../views/paper-view";
+import {AttachableComponent, CellComponent} from "./base";
+import {COMPONENT_FACTORY} from "./factory";
+import {PortGroupComponent} from "./port-group";
 import {Tk} from "./toolkit";
-import {SlangSubject} from "../../custom/events";
-import {componentFactory} from "./factory";
-import {PortModel} from "../../model/port";
 
 import Button = Tk.Button;
 import RectangleSelectors = shapes.standard.RectangleSelectors;
 
-function createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
-	const portGroups: Array<PortGroupComponent> = [];
+function createPortGroups(blackBox: BlackBox): PortGroupComponent[] {
+	const portGroups: PortGroupComponent[] = [];
 
-	const portIn = blackBox.getPortIn();
-	if (portIn) {
-		portGroups.push(new PortGroupComponent("MainIn", portIn, "top", 0.0, 1.0, true));
-	}
+	{
+		const portIn = blackBox.getPortIn();
+		if (portIn) {
+			portGroups.push(new PortGroupComponent("MainIn", portIn, "top", 0, 1, true));
+		}
 
-	const portOut = blackBox.getPortOut();
-	if (portOut) {
-		portGroups.push(new PortGroupComponent("MainOut", portOut, "bottom", 0.0, 1.0, true));
+		const portOut = blackBox.getPortOut();
+		if (portOut) {
+			portGroups.push(new PortGroupComponent("MainOut", portOut, "bottom", 0, 1, true));
+		}
 	}
 
 	const delegates = Array.from(blackBox.getDelegates());
@@ -76,8 +82,13 @@ function createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
 }
 
 export abstract class BlackBoxComponent extends CellComponent {
+
+	public get bbox(): g.Rect {
+		return this.shape.getBBox();
+	}
+
 	protected shape!: BlackBoxShape;
-	protected portGroups!: Array<PortGroupComponent>;
+	protected portGroups!: PortGroupComponent[];
 
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
@@ -89,34 +100,13 @@ export abstract class BlackBoxComponent extends CellComponent {
 		super(paperView, {x: 0, y: 0});
 	}
 
-	protected abstract createPortGroups(): Array<PortGroupComponent>;
-
-	protected abstract createShape(): BlackBoxShape;
-
-	protected attachPortEvents(blackbox: BlackBox) {
-		this.shape.on("port:mouseover",
-			(_cellView: dia.CellView, _event: MouseEvent, x: number, y: number, portId: string) => {
-				const port = blackbox.findNodeById(portId);
-				if (port) {
-					this.portMouseEntered.next({port: port as PortModel, x, y});
-				}
-			});
-		this.shape.on("port:mouseout",
-			(_cellView: dia.CellView, _event: MouseEvent, x: number, y: number, portId: string) => {
-				const port = blackbox.findNodeById(portId);
-				if (port) {
-					this.portMouseLeft.next({port: port as PortModel, x, y});
-				}
-			});
-	}
-
 	public refresh(): void {
 		this.portGroups = this.createPortGroups();
 		if (this.shape) {
 			this.shape.remove();
 		}
 		this.shape = this.createShape();
-		this.portGroups.forEach(group => {
+		this.portGroups.forEach((group) => {
 			group.setParent(this.shape, this.drawGenerics);
 		});
 
@@ -147,16 +137,6 @@ export abstract class BlackBoxComponent extends CellComponent {
 		});
 	}
 
-	protected updateXY({x, y}: XY) {
-		super.updateXY({x, y});
-		const {width, height} = this.shape.size();
-		this.shape.position(x - width / 2, y - height / 2);
-	}
-
-	public get bbox(): g.Rect {
-		return this.shape.getBBox();
-	}
-
 	public onPortMouseEnter(cb: (port: PortModel, x: number, y: number) => void) {
 		this.portMouseEntered.subscribe(({port, x, y}) => {
 			cb(port, x, y);
@@ -171,6 +151,33 @@ export abstract class BlackBoxComponent extends CellComponent {
 
 	public getShape(): dia.Element {
 		return super.getShape() as dia.Element;
+	}
+
+	protected abstract createPortGroups(): PortGroupComponent[];
+
+	protected abstract createShape(): BlackBoxShape;
+
+	protected attachPortEvents(blackbox: BlackBox) {
+		this.shape.on("port:mouseover",
+			(_cellView: dia.CellView, _event: MouseEvent, x: number, y: number, portId: string) => {
+				const port = blackbox.findNodeById(portId);
+				if (port) {
+					this.portMouseEntered.next({port: port as PortModel, x, y});
+				}
+			});
+		this.shape.on("port:mouseout",
+			(_cellView: dia.CellView, _event: MouseEvent, x: number, y: number, portId: string) => {
+				const port = blackbox.findNodeById(portId);
+				if (port) {
+					this.portMouseLeft.next({port: port as PortModel, x, y});
+				}
+			});
+	}
+
+	protected updateXY({x, y}: XY) {
+		super.updateXY({x, y});
+		const {width, height} = this.shape.size();
+		this.shape.position(x - width / 2, y - height / 2);
 	}
 
 }
@@ -193,13 +200,17 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 			},
 			label: {
 				cursor: "pointer",
-			}
+			},
 		});
 		this.attachPortEvents(this.blueprint);
 	}
 
+	public getShape(): BlackBoxShape {
+		return this.shape;
+	}
+
 	protected createShape(): BlackBoxShape {
-		const blackBoxShapeType = componentFactory.getBlackBoxShape(this.blueprint);
+		const blackBoxShapeType = COMPONENT_FACTORY.getBlackBoxShape(this.blueprint);
 		const shape = new blackBoxShapeType({
 			id: this.blueprint.getIdentity(),
 			portGroups: this.portGroups,
@@ -208,12 +219,8 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 		return shape;
 	}
 
-	protected createPortGroups(): Array<PortGroupComponent> {
+	protected createPortGroups(): PortGroupComponent[] {
 		return createPortGroups(this.blueprint);
-	}
-
-	public getShape(): BlackBoxShape {
-		return this.shape;
 	}
 
 }
@@ -223,7 +230,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 
 	constructor(paperView: PaperView, protected readonly operator: OperatorModel) {
 		super(paperView, true);
-		
+
 		operator.getGenerics().subscribeGenericsChanged(() => {
 			this.refresh();
 		});
@@ -231,7 +238,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 		operator.subscribePropertiesChanged(() => {
 			this.refresh();
 		});
-		
+
 		this.refresh();
 	}
 
@@ -240,8 +247,8 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 		const operator = this.operator;
 		const blueprint = operator.getBlueprint();
 
-		if (operator.XY) {
-			this.updateXY(operator.XY);
+		if (operator.xy) {
+			this.updateXY(operator.xy);
 		}
 
 		if (this.operatorControl) {
@@ -266,16 +273,16 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 							class: "sl-btn-icon",
 							onClick: () => {
 								if (blueprint.isLocal()) {
-									operator.getBlueprint().open()
+									operator.getBlueprint().open();
 								}
-							}
-						}, m("i.fas.fa-project-diagram")))
-				]
+							},
+						}, m("i.fas.fa-project-diagram"))),
+				],
 			})
 			.attachTo(this.shape, "tl");
 
 		this.shape.on("change:position change:size", () => {
-			operator.XY = this.shape.getBBox().center();
+			operator.xy = this.shape.getBBox().center();
 		});
 
 		this.shape.set("obstacle", true);
@@ -284,27 +291,27 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 	}
 
 	protected createShape(): BlackBoxShape {
-		const blackBoxShapeType = componentFactory.getBlackBoxShape(this.operator.getBlueprint());
+		const blackBoxShapeType = COMPONENT_FACTORY.getBlackBoxShape(this.operator.getBlueprint());
 		const shape = new blackBoxShapeType({
 			id: this.operator.getIdentity(),
-			position: this.operator.XY,
+			position: this.operator.xy,
 			portGroups: this.portGroups,
 		});
 		shape.setupForOperator(this.operator);
 		return shape;
 	}
 
-	protected createPortGroups(): Array<PortGroupComponent> {
+	protected createPortGroups(): PortGroupComponent[] {
 		return createPortGroups(this.operator);
 	}
 }
 
 export interface BlackBoxShapeAttrs {
-	id?: string
-	label?: string
-	portGroups?: Array<PortGroupComponent>
-	cssClass?: string
-	position?: { x: number, y: number }
+	id?: string;
+	label?: string;
+	portGroups?: PortGroupComponent[];
+	cssClass?: string;
+	position?: { x: number, y: number };
 }
 
 function constructRectAttrs(attrs: BlackBoxShapeAttrs): dia.Element.GenericAttributes<RectangleSelectors> {
@@ -330,12 +337,12 @@ function constructRectAttrs(attrs: BlackBoxShapeAttrs): dia.Element.GenericAttri
 				.reduce((result: { [key: string]: dia.Element.PortGroup }, group) => {
 					result[group.getName()] = group.getPortGroupElement();
 					return result;
-				}, {})
-		}
+				}, {}),
+		},
 	};
 }
 
-export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", Styles.Defaults.BlackBox) {
+export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", Styles.Defaults.blackBox) {
 	public static place(paperView: PaperView, blueprint: BlueprintModel, position?: g.PlainPoint): BlackBoxShape {
 		const shape = new BlueprintBoxComponent(paperView, blueprint).getShape();
 		if (position) {
@@ -352,8 +359,8 @@ export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", 
 	public static placeGhost(paperView: PaperView, label: string, position?: g.PlainPoint): BlackBoxShape {
 		const shape = new BlackBoxShape({
 			id: "",
-			label: label,
-			position: position,
+			label,
+			position,
 		});
 
 		shape.set("obstacle", true);
@@ -375,4 +382,3 @@ export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", 
 		this.attr("label/text", operator.getBlueprint().getShortName());
 	}
 }
-

@@ -11,12 +11,12 @@ export class ViewFrame {
 		container.appendChild(this.viewEl);
 
 		const that = this;
-		window.addEventListener("resize", function () {
+		window.addEventListener("resize", () => {
 			if (that.view) {
 				that.view.resize(that.container.clientWidth, that.container.clientHeight);
 			}
 		});
-		window.addEventListener("load", function () {
+		window.addEventListener("load", () => {
 			if (that.view) {
 				that.view.resize(that.container.clientWidth, that.container.clientHeight);
 			}

@@ -1,6 +1,7 @@
 import m, {CVnode} from "mithril";
-import {Input, ConsoleValueType} from "../console";
-import {TypeIdentifier} from "../../../custom/type";
+
+import {TypeIdentifier} from "../../../definitions/type";
+import {ConsoleValueType, Input} from "../console";
 import {Tk} from "../toolkit";
 
 function pre(slangValue: string | undefined): string | undefined {
@@ -14,9 +15,9 @@ function post(domValue: string): string {
 	return "base64:" + btoa(domValue);
 }
 
-export const BinaryValueType: ConsoleValueType<string> = {
+export const BINARY_VALUE_TYPE: ConsoleValueType<string> = {
 	typeDef: {
-		type: TypeIdentifier.Binary
+		type: TypeIdentifier.Binary,
 	},
 
 	input: {
@@ -27,8 +28,8 @@ export const BinaryValueType: ConsoleValueType<string> = {
 					onInput: (v: string) => {
 						origOnInput(post(v));
 					},
-				}
+				},
 			));
-		}
-	}
+		},
+	},
 };

@@ -1,10 +1,12 @@
+import {dia} from "jointjs";
 import m from "mithril";
 
-import {dia} from "jointjs";
+import {XY} from "../../definitions/api";
+
 import {PaperView} from "../views/paper-view";
 import {Tk} from "./toolkit";
+
 import Container = Tk.Container;
-import {XY} from "../../model/operator";
 
 export type Alignment =
 	"tl" | "t" | "tr" |
@@ -26,14 +28,14 @@ abstract class Component {
 		this.xy = {x, y};
 	}
 
-	protected get XY(): XY {
+	protected get position(): XY {
 		return this.xy;
 	}
 }
 
 export abstract class CellComponent extends Component {
 	protected abstract readonly shape: dia.Cell;
-	private components: Array<Component> = [];
+	private components: Component[] = [];
 
 	protected constructor(protected readonly paperView: PaperView, xy: XY) {
 		super(xy);
@@ -66,6 +68,12 @@ export abstract class CellComponent extends Component {
 }
 
 abstract class HtmlComponent extends Component {
+
+	private static createRoot(): HTMLElement {
+		const el = document.createElement("div");
+		el.style.position = "absolute";
+		return el;
+	}
 	protected readonly htmlRoot: HTMLElement;
 	protected readonly align: Alignment;
 
@@ -79,13 +87,46 @@ abstract class HtmlComponent extends Component {
 		});
 	}
 
-	protected getClientXY(): XY {
-		return this.paperView.toClientXY(this.XY);
-	}
-
 	public destroy() {
 		super.destroy();
 		this.htmlRoot.remove();
+	}
+
+	public mount(component: m.Component): this {
+		this.unmount();
+
+		const paper = this.paperView.getPaper();
+
+		m.mount(this.htmlRoot, {
+			oncreate: () => {
+				this.draw();
+			},
+			onupdate: () => {
+				this.draw();
+			},
+			view: () => {
+				return m(Container, {
+						onmousewheel: (e: WheelEvent) => {
+							e.preventDefault();
+							e.stopPropagation();
+							const {x, y} = paper.clientToLocalPoint(e.clientX, e.clientY);
+							// jointjs uses JqueryEventObjects --> paper.on expect JqueryEvents instead of standard DOM events
+							paper.trigger("blank:mousewheel", {originalEvent: e}, x, y);
+						},
+					},
+					m(component));
+			},
+		});
+		return this;
+	}
+
+	public unmount(): this {
+		this.htmlRoot.innerHTML = "";
+		return this;
+	}
+
+	protected getClientXY(): XY {
+		return this.paperView.toClientXY(this.position);
 	}
 
 	protected updateXY(xy: XY) {
@@ -93,17 +134,12 @@ abstract class HtmlComponent extends Component {
 		this.draw();
 	}
 
-	private static createRoot(): HTMLElement {
-		const el = document.createElement("div");
-		el.style.position = "absolute";
-		return el;
-	}
-
 	protected draw() {
 		const {x, y} = this.getClientXY();
 		const align = this.align;
 
-		let top, left;
+		let top;
+		let left;
 
 		const v = align[0];
 		const h = align.slice(-1);
@@ -138,39 +174,6 @@ abstract class HtmlComponent extends Component {
 
 		this.htmlRoot.style.top = `${top}px`;
 		this.htmlRoot.style.left = `${left}px`;
-	}
-
-	public mount(component: m.Component): this {
-		this.unmount();
-
-		const paper = this.paperView.getPaper();
-
-		m.mount(this.htmlRoot, {
-			oncreate: () => {
-				this.draw();
-			},
-			onupdate: () => {
-				this.draw();
-			},
-			view: () => {
-				return m(Container, {
-						onmousewheel: (e: WheelEvent) => {
-							e.preventDefault();
-							e.stopPropagation();
-							const {x, y} = paper.clientToLocalPoint(e.clientX, e.clientY);
-							// jointjs uses JqueryEventObjects --> paper.on expect JqueryEvents instead of standard DOM events
-							paper.trigger("blank:mousewheel", {originalEvent: e}, x, y);
-						},
-					},
-					m(component));
-			}
-		});
-		return this;
-	}
-
-	public unmount(): this {
-		this.htmlRoot.innerHTML = "";
-		return this;
 	}
 }
 
