@@ -27,8 +27,8 @@ export class RouterApp extends SlangApp {
 	protected onReady(): void {
 	}
 
-	private openBlueprint(fullName: string) {
-		const blueprint = this.app.getChildNode(LandscapeModel)!.findBlueprint(fullName);
+	private openBlueprint(uuid: string) {
+		const blueprint = this.app.getChildNode(LandscapeModel)!.findBlueprint(uuid);
 		if (blueprint) {
 			blueprint.open();
 		}
@@ -48,8 +48,9 @@ export class RouterApp extends SlangApp {
 		this.app.subscribeOpenedBlueprintChanged((blueprint) => {
 			if (blueprint !== null) {
 				const title = `${blueprint.getFullName()} Blueprint | Slang Studio`;
-				const url = `blueprint/${blueprint.getFullName()}`;
-				window.history.pushState({type: "blueprint", fullName: blueprint.getFullName()}, title, url);
+				const uuid = blueprint.getUUID();
+				const url = `blueprint/${uuid}`;
+				window.history.pushState({type: "blueprint", uuid}, title, url);
 			}
 		});
 		this.app.subscribeOpenedLandscapeChanged((blueprint) => {

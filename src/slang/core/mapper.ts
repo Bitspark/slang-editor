@@ -86,7 +86,7 @@ export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApi
 
 function operatorModelToJSON(operator: OperatorModel): OperatorApiResponse {
 	return {
-		operator: operator.getBlueprint().getFullName(),
+		operator: operator.getBlueprint().getUUID(),
 		geometry: operator.getGeometry(),
 		properties: iter2map<PropertyAssignment, PropertyAssignmentsApiResponse>(operator.getProperties().getAssignments(),
 			(result, propAssign) => {
@@ -196,6 +196,10 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: BlueprintAp
 
 		if (type === null) {
 			throw new Error(`unknown blueprint type '${bpData.type}'`);
+		}
+
+		if (bpData.def.name === "slang.database.file.Read") {
+			console.log('--->', bpData.def);
 		}
 
 		const bpDef = bpData.def;

@@ -177,7 +177,8 @@ export class BlueprintView extends PaperView {
 	}
 
 	private createValueOperator(xy: XY, targetPort: PortModel) {
-		const valueBlueprint = this.landscape.findBlueprint("slang.data.Value")!;
+		// slang.data.Value
+		const valueBlueprint = this.landscape.findBlueprint("8b62495a-e482-4a3e-8020-0ab8a350ad2d")!;
 
 		const generics = new GenericSpecifications(Array.from(valueBlueprint.getGenericIdentifiers()));
 		generics.specify("valueType", targetPort.getType());

@@ -12,24 +12,27 @@ export class OperatorDataApp extends SlangApp {
 		super(app, componentFactory);
 	}
 
-	protected getBlueprint(blueprintName: string): BlueprintModel {
+	protected getBlueprint(uuid: string): BlueprintModel {
 		const landscape = this.app.getChildNode(LandscapeModel)!;
-		const blueprint = landscape.findBlueprint(blueprintName);
+		const blueprint = landscape.findBlueprint(uuid);
 		if (!blueprint) {
-			throw new Error(`unknown blueprintName "${blueprintName}"`);
+			throw new Error(`unknown blueprintName "${uuid}"`);
 		}
 		return blueprint;
 
 	}
 
-	protected register(blueprintName: string, ctr: typeof BlackBoxShape) {
-		this.componentFactory!.registerBlackBoxShape(this.getBlueprint(blueprintName), ctr);
+	protected register(uuid: string, ctr: typeof BlackBoxShape) {
+		this.componentFactory!.registerBlackBoxShape(this.getBlueprint(uuid), ctr);
 	}
 
 	protected onReady() {
-		this.register("slang.data.Value", ValueBlackBoxShape);
-		this.register("slang.data.Evaluate", EvalBlackBoxShape);
-		this.register("slang.data.Convert", ConvertBlackBoxShape);
+		// slang.data.Value
+		this.register("8b62495a-e482-4a3e-8020-0ab8a350ad2d", ValueBlackBoxShape);
+		// slang.data.Evaluate
+		this.register("37ccdc28-67b0-4bb1-8591-4e0e813e3ec1", EvalBlackBoxShape);
+		// slang.data.Convert
+		this.register("d1191456-3583-4eaf-8ec1-e486c3818c60", ConvertBlackBoxShape);
 	}
 }
 
