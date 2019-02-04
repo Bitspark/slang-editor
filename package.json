@@ -11,7 +11,7 @@
     "lint": "tslint -p tsconfig.json -c tslint.json src/**/*.ts",
     "deps": "dependency-cruise --exclude \"^node_modules\" --validate .dependency-cruiser.json ./src/slang",
     "deps-svg": "dependency-cruise --exclude \"^node_modules\" --output-type dot -- ./src/slang | dot -T svg > dependencygraph.svg",
-    "test": "jest"
+    "test": "jest --collect-coverage"
   },
   "repository": {
     "type": "git",
