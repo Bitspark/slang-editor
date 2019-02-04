@@ -9,7 +9,6 @@ import {Connections} from "../abstract/utils/connections";
 import {SlangBehaviorSubject} from "../abstract/utils/events";
 import {GenericSpecifications} from "../abstract/utils/generics";
 import {PropertyAssignments, PropertyEvaluator, PropertyModel} from "../abstract/utils/properties";
-import {StreamPortOwner} from "../stream";
 import {BlueprintModel, BlueprintType} from "./blueprint";
 import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
 import {OperatorPortModel} from "./port";
@@ -43,7 +42,7 @@ export class OperatorModel extends BlackBox {
 	private readonly generics: GenericSpecifications;
 
 	constructor(parent: BlueprintModel, args: OperatorModelArgs) {
-		super(parent, false, StreamPortOwner);
+		super(parent, false);
 		this.name = args.name;
 		this.blueprint = args.blueprint;
 

@@ -5,7 +5,7 @@ import {SlangType, TypeIdentifier} from "../../definitions/type";
 import {BlackBox} from "./blackbox";
 import {SlangNode} from "./nodes";
 import {PortOwner} from "./port-owner";
-import {IStreamPort} from "./stream";
+import {StreamPort} from "./stream";
 import {canConnectTo} from "./utils/connection-check";
 import {Connections} from "./utils/connections";
 import {SlangSubject} from "./utils/events";
@@ -39,14 +39,14 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	private streamDepth = 0;
 
 	// Mixins
-	private readonly streamPort: IStreamPort;
+	private readonly streamPort: StreamPort;
 
-	protected constructor(parent: GenericPortModel<O> | O, {type, name, direction}: PortModelArgs, portCtor: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel, protected readonly generics: PortGenerics | null, streamPortCtor: new(port: PortModel) => IStreamPort) {
+	protected constructor(parent: GenericPortModel<O> | O, {type, name, direction}: PortModelArgs, portCtor: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel, protected readonly generics: PortGenerics | null) {
 		super(parent);
 		this.name = name;
 		this.direction = direction;
 
-		this.streamPort = new streamPortCtor(this);
+		this.streamPort = new StreamPort(this);
 		this.reconstruct(type, portCtor, direction);
 
 		this.subscribeConnected((port) => {
@@ -156,7 +156,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		return this.connectedWith.values();
 	}
 
-	public getStreamPort(): IStreamPort {
+	public getStreamPort(): StreamPort {
 		return this.streamPort;
 	}
 

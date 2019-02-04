@@ -1,15 +1,15 @@
 import {SlangNode} from "./nodes";
 import {GenericPortModel, PortDirection, PortModel, PortModelArgs} from "./port";
-import {IStreamPortOwner} from "./stream";
+import {StreamPortOwner} from "./stream";
 import {PropertyAssignments, PropertyEvaluator} from "./utils/properties";
 
 export abstract class PortOwner extends SlangNode {
 
-	private readonly streamPortOwner: IStreamPortOwner;
+	private readonly streamPortOwner: StreamPortOwner;
 
-	protected constructor(parent: SlangNode, streamSource: boolean, streamPortCtor: new(portOwner: PortOwner, isSource: boolean) => IStreamPortOwner) {
+	protected constructor(parent: SlangNode, streamSource: boolean) {
 		super(parent);
-		this.streamPortOwner = new streamPortCtor(this, streamSource);
+		this.streamPortOwner = new StreamPortOwner(this, streamSource);
 		this.streamPortOwner.initialize();
 	}
 
@@ -25,7 +25,7 @@ export abstract class PortOwner extends SlangNode {
 		return this.getChildNodes(GenericPortModel);
 	}
 
-	public getStreamPortOwner(): IStreamPortOwner {
+	public getStreamPortOwner(): StreamPortOwner {
 		return this.streamPortOwner;
 	}
 

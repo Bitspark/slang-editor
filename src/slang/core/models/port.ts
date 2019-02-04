@@ -1,7 +1,6 @@
 import {SlangType, TypeIdentifier} from "../../definitions/type";
 
 import {GenericPortModel, PortDirection, PortGenerics, PortModelArgs} from "../abstract/port";
-import {StreamPort} from "../stream";
 import {BlueprintFakeGeneric, BlueprintModel} from "./blueprint";
 import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
 import {OperatorModel} from "./operator";
@@ -16,7 +15,7 @@ export class BlueprintPortModel extends GenericPortModel<BlueprintModel | Bluepr
 			generics = {specifications, identifier, fake: true};
 		}
 
-		super(parent, args, BlueprintPortModel, generics, StreamPort);
+		super(parent, args, BlueprintPortModel, generics);
 	}
 
 	public isSource(): boolean {
@@ -40,7 +39,7 @@ export class OperatorPortModel extends GenericPortModel<OperatorModel | Operator
 			args.type = new SlangType(args.type.getParent(), TypeIdentifier.Unspecified);
 		}
 
-		super(parent, args, OperatorPortModel, generics, StreamPort);
+		super(parent, args, OperatorPortModel, generics);
 	}
 
 	public isSource(): boolean {

@@ -8,7 +8,6 @@ import {Connections} from "../abstract/utils/connections";
 import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../abstract/utils/events";
 import {GenericSpecifications} from "../abstract/utils/generics";
 import {PropertyAssignments, PropertyModel} from "../abstract/utils/properties";
-import {StreamPortOwner} from "../stream";
 import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
 import {LandscapeModel} from "./landscape";
 import {OperatorModel} from "./operator";
@@ -136,7 +135,7 @@ export class BlueprintModel extends BlackBox {
 	private genericIdentifiers: Set<string>;
 
 	constructor(parent: LandscapeModel, {fullName, type, geometry}: BlueprintModelArgs) {
-		super(parent, true, StreamPortOwner);
+		super(parent, true);
 		this.fullName = fullName;
 		this.type = type;
 		this.hierarchy = fullName.split(".");

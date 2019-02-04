@@ -1,11 +1,10 @@
 import {BlackBox} from "./blackbox";
 import {PortOwner} from "./port-owner";
-import {IStreamPortOwner} from "./stream";
 import {Connections} from "./utils/connections";
 
 export abstract class GenericDelegateModel<B extends BlackBox> extends PortOwner {
-	protected constructor(parent: B, private name: string, streamSource: boolean, streamPortCtor: new (portOwner: PortOwner, isSource: boolean) => IStreamPortOwner) {
-		super(parent, streamSource, streamPortCtor);
+	protected constructor(parent: B, private name: string, streamSource: boolean) {
+		super(parent, streamSource);
 	}
 
 	public getName(): string {
