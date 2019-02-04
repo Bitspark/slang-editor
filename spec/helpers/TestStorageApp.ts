@@ -1,6 +1,6 @@
 import {SlangApp} from "../../src/slang/app";
-import {AppModel} from "../../src/slang/core/app";
-import {LandscapeModel} from "../../src/slang/core/landscape";
+import {AppModel} from "../../src/slang/core/models/app";
+import {LandscapeModel} from "../../src/slang/core/models/landscape";
 import {fillLandscape} from "../../src/slang/core/mapper";
 import {BlueprintApiResponse} from "../../src/slang/definitions/api";
 

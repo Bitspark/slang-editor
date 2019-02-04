@@ -13,11 +13,11 @@ import {PortDirection, PortModel} from "./abstract/port";
 import {Connection} from "./abstract/utils/connections";
 import {GenericSpecifications} from "./abstract/utils/generics";
 import {PropertyAssignment, PropertyAssignments, PropertyModel} from "./abstract/utils/properties";
-import {BlueprintModel, BlueprintType} from "./blueprint";
-import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
-import {LandscapeModel} from "./landscape";
-import {OperatorModel} from "./operator";
-import {BlueprintPortModel, OperatorPortModel} from "./port";
+import {BlueprintModel, BlueprintType} from "./models/blueprint";
+import {BlueprintDelegateModel, OperatorDelegateModel} from "./models/delegate";
+import {LandscapeModel} from "./models/landscape";
+import {OperatorModel} from "./models/operator";
+import {BlueprintPortModel, OperatorPortModel} from "./models/port";
 
 /*
 \

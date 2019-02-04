@@ -1,20 +1,20 @@
 // tslint:disable:no-circular-imports
 
-import {OperatorGeometry} from "../definitions/api";
-import {SlangParsing} from "../definitions/parsing";
-import {SlangTypeValue, TypeIdentifier} from "../definitions/type";
+import {OperatorGeometry} from "../../definitions/api";
+import {SlangParsing} from "../../definitions/parsing";
+import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 
-import {BlackBox} from "./abstract/blackbox";
-import {PortModel, PortModelArgs} from "./abstract/port";
-import {Connections} from "./abstract/utils/connections";
-import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "./abstract/utils/events";
-import {GenericSpecifications} from "./abstract/utils/generics";
-import {PropertyAssignments, PropertyModel} from "./abstract/utils/properties";
+import {BlackBox} from "../abstract/blackbox";
+import {PortModel, PortModelArgs} from "../abstract/port";
+import {Connections} from "../abstract/utils/connections";
+import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../abstract/utils/events";
+import {GenericSpecifications} from "../abstract/utils/generics";
+import {PropertyAssignments, PropertyModel} from "../abstract/utils/properties";
+import {StreamPortOwner} from "../stream";
 import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
 import {LandscapeModel} from "./landscape";
 import {OperatorModel} from "./operator";
 import {BlueprintPortModel} from "./port";
-import {StreamPortOwner} from "./stream";
 
 export enum BlueprintType {
 	Local,

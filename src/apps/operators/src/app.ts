@@ -1,8 +1,8 @@
 import {SlangApp} from "../../../slang/app";
-import {AppModel} from "../../../slang/core/app";
-import {BlueprintModel} from "../../../slang/core/blueprint";
-import {LandscapeModel} from "../../../slang/core/landscape";
-import {OperatorModel} from "../../../slang/core/operator";
+import {AppModel} from "../../../slang/core/models/app";
+import {BlueprintModel} from "../../../slang/core/models/blueprint";
+import {LandscapeModel} from "../../../slang/core/models/landscape";
+import {OperatorModel} from "../../../slang/core/models/operator";
 import {TypeIdentifier} from "../../../slang/definitions/type";
 import {BlackBoxShape, BlackBoxShapeAttrs} from "../../../slang/ui/components/blackbox";
 import {ComponentFactory} from "../../../slang/ui/components/factory";

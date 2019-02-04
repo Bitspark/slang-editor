@@ -1,10 +1,10 @@
-import {SlangType, TypeIdentifier} from "../definitions/type";
+import {SlangType, TypeIdentifier} from "../../definitions/type";
 
-import {GenericPortModel, PortDirection, PortGenerics, PortModelArgs} from "./abstract/port";
+import {GenericPortModel, PortDirection, PortGenerics, PortModelArgs} from "../abstract/port";
+import {StreamPort} from "../stream";
 import {BlueprintFakeGeneric, BlueprintModel} from "./blueprint";
 import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
 import {OperatorModel} from "./operator";
-import {StreamPort} from "./stream";
 
 export class BlueprintPortModel extends GenericPortModel<BlueprintModel | BlueprintDelegateModel> {
 	public constructor(parent: BlueprintModel | BlueprintDelegateModel | BlueprintPortModel, args: PortModelArgs) {

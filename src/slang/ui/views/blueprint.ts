@@ -9,8 +9,8 @@ import {TypeIdentifier} from "../../definitions/type";
 import {GenericPortModel, PortModel} from "../../core/abstract/port";
 import {GenericSpecifications} from "../../core/abstract/utils/generics";
 import {PropertyAssignments} from "../../core/abstract/utils/properties";
-import {BlueprintModel} from "../../core/blueprint";
-import {LandscapeModel} from "../../core/landscape";
+import {BlueprintModel} from "../../core/models/blueprint";
+import {LandscapeModel} from "../../core/models/landscape";
 
 import {AttachableComponent} from "../components/base";
 import {BlackBoxShape} from "../components/blackbox";

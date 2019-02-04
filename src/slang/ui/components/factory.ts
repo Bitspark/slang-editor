@@ -1,7 +1,7 @@
 // tslint:disable:no-circular-imports
 
-import {BlueprintModel} from "../../core/blueprint";
-import {OperatorModel} from "../../core/operator";
+import {BlueprintModel} from "../../core/models/blueprint";
+import {OperatorModel} from "../../core/models/operator";
 
 import {PaperView} from "../views/paper-view";
 import {BlackBoxShape, OperatorBoxComponent} from "./blackbox";

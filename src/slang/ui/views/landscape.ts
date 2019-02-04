@@ -3,8 +3,8 @@ import {dia, shapes} from "jointjs";
 import {SlangType, TypeIdentifier} from "../../definitions/type";
 
 import {PortDirection} from "../../core/abstract/port";
-import {BlueprintModel, BlueprintType} from "../../core/blueprint";
-import {LandscapeModel} from "../../core/landscape";
+import {BlueprintModel, BlueprintType} from "../../core/models/blueprint";
+import {LandscapeModel} from "../../core/models/landscape";
 
 import {BlackBoxShape, BlueprintBoxComponent} from "../components/blackbox";
 import {ViewFrame} from "../frame";

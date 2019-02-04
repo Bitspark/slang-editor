@@ -1,12 +1,12 @@
 // tslint:disable:no-circular-imports
 
-import {GenericDelegateModel} from "./abstract/delegate";
-import {PortModelArgs} from "./abstract/port";
-import {GenericSpecifications} from "./abstract/utils/generics";
+import {GenericDelegateModel} from "../abstract/delegate";
+import {PortModelArgs} from "../abstract/port";
+import {GenericSpecifications} from "../abstract/utils/generics";
+import {StreamPortOwner} from "../stream";
 import {BlueprintModel, FAKE_GENERIC_VALUES} from "./blueprint";
 import {OperatorModel} from "./operator";
 import {BlueprintPortModel, OperatorPortModel} from "./port";
-import {StreamPortOwner} from "./stream";
 
 export interface BlueprintDelegateModelArgs { name: string; }
 

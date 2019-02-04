@@ -1,8 +1,8 @@
 import {SlangApp} from "../../../slang/app";
-import {AppModel} from "../../../slang/core/app";
-import {BlueprintModel} from "../../../slang/core/blueprint";
-import {LandscapeModel} from "../../../slang/core/landscape";
 import {blueprintModelToJSON, fillLandscape} from "../../../slang/core/mapper";
+import {AppModel} from "../../../slang/core/models/app";
+import {BlueprintModel} from "../../../slang/core/models/blueprint";
+import {LandscapeModel} from "../../../slang/core/models/landscape";
 import {ApiService, BlueprintApiResponse} from "../../../slang/definitions/api";
 import {ComponentFactory} from "../../../slang/ui/components/factory";
 

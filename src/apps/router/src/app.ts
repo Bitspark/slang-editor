@@ -1,6 +1,6 @@
 import {SlangApp} from "../../../slang/app";
-import {AppModel} from "../../../slang/core/app";
-import {LandscapeModel} from "../../../slang/core/landscape";
+import {AppModel} from "../../../slang/core/models/app";
+import {LandscapeModel} from "../../../slang/core/models/landscape";
 import {ComponentFactory} from "../../../slang/ui/components/factory";
 
 export class RouterApp extends SlangApp {
