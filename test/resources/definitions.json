@@ -1,0 +1,41 @@
+[
+  {
+    "name": "StringToString",
+    "def": {
+      "services": {
+        "main": {
+          "in": {
+            "type": "string"
+          },
+          "out": {
+            "type": "string"
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
+    },
+    "type": "local"
+  },
+
+  {
+    "name": "GenericToGeneric",
+    "def": {
+      "services": {
+        "main": {
+          "in": {
+            "type": "generic",
+            "generic": "itemType"
+          },
+          "out": {
+            "type": "generic",
+            "generic": "itemType"
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
+    },
+    "type": "local"
+  }
+]

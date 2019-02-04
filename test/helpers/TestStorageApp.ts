@@ -1,12 +1,11 @@
 import {SlangApp} from "../../src/slang/app";
+import {fillLandscape} from "../../src/slang/core/mapper";
 import {AppModel} from "../../src/slang/core/models/app";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
-import {fillLandscape} from "../../src/slang/core/mapper";
-import {BlueprintApiResponse} from "../../src/slang/definitions/api";
 
 export class TestStorageApp extends SlangApp {
 
-	constructor(app: AppModel, private objects: BlueprintApiResponse[]) {
+	constructor(app: AppModel, private objects: any) {
 		super(app, null);
 		this.subscribe();
 	}

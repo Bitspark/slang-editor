@@ -1,15 +1,15 @@
 import {AppModel} from "../../src/slang/core/models/app";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
-import {BlueprintType} from "../../src/slang/core/models/blueprint";
+import {BlueprintModel} from "../../src/slang/core/models/blueprint";
 
 import {TestStorageApp} from "../helpers/TestStorageApp";
 import data from "../resources/definitions.json";
 
-describe("A blueprint", () => {
+describe("The landscape", () => {
 	let appModel: AppModel;
 	let landscapeModel: LandscapeModel;
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		appModel = AppModel.create("test-app");
 		new TestStorageApp(appModel, data);
 		const ls = appModel.getChildNode(LandscapeModel);
@@ -17,10 +17,16 @@ describe("A blueprint", () => {
 			throw new Error("landscape not found");
 		}
 		landscapeModel = ls;
+		await appModel.load();
 	});
 
-	it("can be created", () => {
-		const bp = landscapeModel.createBlueprint({fullName: "test-bp-1", type: BlueprintType.Local});
+	it("has blueprints", () => {
+		const bps = landscapeModel.getChildNodes(BlueprintModel);
+		expect(Array.from(bps).length).toBeGreaterThan(0);
+	});
+
+	it("has blueprint StringToString", () => {
+		const bp = landscapeModel.findBlueprint("StringToString");
 		expect(bp).toBeTruthy();
 	});
 });
