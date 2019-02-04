@@ -36,7 +36,7 @@ export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApi
 	const blueprintGeometry = blueprint.getGeometry();
 	return {
 		id: blueprint.getUUID(),
-		name: blueprint.getFullName(),
+		name: blueprint.getName(),
 		geometry: blueprintGeometry,
 		operators: iter2map<OperatorModel, { [_: string]: OperatorApiResponse }>(blueprint.getOperators(),
 			(result, operator) => {
@@ -207,7 +207,7 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: BlueprintAp
 		const bpGeo = bpDef.geometry;
 		const geometry = (services && bpGeo) ? Object.assign(bpGeo, {port: services.main.geometry!}) : undefined;
 
-		const blueprint = landscape.createBlueprint({uuid: bpDef.id, fullName: bpDef.name, type, geometry});
+		const blueprint = landscape.createBlueprint({uuid: bpDef.id, name: bpDef.name, type, geometry});
 		if (services) {
 			setBlueprintServices(blueprint, services);
 		}
@@ -236,7 +236,7 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: BlueprintAp
 					const properties = createPropertyAssignments(blueprint, opData.properties, generics);
 					outerBlueprint.createOperator(opName, blueprint, properties, generics, opData.geometry);
 				} catch (e) {
-					console.error(`${outerBlueprint.getFullName()} (${blueprint.getFullName()}): ${e.stack}`);
+					console.error(`${outerBlueprint.getName()} (${blueprint.getName()}): ${e.stack}`);
 				}
 			});
 		}
@@ -249,7 +249,7 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: BlueprintAp
 			Object.keys(connections).forEach((sourcePortReference: string) => {
 				const sourcePort = outerBlueprint.resolvePortReference(sourcePortReference);
 				if (!sourcePort) {
-					console.error(`${outerBlueprint.getFullName()}: port ${sourcePortReference} cannot be resolved`);
+					console.error(`${outerBlueprint.getName()}: port ${sourcePortReference} cannot be resolved`);
 					return;
 				}
 
@@ -257,14 +257,14 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: BlueprintAp
 				for (const destinationPortReference of destinationPortReferences) {
 					const destinationPort = outerBlueprint.resolvePortReference(destinationPortReference);
 					if (!destinationPort) {
-						console.error(`${outerBlueprint.getFullName()}: port ${destinationPortReference} cannot be resolved`);
+						console.error(`${outerBlueprint.getName()}: port ${destinationPortReference} cannot be resolved`);
 						continue;
 					}
 
 					try {
 						sourcePort.connect(destinationPort, false);
 					} catch (e) {
-						console.error(`${outerBlueprint.getFullName()}: ${sourcePort.getPortReference()} -> ${destinationPort.getPortReference()} - ${e.toString()}`);
+						console.error(`${outerBlueprint.getName()}: ${sourcePort.getPortReference()} -> ${destinationPort.getPortReference()} - ${e.toString()}`);
 					}
 				}
 			});

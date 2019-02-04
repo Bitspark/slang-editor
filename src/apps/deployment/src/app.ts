@@ -30,7 +30,7 @@ export class DeploymentApp extends SlangApp {
 	}
 
 	private deploy(blueprint: BlueprintModel): void {
-		this.api.deployBlueprint(blueprint.getFullName()).then(({url, handle}) => {
+		this.api.deployBlueprint(blueprint.getName()).then(({url, handle}) => {
 			blueprint.deploy({url, handle} as BlueprintInstance);
 		});
 	}

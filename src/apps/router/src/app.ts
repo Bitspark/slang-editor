@@ -47,7 +47,7 @@ export class RouterApp extends SlangApp {
 		});
 		this.app.subscribeOpenedBlueprintChanged((blueprint) => {
 			if (blueprint !== null) {
-				const title = `${blueprint.getFullName()} Blueprint | Slang Studio`;
+				const title = `${blueprint.getName()} Blueprint | Slang Studio`;
 				const uuid = blueprint.getUUID();
 				const url = `blueprint/${uuid}`;
 				window.history.pushState({type: "blueprint", uuid}, title, url);

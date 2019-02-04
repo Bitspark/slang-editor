@@ -47,7 +47,7 @@ export interface BlueprintGeometry {
 
 export interface BlueprintModelArgs {
 	uuid: string;
-	fullName: string;
+	name: string;
 	type: BlueprintType;
 	geometry?: BlueprintGeometry;
 }
@@ -128,7 +128,7 @@ export class BlueprintModel extends BlackBox {
 
 	// Properties
 	private readonly uuid: string;
-	private readonly fullName: string;
+	private readonly name: string;
 	private readonly type: BlueprintType;
 
 	//private readonly hierarchy: string[] = [];
@@ -136,10 +136,10 @@ export class BlueprintModel extends BlackBox {
 	private properties: PropertyModel[] = [];
 	private genericIdentifiers: Set<string>;
 
-	constructor(parent: LandscapeModel, {uuid, fullName, type, geometry}: BlueprintModelArgs) {
+	constructor(parent: LandscapeModel, {uuid, name, type, geometry}: BlueprintModelArgs) {
 		super(parent, true);
 		this.uuid = uuid;
-		this.fullName = fullName;
+		this.name = name;
 		this.type = type;
 		this.genericIdentifiers = new Set<string>();
 
@@ -204,12 +204,12 @@ export class BlueprintModel extends BlackBox {
 		return this.uuid;
 	}
 
-	public getFullName(): string {
-		return this.fullName;
+	public getName(): string {
+		return this.name;
 	}
 
 	public getShortName(): string {
-		return this.fullName;
+		return this.name;
 	}
 
 	public isDeployed(): boolean {

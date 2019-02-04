@@ -25,7 +25,7 @@ describe("A new blueprint", () => {
 	});
 
 	it("can be created", () => {
-		const bp = landscapeModel.createBlueprint({uuid: uuidv4(), fullName: "test-bp-1", type: BlueprintType.Local});
+		const bp = landscapeModel.createBlueprint({uuid: uuidv4(), name: "test-bp-1", type: BlueprintType.Local});
 		expect(bp).toBeTruthy();
 	});
 
@@ -34,7 +34,7 @@ describe("A new blueprint", () => {
 
 		const bpNew = landscapeModel.createBlueprint({
 			uuid: uuidv4(),
-			fullName: "test-bp-2",
+			name: "test-bp-2",
 			type: BlueprintType.Local
 		});
 		bpNew.createPort({name: "", type: new SlangType(null, TypeIdentifier.Map), direction: PortDirection.In});
@@ -53,7 +53,7 @@ describe("A new blueprint", () => {
 
 		const bpNew = landscapeModel.createBlueprint({
 			uuid: uuidv4(),
-			fullName: "test-bp-3",
+			name: "test-bp-3",
 			type: BlueprintType.Local
 		});
 		bpNew.createPort({name: "", direction: PortDirection.In, type: SlangType.newUnspecified()});
@@ -90,7 +90,7 @@ describe("A new blueprint", () => {
 
 		const bpNew = landscapeModel.createBlueprint({
 			uuid: uuidv4(),
-			fullName: "test-bp-4",
+			name: "test-bp-4",
 			type: BlueprintType.Local
 		});
 

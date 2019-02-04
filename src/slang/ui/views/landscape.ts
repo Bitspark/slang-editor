@@ -66,14 +66,14 @@ export class LandscapeView extends PaperView {
 	}
 
 	private reorder() {
-		const blueprintFullnames = Array.from(this.blueprintRects.keys());
-		blueprintFullnames.sort();
-		this.reorderEqually(blueprintFullnames, this.dimensions[0], this.dimensions[1]);
+		const blueprintNames = Array.from(this.blueprintRects.keys());
+		blueprintNames.sort();
+		this.reorderEqually(blueprintNames, this.dimensions[0], this.dimensions[1]);
 	}
 
-	private reorderEqually(blueprintFullnames: string[], width: number, height: number) {
+	private reorderEqually(blueprintNames: string[], width: number, height: number) {
 		const columns = Math.min(5, Math.floor((width - 400) / 200));
-		const rows = Math.max((blueprintFullnames.length + 1) / columns);
+		const rows = Math.max((blueprintNames.length + 1) / columns);
 
 		let i = 0;
 		for (let row = 0; row < rows; row++) {
@@ -81,11 +81,11 @@ export class LandscapeView extends PaperView {
 				let rect: dia.Element | null = null;
 
 				if (i > 0) {
-					const fullname = blueprintFullnames[i - 1];
-					if (!fullname) {
+					const blueprintName = blueprintNames[i - 1];
+					if (!blueprintName) {
 						break;
 					}
-					rect = this.blueprintRects.get(fullname)!;
+					rect = this.blueprintRects.get(blueprintName)!;
 				} else {
 					rect = this.addBlueprintButton;
 				}
@@ -120,7 +120,7 @@ export class LandscapeView extends PaperView {
 		rect.on("pointerup", () => {
 			const newBlueprint = this.landscape.createBlueprint({
 				uuid: uuidv4(),
-				fullName: `Unnamed${new Date().getTime()}`,
+				name: `Unnamed${new Date().getTime()}`,
 				type: BlueprintType.Local,
 			});
 			newBlueprint.createPort({
@@ -170,7 +170,7 @@ export class LandscapeView extends PaperView {
 		}
 
 		const blueprintBox = new BlueprintBoxComponent(this, blueprint);
-		this.blueprintRects.set(blueprint.getFullName(), blueprintBox.getShape());
+		this.blueprintRects.set(blueprint.getName(), blueprintBox.getShape());
 
 		// JointJS -> Model
 		blueprintBox.onClick(() => blueprint.open());
