@@ -8,30 +8,30 @@ import {Styles} from "../../../styles/studio";
 import {AttachableComponent, CellComponent} from "./base";
 import {PaperView} from "../views/paper-view";
 import {Tk} from "./toolkit";
-import Button = Tk.Button;
 import {SlangSubject} from "../../custom/events";
-import RectangleSelectors = shapes.standard.RectangleSelectors;
 import {componentFactory} from "./factory";
 import {PortModel} from "../../model/port";
 
+import Button = Tk.Button;
+import RectangleSelectors = shapes.standard.RectangleSelectors;
 
 function createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
 	const portGroups: Array<PortGroupComponent> = [];
 
 	const portIn = blackBox.getPortIn();
 	if (portIn) {
-		portGroups.push(new PortGroupComponent("MainIn", portIn, "top", 0.0, 1.0));
+		portGroups.push(new PortGroupComponent("MainIn", portIn, "top", 0.0, 1.0, true));
 	}
 
 	const portOut = blackBox.getPortOut();
 	if (portOut) {
-		portGroups.push(new PortGroupComponent("MainOut", portOut, "bottom", 0.0, 1.0));
+		portGroups.push(new PortGroupComponent("MainOut", portOut, "bottom", 0.0, 1.0, true));
 	}
 
 	const delegates = Array.from(blackBox.getDelegates());
 
-// const countRight = Math.ceil(delegates.length / 2);
-	const countRight = delegates.length;
+	const countRight = Math.ceil(delegates.length / 2);
+	// const countRight = delegates.length;
 	const widthRight = 0.5 / countRight;
 	const stepRight = 0.5 / countRight;
 	let posRight = 0;
@@ -46,30 +46,30 @@ function createPortGroups(blackBox: BlackBox): Array<PortGroupComponent> {
 		if (right) {
 			const portOut = delegate.getPortOut();
 			if (portOut) {
-				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "right", posRight, widthRight));
+				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "right", posRight, widthRight, true));
 			}
 			posRight += stepRight;
 
 			const portIn = delegate.getPortIn();
 			if (portIn) {
-				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "right", posRight, widthRight));
+				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "right", posRight, widthRight, true));
 			}
 			posRight += stepRight;
 		} else {
 			const portOut = delegate.getPortOut();
 			if (portOut) {
-				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "left", posLeft, widthLeft));
+				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "left", posLeft, widthLeft, true));
 			}
 			posLeft += stepLeft;
 
 			const portIn = delegate.getPortIn();
 			if (portIn) {
-				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "left", posLeft, widthLeft));
+				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "left", posLeft, widthLeft, true));
 			}
 			posLeft += stepLeft;
 		}
 
-		// right = !right;
+		right = !right;
 	}
 
 	return portGroups;
@@ -223,7 +223,15 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 
 	constructor(paperView: PaperView, protected readonly operator: OperatorModel) {
 		super(paperView, true);
-		operator.subscribeChanged(() => this.refresh());
+		
+		operator.getGenerics().subscribeGenericsChanged(() => {
+			this.refresh();
+		});
+
+		operator.subscribePropertiesChanged(() => {
+			this.refresh();
+		});
+		
 		this.refresh();
 	}
 

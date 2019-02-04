@@ -11,18 +11,12 @@ export class AutoTriggerApp extends SlangApp {
 	}
 
 	private static connectPorts(sourcePort: PortModel, triggerPort: PortModel) {
-		if (sourcePort.getType().isPrimitive() || sourcePort.getTypeIdentifier() === TypeIdentifier.Trigger || sourcePort.getTypeIdentifier() === TypeIdentifier.Stream) {
-			sourcePort.connect(triggerPort);
+		if (sourcePort.getType().isElementaryPort()) {
+			sourcePort.connect(triggerPort, false);
 		} else if (sourcePort.getTypeIdentifier() === TypeIdentifier.Map) {
 			for (const sub of sourcePort.getMapSubs()) {
 				if (sub.getTypeIdentifier() === TypeIdentifier.Trigger) {
-					sub.connect(triggerPort);
-					return;
-				}
-			}
-			for (const sub of sourcePort.getMapSubs()) {
-				if (sub.getType().isPrimitive()) {
-					sub.connect(triggerPort);
+					sub.connect(triggerPort, false);
 					return;
 				}
 			}

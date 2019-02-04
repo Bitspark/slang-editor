@@ -8,7 +8,8 @@ $type-color-boolean: $orange;
 $type-color-binary: $green;
 $type-color-primitive: $cyan;
 $type-color-trigger: rgba($gray, 0.5);
-$type-color-generic: rgba($purple, 0.5);
+$type-color-generic: $purple;
+$type-color-ghost: rgba($purple, 0.5);
 
 $port-color-stroke: $black;
 $port-color-valid: $green;
@@ -103,6 +104,11 @@ $blackbox-color-label: $black;
 	&.sl-type-generic {
 		stroke: $type-color-generic;
 		fill: $type-color-generic;
+	}
+
+	&.sl-type-ghost {
+		stroke: $type-color-ghost;
+		fill: $type-color-ghost;
 	}
 }
 

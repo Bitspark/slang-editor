@@ -173,7 +173,7 @@ export class WhiteBoxComponent extends CellComponent {
 				if (!connection.source.isConnectedWith(connection.destination)) {
 					return;
 				}
-				if (connection.source.getBox() === this.blueprint || connection.destination.getBox() === this.blueprint) {
+				if (connection.source.getBlackBox() === this.blueprint || connection.destination.getBlackBox() === this.blueprint) {
 					component.refresh();
 				}
 			});
@@ -212,18 +212,21 @@ export class WhiteBoxComponent extends CellComponent {
 			});
 		});
 
-		this.blueprint.subscribeChildCreated(OperatorModel, operator => {
-			operator.getGenericSpecifications().subscribeGenericsChanged(() => {
-				this.connections.forEach(component => {
-					const connection = component.getConnection();
-					if (!connection.source.isConnectedWith(connection.destination)) {
-						return;
-					}
-					if (connection.source.getBox() === operator || connection.destination.getBox() === operator) {
-						component.refresh();
-					}
-				});
+		const refreshOperatorConnections = (operator: OperatorModel) => {
+			this.connections.forEach(component => {
+				const connection = component.getConnection();
+				if (!connection.source.isConnectedWith(connection.destination)) {
+					return;
+				}
+				if (connection.source.getBlackBox() === operator || connection.destination.getBlackBox() === operator) {
+					component.refresh();
+				}
 			});
+		};
+		
+		this.blueprint.subscribeChildCreated(OperatorModel, operator => {
+			operator.getGenerics().subscribeGenericsChanged(() => refreshOperatorConnections(operator));
+			operator.subscribePropertiesChanged(() => refreshOperatorConnections(operator));
 		});
 	}
 
@@ -493,7 +496,7 @@ export class WhiteBoxComponent extends CellComponent {
 					x: outerPosition.x + outerSize.width,
 					y: outerPosition.y,
 					width: elementSize.width,
-					height: outerSize.height
+					height: outerSize.height,
 				});
 				break;
 		}
@@ -520,52 +523,49 @@ export class WhiteBoxComponent extends CellComponent {
 
 		this.operators.push(operatorComp);
 
-		const that = this;
-
-		if (operator.hasProperties()) {
-			operatorComp.onClick(() => {
-				const comp = that
-					.createComponent({x: 0, y: 0, align: "c"})
-					.mount({
-						view: () => m(Modal, {
-								onClose: () => {
-									comp.destroy();
-								}
-							},
-							m(DashboardComponent, {
-								operator: operator,
-								onSave: () => {
-									comp.destroy();
-								}
-							})
-						)
-					});
-				return true;
-			});
-		}
+		operatorComp.onClick(() => {
+			const comp = this
+				.createComponent({x: 0, y: 0, align: "c"})
+				.mount({
+					view: () => m(Modal, {
+							onClose: () => {
+								comp.destroy();
+							}
+						},
+						m(DashboardComponent, {
+							operator: operator,
+							onSave: () => {
+								comp.destroy();
+							}
+						})
+					)
+				});
+			return true;
+		});
+		
+		
 		this.attachPortInfo(operatorComp);
 
 		return operatorComp;
 	}
 
 	private attachPortInfo(portOwnerComp: OperatorBoxComponent | IsolatedBlueprintPortComponent) {
-		const that = this;
 		portOwnerComp.onPortMouseEnter((port: PortModel, x: number, y: number) => {
 			// in order to avoid multiple portInfos to be drawn we keep track of them and clear them out if needed
 			// since there are so many different events that can and should trigger a dismissal this solution is not
 			// really future proof.
 			// IMO a better solution would be to keep track of things that can be dismissed and destroy those
 			// once a dismissive action is trigger e.g. ESC or point and click to blank
-			that.clearPortInfos();
-			let portInfo = that
+			this.clearPortInfos();
+			let portInfo = this
 				.createComponent({x: x, y: y + 2, align: "tl"})
 				.mount({
 					view: () => m(PortInfo, {port})
 				});
-			that.trackPortInfo(portInfo)
+			this.trackPortInfo(portInfo)
 		});
 		portOwnerComp.onPortMouseLeave(() => {
-			that.clearPortInfos()
+			this.clearPortInfos()
 		});
 	}
 

@@ -58,7 +58,7 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 
 	protected getFormBody(): Map<string, { initValue?: SlangTypeValue, type: SlangType }> {
 		const op = this.operator!;
-		const propAssigns = op.getPropertyAssignments();
+		const propAssigns = op.getProperties();
 		return Array.from(propAssigns.getAssignments()).reduce((m, propAssign) => {
 			const type = propAssign.getType();
 			if (!type) {
@@ -75,7 +75,7 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 
 	private getFormSubmitData(formData: Map<string, { value: SlangTypeValue }>): PropertyAssignments {
 		const op = this.operator!;
-		const propAssigns = op.getPropertyAssignments();
+		const propAssigns = op.getProperties();
 		formData.forEach((value, propertyName) => {
 			propAssigns.get(propertyName).assign(value);
 		});
@@ -108,7 +108,7 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 					full: true,
 					notAllowed: !this.isValid(this.formData),
 					onClick: this.isValid ? () => {
-						this.operator.setPropertyAssignments(this.getFormSubmitData(this.beforeFormSubmit(this.formData)));
+						this.operator.setProperties(this.getFormSubmitData(this.beforeFormSubmit(this.formData)));
 						attrs.onSave();
 					} : undefined
 				}, "save & close"

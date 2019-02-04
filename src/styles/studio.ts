@@ -2,17 +2,18 @@ import {TypeIdentifier} from "../slang/custom/type";
 
 export namespace Styles {
 
-	const TypeColors: { [key in TypeIdentifier]: string } = {
-		// [TypeIdentifier.Unspecified]: "#ffeff2",
+	const TypeColors: { [key in TypeIdentifier | "ghost"]: string } = {
 		[TypeIdentifier.Number]: "#2e49b3",
 		[TypeIdentifier.String]: "#a52e2e",
 		[TypeIdentifier.Boolean]: "#cb8000",
 		[TypeIdentifier.Binary]: "#83a91d",
 		[TypeIdentifier.Primitive]: "#018b8a",
+		[TypeIdentifier.Generic]: "#b25db2",
+		[TypeIdentifier.Unspecified]: "#ffeff2",
 		[TypeIdentifier.Trigger]: "rgba(151, 151, 151, 0.5)",
-		[TypeIdentifier.Generic]: "rgba(178, 93, 178, 0.5)",
 		[TypeIdentifier.Stream]: "transparent",
 		[TypeIdentifier.Map]: "transparent",
+		["ghost"]: "rgba(178, 93, 178, 0.5)",
 	};
 
 	export class Port {
@@ -23,7 +24,7 @@ export namespace Styles {
 	export namespace Connection {
 		class Connection {
 			public static strokeWidth = 1;
-			public static stroke = (type: TypeIdentifier): string => TypeColors[type];
+			public static stroke = (type: TypeIdentifier | "ghost"): string => TypeColors[type];
 			public static vectorEffect = "default";
 		}
 

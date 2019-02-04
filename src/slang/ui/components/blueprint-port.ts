@@ -17,7 +17,7 @@ export class IsolatedBlueprintPortComponent {
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("mouseleft");
 
 	constructor(name: string, identity: string, port: PortModel, position: PortGroupPosition) {
-		this.portGroup = new PortGroupComponent("PortGroup", port, position, 0, 1.0);
+		this.portGroup = new PortGroupComponent("PortGroup", port, position, 0, 1.0, false);
 		const portGroups = {"PortGroup": this.portGroup.getPortGroupElement()};
 
 		const transform = Styles.BlueprintPort.transformations[position];

@@ -1,7 +1,15 @@
+import {
+	GenericPortModel,
+	OperatorPortModel,
+	PortDirection,
+	PortModel,
+	PortModelArgs
+} from "../model/port";
+import {DelegateModel} from "../model/delegate";
 import {SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "./events";
 import {StreamPortOwner} from "./stream";
-import {GenericPortModel, PortModel, PortModelArgs} from "../model/port";
-import {DelegateModel} from "../model/delegate";
+import {GenericSpecifications} from "./generics";
+import {PropertyAssignments} from "../model/property";
 
 type Type<T> = Function & { prototype: T };
 
@@ -124,6 +132,9 @@ export abstract class SlangNode {
 		if (!parentNode) {
 			return undefined;
 		}
+		if (parentNode === this) {
+			throw new Error(`reflexive structure detected`);
+		}
 		return parentNode.getAncestorNode(types);
 	}
 
@@ -223,6 +234,28 @@ export abstract class PortOwner extends SlangNode {
 		return this.streamPortOwner;
 	}
 
+	public reconstructPorts(properties: PropertyAssignments, ports: Iterable<PortModel>, P: new(p: GenericPortModel<this> | this, args: PortModelArgs) => PortModel) {
+		const obsoletePorts = new Set(this.getPorts());
+		for (const port of ports) {
+			const poPort = (port.getDirection() === PortDirection.In ? this.getPortIn() : this.getPortOut()) as OperatorPortModel;
+			if (!poPort) {
+				this.createPort({
+					name: "",
+					type: port.getType().expand(properties),
+					direction: port.getDirection(),
+				});
+			} else {
+				poPort.reconstruct(
+					port.getType().expand(properties),
+					P as (new(p: GenericPortModel<PortOwner> | PortOwner, args: PortModelArgs) => PortModel),
+					port.getDirection());
+				// TODO: Investigate why explicit cast to (new(p: GenericPortModel<PortOwner> | PortOwner, args: PortModelArgs) => PortModel) is necessary
+				obsoletePorts.delete(poPort);
+			}
+		}
+		obsoletePorts.forEach(obsoletePort => obsoletePort.destroy());
+	}
+
 }
 
 export abstract class BlackBox extends PortOwner {
@@ -232,5 +265,7 @@ export abstract class BlackBox extends PortOwner {
 	abstract findDelegate(name: string): DelegateModel | undefined;
 
 	abstract getDelegates(): IterableIterator<DelegateModel>;
+
+	abstract getGenerics(): GenericSpecifications;
 
 }

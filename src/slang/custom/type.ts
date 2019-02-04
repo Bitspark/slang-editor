@@ -1,9 +1,8 @@
-import {GenericSpecifications} from "./generics";
 import {PropertyEvaluator} from "./utils";
 import {PropertyAssignments} from "../model/property";
 
 export enum TypeIdentifier {
-	// Unspecified, // 0
+	Unspecified, // 0
 	Number, // 1
 	Binary, // 2
 	Boolean, // 3
@@ -23,7 +22,7 @@ interface SlangTypeDefStream {
 interface SlangTypeDefMap {
 	type: TypeIdentifier.Map
 	map: {
-		[portName: string]: SlangTypeDef,
+		[subName: string]: SlangTypeDef,
 	}
 }
 
@@ -33,7 +32,7 @@ interface SlangTypeDefGeneric {
 }
 
 interface SlangTypeDefPrimitive {
-	type: TypeIdentifier.String | TypeIdentifier.Number | TypeIdentifier.Boolean | TypeIdentifier.Binary | TypeIdentifier.Trigger | TypeIdentifier.Primitive
+	type: TypeIdentifier.String | TypeIdentifier.Number | TypeIdentifier.Boolean | TypeIdentifier.Binary | TypeIdentifier.Trigger | TypeIdentifier.Primitive | TypeIdentifier.Unspecified
 }
 
 
@@ -51,7 +50,7 @@ export function copySlangTypeValue(v: SlangTypeValue): SlangTypeValue {
 	}
 
 	if (Array.isArray(v)) {
-		return Array.from(v.values())
+		return Array.from(v.values());
 	}
 
 	const vcp: SlangTypeMap = {};
@@ -118,6 +117,16 @@ export class SlangType {
 	private genericIdentifier?: string;
 	private streamSub: SlangType | undefined;
 
+	public constructor(private parent: SlangType | null, private typeIdentifier: TypeIdentifier) {
+		if (this.typeIdentifier === TypeIdentifier.Map) {
+			this.mapSubs = new Map<string, SlangType>();
+		}
+	}
+	
+	public getParent(): SlangType | null {
+		return this.parent;
+	}
+	
 	public getTypeDef(): SlangTypeDef {
 		switch (this.typeIdentifier) {
 			case TypeIdentifier.Map:
@@ -228,12 +237,6 @@ export class SlangType {
 		return true;
 	}
 
-	public constructor(private parent: SlangType | null, private typeIdentifier: TypeIdentifier) {
-		if (this.typeIdentifier === TypeIdentifier.Map) {
-			this.mapSubs = new Map<string, SlangType>();
-		}
-	}
-
 	public copy(): SlangType {
 		const typeCopy = new SlangType(this.parent, this.typeIdentifier);
 		switch (this.typeIdentifier) {
@@ -273,83 +276,60 @@ export class SlangType {
 		return type;
 	}
 
-	public specifyGenerics(genSpec: GenericSpecifications): SlangType {
-		if (this.typeIdentifier === TypeIdentifier.Generic) {
-			const identifier = this.getGenericIdentifier();
-			if (genSpec.has(identifier)) {
-				return genSpec.get(this.getGenericIdentifier()).copy();
-			} else {
-				return this.copy();
-			}
-		}
-		const specifiedType = new SlangType(this.parent, this.typeIdentifier);
-		switch (this.typeIdentifier) {
-			case TypeIdentifier.Map:
-				for (const [subName, subType] of this.getMapSubs()) {
-					specifiedType.addMapSub(subName, subType.specifyGenerics(genSpec));
-				}
-				break;
-			case TypeIdentifier.Stream:
-				specifiedType.setStreamSub(this.getStreamSub().specifyGenerics(genSpec));
-				break;
-		}
-		return specifiedType;
-	}
-
-	public addMapSub(name: string, port: SlangType): SlangType {
+	public addMapSub(name: string, type: SlangType): SlangType {
 		if (this.typeIdentifier !== TypeIdentifier.Map) {
-			throw `add map sub port to a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+			throw `add map sub type to a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
 		}
-		this.mapSubs!.set(name, port);
-		port.parent = this;
+		this.mapSubs!.set(name, type);
+		type.parent = this;
 		return this;
 	}
 
 	public findMapSub(name: string): SlangType | null {
 		if (this.typeIdentifier !== TypeIdentifier.Map) {
-			throw `find map sub port to a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+			throw `find map sub type to a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
 		}
 		return this.mapSubs!.get(name) || null;
 	}
 
 	public getMapSubs(): IterableIterator<[string, SlangType]> {
 		if (this.typeIdentifier !== TypeIdentifier.Map) {
-			throw `access of map sub ports of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+			throw `access of map sub types of a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
 		}
 		return this.mapSubs!.entries();
 	}
 
-	public setStreamSub(port: SlangType) {
+	public setStreamSub(type: SlangType) {
 		if (this.typeIdentifier !== TypeIdentifier.Stream) {
-			throw `set stream sub port of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+			throw `set stream sub type of a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
 		}
-		port.parent = this;
-		this.streamSub = port;
+		type.parent = this;
+		this.streamSub = type;
 	}
 
 	public getStreamSub(): SlangType {
 		if (this.typeIdentifier !== TypeIdentifier.Stream) {
-			throw `access of stream port of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+			throw `access of stream type of a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
 		}
 		if (!this.streamSub) {
-			throw `stream port not having sub stream port`;
+			throw `stream type not having sub stream type`;
 		}
 		return this.streamSub;
 	}
 
 	public setGenericIdentifier(genericIdentifier: string) {
 		if (this.typeIdentifier !== TypeIdentifier.Generic) {
-			throw `set generic identifier of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
+			throw `set generic identifier of a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`;
 		}
 		this.genericIdentifier = genericIdentifier;
 	}
 
 	public getGenericIdentifier(): string {
 		if (this.typeIdentifier !== TypeIdentifier.Generic) {
-			throw new Error(`access of generic identifier of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);
+			throw new Error(`access of generic identifier of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);
 		}
 		if (!this.genericIdentifier) {
-			throw new Error(`generic port requires a generic identifier`);
+			throw new Error(`generic type without generic identifier`);
 		}
 		return this.genericIdentifier;
 	}
@@ -358,9 +338,29 @@ export class SlangType {
 		return this.typeIdentifier;
 	}
 
+	public isElementaryPort(): boolean {
+		return this.isPrimitive() || this.isTrigger() || this.isGeneric();
+	}
+	
 	public isPrimitive(): boolean {
 		const primitiveTypes = [TypeIdentifier.String, TypeIdentifier.Number, TypeIdentifier.Boolean, TypeIdentifier.Binary, TypeIdentifier.Primitive];
 		return primitiveTypes.indexOf(this.getTypeIdentifier()) !== -1;
+	}
+
+	public isMap(): boolean {
+		return this.typeIdentifier === TypeIdentifier.Map;
+	}
+
+	public isStream(): boolean {
+		return this.typeIdentifier === TypeIdentifier.Stream;
+	}
+
+	public isGeneric(): boolean {
+		return this.typeIdentifier === TypeIdentifier.Generic;
+	}
+	
+	public isTrigger(): boolean {
+		return this.typeIdentifier === TypeIdentifier.Trigger;
 	}
 
 	public toString(tab?: string): string {

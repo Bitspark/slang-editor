@@ -49,7 +49,7 @@ class ValueBlackBoxShape extends DataBlackBoxShape {
 	public setupForOperator(operator: OperatorModel) {
 		super.setupForOperator(operator);
 
-		const value = operator.getPropertyAssignment("value").getValue();
+		const value = operator.getPropertyValue("value");
 		const label = (typeof value !== "undefined") ? JSON.stringify(value) : "value?";
 		const maxLength = 24;
 
@@ -64,8 +64,8 @@ class EvalBlackBoxShape extends DataBlackBoxShape {
 	public setupForOperator(operator: OperatorModel) {
 		super.setupForOperator(operator);
 
-		const expr = operator.getPropertyAssignment("expression").getValue();
-		const label = (typeof expr !== "undefined") ? JSON.stringify(expr) : "expression?";
+		const expr = operator.getPropertyValue("expression");
+		const label = (typeof expr !== "undefined") ? (expr as string) : "expression?";
 		const maxLength = 24;
 
 		this.attr("label/text",
@@ -97,42 +97,3 @@ class ConvertBlackBoxShape extends DataBlackBoxShape {
 		}
 	}
 }
-
-/*
-class DashboardModule implements DashboardModuleComponent {
-	private chosenType?: SlangType;
-
-	private supportedTypes = new Map<string, SlangType>([
-		["number", SlangType.Number()],
-		["text", SlangType.String()],
-		["boolean", SlangType.Boolean()],
-	]);
-
-	oninit({attrs}: CVnode<DashboardModuleAttrs>): any {
-	}
-
-
-	view({attrs}: CVnode<DashboardModuleAttrs>): any {
-		return [
-			m(SelectInput, {
-				class: "",
-				label: "Type",
-				options: Array.from(this.supportedTypes.keys()),
-				onInput: (v: string) => {
-					this.chosenType = this.supportedTypes.get(v)!;
-				}
-			}),
-
-			this.chosenType ?
-				m(ConsoleEntry, {
-					label: "Value", class: "",
-					type: this.chosenType,
-					initValue: undefined,
-					onInput: (v: any) => {
-						console.log(">>>>", v);
-					}
-				}) : undefined
-		];
-	}
-}
-*/

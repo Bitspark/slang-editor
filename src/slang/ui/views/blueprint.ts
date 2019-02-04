@@ -49,7 +49,7 @@ export class BlueprintView extends PaperView {
 					if (portT) {
 						if (portS.canConnect(portT)) {
 							try {
-								portS.connect(portT);
+								portS.connect(portT, true);
 							} catch (e) {
 								console.error(e);
 							}
@@ -169,15 +169,15 @@ export class BlueprintView extends PaperView {
 		return port;
 	}
 
-	private createValueOperator(xy: XY, portDst: PortModel) {
+	private createValueOperator(xy: XY, targetPort: PortModel) {
 		const valueBlueprint = this.landscape.findBlueprint("slang.data.Value")!;
 
-		const genSpeci = new GenericSpecifications(Array.from(valueBlueprint.getGenericIdentifiers()));
-		genSpeci.specify("valueType", portDst.getType());
-		const propAssigns = new PropertyAssignments(Array.from(valueBlueprint.getProperties()), genSpeci);
+		const generics = new GenericSpecifications(Array.from(valueBlueprint.getGenericIdentifiers()));
+		generics.specify("valueType", targetPort.getType());
+		const properties = new PropertyAssignments(Array.from(valueBlueprint.getProperties()), generics);
 
-		const valueOperator = this.blueprint.createOperator(null, valueBlueprint, propAssigns, genSpeci, {position: xy});
-		valueOperator.getPortOut()!.connect(portDst);
+		const valueOperator = this.blueprint.createOperator(null, valueBlueprint, properties, generics, {position: xy});
+		valueOperator.getPortOut()!.connect(targetPort, false);
 	}
 
 	public getBlueprint(): BlueprintModel {

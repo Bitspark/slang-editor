@@ -12,16 +12,16 @@ export class PortComponent {
 	private position: g.PlainPoint | undefined;
 	private readonly portElement: dia.Element.Port = {};
 
-	constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent) {
-		if (port.isGeneric()) {
+	constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent, readonly ghost: boolean, isBlackBox: boolean) {
+		if (ghost) {
 			this.portElement.id = `${port.getIdentity()}.*`;
 		} else {
 			this.portElement.id = `${port.getIdentity()}`;
 		}
 		this.portElement.group = parent.getName();
-		this.portElement.markup = PortComponent.getPortMarkup(port);
+		this.portElement.markup = PortComponent.getPortMarkup(port, ghost);
 		this.portElement.attrs = {
-			"path": PortComponent.getPortAttributes(parent.getGroupPosition(), port),
+			"path": PortComponent.getPortAttributes(parent.getGroupPosition(), port, isBlackBox),
 			"g": {
 				magnet: true,
 			},
@@ -56,7 +56,7 @@ export class PortComponent {
 			`L 0 ${height / 2} z`;
 	}
 
-	private static getPortMarkup(port: PortModel): string {
+	private static getPortMarkup(port: PortModel, ghost: boolean): string {
 		const streamDepth = port.getStreamDepth();
 		if (streamDepth < 0) {
 			throw new Error(`stream depth cannot be negative`);
@@ -70,8 +70,8 @@ export class PortComponent {
 			if (i % 2 == 1) {
 				classes.push(`sl-stripe`);
 			} else {
-				if (port.isGeneric() && port.getTypeIdentifier() === TypeIdentifier.Map) {
-					classes.push(`sl-type-generic`);
+				if (ghost) {
+					classes.push(`sl-type-ghost`);
 				} else {
 					classes.push(`sl-type-${TypeIdentifier[port.getTypeIdentifier()].toLowerCase()}`);
 				}
@@ -81,23 +81,24 @@ export class PortComponent {
 		return `<g>${markup}</g>`;
 	}
 
-	private static getPortAttributes(position: PortGroupPosition, port: PortModel): attributes.SVGAttributes {
+	private static getPortAttributes(position: PortGroupPosition, port: PortModel, isBlackBox: boolean): attributes.SVGAttributes {
 		const attrs: attributes.SVGAttributes = {
 			paintOrder: "stroke fill",
 		};
-
+		
+		const rotation = isBlackBox ? port.isDirectionIn() : port.isDirectionOut();
 		switch (position) {
 			case "top":
-				attrs.transform = "";
+				attrs.transform = `rotate(${rotation ? 0 : 180})`;
 				break;
 			case "right":
-				attrs.transform = `rotate(${port.isDirectionIn() ? 90 : -90})`;
+				attrs.transform = `rotate(${rotation ? 90 : -90})`;
 				break;
 			case "bottom":
-				attrs.transform = "";
+				attrs.transform = `rotate(${rotation ? 180 : 0})`;
 				break;
 			case "left":
-				attrs.transform = `rotate(${port.isDirectionIn() ? -90 : 90})`;
+				attrs.transform = `rotate(${rotation ? -90 : 90})`;
 				break;
 		}
 
