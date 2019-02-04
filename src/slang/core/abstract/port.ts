@@ -544,21 +544,18 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		const specifications = generics.specifications;
 		const identifier = generics.identifier;
 
+		// TODO: Replace this legacy solution once all specifications are ensured to be maps
 		if (this.typeIdentifier === TypeIdentifier.Unspecified) {
-			// TODO: Replace this legacy solution once all specifications are ensured to be maps
 			this.typeIdentifier = TypeIdentifier.Map;
-		}
-
-		if (this.typeIdentifier !== TypeIdentifier.Map) {
-			// TODO: Replace this legacy solution once all specifications are ensured to be maps
+		} else if (this.typeIdentifier !== TypeIdentifier.Map) {
 			specifications.specify(identifier, other.getType());
 			return this;
 		}
 
-		// const {type, portId} = this.streamPort.createGenericType(other);
+		const {type, portId} = this.streamPort.createGenericType(other);
 
-		specifications.specify(identifier, other.getType());
-		return this.findGenericPort([]);
+		specifications.specify(identifier, type);
+		return this.findGenericPort(portId);
 	}
 
 	private connectDirectlyTo(destination: PortModel, createGenerics: boolean): void {
