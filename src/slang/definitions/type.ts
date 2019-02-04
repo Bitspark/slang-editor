@@ -120,6 +120,20 @@ export class SlangType {
 		return new SlangType(null, TypeIdentifier.Unspecified);
 	}
 
+	public static newNumber(): SlangType {
+		return new SlangType(null, TypeIdentifier.Number);
+	}
+
+	public static newString(): SlangType {
+		return new SlangType(null, TypeIdentifier.String);
+	}
+
+	public static newGeneric(identifier: string): SlangType {
+		const type = new SlangType(null, TypeIdentifier.Generic);
+		type.setGenericIdentifier(identifier);
+		return type;
+	}
+
 	public static newMap(): SlangType {
 		return new SlangType(null, TypeIdentifier.Map);
 	}
@@ -375,5 +389,4 @@ export class SlangType {
 
 		return str;
 	}
-
 }

@@ -1,4 +1,6 @@
-import {copySlangTypeValue, SlangType, SlangTypeValue, TypeIdentifier} from "../../../definitions/type";
+import {BehaviorSubject, Subject, Subscription} from "rxjs";
+
+import {SlangType, SlangTypeValue, TypeIdentifier} from "../../../definitions/type";
 
 import {GenericSpecifications} from "./generics";
 
@@ -21,8 +23,9 @@ export class PropertyModel {
 
 export class PropertyAssignment {
 	private type: SlangType | null = null;
+	private readonly value = new BehaviorSubject<SlangTypeValue | undefined>(undefined);
 
-	public constructor(private property: PropertyModel, private value: SlangTypeValue | undefined, generics: GenericSpecifications) {
+	public constructor(private property: PropertyModel, value: SlangTypeValue | undefined, generics: GenericSpecifications) {
 		const propertyType = property.getType();
 		if (propertyType.getTypeIdentifier() === TypeIdentifier.Generic) {
 			if (!generics) {
@@ -34,6 +37,8 @@ export class PropertyAssignment {
 		} else {
 			this.type = property.getType();
 		}
+
+		this.assign(value);
 	}
 
 	public getProperty(): PropertyModel {
@@ -49,24 +54,26 @@ export class PropertyAssignment {
 	}
 
 	public getValue(): SlangTypeValue | undefined {
-		return this.value;
+		return this.value.getValue();
 	}
 
 	public isStream(): boolean {
 		return this.property.getTypeIdentifier() === TypeIdentifier.Stream;
 	}
 
-	public isEqual(other: PropertyAssignment): boolean {
-		return this.property === other.property && this.value === other.value;
+	public assign(value: SlangTypeValue | undefined) {
+		// TODO: Check if type is correct
+		this.value.next(value);
 	}
 
-	public assign(value: SlangTypeValue | undefined) {
-		this.value = value;
+	public subscribeAssignmentChanged(cb: (newValue: SlangTypeValue | undefined) => void): Subscription {
+		return this.value.subscribe(cb);
 	}
 }
 
 export class PropertyAssignments {
 	private readonly assignments: Map<string, PropertyAssignment>;
+	private readonly assignmentChanged = new Subject<{ property: PropertyModel, newValue: SlangTypeValue | undefined }>();
 
 	public constructor(private properties: PropertyModel[], generics: GenericSpecifications) {
 		this.assignments = new Map<string, PropertyAssignment>(
@@ -74,32 +81,12 @@ export class PropertyAssignments {
 				(property) => [property.getName(), new PropertyAssignment(property, undefined, generics)],
 			),
 		);
-	}
 
-	public copy(generics: GenericSpecifications): PropertyAssignments {
-		const propAssigns = new PropertyAssignments(this.properties, generics);
-		for (const propAssign of this.getAssignments()) {
-			let value = propAssign.getValue();
-			if (value) {
-				value = copySlangTypeValue(value);
-			}
-			propAssigns.get(propAssign.getName()).assign(value);
-		}
-		return propAssigns;
-	}
-
-	public isEqual(other: PropertyAssignments): boolean {
-		if (this.assignments.size !== other.assignments.size) {
-			return false;
-		}
-
-		for (const propAssign of this.getAssignments()) {
-			const prop = propAssign.getProperty();
-			if (!(other.isDefined(prop) && propAssign.isEqual(other.get(prop)))) {
-				return false;
-			}
-		}
-		return true;
+		this.assignments.forEach((assignment) => {
+			assignment.subscribeAssignmentChanged((newValue) => {
+				this.assignmentChanged.next({property: assignment.getProperty(), newValue});
+			});
+		});
 	}
 
 	public getProperties(): IterableIterator<PropertyModel> {
@@ -117,6 +104,10 @@ export class PropertyAssignments {
 	public isDefined(propertyName: string | PropertyModel): boolean {
 		const propAssign = this.assignments.get((propertyName instanceof PropertyModel) ? propertyName.getName() : propertyName);
 		return !!propAssign && !!propAssign.getValue();
+	}
+
+	public subscribeAssignmentChanged(cb: (assignment: { property: PropertyModel, newValue: SlangTypeValue | undefined }) => void): Subscription {
+		return this.assignmentChanged.subscribe(cb);
 	}
 
 	private getByName(propertyName: string): PropertyAssignment {
