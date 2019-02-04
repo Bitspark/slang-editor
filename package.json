@@ -72,7 +72,6 @@
     "tslint": "^5.12.1",
     "tslint-consistent-codestyle": "^1.15.0",
     "tslint-eslint-rules": "^5.4.0",
-    "tslint-no-circular-imports": "github:Bitspark/tslint-no-circular-imports#develop",
     "typescript": "^3.2.4",
     "webpack": "^4.25.0",
     "webpack-cli": "^3.1.2",

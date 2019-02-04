@@ -122,7 +122,7 @@ function typeModelToJSON(type: SlangType): TypeDefApiResponse {
 	}
 }
 
-export function getFullPortRef(port: PortModel): string {
+function getFullPortRef(port: PortModel): string {
 	if (port instanceof BlueprintPortModel) {
 		return blueprintPortRef(port);
 	}

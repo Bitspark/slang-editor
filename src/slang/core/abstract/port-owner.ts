@@ -1,5 +1,3 @@
-// tslint:disable:no-circular-imports
-
 import {SlangNode} from "./nodes";
 import {GenericPortModel, PortDirection, PortModel, PortModelArgs} from "./port";
 import {IStreamPortOwner} from "./stream";

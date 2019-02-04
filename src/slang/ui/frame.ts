@@ -1,5 +1,3 @@
-// tslint:disable:no-circular-imports
-
 import {View} from "./views/view";
 
 export class ViewFrame {

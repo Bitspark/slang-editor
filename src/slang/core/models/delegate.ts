@@ -1,5 +1,3 @@
-// tslint:disable:no-circular-imports
-
 import {GenericDelegateModel} from "../abstract/delegate";
 import {PortModelArgs} from "../abstract/port";
 import {GenericSpecifications} from "../abstract/utils/generics";

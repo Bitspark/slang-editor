@@ -1,5 +1,3 @@
-// tslint:disable:no-circular-imports
-
 import m, {ClassComponent, CVnode} from "mithril";
 
 import {SlangType, SlangTypeDef, SlangTypeValue, TypeIdentifier} from "../../definitions/type";

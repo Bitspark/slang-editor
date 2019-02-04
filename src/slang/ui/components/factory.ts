@@ -1,5 +1,3 @@
-// tslint:disable:no-circular-imports
-
 import {BlueprintModel} from "../../core/models/blueprint";
 import {OperatorModel} from "../../core/models/operator";
 

@@ -1,5 +1,3 @@
-// tslint:disable:no-circular-imports
-
 import {dia, g} from "jointjs";
 
 import {Styles} from "../../../styles/studio";

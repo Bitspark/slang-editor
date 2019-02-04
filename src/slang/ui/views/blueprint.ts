@@ -1,5 +1,3 @@
-// tslint:disable:no-circular-imports
-
 import {dia} from "jointjs";
 import m, {ClassComponent, CVnode} from "mithril";
 

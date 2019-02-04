@@ -1,5 +1,3 @@
-// tslint:disable:no-circular-imports
-
 import {BlackBox} from "./blackbox";
 import {PortOwner} from "./port-owner";
 import {IStreamPortOwner} from "./stream";
