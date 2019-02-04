@@ -115,15 +115,15 @@ export namespace SlangTypeDef {
 }
 
 export class SlangType {
-	
-	static newUnspecified(): SlangType {
+
+	public static newUnspecified(): SlangType {
 		return new SlangType(null, TypeIdentifier.Unspecified);
 	}
 
-	static newMap(): SlangType {
+	public static newMap(): SlangType {
 		return new SlangType(null, TypeIdentifier.Map);
 	}
-	
+
 	private readonly mapSubs: Map<string, SlangType> | undefined;
 	private genericIdentifier?: string;
 	private streamSub: SlangType | undefined;
