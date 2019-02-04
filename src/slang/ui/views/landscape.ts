@@ -1,6 +1,6 @@
 import {dia, shapes} from "jointjs";
 
-import {SlangType, TypeIdentifier} from "../../definitions/type";
+import {SlangType} from "../../definitions/type";
 
 import {PortDirection} from "../../core/abstract/port";
 import {BlueprintModel, BlueprintType} from "../../core/models/blueprint";
