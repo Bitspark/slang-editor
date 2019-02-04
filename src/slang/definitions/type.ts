@@ -84,14 +84,14 @@ export namespace SlangTypeDef {
 				const bMap = b.map;
 
 				for (const propKey in aMap) {
-					if (aMap.hasOwnProperty(propKey)) {
-						if (bMap.hasOwnProperty(propKey)) {
-							if (!isEqual(aMap[propKey], bMap[propKey])) {
-								return false;
-							}
-						} else {
-							return false;
-						}
+					if (!aMap.hasOwnProperty(propKey)) {
+						continue;
+					}
+					if (!bMap.hasOwnProperty(propKey)) {
+						return false;
+					}
+					if (!isEqual(aMap[propKey], bMap[propKey])) {
+						return false;
 					}
 				}
 				break;
@@ -227,10 +227,8 @@ export class SlangType {
 			return newStream;
 		}
 
-		if (this.typeIdentifier === TypeIdentifier.Generic) {
-			if (this.genericIdentifier !== other.genericIdentifier) {
-				throw new Error(`generics not unifiable ${this.genericIdentifier} != ${other.genericIdentifier}`);
-			}
+		if (this.typeIdentifier === TypeIdentifier.Generic && this.genericIdentifier !== other.genericIdentifier) {
+			throw new Error(`generics not unifiable ${this.genericIdentifier} != ${other.genericIdentifier}`);
 		}
 
 		return this.copy();

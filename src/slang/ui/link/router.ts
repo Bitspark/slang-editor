@@ -752,15 +752,17 @@ function findRoute(this: any, from: any, to: any, map: any, opt: any) {
 				const neighborPenalty = isStart ? 0 : opt.penalties[directionChange]; // no penalties for start point
 				const costFromStart = currentCost + neighborCost + neighborPenalty;
 
-				if (!openSet.isOpen(neighborKey) || (costFromStart < costs[neighborKey])) {
-					// neighbor point has not been processed yet
-					// or the cost of the path from start is lower than previously calculated
-
-					points[neighborKey] = neighborPoint;
-					parents[neighborKey] = currentPoint;
-					costs[neighborKey] = costFromStart;
-					openSet.add(neighborKey, costFromStart + estimateCost(neighborPoint, endPoints));
+				if (openSet.isOpen(neighborKey) && costFromStart >= costs[neighborKey]) {
+					continue;
 				}
+
+				// neighbor point has not been processed yet
+				// or the cost of the path from start is lower than previously calculated
+
+				points[neighborKey] = neighborPoint;
+				parents[neighborKey] = currentPoint;
+				costs[neighborKey] = costFromStart;
+				openSet.add(neighborKey, costFromStart + estimateCost(neighborPoint, endPoints));
 			}
 
 			loopsRemaining--;

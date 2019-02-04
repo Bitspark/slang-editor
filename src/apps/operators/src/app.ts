@@ -83,16 +83,20 @@ class ConvertBlackBoxShape extends DataBlackBoxShape {
 		this.attr("label/font-size", 9);
 		this.resize(80, 24);
 	}
+
 	public setupForOperator(operator: OperatorModel) {
 		super.setupForOperator(operator);
 
 		const portIn = operator.getPortIn();
 		const portOut = operator.getPortOut();
 
-		if (portIn && portOut) {
-			const fromType = TypeIdentifier[portIn.getTypeIdentifier()];
-			const toType = TypeIdentifier[portOut.getTypeIdentifier()];
-			this.attr("label/text", `${fromType} → ${toType}`);
+		if (!portIn || !portOut) {
+			return;
 		}
+
+		const fromType = TypeIdentifier[portIn.getTypeIdentifier()];
+		const toType = TypeIdentifier[portOut.getTypeIdentifier()];
+
+		this.attr("label/text", `${fromType} → ${toType}`);
 	}
 }

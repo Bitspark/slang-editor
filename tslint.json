@@ -89,9 +89,9 @@
 			"never"
 		],
 		// Rules from tslint-consistent-codestyle
-		// "early-exit": true,
-		// "no-unnecessary-else": true,
-		// "no-collapsible-if": true,
+		"early-exit": true,
+		"no-unnecessary-else": true,
+		"no-collapsible-if": true,
 		"no-else-after-return": true,
 		"no-unused": true,
 		"naming-convention": [

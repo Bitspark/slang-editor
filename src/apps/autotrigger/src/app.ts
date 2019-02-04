@@ -36,25 +36,29 @@ export class AutoTriggerApp extends SlangApp {
 
 	protected onReady(): void {
 		this.app.subscribeDescendantCreated(OperatorPortModel, (port) => {
-			if (port.isDirectionIn() && port.getTypeIdentifier() === TypeIdentifier.Trigger) {
-				const subscription = port.getStreamPort().subscribeStreamTypeChanged((streamType) => {
-					if (streamType) {
-						if (!port.isConnected()) {
-							const sourcePort = streamType.getSource();
-							if (sourcePort !== null) {
-								try {
-									AutoTriggerApp.connectPorts(sourcePort, port);
-								} catch (e) {
-									console.error(e);
-								}
-							}
-						}
-					}
-				});
-				port.subscribeDisconnected(() => {
-					subscription.unsubscribe();
-				});
+			if (!port.isDirectionIn() || port.getTypeIdentifier() !== TypeIdentifier.Trigger) {
+				return;
 			}
+			const subscription = port.getStreamPort().subscribeStreamTypeChanged((streamType) => {
+				if (!streamType) {
+					return;
+				}
+				if (port.isConnected()) {
+					return;
+				}
+				const sourcePort = streamType.getSource();
+				if (sourcePort === null) {
+					return;
+				}
+				try {
+					AutoTriggerApp.connectPorts(sourcePort, port);
+				} catch (e) {
+					console.error(e);
+				}
+			});
+			port.subscribeDisconnected(() => {
+				subscription.unsubscribe();
+			});
 		});
 	}
 }

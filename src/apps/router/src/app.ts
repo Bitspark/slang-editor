@@ -46,18 +46,20 @@ export class RouterApp extends SlangApp {
 			});
 		});
 		this.app.subscribeOpenedBlueprintChanged((blueprint) => {
-			if (blueprint !== null) {
-				const title = `${blueprint.getFullName()} Blueprint | Slang Studio`;
-				const url = `blueprint/${blueprint.getFullName()}`;
-				window.history.pushState({type: "blueprint", fullName: blueprint.getFullName()}, title, url);
+			if (blueprint === null) {
+				return;
 			}
+			const title = `${blueprint.getFullName()} Blueprint | Slang Studio`;
+			const url = `blueprint/${blueprint.getFullName()}`;
+			window.history.pushState({type: "blueprint", fullName: blueprint.getFullName()}, title, url);
 		});
 		this.app.subscribeOpenedLandscapeChanged((blueprint) => {
-			if (blueprint !== null) {
-				const title = `Blueprint Landscape | Slang Studio`;
-				const url = `/`;
-				window.history.pushState({type: "landscape"}, title, url);
+			if (blueprint === null) {
+				return;
 			}
+			const title = `Blueprint Landscape | Slang Studio`;
+			const url = `/`;
+			window.history.pushState({type: "landscape"}, title, url);
 		});
 	}
 

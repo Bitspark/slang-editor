@@ -138,12 +138,14 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public set xy(xy: XY | undefined) {
-		if (xy) {
-			if (!this.geometry) {
-				this.geometry = {position: xy};
-			} else {
-				this.geometry.position = xy;
-			}
+		if (!xy) {
+			return;
+		}
+
+		if (!this.geometry) {
+			this.geometry = {position: xy};
+		} else {
+			this.geometry.position = xy;
 		}
 	}
 
