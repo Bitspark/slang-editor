@@ -1,7 +1,8 @@
 [
   {
-    "name": "Value",
     "def": {
+      "name": "Value",
+      "id": "bbeeeeff-2b04-44b4-97ad-fd931c9ab77b",
       "services": {
         "main": {
           "in": {
@@ -25,8 +26,9 @@
     "type": "local"
   },
   {
-    "name": "StringToString",
     "def": {
+      "id": "ba24c37f-2b04-44b4-97ad-fd931c9ab77b",
+      "name": "StringToString",
       "services": {
         "main": {
           "in": {
@@ -43,8 +45,9 @@
     "type": "local"
   },
   {
-    "name": "GenericToGeneric",
     "def": {
+      "id": "dc1aa556-d62e-4e07-adbb-53dc317481b0",
+      "name": "GenericToGeneric",
       "services": {
         "main": {
           "in": {

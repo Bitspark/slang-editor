@@ -164,5 +164,9 @@
 		"no-namespace": false
 	},
 	"linterOptions": {
+		"exclude": [
+			"node_modules/**",
+			"**/*.test.ts"
+        ]
 	}
 }

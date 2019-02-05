@@ -60,6 +60,8 @@ export interface OperatorApiResponse {
 }
 
 export interface BlueprintDefApiResponse {
+	id: string;
+	name: string;
 	operators?: {
 		[operatorName: string]: OperatorApiResponse,
 	};
@@ -81,7 +83,6 @@ export interface ConnectionsApiResponse {
 
 export interface BlueprintApiResponse {
 	type: string;
-	name: string;
 	def: BlueprintDefApiResponse;
 }
 
@@ -94,6 +95,7 @@ export class ApiService {
 		url = (url.endsWith("/")) ? url.slice(0, -1) : url;
 		return `${protocol}//${url}`;
 	}
+
 	private readonly host: string;
 
 	constructor(host: string) {
@@ -109,7 +111,7 @@ export class ApiService {
 		);
 	}
 
-	public async storeBlueprint(blueprintFullName: string, blueprintDefJSON: BlueprintDefApiResponse): Promise<any> {
+	public async storeBlueprint(blueprintDefJSON: BlueprintDefApiResponse): Promise<any> {
 		const process = (data: any) => {
 			if (data) {
 				console.error(data);
@@ -121,17 +123,17 @@ export class ApiService {
 
 		return new Promise<boolean>((resolve) => {
 			const reqInit = {method: "post", body: JSON.stringify(blueprintDefJSON)};
-			fetch(`${this.host}/operator/def/?fqop=${blueprintFullName}`, reqInit)
+			fetch(`${this.host}/operator/def/`, reqInit)
 				.then((response: Response) => response.json())
 				.then((data: any) => resolve(process(data)))
 				.catch(error);
 		});
 	}
 
-	public async deployBlueprint(blueprintFullName: string): Promise<DeploymentStatusApiResponse> {
+	public async deployBlueprint(blueprintName: string): Promise<DeploymentStatusApiResponse> {
 		return this.httpPost<{ fqn: string, props: any, gens: any, stream: boolean }, DeploymentStatusApiResponse>(
 			"/run/",
-			{fqn: blueprintFullName, props: {}, gens: {}, stream: false},
+			{fqn: blueprintName, props: {}, gens: {}, stream: false},
 			(data: any) => {
 				if (data.status === "success") {
 					return data as DeploymentStatusApiResponse;

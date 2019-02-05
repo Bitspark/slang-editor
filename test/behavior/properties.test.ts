@@ -7,6 +7,7 @@ import data from "../resources/definitions.json";
 import {GenericSpecifications} from "../../src/slang/core/abstract/utils/generics";
 import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
 import {PropertyAssignments, PropertyModel} from "../../src/slang/core/abstract/utils/properties";
+import uuidv4 = require("uuid/v4");
 
 describe("A property", () => {
 	let appModel: AppModel;
@@ -24,10 +25,11 @@ describe("A property", () => {
 	});
 
 	it("can be changed while retaining type and connections", () => {
-		const bpValue = landscapeModel.findBlueprint("Value")!;
-		const bpS2S = landscapeModel.findBlueprint("StringToString")!;
+		const bpValue = landscapeModel.findBlueprint("bbeeeeff-2b04-44b4-97ad-fd931c9ab77b")!;
+		const bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
 
-		const bpNew = landscapeModel.createBlueprint({fullName: "test-prop-1", type: BlueprintType.Local});
+		const bpNewId = uuidv4();
+		const bpNew = landscapeModel.createBlueprint({uuid: bpNewId, name: "test-prop-1", type: BlueprintType.Local});
 
 		const gens = new GenericSpecifications(["valueType"]);
 		const props = new PropertyAssignments([new PropertyModel("value", SlangType.newGeneric("valueType"))], gens);
