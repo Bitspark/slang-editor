@@ -46,63 +46,16 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		this.name = name;
 		this.direction = direction;
 
+		this.subscribe();
+
 		this.streamPort = new StreamPort(this);
 		this.reconstruct(type, portCtor, direction);
-
-		this.subscribeConnected((port) => {
-			this.connectedWith.push(port);
-		});
-
-		this.subscribeDisconnected((port) => {
-			const idxT = this.connectedWith.indexOf(port);
-			if (idxT === -1) {
-				throw new Error(`inconsistency: not connected with that port`);
-			}
-			this.connectedWith.splice(idxT, 1);
-		});
-
-		this.subscribeDestroyed(() => {
-			this.disconnectAll();
-		});
-
-		if (this.isGenericLikeDescent()) {
-			const fetchedGenerics = this.fetchGenerics();
-			const specifications = fetchedGenerics.specifications;
-			const identifier = fetchedGenerics.identifier;
-
-			this.subscribeDestroyed(() => {
-				fetchedGenerics.specifications.unregisterPort(fetchedGenerics.identifier, this);
-			});
-
-			this.subscribeDisconnected(() => {
-				if (this.connectedWith.length === 0) {
-					const newType = specifications.getUnifiedType(identifier);
-					if (newType && !specifications.get(identifier).equals(newType)) {
-						specifications.specify(identifier, newType);
-					}
-				}
-			});
-
-			if (this.isGenericLike()) {
-				specifications.registerPort(identifier, this);
-				specifications.subscribeGenericTypeChanged(identifier, (newType) => {
-					if (newType) {
-						this.reconstruct(newType, portCtor, this.direction);
-					} else {
-						this.typeIdentifier = TypeIdentifier.Unspecified;
-						this.genericIdentifier = undefined;
-					}
-				});
-			}
-		}
-
 		this.streamPort.initialize();
 	}
 
-	public reconstruct(type: SlangType, portCtor: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel, direction: PortDirection): void {
+	public reconstruct(type: SlangType, portCtor: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel, direction: PortDirection, generic: boolean = false): void {
 		if (this.typeIdentifier !== type.getTypeIdentifier()) {
 			this.typeIdentifier = type.getTypeIdentifier();
-
 			switch (this.typeIdentifier) {
 				case TypeIdentifier.Map: {
 					for (const [subName, subType] of type.getMapSubs()) {
@@ -150,6 +103,13 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				}
 			}
 		}
+
+		if (generic || !this.isGenericLikeDescent()) {
+			return;
+		}
+
+		this.typeIdentifier = type.getTypeIdentifier();
+		this.subscribeGenerics(portCtor);
 	}
 
 	public getConnectedWith(): IterableIterator<PortModel> {
@@ -292,11 +252,13 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		switch (this.typeIdentifier) {
 			case TypeIdentifier.Map:
 				for (const subPort of this.getMapSubs()) {
-					if (subPort.anySubstreamConnected()) {
-						const subType = subPort.getConnectedType();
-						if (!subType.isVoid()) {
-							type.addMapSub(subPort.getName(), subType);
-						}
+					if (!subPort.anySubstreamConnected()) {
+						continue;
+					}
+
+					const subType = subPort.getConnectedType();
+					if (!subType.isVoid()) {
+						type.addMapSub(subPort.getName(), subType);
 					}
 				}
 				break;
@@ -493,6 +455,61 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 	public subscribeDisconnected(cb: (other: PortModel) => void): void {
 		this.disconnected.subscribe(cb);
+	}
+
+	// Private methods
+
+	private subscribe(): void {
+		this.subscribeConnected((port) => {
+			this.connectedWith.push(port);
+		});
+
+		this.subscribeDisconnected((port) => {
+			const idxT = this.connectedWith.indexOf(port);
+			if (idxT === -1) {
+				throw new Error(`inconsistency: not connected with that port`);
+			}
+			this.connectedWith.splice(idxT, 1);
+		});
+
+		this.subscribeDestroyed(() => {
+			this.disconnectAll();
+		});
+	}
+
+	private subscribeGenerics(portCtor: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel): void {
+		const fetchedGenerics = this.fetchGenerics();
+		const specifications = fetchedGenerics.specifications;
+		const identifier = fetchedGenerics.identifier;
+
+		this.subscribeDestroyed(() => {
+			fetchedGenerics.specifications.unregisterPort(fetchedGenerics.identifier, this);
+		});
+
+		this.subscribeDisconnected(() => {
+			if (this.connectedWith.length !== 0) {
+				return;
+			}
+
+			const newType = specifications.getUnifiedType(identifier);
+			if (newType && !specifications.get(identifier).equals(newType)) {
+				specifications.specify(identifier, newType);
+			}
+		});
+
+		if (!this.isGenericLike()) {
+			return;
+		}
+
+		specifications.registerPort(identifier, this);
+		specifications.subscribeGenericTypeChanged(identifier, (newType) => {
+			if (newType) {
+				this.reconstruct(newType, portCtor, this.direction, true);
+			} else {
+				this.typeIdentifier = TypeIdentifier.Unspecified;
+				this.genericIdentifier = undefined;
+			}
+		});
 	}
 
 	private fetchGenerics(): PortGenerics {

@@ -185,14 +185,11 @@ export class BlueprintSelectComponent extends CellComponent {
 			.map(([bp]: [BlueprintModel, number]) => bp);
 
 		for (const bp of this.landscape.getChildNodes(BlueprintModel)) {
-			if (blueprints.length < 60) {
-				if (this.isFilterExprIncluded(bp)) {
-					if (blueprints.indexOf(bp) < 0) {
-						blueprints.push(bp);
-					}
-				}
-			} else {
+			if (blueprints.length >= 60) {
 				break;
+			}
+			if (this.isFilterExprIncluded(bp) && blueprints.indexOf(bp) < 0) {
+				blueprints.push(bp);
 			}
 		}
 		return blueprints;

@@ -1,6 +1,5 @@
 import m, {ClassComponent, CVnode} from "mithril";
 
-import {PropertyAssignments} from "../../core/abstract/utils/properties";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {OperatorModel} from "../../core/models/operator";
 import {isUndefined, SlangType, SlangTypeValue} from "../../definitions/type";
@@ -66,7 +65,9 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 					full: true,
 					notAllowed: !this.isValid(this.formData),
 					onClick: this.isValid ? () => {
-						this.operator.setProperties(this.getFormSubmitData(this.beforeFormSubmit(this.formData)));
+						this.beforeFormSubmit(this.formData).forEach((value, propertyName) => {
+							this.operator.getProperties().get(propertyName).assign(value);
+						});
 						attrs.onSave();
 					} : undefined,
 				}, "save & close",
@@ -93,15 +94,6 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 
 	protected beforeFormSubmit(formData: Map<string, { value: SlangTypeValue }>): Map<string, { value: SlangTypeValue }> {
 		return formData;
-	}
-
-	private getFormSubmitData(formData: Map<string, { value: SlangTypeValue }>): PropertyAssignments {
-		const op = this.operator!;
-		const propAssigns = op.getProperties();
-		formData.forEach((value, propertyName) => {
-			propAssigns.get(propertyName).assign(value);
-		});
-		return propAssigns;
 	}
 
 	private renderPropertyInput(fieldName: string, _fieldAttrs: { type: SlangType, initValue?: SlangTypeValue }): m.Children {

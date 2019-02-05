@@ -226,62 +226,64 @@ export class WhiteBoxComponent extends CellComponent {
 			newSize = set.size;
 		}
 
-		if (!!set.position || !!set.size) {
-			if (!animation) {
-				this.shape.set(set);
-			} else {
-				if (!!set.size) {
-					this.shape.transition("size/height", set.size.height);
-					this.shape.transition("size/width", set.size.width);
-				}
-				if (!!set.position) {
-					this.shape.transition("position/x", set.position.x);
-					this.shape.transition("position/y", set.position.y);
-				}
-			}
-
-			this.ports.top.map((p) => p.getShape()).forEach((port) => {
-				const currentPortPosition = port.get("position");
-				const targetPosition = {
-					x: currentPortPosition.x,
-					y: newPosition.y - pHeight,
-				};
-				if (!animation) {
-					port.set({position: targetPosition});
-				} else {
-					port.transition("position/x", targetPosition.x);
-					port.transition("position/y", targetPosition.y);
-				}
-			});
-
-			this.ports.bottom.map((p) => p.getShape()).forEach((port) => {
-				const currentPortPosition = port.get("position");
-				const targetPosition = {
-					x: currentPortPosition.x,
-					y: newPosition.y + newSize.height,
-				};
-				if (!animation) {
-					port.set({position: targetPosition});
-				} else {
-					port.transition("position/x", targetPosition.x);
-					port.transition("position/y", targetPosition.y);
-				}
-			});
-
-			this.ports.right.map((p) => p.getShape()).forEach((port) => {
-				const currentPortPosition = port.get("position");
-				const targetPosition = {
-					x: newPosition.x + newSize.width,
-					y: currentPortPosition.y,
-				};
-				if (!animation) {
-					port.set({position: targetPosition});
-				} else {
-					port.transition("position/x", targetPosition.x);
-					port.transition("position/y", targetPosition.y);
-				}
-			});
+		if (!set.position && !set.size) {
+			return;
 		}
+
+		if (!animation) {
+			this.shape.set(set);
+		} else {
+			if (!!set.size) {
+				this.shape.transition("size/height", set.size.height);
+				this.shape.transition("size/width", set.size.width);
+			}
+			if (!!set.position) {
+				this.shape.transition("position/x", set.position.x);
+				this.shape.transition("position/y", set.position.y);
+			}
+		}
+
+		this.ports.top.map((p) => p.getShape()).forEach((port) => {
+			const currentPortPosition = port.get("position");
+			const targetPosition = {
+				x: currentPortPosition.x,
+				y: newPosition.y - pHeight,
+			};
+			if (!animation) {
+				port.set({position: targetPosition});
+			} else {
+				port.transition("position/x", targetPosition.x);
+				port.transition("position/y", targetPosition.y);
+			}
+		});
+
+		this.ports.bottom.map((p) => p.getShape()).forEach((port) => {
+			const currentPortPosition = port.get("position");
+			const targetPosition = {
+				x: currentPortPosition.x,
+				y: newPosition.y + newSize.height,
+			};
+			if (!animation) {
+				port.set({position: targetPosition});
+			} else {
+				port.transition("position/x", targetPosition.x);
+				port.transition("position/y", targetPosition.y);
+			}
+		});
+
+		this.ports.right.map((p) => p.getShape()).forEach((port) => {
+			const currentPortPosition = port.get("position");
+			const targetPosition = {
+				x: newPosition.x + newSize.width,
+				y: currentPortPosition.y,
+			};
+			if (!animation) {
+				port.set({position: targetPosition});
+			} else {
+				port.transition("position/x", targetPosition.x);
+				port.transition("position/y", targetPosition.y);
+			}
+		});
 	}
 
 	public onClick(cb: (event: MouseEvent, x: number, y: number) => void) {
@@ -387,11 +389,13 @@ export class WhiteBoxComponent extends CellComponent {
 
 			operator.subscribeDestroyed(() => {
 				const idx = this.operators.indexOf(opComp);
-				if (idx >= 0) {
-					opComp.destroy();
-					this.operators.splice(idx, 1);
-					this.fitOuter(true);
+				if (idx < 0) {
+					return;
 				}
+
+				opComp.destroy();
+				this.operators.splice(idx, 1);
+				this.fitOuter(true);
 			});
 		});
 
@@ -457,7 +461,7 @@ export class WhiteBoxComponent extends CellComponent {
 
 		this.blueprint.subscribeChildCreated(OperatorModel, (operator) => {
 			operator.getGenerics().subscribeGenericsChanged(() => refreshOperatorConnections(operator));
-			operator.subscribePropertiesChanged(() => refreshOperatorConnections(operator));
+			operator.getProperties().subscribeAssignmentChanged(() => refreshOperatorConnections(operator));
 		});
 	}
 

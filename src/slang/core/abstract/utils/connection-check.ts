@@ -158,12 +158,14 @@ function collectAncestorOwners(port: PortModel, owners: Set<PortOwner>) {
 	owners.add(owner);
 
 	const portIn = owner.getPortIn();
-	if (portIn) {
-		const descendantPorts = portIn.getDescendantPorts();
-		for (const descendantPort of descendantPorts) {
-			for (const connectedPort of descendantPort.getConnectedWith()) {
-				collectAncestorOwners(connectedPort, owners);
-			}
+	if (!portIn) {
+		return;
+	}
+
+	const descendantPorts = portIn.getDescendantPorts();
+	for (const descendantPort of descendantPorts) {
+		for (const connectedPort of descendantPort.getConnectedWith()) {
+			collectAncestorOwners(connectedPort, owners);
 		}
 	}
 }
@@ -224,10 +226,8 @@ export function canConnectTo(source: PortModel, destination: PortModel): boolean
 		if (!streamsCompatible(sourceStream, destinationStream)) {
 			return false;
 		}
-	} else {
-		if (!streamsGenericLikeCompatible(source, destination)) {
-			return false;
-		}
+	} else if (!streamsGenericLikeCompatible(source, destination)) {
+		return false;
 	}
 
 	return true;

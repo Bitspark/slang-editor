@@ -1,12 +1,9 @@
-import {Subscription} from "rxjs";
-
 import {SlangTypeValue} from "../../definitions/type";
 
 import {OperatorGeometry, XY} from "../../definitions/api";
 import {BlackBox} from "../abstract/blackbox";
 import {PortModelArgs} from "../abstract/port";
 import {Connections} from "../abstract/utils/connections";
-import {SlangBehaviorSubject} from "../abstract/utils/events";
 import {GenericSpecifications} from "../abstract/utils/generics";
 import {PropertyAssignments, PropertyEvaluator, PropertyModel} from "../abstract/utils/properties";
 import {BlueprintModel, BlueprintType} from "./blueprint";
@@ -36,7 +33,7 @@ export class OperatorModel extends BlackBox {
 	private geometry: OperatorGeometry | undefined;
 
 	// Properties are one single subject
-	private readonly properties: SlangBehaviorSubject<PropertyAssignments>;
+	private readonly properties: PropertyAssignments;
 
 	// Generics have internal, fine-grained subjects
 	private readonly generics: GenericSpecifications;
@@ -48,11 +45,11 @@ export class OperatorModel extends BlackBox {
 
 		this.geometry = args.geometry;
 		if (args.properties && args.generics) {
-			this.properties = new SlangBehaviorSubject<PropertyAssignments>("properties", args.properties);
+			this.properties = args.properties;
 			this.generics = args.generics;
 		} else {
 			this.generics = new GenericSpecifications(Array.from(args.blueprint.getGenericIdentifiers()));
-			this.properties = new SlangBehaviorSubject<PropertyAssignments>("properties", new PropertyAssignments(Array.from(args.blueprint.getProperties()), this.generics));
+			this.properties = new PropertyAssignments(Array.from(args.blueprint.getProperties()), this.generics);
 		}
 	}
 
@@ -89,19 +86,11 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public getPropertyValue(property: string | PropertyModel): SlangTypeValue | undefined {
-		return this.properties.getValue().get(property).getValue();
+		return this.properties.get(property).getValue();
 	}
 
 	public getProperties(): PropertyAssignments {
-		return this.properties.getValue().copy(this.generics);
-	}
-
-	public setProperties(properties: PropertyAssignments) {
-		if (this.properties.getValue().isEqual(properties)) {
-			return;
-		}
-
-		this.properties.next(properties);
+		return this.properties;
 	}
 
 	public getGenerics(): GenericSpecifications {
@@ -149,34 +138,36 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public set xy(xy: XY | undefined) {
-		if (xy) {
-			if (!this.geometry) {
-				this.geometry = {position: xy};
-			} else {
-				this.geometry.position = xy;
-			}
+		if (!xy) {
+			return;
+		}
+
+		if (!this.geometry) {
+			this.geometry = {position: xy};
+		} else {
+			this.geometry.position = xy;
 		}
 	}
 
-	public reconstruct(properties: PropertyAssignments) {
-		super.reconstructPorts(properties, this.blueprint.getPorts(), OperatorPortModel);
+	public reconstruct() {
+		super.reconstructPorts(this.properties, this.blueprint.getPorts(), OperatorPortModel);
 
 		const obsoleteDelegates = new Set(this.getDelegates());
 		for (const delegate of this.blueprint.getDelegates()) {
-			for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), properties)) {
+			for (const expandedDlgName of PropertyEvaluator.expand(delegate.getName(), this.properties)) {
 				const opDelegate = this.findDelegate(expandedDlgName);
 				if (!opDelegate) {
 					const newDelegate = this.createDelegate({name: expandedDlgName});
 					for (const port of newDelegate.getPorts()) {
 						newDelegate.createPort({
 							name: "",
-							type: PropertyEvaluator.expandType(port.getType(), properties),
+							type: PropertyEvaluator.expandType(port.getType(), this.properties),
 							direction: port.getDirection(),
 						});
 					}
-					newDelegate.reconstructPorts(properties, delegate.getPorts(), OperatorPortModel);
+					newDelegate.reconstructPorts(this.properties, delegate.getPorts(), OperatorPortModel);
 				} else {
-					opDelegate.reconstructPorts(properties, delegate.getPorts(), OperatorPortModel);
+					opDelegate.reconstructPorts(this.properties, delegate.getPorts(), OperatorPortModel);
 					obsoleteDelegates.delete(opDelegate);
 				}
 			}
@@ -187,9 +178,5 @@ export class OperatorModel extends BlackBox {
 	// Actions
 	public createDelegate(args: OperatorDelegateModelArgs): OperatorDelegateModel {
 		return this.createChildNode(OperatorDelegateModel, args);
-	}
-
-	public subscribePropertiesChanged(cb: (properties: PropertyAssignments) => void): Subscription {
-		return this.properties.subscribe(cb);
 	}
 }

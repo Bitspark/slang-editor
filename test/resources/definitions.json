@@ -1,6 +1,32 @@
 [
   {
     "def": {
+      "name": "Value",
+      "id": "bbeeeeff-2b04-44b4-97ad-fd931c9ab77b",
+      "services": {
+        "main": {
+          "in": {
+            "type": "trigger"
+          },
+          "out": {
+            "type": "generic",
+            "generic": "valueType"
+          }
+        }
+      },
+      "properties": {
+        "value": {
+          "type": "generic",
+          "generic": "valueType"
+        }
+      },
+      "operators": {},
+      "connections": {}
+    },
+    "type": "local"
+  },
+  {
+    "def": {
       "id": "ba24c37f-2b04-44b4-97ad-fd931c9ab77b",
       "name": "StringToString",
       "services": {

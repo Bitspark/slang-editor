@@ -40,7 +40,7 @@ export abstract class PortOwner extends SlangNode {
 					direction: port.getDirection(),
 				});
 			} else {
-				poPort.reconstruct(PropertyEvaluator.expandType(port.getType(), properties), portCtor as (new(p: GenericPortModel<PortOwner> | PortOwner, args: PortModelArgs) => PortModel), port.getDirection());
+				poPort.reconstruct(PropertyEvaluator.expandType(port.getType(), properties), portCtor as (new(p: GenericPortModel<PortOwner> | PortOwner, args: PortModelArgs) => PortModel), port.getDirection(), false);
 				// TODO: Investigate why explicit cast to (new(p: GenericPortModel<PortOwner> | PortOwner, args: PortModelArgs) => PortModel) is necessary
 				obsoletePorts.delete(poPort);
 			}

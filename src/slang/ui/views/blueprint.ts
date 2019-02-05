@@ -53,22 +53,18 @@ export class BlueprintView extends PaperView {
 				const magnetT = linkView.getEndMagnet("target");
 				if (magnetT) {
 					const portT = that.getPortFromMagnet(magnetT);
-					if (portT) {
-						if (portS.canConnect(portT)) {
-							try {
-								portS.connect(portT, true);
-							} catch (e) {
-								console.error(e);
-							}
+					if (portT && portS.canConnect(portT)) {
+						try {
+							portS.connect(portT, true);
+						} catch (e) {
+							console.error(e);
 						}
 					}
-				} else {
-					if (portS.isDirectionIn() &&
-						!portS.isConnected() &&
-						portS.getType().isPrimitive() &&
-						portS.getTypeIdentifier() !== TypeIdentifier.Trigger) {
-						that.createValueOperator(linkView.getEndAnchor("target"), portS);
-					}
+				} else if (portS.isDirectionIn() &&
+					!portS.isConnected() &&
+					portS.getType().isPrimitive() &&
+					portS.getTypeIdentifier() !== TypeIdentifier.Trigger) {
+					that.createValueOperator(linkView.getEndAnchor("target"), portS);
 				}
 
 				return false;

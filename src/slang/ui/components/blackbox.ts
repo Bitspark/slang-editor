@@ -235,7 +235,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 			this.refresh();
 		});
 
-		operator.subscribePropertiesChanged(() => {
+		operator.getProperties().subscribeAssignmentChanged(() => {
 			this.refresh();
 		});
 
