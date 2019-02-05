@@ -1,7 +1,6 @@
 import {OperatorGeometry} from "../../definitions/api";
 import {SlangParsing} from "../../definitions/parsing";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
-
 import {BlackBox} from "../abstract/blackbox";
 import {PortModel, PortModelArgs} from "../abstract/port";
 import {Connections} from "../abstract/utils/connections";
@@ -46,7 +45,8 @@ export interface BlueprintGeometry {
 }
 
 export interface BlueprintModelArgs {
-	fullName: string;
+	uuid: string;
+	name: string;
 	type: BlueprintType;
 	geometry?: BlueprintGeometry;
 }
@@ -126,19 +126,18 @@ export class BlueprintModel extends BlackBox {
 	private readonly geometry: BlueprintGeometry;
 
 	// Properties
-	private readonly fullName: string;
+	private readonly uuid: string;
+	private readonly name: string;
 	private readonly type: BlueprintType;
-
-	private readonly hierarchy: string[] = [];
 
 	private properties: PropertyModel[] = [];
 	private genericIdentifiers: Set<string>;
 
-	constructor(parent: LandscapeModel, {fullName, type, geometry}: BlueprintModelArgs) {
+	constructor(parent: LandscapeModel, {uuid, name, type, geometry}: BlueprintModelArgs) {
 		super(parent, true);
-		this.fullName = fullName;
+		this.uuid = uuid;
+		this.name = name;
 		this.type = type;
-		this.hierarchy = fullName.split(".");
 		this.genericIdentifiers = new Set<string>();
 
 		if (!geometry) {
@@ -199,12 +198,16 @@ export class BlueprintModel extends BlackBox {
 		return this.createChildNode(BlueprintPortModel, args);
 	}
 
-	public getFullName(): string {
-		return this.fullName;
+	public getUUID(): string {
+		return this.uuid;
+	}
+
+	public getName(): string {
+		return this.name;
 	}
 
 	public getShortName(): string {
-		return this.hierarchy[this.hierarchy.length - 1];
+		return this.name;
 	}
 
 	public isDeployed(): boolean {

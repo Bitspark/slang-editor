@@ -1,3 +1,5 @@
+import uuidv4 from "uuid/v4";
+
 import {GenericSpecifications} from "../../src/slang/core/abstract/utils/generics";
 import {PropertyAssignments, PropertyModel} from "../../src/slang/core/abstract/utils/properties";
 import {AppModel} from "../../src/slang/core/models/app";
@@ -24,10 +26,10 @@ describe("A property", () => {
 	});
 
 	it("can be changed while retaining type and connections", () => {
-		const bpValue = landscapeModel.findBlueprint("Value")!;
-		const bpS2S = landscapeModel.findBlueprint("StringToString")!;
+		const bpValue = landscapeModel.findBlueprint("bbeeeeff-2b04-44b4-97ad-fd931c9ab77b")!;
+		const bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
 
-		const bpNew = landscapeModel.createBlueprint({fullName: "test-prop-1", type: BlueprintType.Local});
+		const bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), name: "test-prop-1", type: BlueprintType.Local});
 
 		const gens = new GenericSpecifications(["valueType"]);
 		const props = new PropertyAssignments([new PropertyModel("value", SlangType.newGeneric("valueType"))], gens);
@@ -48,8 +50,8 @@ describe("A property", () => {
 	});
 
 	it("can be expanded properly", () => {
-		const bpProps = landscapeModel.findBlueprint("PropertyPorts")!;
-		const bpNew = landscapeModel.createBlueprint({fullName: "test-prop-2", type: BlueprintType.Local});
+		const bpProps = landscapeModel.findBlueprint("cbc2cb11-c30a-4194-825c-f042902bd18b")!;
+		const bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), name: "test-prop-2", type: BlueprintType.Local});
 
 		const opProps = bpNew.createBlankOperator(bpProps, {position: {x: 0, y: 0}});
 

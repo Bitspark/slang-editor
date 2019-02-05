@@ -1,3 +1,5 @@
+import uuidv4 from "uuid/v4";
+
 import {PortDirection} from "../../src/slang/core/abstract/port";
 import {Connection, Connections} from "../../src/slang/core/abstract/utils/connections";
 import {AppModel} from "../../src/slang/core/models/app";
@@ -26,9 +28,9 @@ describe("A connection", () => {
 		landscapeModel = ls;
 		await appModel.load();
 
-		bpNew = landscapeModel.createBlueprint({fullName: "test-bp-2", type: BlueprintType.Local});
-		bpS2S = landscapeModel.findBlueprint("StringToString")!;
-		bpS2SDlg = landscapeModel.findBlueprint("StringToPrimitiveDelegate")!;
+		bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), name: "test-bp-2", type: BlueprintType.Local});
+		bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
+		bpS2SDlg = landscapeModel.findBlueprint("9547e231-26a9-4de0-9b25-b2e1b3fdb1d1")!;
 	});
 
 	it("is possible between stream sub and single", () => {
@@ -101,8 +103,8 @@ describe("A connections data structure", () => {
 		landscapeModel = ls;
 		await appModel.load();
 
-		bpNew = landscapeModel.createBlueprint({fullName: "test-bp-2", type: BlueprintType.Local});
-		const bpS2S = landscapeModel.findBlueprint("StringToString")!;
+		bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), name: "test-bp-2", type: BlueprintType.Local});
+		const bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
 
 		op1 = bpNew.createOperator("op1", bpS2S, null, null);
 		op2 = bpNew.createOperator("op2", bpS2S, null, null);

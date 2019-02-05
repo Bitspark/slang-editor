@@ -1,3 +1,5 @@
+import uuidv4 from "uuid/v4";
+
 import {PortDirection} from "../../src/slang/core/abstract/port";
 import {GenericSpecifications} from "../../src/slang/core/abstract/utils/generics";
 import {AppModel} from "../../src/slang/core/models/app";
@@ -24,18 +26,22 @@ describe("A new blueprint", () => {
 	});
 
 	it("can be created", () => {
-		const bp = landscapeModel.createBlueprint({fullName: "test-bp-1", type: BlueprintType.Local});
+		const bp = landscapeModel.createBlueprint({uuid: uuidv4(), name: "test-bp-1", type: BlueprintType.Local});
 		expect(bp).toBeTruthy();
 	});
 
 	it("can have operators added", () => {
-		const bpS2S = landscapeModel.findBlueprint("StringToString")!;
+		const bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
 
-		const bpNew = landscapeModel.createBlueprint({fullName: "test-bp-2", type: BlueprintType.Local});
+		const bpNew = landscapeModel.createBlueprint({
+			uuid: uuidv4(),
+			name: "test-bp-2",
+			type: BlueprintType.Local,
+		});
 		bpNew.createPort({name: "", type: new SlangType(null, TypeIdentifier.Map), direction: PortDirection.In});
 		bpNew.createPort({name: "", type: new SlangType(null, TypeIdentifier.Map), direction: PortDirection.Out});
 
-		const opNew = bpNew.createOperator("StringToString", bpS2S, null, null);
+		const opNew = bpNew.createOperator("s2s", bpS2S, null, null);
 		expect(opNew.getPortIn()).toBeTruthy();
 		expect(opNew.getPortOut()).toBeTruthy();
 	});
@@ -44,9 +50,13 @@ describe("A new blueprint", () => {
 		// Test setup:
 		// [ -> [S2S] ]
 
-		const bpS2S = landscapeModel.findBlueprint("StringToString")!;
+		const bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
 
-		const bpNew = landscapeModel.createBlueprint({fullName: "test-bp-3", type: BlueprintType.Local});
+		const bpNew = landscapeModel.createBlueprint({
+			uuid: uuidv4(),
+			name: "test-bp-3",
+			type: BlueprintType.Local,
+		});
 		bpNew.createPort({name: "", direction: PortDirection.In, type: SlangType.newUnspecified()});
 		bpNew.createPort({name: "", direction: PortDirection.Out, type: SlangType.newUnspecified()});
 
@@ -76,10 +86,14 @@ describe("A new blueprint", () => {
 		// Test setup:
 		// [S2S] -> [G2G] -> [S2S]
 
-		const bpS2S = landscapeModel.findBlueprint("StringToString")!;
-		const bpG2G = landscapeModel.findBlueprint("GenericToGeneric")!;
+		const bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
+		const bpG2G = landscapeModel.findBlueprint("dc1aa556-d62e-4e07-adbb-53dc317481b0")!;
 
-		const bpNew = landscapeModel.createBlueprint({fullName: "test-bp-4", type: BlueprintType.Local});
+		const bpNew = landscapeModel.createBlueprint({
+			uuid: uuidv4(),
+			name: "test-bp-4",
+			type: BlueprintType.Local,
+		});
 
 		const opS2S1 = bpNew.createOperator("s2s_1", bpS2S, null, null);
 		const opG2G = bpNew.createOperator("g2g", bpG2G, null, new GenericSpecifications(["itemType"]));

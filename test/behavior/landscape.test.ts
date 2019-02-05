@@ -25,8 +25,8 @@ describe("The landscape", () => {
 		expect(Array.from(bps).length).toBeGreaterThan(0);
 	});
 
-	it("has blueprint StringToString", () => {
-		const bp = landscapeModel.findBlueprint("StringToString");
+	it("has blueprint 'string to string'", () => {
+		const bp = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b");
 		expect(bp).toBeTruthy();
 	});
 });

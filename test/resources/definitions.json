@@ -1,7 +1,8 @@
 [
   {
-    "name": "Value",
     "def": {
+      "name": "Value",
+      "id": "bbeeeeff-2b04-44b4-97ad-fd931c9ab77b",
       "services": {
         "main": {
           "in": {
@@ -25,8 +26,9 @@
     "type": "local"
   },
   {
-    "name": "StringToString",
     "def": {
+      "id": "ba24c37f-2b04-44b4-97ad-fd931c9ab77b",
+      "name": "StringToString",
       "services": {
         "main": {
           "in": {
@@ -43,8 +45,9 @@
     "type": "local"
   },
   {
-    "name": "GenericToGeneric",
     "def": {
+      "id": "dc1aa556-d62e-4e07-adbb-53dc317481b0",
+      "name": "GenericToGeneric",
       "services": {
         "main": {
           "in": {
@@ -63,8 +66,9 @@
     "type": "local"
   },
   {
-    "name": "StringToPrimitiveDelegate",
     "def": {
+      "id": "9547e231-26a9-4de0-9b25-b2e1b3fdb1d1",
+      "name": "StringToPrimitiveDelegate",
       "services": {
         "main": {
           "in": {
@@ -91,8 +95,9 @@
     "type": "local"
   },
   {
-    "name": "PropertyPorts",
     "def": {
+      "id": "cbc2cb11-c30a-4194-825c-f042902bd18b",
+      "name": "PropertyPorts",
       "services": {
         "main": {
           "in": {

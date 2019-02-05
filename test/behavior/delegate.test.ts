@@ -1,3 +1,5 @@
+import uuidv4 from "uuid/v4";
+
 import {AppModel} from "../../src/slang/core/models/app";
 import {BlueprintType} from "../../src/slang/core/models/blueprint";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
@@ -21,7 +23,7 @@ describe("A delegate", () => {
 	});
 
 	it("can be loaded in blueprint", () => {
-		const dlgOp = landscapeModel.findBlueprint("StringToPrimitiveDelegate")!;
+		const dlgOp = landscapeModel.findBlueprint("9547e231-26a9-4de0-9b25-b2e1b3fdb1d1")!;
 		expect(dlgOp).toBeTruthy();
 
 		const dlg = dlgOp.findDelegate("dlg1");
@@ -29,10 +31,10 @@ describe("A delegate", () => {
 	});
 
 	it("can be loaded in operator and connected", () => {
-		const bpNew = landscapeModel.createBlueprint({fullName: "test-bp-2", type: BlueprintType.Local});
+		const bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), name: "test-bp-2", type: BlueprintType.Local});
 
-		const dlgBp = landscapeModel.findBlueprint("StringToPrimitiveDelegate")!;
-		const s2sBp = landscapeModel.findBlueprint("StringToString")!;
+		const dlgBp = landscapeModel.findBlueprint("9547e231-26a9-4de0-9b25-b2e1b3fdb1d1")!;
+		const s2sBp = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
 
 		const dlgOp = bpNew.createOperator("dlg", dlgBp, null, null);
 		const s2sOp = bpNew.createOperator("s2s", s2sBp, null, null);
