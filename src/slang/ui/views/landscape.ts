@@ -1,5 +1,5 @@
 import {dia, shapes} from "jointjs";
-
+import uuidv4 = require("uuid/v4");
 
 import {SlangType} from "../../definitions/type";
 
@@ -10,7 +10,6 @@ import {LandscapeModel} from "../../core/models/landscape";
 import {BlackBoxShape, BlueprintBoxComponent} from "../components/blackbox";
 import {ViewFrame} from "../frame";
 import {PaperView} from "./paper-view";
-import uuidv4 = require("uuid/v4");
 
 export class LandscapeView extends PaperView {
 

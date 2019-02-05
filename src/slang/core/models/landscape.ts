@@ -16,9 +16,9 @@ export class LandscapeModel extends SlangNode {
 	}
 
 	public findBlueprint(uuid: string): BlueprintModel | undefined {
-		if (uuid.indexOf(" ") >= 0 || uuid.split('-').length !== 5) {
+		if (uuid.indexOf(" ") >= 0 || uuid.split("-").length !== 5) {
 			// Valid uuid e.g.: "dc1aa556-d62e-4e07-adbb-53dc317481b0"
-			throw `given blueprint uuid is not valid: ${uuid}`;
+			throw Error(`given blueprint uuid is not valid: ${uuid}`);
 		}
 		return this.scanChildNode(BlueprintModel, (blueprint) => uuid === blueprint.getUUID());
 	}

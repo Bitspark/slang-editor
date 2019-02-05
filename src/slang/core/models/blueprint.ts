@@ -131,8 +131,6 @@ export class BlueprintModel extends BlackBox {
 	private readonly name: string;
 	private readonly type: BlueprintType;
 
-	//private readonly hierarchy: string[] = [];
-
 	private properties: PropertyModel[] = [];
 	private genericIdentifiers: Set<string>;
 
