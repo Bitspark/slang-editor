@@ -64,8 +64,8 @@ describe("A new blueprint", () => {
 
 		const newPort = bpPortIn.getMapSubs().next().value;
 
-		expect(newPort.getConnectedWith()).toContain(opPortIn);
-		expect(opPortIn.getConnectedWith()).toContain(newPort);
+		expect(newPort.isConnectedWith(opPortIn));
+		expect(opPortIn.isConnectedWith(newPort));
 
 		newPort.disconnectTo(opPortIn);
 

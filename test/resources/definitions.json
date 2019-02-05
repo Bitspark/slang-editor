@@ -61,5 +61,64 @@
       "connections": {}
     },
     "type": "local"
+  },
+  {
+    "name": "StringToPrimitiveDelegate",
+    "def": {
+      "services": {
+        "main": {
+          "in": {
+            "type": "string"
+          },
+          "out": {
+            "type": "primitive"
+          }
+        }
+      },
+      "delegates": {
+        "dlg1": {
+          "in": {
+            "type": "primitive"
+          },
+          "out": {
+            "type": "string"
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
+    },
+    "type": "local"
+  },
+  {
+    "name": "PropertyPorts",
+    "def": {
+      "services": {
+        "main": {
+          "in": {
+            "type": "map",
+            "map": {
+              "sub_{ports}_number": {
+                "type": "number"
+              }
+            }
+          },
+          "out": {
+            "type": "primitive"
+          }
+        }
+      },
+      "properties": {
+        "ports": {
+          "type": "stream",
+          "stream": {
+            "type": "string"
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
+    },
+    "type": "local"
   }
 ]

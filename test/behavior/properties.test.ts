@@ -1,12 +1,12 @@
+import {GenericSpecifications} from "../../src/slang/core/abstract/utils/generics";
+import {PropertyAssignments, PropertyModel} from "../../src/slang/core/abstract/utils/properties";
 import {AppModel} from "../../src/slang/core/models/app";
 import {BlueprintType} from "../../src/slang/core/models/blueprint";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
+import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
 import {TestStorageApp} from "../helpers/TestStorageApp";
 
 import data from "../resources/definitions.json";
-import {GenericSpecifications} from "../../src/slang/core/abstract/utils/generics";
-import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
-import {PropertyAssignments, PropertyModel} from "../../src/slang/core/abstract/utils/properties";
 
 describe("A property", () => {
 	let appModel: AppModel;
@@ -46,4 +46,22 @@ describe("A property", () => {
 		expect(opValue.getPortOut()!.getConnectedWith()).toContain(opS2S.getPortIn()!);
 		expect(opValue.getPortOut()!.getTypeIdentifier()).toEqual(TypeIdentifier.String);
 	});
+
+	it("can be expanded properly", () => {
+		const bpProps = landscapeModel.findBlueprint("PropertyPorts")!;
+		const bpNew = landscapeModel.createBlueprint({fullName: "test-prop-2", type: BlueprintType.Local});
+
+		const opProps = bpNew.createBlankOperator(bpProps, {position: {x: 0, y: 0}});
+
+		opProps.getProperties().get("ports").assign(["a", "b", "c"]);
+
+		const subNames = Array.from(opProps.getPortIn()!.getMapSubs())
+			.map((sub) => sub.getName());
+
+		expect(subNames.length).toEqual(3);
+		["sub_a_number", "sub_a_number", "sub_a_number"].forEach((subName) => {
+			expect(subNames).toContain(subName);
+		});
+	});
+
 });

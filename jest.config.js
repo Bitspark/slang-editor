@@ -2,9 +2,6 @@ module.exports = {
 	preset: "ts-jest",
 	testEnvironment: "node",
 	coverageThreshold: {
-		"./src/slang/core/mapper.ts": {
-			lines: 100,
-		},
 		"./src/slang/core/abstract": {
 			branches: 70,
 			functions: 70,

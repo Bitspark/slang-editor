@@ -138,6 +138,12 @@ export class SlangType {
 		return new SlangType(null, TypeIdentifier.Map);
 	}
 
+	public static newStream(subType: SlangType): SlangType {
+		const streamType = new SlangType(null, TypeIdentifier.Stream);
+		streamType.setStreamSub(subType);
+		return streamType;
+	}
+
 	private readonly mapSubs: Map<string, SlangType> | undefined;
 	private genericIdentifier?: string;
 	private streamSub: SlangType | undefined;
