@@ -1,13 +1,14 @@
 import uuidv4 from "uuid/v4";
 
 import {AppModel} from "../../src/slang/core/models/app";
-import {BlueprintType} from "../../src/slang/core/models/blueprint";
+import {BlueprintModel, BlueprintType} from "../../src/slang/core/models/blueprint";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
 import {TestStorageApp} from "../helpers/TestStorageApp";
 
 import data from "../resources/definitions.json";
+import {OperatorModel} from "../../src/slang/core/models/operator";
 
-describe("A delegate", () => {
+describe("A blueprint delegate", () => {
 	let appModel: AppModel;
 	let landscapeModel: LandscapeModel;
 
@@ -23,22 +24,44 @@ describe("A delegate", () => {
 	});
 
 	it("can be loaded in blueprint", () => {
-		const dlgOp = landscapeModel.findBlueprint("9547e231-26a9-4de0-9b25-b2e1b3fdb1d1")!;
-		expect(dlgOp).toBeTruthy();
+		const dlgBp = landscapeModel.findBlueprint("9547e231-26a9-4de0-9b25-b2e1b3fdb1d1")!;
+		expect(dlgBp).toBeTruthy();
 
-		const dlg = dlgOp.findDelegate("dlg1");
+		const dlg = dlgBp.findDelegate("dlg1");
 		expect(dlg).toBeTruthy();
 	});
+});
 
-	it("can be loaded in operator and connected", () => {
-		const bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), name: "test-bp-2", type: BlueprintType.Local});
+describe("An operator delegate", () => {
+	let appModel: AppModel;
+	let landscapeModel: LandscapeModel;
 
-		const dlgBp = landscapeModel.findBlueprint("9547e231-26a9-4de0-9b25-b2e1b3fdb1d1")!;
-		const s2sBp = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
+	let bpNew!: BlueprintModel;
+	let dlgBp!: BlueprintModel;
+	let s2sBp!: BlueprintModel;
+	let dlgOp!: OperatorModel;
+	let s2sOp!: OperatorModel;
 
-		const dlgOp = bpNew.createOperator("dlg", dlgBp, null, null);
-		const s2sOp = bpNew.createOperator("s2s", s2sBp, null, null);
+	beforeEach(async () => {
+		appModel = AppModel.create("test-app");
+		new TestStorageApp(appModel, data);
+		const ls = appModel.getChildNode(LandscapeModel);
+		if (!ls) {
+			throw new Error("landscape not found");
+		}
+		landscapeModel = ls;
+		await appModel.load();
 
+		bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), name: "test-bp-2", type: BlueprintType.Local});
+
+		dlgBp = landscapeModel.findBlueprint("9547e231-26a9-4de0-9b25-b2e1b3fdb1d1")!;
+		s2sBp = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
+
+		dlgOp = bpNew.createOperator("dlg", dlgBp, null, null);
+		s2sOp = bpNew.createOperator("s2s1", s2sBp, null, null);
+	});
+
+	it("can be connected", () => {
 		const dlgOpDlg = dlgOp.findDelegate("dlg1")!;
 		expect(dlgOpDlg).toBeTruthy();
 
@@ -52,6 +75,18 @@ describe("A delegate", () => {
 
 		expect(dlgOpDlgPortOut.isConnectedWith(s2sOp.getPortIn()!));
 		expect(s2sOp.getPortOut()!.isConnectedWith(dlgOpDlgPortIn));
+	});
+
+	it("return correct connections", () => {
+		const dlgOpDlg = dlgOp.findDelegate("dlg1")!;
+		const dlgOpDlgPortOut = dlgOpDlg.getPortOut()!;
+		const dlgOpDlgPortIn = dlgOpDlg.getPortIn()!;
+
+		dlgOpDlgPortOut.connect(s2sOp.getPortIn()!, true);
+		s2sOp.getPortOut()!.connect(dlgOpDlgPortIn, true);
+
+		expect(Array.from(dlgOpDlg.getConnectionsTo()).length).toEqual(1);
+		expect(Array.from(dlgOpDlg.getConnections()).length).toEqual(2);
 	});
 
 });
