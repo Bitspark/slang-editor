@@ -159,8 +159,9 @@ export class BlueprintModel extends BlackBox {
 		}
 
 		this.subscribeChildCreated(OperatorModel, (operator) => {
-			operator.subscribePropertiesChanged((properties) => {
-				operator.reconstruct(properties);
+			operator.reconstruct();
+			operator.getProperties().subscribeAssignmentChanged(() => {
+				operator.reconstruct();
 			});
 		});
 	}

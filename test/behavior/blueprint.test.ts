@@ -1,4 +1,5 @@
 import {PortDirection} from "../../src/slang/core/abstract/port";
+import {GenericSpecifications} from "../../src/slang/core/abstract/utils/generics";
 import {AppModel} from "../../src/slang/core/models/app";
 import {BlueprintType} from "../../src/slang/core/models/blueprint";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
@@ -6,7 +7,6 @@ import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
 import {TestStorageApp} from "../helpers/TestStorageApp";
 
 import data from "../resources/definitions.json";
-import {GenericSpecifications} from "../../src/slang/core/abstract/utils/generics";
 
 describe("A new blueprint", () => {
 	let appModel: AppModel;
@@ -50,7 +50,7 @@ describe("A new blueprint", () => {
 		bpNew.createPort({name: "", direction: PortDirection.In, type: SlangType.newUnspecified()});
 		bpNew.createPort({name: "", direction: PortDirection.Out, type: SlangType.newUnspecified()});
 
-		const opNew = bpNew.createOperator("StringToString", bpS2S, null, null);
+		const opNew = bpNew.createOperator("s2s", bpS2S, null, null);
 
 		const bpPortIn = bpNew.getPortIn()!;
 		const opPortIn = opNew.getPortIn()!;

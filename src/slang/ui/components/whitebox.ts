@@ -457,7 +457,7 @@ export class WhiteBoxComponent extends CellComponent {
 
 		this.blueprint.subscribeChildCreated(OperatorModel, (operator) => {
 			operator.getGenerics().subscribeGenericsChanged(() => refreshOperatorConnections(operator));
-			operator.subscribePropertiesChanged(() => refreshOperatorConnections(operator));
+			operator.getProperties().subscribeAssignmentChanged(() => refreshOperatorConnections(operator));
 		});
 	}
 
