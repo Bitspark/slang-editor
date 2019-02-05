@@ -3,14 +3,14 @@ module.exports = {
 	testEnvironment: "node",
 	coverageThreshold: {
 		"./src/slang/core/abstract": {
-			branches: 70,
-			functions: 70,
-			statements: 70,
+			functions: 83,
+			branches: 76,
+			statements: 73,
 		},
 		"./src/slang/core/models": {
-			branches: 50,
 			functions: 50,
-			statements: 50,
+			branches: 75,
+			statements: 58,
 		},
 	},
 	coveragePathIgnorePatterns: [

@@ -125,5 +125,52 @@
       "connections": {}
     },
     "type": "local"
+  },
+  {
+    "def": {
+      "id": "717867d5-f84e-400c-bdc4-1a374f34e3a5",
+      "name": "MapAndStreamPorts",
+      "services": {
+        "main": {
+          "in": {
+            "type": "map",
+            "map": {
+              "a": {
+                "type": "stream",
+                "stream": {
+                  "type": "string"
+                }
+              },
+              "b": {
+                "type": "map",
+                "map": {
+                  "c": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          "out": {
+            "type": "stream",
+            "stream": {
+              "type": "stream",
+              "stream": {
+                "type": "map",
+                "map": {
+                  "a": {
+                    "type": "generic",
+                    "generic": "itemType"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
+    },
+    "type": "local"
   }
 ]
