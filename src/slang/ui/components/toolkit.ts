@@ -128,13 +128,14 @@ export namespace Tk {
 				class: that.getClass(attrs),
 				inacitve: that.isInactive(attrs),
 				onclick: (that.isClickable(attrs)) ? (e: MithrilMouseEvent) => {
-					if (!that.alreadyClicked) {
-						that.alreadyClicked = true;
-						attrs.onClick!(e);
-						setTimeout(() => {
-							that.alreadyClicked = false;
-						}, that.bounceInterval);
+					if (that.alreadyClicked) {
+						return;
 					}
+					that.alreadyClicked = true;
+					attrs.onClick!(e);
+					setTimeout(() => {
+						that.alreadyClicked = false;
+					}, that.bounceInterval);
 				} : undefined,
 				tooltip: attrs.tooltip,
 			}, children);

@@ -3,7 +3,9 @@ import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../abstra
 import {BlueprintModel} from "./blueprint";
 import {LandscapeModel} from "./landscape";
 
-export interface AppModelArgs { name: string; }
+export interface AppModelArgs {
+	name: string;
+}
 
 export class AppModel extends SlangNode {
 
@@ -77,10 +79,8 @@ export class AppModel extends SlangNode {
 					openedBlueprint.close();
 				}
 				this.openedLandscape.next(landscape);
-			} else {
-				if (landscape === this.openedLandscape.getValue()) {
-					this.openedLandscape.next(null);
-				}
+			} else if (landscape === this.openedLandscape.getValue()) {
+				this.openedLandscape.next(null);
 			}
 		});
 	}
@@ -96,10 +96,8 @@ export class AppModel extends SlangNode {
 					this.storeRequested.next(blueprint);
 				});
 				this.openedBlueprint.next(blueprint);
-			} else {
-				if (blueprint === this.openedBlueprint.getValue()) {
-					this.openedBlueprint.next(null);
-				}
+			} else if (blueprint === this.openedBlueprint.getValue()) {
+				this.openedBlueprint.next(null);
 			}
 		});
 	}

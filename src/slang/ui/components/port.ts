@@ -28,14 +28,14 @@ export class PortComponent {
 			const width = Styles.Port.width * factor;
 			const height = Styles.Port.height * factor;
 			const classes = ["sl-port"];
-			if (i % 2 === 1) {
-				classes.push(`sl-stripe`);
-			} else {
+			if (i % 2 === 0) {
 				if (ghost) {
 					classes.push(`sl-type-ghost`);
 				} else {
 					classes.push(`sl-type-${TypeIdentifier[port.getTypeIdentifier()].toLowerCase()}`);
 				}
+			} else {
+				classes.push(`sl-stripe`);
 			}
 			markup += `<path class="${classes.join(" ")}" d="${PortComponent.getPortShape(width, height)}"></path>`;
 		}

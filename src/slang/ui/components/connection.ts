@@ -111,12 +111,14 @@ export class ConnectionComponent extends CellComponent {
 		link.attr(".connection/stroke-width", lines === 1 ? 2 : 1);
 		link.attr(".connection/vector-effect", Styles.Connection.OrdinaryConnection.vectorEffect);
 
-		if (stream) {
-			if (stream.hasPlaceholderAncestor()) {
-				link.attr(".connection/stroke-dasharray", 1);
-			} else {
-				link.removeAttr(".connection/stroke-dasharray");
-			}
+		if (!stream) {
+			return;
+		}
+
+		if (stream.hasPlaceholderAncestor()) {
+			link.attr(".connection/stroke-dasharray", 1);
+		} else {
+			link.removeAttr(".connection/stroke-dasharray");
 		}
 	}
 
@@ -155,14 +157,16 @@ export class ConnectionComponent extends CellComponent {
 
 		[[connection.source, connection.destination], [connection.destination, connection.source]].forEach(([port, other]) => {
 			port.getStreamPort().subscribeRefreshStreamType((stream) => {
-				if (StreamType.refreshActive && port.isConnectedWith(other)) {
-					this.refresh();
-					if (stream) {
-						stream.subscribeNestingChanged(() => {
-							this.refresh();
-						});
-					}
+				if (!StreamType.refreshActive || !port.isConnectedWith(other)) {
+					return;
 				}
+				this.refresh();
+				if (!stream) {
+					return;
+				}
+				stream.subscribeNestingChanged(() => {
+					this.refresh();
+				});
 			});
 		});
 	}

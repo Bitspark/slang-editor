@@ -217,51 +217,56 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: BlueprintAp
 	// 2) Add Operators. Use previously defined Blueprints for assigning Operator.blueprint
 	blueprintToOperator.forEach((bpDef: BlueprintDefApiResponse, outerBlueprint: BlueprintModel) => {
 		const operators = bpDef.operators;
-		if (operators) {
-			Object.keys(operators).forEach((opName: string) => {
-				const opData = operators[opName];
-				const blueprint = landscape.findBlueprint(opData.operator);
-				if (!blueprint) {
-					throw new Error(`unknown blueprint '${opData.operator}'`);
-				}
-				try {
-					const generics = createGenericSpecifications(blueprint, opData.generics);
-					const properties = createPropertyAssignments(blueprint, opData.properties, generics);
-					outerBlueprint.createOperator(opName, blueprint, properties, generics, opData.geometry);
-				} catch (e) {
-					console.error(`${outerBlueprint.getFullName()} (${blueprint.getFullName()}): ${e.stack}`);
-				}
-			});
+		if (!operators) {
+			return;
 		}
+
+		Object.keys(operators).forEach((opName: string) => {
+			const opData = operators[opName];
+			const blueprint = landscape.findBlueprint(opData.operator);
+			if (!blueprint) {
+				throw new Error(`unknown blueprint '${opData.operator}'`);
+			}
+
+			try {
+				const generics = createGenericSpecifications(blueprint, opData.generics);
+				const properties = createPropertyAssignments(blueprint, opData.properties, generics);
+				outerBlueprint.createOperator(opName, blueprint, properties, generics, opData.geometry);
+			} catch (e) {
+				console.error(`${outerBlueprint.getFullName()} (${blueprint.getFullName()}): ${e.stack}`);
+			}
+		});
 	});
 
 	// 3) Connect operator and blueprint ports
 	blueprintToOperator.forEach((bpDef: BlueprintDefApiResponse, outerBlueprint: BlueprintModel) => {
 		const connections = bpDef.connections;
-		if (connections) {
-			Object.keys(connections).forEach((sourcePortReference: string) => {
-				const sourcePort = outerBlueprint.resolvePortReference(sourcePortReference);
-				if (!sourcePort) {
-					console.error(`${outerBlueprint.getFullName()}: port ${sourcePortReference} cannot be resolved`);
-					return;
-				}
-
-				const destinationPortReferences = connections[sourcePortReference];
-				for (const destinationPortReference of destinationPortReferences) {
-					const destinationPort = outerBlueprint.resolvePortReference(destinationPortReference);
-					if (!destinationPort) {
-						console.error(`${outerBlueprint.getFullName()}: port ${destinationPortReference} cannot be resolved`);
-						continue;
-					}
-
-					try {
-						sourcePort.connect(destinationPort, false);
-					} catch (e) {
-						console.error(`${outerBlueprint.getFullName()}: ${sourcePort.getPortReference()} -> ${destinationPort.getPortReference()} - ${e.toString()}`);
-					}
-				}
-			});
+		if (!connections) {
+			return;
 		}
+
+		Object.keys(connections).forEach((sourcePortReference: string) => {
+			const sourcePort = outerBlueprint.resolvePortReference(sourcePortReference);
+			if (!sourcePort) {
+				console.error(`${outerBlueprint.getFullName()}: port ${sourcePortReference} cannot be resolved`);
+				return;
+			}
+
+			const destinationPortReferences = connections[sourcePortReference];
+			for (const destinationPortReference of destinationPortReferences) {
+				const destinationPort = outerBlueprint.resolvePortReference(destinationPortReference);
+				if (!destinationPort) {
+					console.error(`${outerBlueprint.getFullName()}: port ${destinationPortReference} cannot be resolved`);
+					continue;
+				}
+
+				try {
+					sourcePort.connect(destinationPort, false);
+				} catch (e) {
+					console.error(`${outerBlueprint.getFullName()}: ${sourcePort.getPortReference()} -> ${destinationPort.getPortReference()} - ${e.toString()}`);
+				}
+			}
+		});
 	});
 }
 
@@ -302,11 +307,12 @@ function createTypeModel(typeDef: TypeDefApiResponse): SlangType {
 	const type = new SlangType(null, toTypeIdentifier(typeDef.type));
 	switch (type.getTypeIdentifier()) {
 		case TypeIdentifier.Map:
-			if (typeDef.map) {
-				Object.keys(typeDef.map).forEach((subName: string) => {
-					type.addMapSub(subName, createTypeModel(typeDef.map![subName]));
-				});
+			if (!typeDef.map) {
+				break;
 			}
+			Object.keys(typeDef.map).forEach((subName: string) => {
+				type.addMapSub(subName, createTypeModel(typeDef.map![subName]));
+			});
 			break;
 		case TypeIdentifier.Stream:
 			type.setStreamSub(createTypeModel(typeDef.stream!));

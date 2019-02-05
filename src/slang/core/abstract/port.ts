@@ -104,11 +104,12 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			}
 		}
 
-		if (!generic && this.isGenericLikeDescent()) {
-			this.typeIdentifier = type.getTypeIdentifier();
-			this.subscribeGenerics(portCtor);
+		if (generic || !this.isGenericLikeDescent()) {
 			return;
 		}
+
+		this.typeIdentifier = type.getTypeIdentifier();
+		this.subscribeGenerics(portCtor);
 	}
 
 	public getConnectedWith(): IterableIterator<PortModel> {
@@ -251,11 +252,13 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		switch (this.typeIdentifier) {
 			case TypeIdentifier.Map:
 				for (const subPort of this.getMapSubs()) {
-					if (subPort.anySubstreamConnected()) {
-						const subType = subPort.getConnectedType();
-						if (!subType.isVoid()) {
-							type.addMapSub(subPort.getName(), subType);
-						}
+					if (!subPort.anySubstreamConnected()) {
+						continue;
+					}
+
+					const subType = subPort.getConnectedType();
+					if (!subType.isVoid()) {
+						type.addMapSub(subPort.getName(), subType);
 					}
 				}
 				break;
@@ -484,25 +487,29 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		});
 
 		this.subscribeDisconnected(() => {
-			if (this.connectedWith.length === 0) {
-				const newType = specifications.getUnifiedType(identifier);
-				if (newType && !specifications.get(identifier).equals(newType)) {
-					specifications.specify(identifier, newType);
-				}
+			if (this.connectedWith.length !== 0) {
+				return;
+			}
+
+			const newType = specifications.getUnifiedType(identifier);
+			if (newType && !specifications.get(identifier).equals(newType)) {
+				specifications.specify(identifier, newType);
 			}
 		});
 
-		if (this.isGenericLike()) {
-			specifications.registerPort(identifier, this);
-			specifications.subscribeGenericTypeChanged(identifier, (newType) => {
-				if (newType) {
-					this.reconstruct(newType, portCtor, this.direction, true);
-				} else {
-					this.typeIdentifier = TypeIdentifier.Unspecified;
-					this.genericIdentifier = undefined;
-				}
-			});
+		if (!this.isGenericLike()) {
+			return;
 		}
+
+		specifications.registerPort(identifier, this);
+		specifications.subscribeGenericTypeChanged(identifier, (newType) => {
+			if (newType) {
+				this.reconstruct(newType, portCtor, this.direction, true);
+			} else {
+				this.typeIdentifier = TypeIdentifier.Unspecified;
+				this.genericIdentifier = undefined;
+			}
+		});
 	}
 
 	private fetchGenerics(): PortGenerics {

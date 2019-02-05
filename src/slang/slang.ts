@@ -42,13 +42,14 @@ export class Slang {
 		});
 
 		this.app.subscribeOpenedLandscapeChanged((landscape) => {
-			if (landscape !== null && this.outlet) {
-				const view = new LandscapeView(
-					this.outlet,
-					landscape,
-					((bp) => bp.getType() === BlueprintType.Local) as (bp: BlueprintModel) => boolean);
-				this.outlet.setView(view);
+			if (!landscape || !this.outlet) {
+				return;
 			}
+			const view = new LandscapeView(
+				this.outlet,
+				landscape,
+				((bp) => bp.getType() === BlueprintType.Local) as (bp: BlueprintModel) => boolean);
+			this.outlet.setView(view);
 		});
 	}
 
