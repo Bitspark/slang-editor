@@ -1,5 +1,4 @@
 import {SlangType, TypeIdentifier} from "../../definitions/type";
-
 import {GenericPortModel, PortDirection, PortGenerics, PortModelArgs} from "../abstract/port";
 import {BlueprintFakeGeneric, BlueprintModel} from "./blueprint";
 import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";

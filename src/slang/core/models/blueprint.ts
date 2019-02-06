@@ -1,7 +1,6 @@
 import {OperatorGeometry} from "../../definitions/api";
 import {SlangParsing} from "../../definitions/parsing";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
-
 import {BlackBox} from "../abstract/blackbox";
 import {PortModel, PortModelArgs} from "../abstract/port";
 import {Connections} from "../abstract/utils/connections";

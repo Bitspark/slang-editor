@@ -1,3 +1,5 @@
+import uuidv4 from "uuid/v4";
+
 import {PortDirection} from "../../src/slang/core/abstract/port";
 import {GenericSpecifications} from "../../src/slang/core/abstract/utils/generics";
 import {AppModel} from "../../src/slang/core/models/app";
@@ -5,7 +7,6 @@ import {BlueprintType} from "../../src/slang/core/models/blueprint";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
 import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
 import {TestStorageApp} from "../helpers/TestStorageApp";
-import uuidv4 = require("uuid/v4");
 
 import data from "../resources/definitions.json";
 
@@ -35,12 +36,12 @@ describe("A new blueprint", () => {
 		const bpNew = landscapeModel.createBlueprint({
 			uuid: uuidv4(),
 			name: "test-bp-2",
-			type: BlueprintType.Local
+			type: BlueprintType.Local,
 		});
 		bpNew.createPort({name: "", type: new SlangType(null, TypeIdentifier.Map), direction: PortDirection.In});
 		bpNew.createPort({name: "", type: new SlangType(null, TypeIdentifier.Map), direction: PortDirection.Out});
 
-		const opNew = bpNew.createOperator("StringToString", bpS2S, null, null);
+		const opNew = bpNew.createOperator("s2s", bpS2S, null, null);
 		expect(opNew.getPortIn()).toBeTruthy();
 		expect(opNew.getPortOut()).toBeTruthy();
 	});
@@ -54,7 +55,7 @@ describe("A new blueprint", () => {
 		const bpNew = landscapeModel.createBlueprint({
 			uuid: uuidv4(),
 			name: "test-bp-3",
-			type: BlueprintType.Local
+			type: BlueprintType.Local,
 		});
 		bpNew.createPort({name: "", direction: PortDirection.In, type: SlangType.newUnspecified()});
 		bpNew.createPort({name: "", direction: PortDirection.Out, type: SlangType.newUnspecified()});
@@ -73,8 +74,8 @@ describe("A new blueprint", () => {
 
 		const newPort = bpPortIn.getMapSubs().next().value;
 
-		expect(newPort.getConnectedWith()).toContain(opPortIn);
-		expect(opPortIn.getConnectedWith()).toContain(newPort);
+		expect(newPort.isConnectedWith(opPortIn));
+		expect(opPortIn.isConnectedWith(newPort));
 
 		newPort.disconnectTo(opPortIn);
 
@@ -91,7 +92,7 @@ describe("A new blueprint", () => {
 		const bpNew = landscapeModel.createBlueprint({
 			uuid: uuidv4(),
 			name: "test-bp-4",
-			type: BlueprintType.Local
+			type: BlueprintType.Local,
 		});
 
 		const opS2S1 = bpNew.createOperator("s2s_1", bpS2S, null, null);

@@ -188,7 +188,7 @@ function streamsGenericLikeCompatibleTo(streamType: StreamType, genericStreamTyp
 	return genericStreamType.compatibleTo(streamType);
 }
 
-export function canConnectTo(source: PortModel, destination: PortModel): boolean {
+export function canConnectTo(source: PortModel, destination: PortModel, createGenerics: boolean = true): boolean {
 	if (!source.isSource() || !destination.isDestination()) {
 		return false;
 	}
@@ -217,7 +217,8 @@ export function canConnectTo(source: PortModel, destination: PortModel): boolean
 		return false;
 	}
 
-	if ((!source.isGenericLike() || source.getType().isElementaryPort()) &&
+	if (!createGenerics ||
+		(!source.isGenericLike() || source.getType().isElementaryPort()) &&
 		(!destination.isGenericLike() || destination.getType().isElementaryPort())) {
 		if (!typesCompatibleTo(source.getType(), destination.getType())) {
 			return false;

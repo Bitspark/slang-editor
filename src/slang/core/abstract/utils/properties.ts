@@ -75,9 +75,9 @@ export class PropertyAssignments {
 	private readonly assignments: Map<string, PropertyAssignment>;
 	private readonly assignmentChanged = new Subject<{ property: PropertyModel, newValue: SlangTypeValue | undefined }>();
 
-	public constructor(private properties: PropertyModel[], generics: GenericSpecifications) {
+	public constructor(private properties: Iterable<PropertyModel>, generics: GenericSpecifications) {
 		this.assignments = new Map<string, PropertyAssignment>(
-			properties.map<[string, PropertyAssignment]>(
+			Array.from(properties).map<[string, PropertyAssignment]>(
 				(property) => [property.getName(), new PropertyAssignment(property, undefined, generics)],
 			),
 		);
@@ -90,7 +90,7 @@ export class PropertyAssignments {
 	}
 
 	public getProperties(): IterableIterator<PropertyModel> {
-		return this.properties.values();
+		return Array.from(this.properties).values();
 	}
 
 	public getAssignments(): IterableIterator<PropertyAssignment> {

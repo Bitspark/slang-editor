@@ -1,13 +1,14 @@
+import uuidv4 from "uuid/v4";
+
+import {GenericSpecifications} from "../../src/slang/core/abstract/utils/generics";
+import {PropertyAssignments, PropertyModel} from "../../src/slang/core/abstract/utils/properties";
 import {AppModel} from "../../src/slang/core/models/app";
 import {BlueprintType} from "../../src/slang/core/models/blueprint";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
+import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
 import {TestStorageApp} from "../helpers/TestStorageApp";
 
 import data from "../resources/definitions.json";
-import {GenericSpecifications} from "../../src/slang/core/abstract/utils/generics";
-import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
-import {PropertyAssignments, PropertyModel} from "../../src/slang/core/abstract/utils/properties";
-import uuidv4 = require("uuid/v4");
 
 describe("A property", () => {
 	let appModel: AppModel;
@@ -28,8 +29,7 @@ describe("A property", () => {
 		const bpValue = landscapeModel.findBlueprint("bbeeeeff-2b04-44b4-97ad-fd931c9ab77b")!;
 		const bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
 
-		const bpNewId = uuidv4();
-		const bpNew = landscapeModel.createBlueprint({uuid: bpNewId, name: "test-prop-1", type: BlueprintType.Local});
+		const bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), name: "test-prop-1", type: BlueprintType.Local});
 
 		const gens = new GenericSpecifications(["valueType"]);
 		const props = new PropertyAssignments([new PropertyModel("value", SlangType.newGeneric("valueType"))], gens);
@@ -48,4 +48,22 @@ describe("A property", () => {
 		expect(opValue.getPortOut()!.getConnectedWith()).toContain(opS2S.getPortIn()!);
 		expect(opValue.getPortOut()!.getTypeIdentifier()).toEqual(TypeIdentifier.String);
 	});
+
+	it("can be expanded properly", () => {
+		const bpProps = landscapeModel.findBlueprint("cbc2cb11-c30a-4194-825c-f042902bd18b")!;
+		const bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), name: "test-prop-2", type: BlueprintType.Local});
+
+		const opProps = bpNew.createBlankOperator(bpProps, {position: {x: 0, y: 0}});
+
+		opProps.getProperties().get("ports").assign(["a", "b", "c"]);
+
+		const subNames = Array.from(opProps.getPortIn()!.getMapSubs())
+			.map((sub) => sub.getName());
+
+		expect(subNames.length).toEqual(3);
+		["sub_a_number", "sub_a_number", "sub_a_number"].forEach((subName) => {
+			expect(subNames).toContain(subName);
+		});
+	});
+
 });

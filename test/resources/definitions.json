@@ -64,5 +64,113 @@
       "connections": {}
     },
     "type": "local"
+  },
+  {
+    "def": {
+      "id": "9547e231-26a9-4de0-9b25-b2e1b3fdb1d1",
+      "name": "StringToPrimitiveDelegate",
+      "services": {
+        "main": {
+          "in": {
+            "type": "string"
+          },
+          "out": {
+            "type": "primitive"
+          }
+        }
+      },
+      "delegates": {
+        "dlg1": {
+          "in": {
+            "type": "primitive"
+          },
+          "out": {
+            "type": "string"
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
+    },
+    "type": "local"
+  },
+  {
+    "def": {
+      "id": "cbc2cb11-c30a-4194-825c-f042902bd18b",
+      "name": "PropertyPorts",
+      "services": {
+        "main": {
+          "in": {
+            "type": "map",
+            "map": {
+              "sub_{ports}_number": {
+                "type": "number"
+              }
+            }
+          },
+          "out": {
+            "type": "primitive"
+          }
+        }
+      },
+      "properties": {
+        "ports": {
+          "type": "stream",
+          "stream": {
+            "type": "string"
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
+    },
+    "type": "local"
+  },
+  {
+    "def": {
+      "id": "717867d5-f84e-400c-bdc4-1a374f34e3a5",
+      "name": "MapAndStreamPorts",
+      "services": {
+        "main": {
+          "in": {
+            "type": "map",
+            "map": {
+              "a": {
+                "type": "stream",
+                "stream": {
+                  "type": "string"
+                }
+              },
+              "b": {
+                "type": "map",
+                "map": {
+                  "c": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          "out": {
+            "type": "stream",
+            "stream": {
+              "type": "stream",
+              "stream": {
+                "type": "map",
+                "map": {
+                  "a": {
+                    "type": "generic",
+                    "generic": "itemType"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
+    },
+    "type": "local"
   }
 ]
