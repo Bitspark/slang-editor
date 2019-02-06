@@ -119,7 +119,7 @@ export class LandscapeView extends PaperView {
 		rect.on("pointerup", () => {
 			const newBlueprint = this.landscape.createBlueprint({
 				uuid: uuidv4(),
-				name: `Unnamed${new Date().getTime()}`,
+				meta: {name: `Unnamed${new Date().getTime()}`},
 				type: BlueprintType.Local,
 			});
 			newBlueprint.createPort({

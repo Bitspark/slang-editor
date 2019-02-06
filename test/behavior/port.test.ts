@@ -26,7 +26,7 @@ describe("A port", () => {
 		landscapeModel = ls;
 		await appModel.load();
 
-		bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), name: "test-bp-2", type: BlueprintType.Local});
+		bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), meta: {name: "test-bp-2"}, type: BlueprintType.Local});
 
 		bp = landscapeModel.findBlueprint("717867d5-f84e-400c-bdc4-1a374f34e3a5")!;
 		op = bpNew.createOperator("dlg_op", bp, null, null);

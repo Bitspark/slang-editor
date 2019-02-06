@@ -1,4 +1,5 @@
 import {SlangTypeValue} from "./type";
+import {BlueprintMeta} from "../core/models/blueprint";
 
 export interface XY {
 	x: number;
@@ -61,7 +62,7 @@ export interface OperatorApiResponse {
 
 export interface BlueprintDefApiResponse {
 	id: string;
-	name: string;
+	meta: BlueprintMeta;
 	operators?: {
 		[operatorName: string]: OperatorApiResponse,
 	};

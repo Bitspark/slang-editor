@@ -44,10 +44,18 @@ export interface BlueprintGeometry {
 	port: BlueprintPortGeometry;
 }
 
+export interface BlueprintMeta {
+	name: string;
+	icon?: string;
+	shortDescription?: string;
+	description?: string;
+	docUrl?: string;
+}
+
 export interface BlueprintModelArgs {
 	uuid: string;
-	name: string;
 	type: BlueprintType;
+	meta: BlueprintMeta;
 	geometry?: BlueprintGeometry;
 }
 
@@ -82,6 +90,10 @@ export class BlueprintModel extends BlackBox {
 
 	public set outPosition(pos: number) {
 		this.geometry.port.out.position = pos;
+	}
+
+	public get name(): string {
+		return this.meta.name;
 	}
 
 	private static revealGenericIdentifiers(port: PortModel): Set<string> {
@@ -126,17 +138,17 @@ export class BlueprintModel extends BlackBox {
 	private readonly geometry: BlueprintGeometry;
 
 	// Properties
-	private readonly uuid: string;
-	private readonly name: string;
+	public readonly uuid: string;
 	private readonly type: BlueprintType;
+	private readonly meta: BlueprintMeta;
 
 	private properties: PropertyModel[] = [];
 	private genericIdentifiers: Set<string>;
 
-	constructor(parent: LandscapeModel, {uuid, name, type, geometry}: BlueprintModelArgs) {
+	constructor(parent: LandscapeModel, {uuid, type, meta, geometry}: BlueprintModelArgs) {
 		super(parent, true);
 		this.uuid = uuid;
-		this.name = name;
+		this.meta = meta;
 		this.type = type;
 		this.genericIdentifiers = new Set<string>();
 
@@ -236,6 +248,10 @@ export class BlueprintModel extends BlackBox {
 
 	public findDelegate(name: string): BlueprintDelegateModel | undefined {
 		return this.scanChildNode(BlueprintDelegateModel, (delegate) => delegate.getName() === name);
+	}
+
+	public getMeta(): BlueprintMeta {
+		return this.meta;
 	}
 
 	public getGeometry(): BlueprintGeometry {
