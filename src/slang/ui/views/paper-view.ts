@@ -147,15 +147,6 @@ export abstract class PaperView extends View {
 		const paper = this.paper;
 		const that = this;
 
-		document.addEventListener("keydown", (event: KeyboardEvent) => {
-			event.preventDefault();
-			this.setUserInputMode(event);
-		});
-
-		document.addEventListener("keyup", () => {
-			this.userInputMode = "scroll";
-		});
-
 		paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, x: number, y: number) => {
 			originalEvent.preventDefault();
 			if (!that.handleMouseWheel(originalEvent as MouseWheelEvent, x, y)) {
@@ -248,6 +239,7 @@ export abstract class PaperView extends View {
 
 		paper.on("blank:pointerdown", (evt: Event, x: number, y: number) => {
 			evt.preventDefault();
+			this.setUserInputMode(evt as MouseEvent);
 
 			if (that.userInputMode === "zoom/pan") {
 				startPanning(x, y);
@@ -255,6 +247,7 @@ export abstract class PaperView extends View {
 		});
 		paper.on("cell:pointerdown", (_cellView: dia.CellView, evt: Event, x: number, y: number) => {
 			evt.preventDefault();
+			this.setUserInputMode(evt as MouseEvent);
 
 			if (that.userInputMode === "zoom/pan") {
 				startPanning(x, y);
