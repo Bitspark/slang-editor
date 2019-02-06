@@ -36,7 +36,7 @@ export class Slang {
 	private subscribe(): void {
 		this.app.subscribeOpenedBlueprintChanged((blueprint) => {
 			if (blueprint !== null && this.outlet) {
-				const view = new BlueprintView(this.outlet, blueprint);
+				const view = new BlueprintView(this.outlet, blueprint, false);
 				this.outlet.setView(view);
 			}
 		});

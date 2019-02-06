@@ -222,6 +222,10 @@ export class BlueprintModel extends BlackBox {
 		return this.type === BlueprintType.Local;
 	}
 
+	public isElementary(): boolean {
+		return this.type === BlueprintType.Elementary;
+	}
+
 	public getType(): BlueprintType {
 		return this.type;
 	}

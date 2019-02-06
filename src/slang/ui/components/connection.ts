@@ -142,8 +142,11 @@ export class ConnectionComponent extends CellComponent {
 			z: -1,
 			attrs: {
 				".connection": {
-					"stroke-opacity": Styles.Connection.GhostConnection.strokeOpacity,
+					strokeOpacity: Styles.Connection.GhostConnection.strokeOpacity,
 				},
+				".tool-remove": paperView.readOnly ? {
+					display: "none",
+				} : undefined,
 			},
 		} as any);
 		this.shape.transition("attrs/.connection/stroke-opacity", Styles.Connection.OrdinaryConnection.strokeOpacity, {

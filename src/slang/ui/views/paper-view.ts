@@ -19,8 +19,8 @@ export abstract class PaperView extends View {
 	private minScale: number = 0.35;
 	private maxScale: number = 2.5;
 
-	protected constructor(frame: ViewFrame) {
-		super(frame);
+	protected constructor(frame: ViewFrame, readOnly: boolean = false) {
+		super(frame, readOnly);
 		this.paper = this.createPaper();
 		this.redirectPaperEvents();
 	}
@@ -83,6 +83,7 @@ export abstract class PaperView extends View {
 		container.innerHTML = "";
 		const inner = document.createElement("div");
 		container.appendChild(inner);
+		const view = this;
 
 		return new dia.Paper(Object.assign({
 			el: inner,
@@ -90,6 +91,10 @@ export abstract class PaperView extends View {
 			gridSize: 5,
 			drawGrid: false,
 			interactive(cellView: dia.CellView) {
+				if (view.readOnly) {
+					return false;
+				}
+
 				if (cellView.model.attr("draggable") === false) {
 					return false;
 				}
