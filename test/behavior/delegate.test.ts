@@ -52,7 +52,7 @@ describe("An operator delegate", () => {
 		landscapeModel = ls;
 		await appModel.load();
 
-		bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), name: "test-bp-2", type: BlueprintType.Local});
+		bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), meta: {name: "test-bp-2"}, type: BlueprintType.Local});
 
 		dlgBp = landscapeModel.findBlueprint("9547e231-26a9-4de0-9b25-b2e1b3fdb1d1")!;
 		s2sBp = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;

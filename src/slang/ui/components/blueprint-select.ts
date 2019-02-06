@@ -117,7 +117,7 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 							},
 							onMouseLeave: () => attrs.onHover(undefined),
 						},
-						m(".sl-blupr-title", blueprint.getName()));
+						m(".sl-blupr-title", blueprint.name));
 				}),
 			),
 		);
@@ -167,7 +167,7 @@ export class BlueprintSelectComponent extends CellComponent {
 	}
 
 	private isFilterExprIncluded(blueprint: BlueprintModel): boolean {
-		return this.filterExpr === "" || blueprint.getName().toLowerCase().includes(this.filterExpr.toLowerCase());
+		return this.filterExpr === "" || blueprint.name.toLowerCase().includes(this.filterExpr.toLowerCase());
 	}
 
 	private getBlueprints(): BlueprintModel[] {

@@ -44,10 +44,18 @@ export interface BlueprintGeometry {
 	port: BlueprintPortGeometry;
 }
 
+export interface BlueprintMeta {
+	name: string;
+	icon?: string;
+	shortDescription?: string;
+	description?: string;
+	docUrl?: string;
+}
+
 export interface BlueprintModelArgs {
 	uuid: string;
-	name: string;
 	type: BlueprintType;
+	meta: BlueprintMeta;
 	geometry?: BlueprintGeometry;
 }
 
@@ -84,6 +92,10 @@ export class BlueprintModel extends BlackBox {
 		this.geometry.port.out.position = pos;
 	}
 
+	public get name(): string {
+		return this.meta.name;
+	}
+
 	private static revealGenericIdentifiers(port: PortModel): Set<string> {
 		const genericIdentifiers = new Set<string>();
 		if (port.getTypeIdentifier() === TypeIdentifier.Generic) {
@@ -111,6 +123,7 @@ export class BlueprintModel extends BlackBox {
 		return genericIdentifiers;
 	}
 
+	public readonly uuid: string;
 	public shutdownRequested = new SlangSubject<boolean>("shutdown-triggered");
 	// Topics::self
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
@@ -126,17 +139,16 @@ export class BlueprintModel extends BlackBox {
 	private readonly geometry: BlueprintGeometry;
 
 	// Properties
-	private readonly uuid: string;
-	private readonly name: string;
 	private readonly type: BlueprintType;
+	private readonly meta: BlueprintMeta;
 
 	private properties: PropertyModel[] = [];
 	private genericIdentifiers: Set<string>;
 
-	constructor(parent: LandscapeModel, {uuid, name, type, geometry}: BlueprintModelArgs) {
+	constructor(parent: LandscapeModel, {uuid, type, meta, geometry}: BlueprintModelArgs) {
 		super(parent, true);
 		this.uuid = uuid;
-		this.name = name;
+		this.meta = meta;
 		this.type = type;
 		this.genericIdentifiers = new Set<string>();
 
@@ -198,14 +210,6 @@ export class BlueprintModel extends BlackBox {
 		return this.createChildNode(BlueprintPortModel, args);
 	}
 
-	public getUUID(): string {
-		return this.uuid;
-	}
-
-	public getName(): string {
-		return this.name;
-	}
-
 	public getShortName(): string {
 		return this.name;
 	}
@@ -236,6 +240,10 @@ export class BlueprintModel extends BlackBox {
 
 	public findDelegate(name: string): BlueprintDelegateModel | undefined {
 		return this.scanChildNode(BlueprintDelegateModel, (delegate) => delegate.getName() === name);
+	}
+
+	public getMeta(): BlueprintMeta {
+		return this.meta;
 	}
 
 	public getGeometry(): BlueprintGeometry {
