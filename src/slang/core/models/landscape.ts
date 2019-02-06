@@ -20,7 +20,7 @@ export class LandscapeModel extends SlangNode {
 			// Valid uuid e.g.: "dc1aa556-d62e-4e07-adbb-53dc317481b0"
 			throw Error(`given blueprint uuid is not valid: ${uuid}`);
 		}
-		return this.scanChildNode(BlueprintModel, (blueprint) => uuid === blueprint.getUUID());
+		return this.scanChildNode(BlueprintModel, (blueprint) => uuid === blueprint.uuid);
 	}
 
 	// Actions

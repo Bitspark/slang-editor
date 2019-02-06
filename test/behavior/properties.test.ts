@@ -32,7 +32,7 @@ describe("A property", () => {
 		const bpNew = landscapeModel.createBlueprint({
 			uuid: uuidv4(),
 			meta: {name: "test-prop-1"},
-			type: BlueprintType.Local
+			type: BlueprintType.Local,
 		});
 
 		const gens = new GenericSpecifications(["valueType"]);
@@ -58,7 +58,7 @@ describe("A property", () => {
 		const bpNew = landscapeModel.createBlueprint({
 			uuid: uuidv4(),
 			meta: {name: "test-prop-2"},
-			type: BlueprintType.Local
+			type: BlueprintType.Local,
 		});
 
 		const opProps = bpNew.createBlankOperator(bpProps, {position: {x: 0, y: 0}});

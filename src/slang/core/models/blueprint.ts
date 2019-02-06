@@ -123,6 +123,7 @@ export class BlueprintModel extends BlackBox {
 		return genericIdentifiers;
 	}
 
+	public readonly uuid: string;
 	public shutdownRequested = new SlangSubject<boolean>("shutdown-triggered");
 	// Topics::self
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
@@ -138,7 +139,6 @@ export class BlueprintModel extends BlackBox {
 	private readonly geometry: BlueprintGeometry;
 
 	// Properties
-	public readonly uuid: string;
 	private readonly type: BlueprintType;
 	private readonly meta: BlueprintMeta;
 
@@ -208,14 +208,6 @@ export class BlueprintModel extends BlackBox {
 
 	public createPort(args: PortModelArgs): BlueprintPortModel {
 		return this.createChildNode(BlueprintPortModel, args);
-	}
-
-	public getUUID(): string {
-		return this.uuid;
-	}
-
-	public getName(): string {
-		return this.name;
 	}
 
 	public getShortName(): string {

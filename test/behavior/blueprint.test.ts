@@ -29,7 +29,7 @@ describe("A new blueprint", () => {
 		const bp = landscapeModel.createBlueprint({
 			uuid: uuidv4(),
 			meta: {name: "test-bp-1"},
-			type: BlueprintType.Local
+			type: BlueprintType.Local,
 		});
 		expect(bp).toBeTruthy();
 	});

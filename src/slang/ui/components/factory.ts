@@ -13,7 +13,7 @@ export class ComponentFactory {
 	public createOperatorComponent(paperView: PaperView, operator: OperatorModel): OperatorBoxComponent {
 		const operatorCompClass = this.opCompClasses.get(operator.getBlueprint());
 		if (!operatorCompClass) {
-			// throw `missing operator component for "${operator.getBlueprint().getName()}"`
+			// throw `missing operator component for "${operator.getBlueprint().name}"`
 			return new OperatorBoxComponent(paperView, operator);
 		}
 		return new operatorCompClass(paperView, operator);
