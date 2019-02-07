@@ -243,11 +243,13 @@ export class WhiteBoxComponent extends CellComponent {
 			}
 		}
 
+		const outerEdgeWidth = 3 - 1;
+
 		this.ports.top.map((p) => p.getShape()).forEach((port) => {
 			const currentPortPosition = port.get("position");
 			const targetPosition = {
 				x: currentPortPosition.x,
-				y: newPosition.y - pHeight,
+				y: newPosition.y - pHeight - outerEdgeWidth,
 			};
 			if (!animation) {
 				port.set({position: targetPosition});
@@ -261,7 +263,7 @@ export class WhiteBoxComponent extends CellComponent {
 			const currentPortPosition = port.get("position");
 			const targetPosition = {
 				x: currentPortPosition.x,
-				y: newPosition.y + newSize.height,
+				y: newPosition.y + newSize.height - outerEdgeWidth / 2,
 			};
 			if (!animation) {
 				port.set({position: targetPosition});
@@ -274,7 +276,7 @@ export class WhiteBoxComponent extends CellComponent {
 		this.ports.right.map((p) => p.getShape()).forEach((port) => {
 			const currentPortPosition = port.get("position");
 			const targetPosition = {
-				x: newPosition.x + newSize.width,
+				x: newPosition.x + newSize.width + outerEdgeWidth / 2,
 				y: currentPortPosition.y,
 			};
 			if (!animation) {

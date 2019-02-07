@@ -26,7 +26,7 @@ $blackbox-color-label: $black;
 	.sl-rectangle {
 		fill: $blackbox-color-fill;
 		stroke: $black;
-		stroke-width: 1px;
+		stroke-width: 1.5px;
 	}
 
 	.sl-label {
@@ -46,7 +46,7 @@ $blackbox-color-label: $black;
 	.sl-rectangle {
 		stroke: $black;
 		fill: $blueprint-color-fill;
-		stroke-width: 1px;
+		stroke-width: 3px;
 	}
 
 	&.sl-blupr-elem {
