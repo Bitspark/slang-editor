@@ -141,12 +141,13 @@ export class WhiteBoxComponent extends CellComponent {
 			});
 		}
 
-		const offset = bbox.y + (bbox.height - this.ports.right.length * pHeight) / 2;
-		this.ports.right.forEach((port, index) => {
-			port.getShape().set({
+		this.ports.right.forEach((port) => {
+			const portElem = port.getShape();
+			const y = portElem.position().y;
+			portElem.set({
 				position: {
 					x: bbox.x + bbox.width,
-					y: offset + index * pHeight,
+					y,
 				},
 			});
 		});
@@ -346,11 +347,11 @@ export class WhiteBoxComponent extends CellComponent {
 
 		this.blueprint.subscribeChildCreated(BlueprintPortModel, (port) => {
 			if (port.isDirectionIn()) {
-				const p = this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_in`, `${this.blueprint.getShortName()} In-Port`, "top");
+				const p = this.createPort(port, this.blueprint, "top");
 				this.buttons.attachTo(p.getShape(), "br");
 				this.input.attachTo(p.getShape(), "c");
 			} else {
-				const p = this.createIsolatedPort(port, `${this.blueprint.getIdentity()}_out`, `${this.blueprint.getShortName()} Out-Port`, "bottom");
+				const p = this.createPort(port, this.blueprint, "bottom");
 				this.output.attachTo(p.getShape(), "c");
 			}
 		});
@@ -358,9 +359,9 @@ export class WhiteBoxComponent extends CellComponent {
 		this.blueprint.subscribeChildCreated(BlueprintDelegateModel, (delegate) => {
 			delegate.subscribeChildCreated(BlueprintPortModel, (port) => {
 				if (port.isDirectionIn()) {
-					this.createIsolatedPort(port, `${delegate.getIdentity()}_in`, `Delegate ${delegate.getName()} In-Port`, "right");
+					this.createPort(port, delegate, "right");
 				} else {
-					this.createIsolatedPort(port, `${delegate.getIdentity()}_out`, `Delegate ${delegate.getName()} Out-Port`, "right");
+					this.createPort(port, delegate, "right");
 				}
 			});
 		});
@@ -472,7 +473,12 @@ export class WhiteBoxComponent extends CellComponent {
 
 	}
 
-	private createIsolatedPort(port: BlueprintPortModel, id: string, name: string, position: PortGroupPosition): IsolatedBlueprintPortComponent {
+	private createPort(port: BlueprintPortModel, owner: BlueprintModel | BlueprintDelegateModel, pos: PortGroupPosition): IsolatedBlueprintPortComponent {
+		const portDir = port.isDirectionIn() ? "in" : "out";
+		const offset = port.isDirectionIn() ? owner.inPosition : owner.outPosition;
+		const id = `${owner.getIdentity()}_${portDir}`;
+		const name = `${owner.name} ${portDir}-port`;
+
 		const invertedPosition: { [key in PortGroupPosition]: PortGroupPosition } = {
 			top: "bottom",
 			bottom: "top",
@@ -481,44 +487,64 @@ export class WhiteBoxComponent extends CellComponent {
 		};
 
 		const that = this;
-		const portComponent = new IsolatedBlueprintPortComponent(name, id, port, invertedPosition[position]);
+		const portComponent = new IsolatedBlueprintPortComponent(name, id, port, invertedPosition[pos]);
 		const portElement = portComponent.getShape();
 		this.paperView.renderCell(portElement);
 
 		let calculateRestrictedRect: (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => g.PlainRect;
-
 		const elementSize = portElement.get("size") as g.PlainRect;
-
-		switch (position) {
+		switch (pos) {
 			case "top":
-				portElement.set({position: {x: -elementSize.width / 2, y: 0}});
 				this.ports.top.push(portComponent);
+				portElement.set({
+					position: {
+						x: offset - elementSize.width / 2,
+						y: -elementSize.height,
+					},
+				});
+
 				calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
 					x: outerPosition.x,
 					y: outerPosition.y - elementSize.height,
 					width: outerSize.width,
 					height: elementSize.height,
 				});
+
 				portElement.on("change:position", () => {
-					that.blueprint.inPosition = portElement.getBBox().center().x;
+					owner.inPosition = portElement.getBBox().center().x;
 				});
 				break;
 			case "bottom":
-				portElement.set({position: {x: -elementSize.width / 2, y: 0}});
-				this.ports.bottom.push(portComponent);
+
+				portElement.set({
+					position: {
+						x: offset - elementSize.width / 2,
+						y: 0,
+					},
+				});
+
 				calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
 					x: outerPosition.x,
 					y: outerPosition.y + outerSize.height,
 					width: outerSize.width,
 					height: elementSize.height,
 				});
+
 				portElement.on("change:position", () => {
-					that.blueprint.outPosition = portElement.getBBox().center().x;
+					owner.outPosition = portElement.getBBox().center().x;
 				});
+				this.ports.bottom.push(portComponent);
 				break;
 			case "left":
-				portElement.set({position: {x: 0, y: -elementSize.height / 2}});
 				this.ports.left.push(portComponent);
+
+				portElement.set({
+					position: {
+						x: 0,
+						y: offset - elementSize.height / 2,
+					},
+				});
+
 				calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
 					x: outerPosition.x - elementSize.width,
 					y: outerPosition.y,
@@ -527,14 +553,30 @@ export class WhiteBoxComponent extends CellComponent {
 				});
 				break;
 			case "right":
-				portElement.set({position: {x: 0, y: -elementSize.height / 2}});
+				portElement.set({
+					position: {
+						x: 0,
+						y: offset - elementSize.height / 2,
+					},
+				});
 				this.ports.right.push(portComponent);
+
 				calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
 					x: outerPosition.x + outerSize.width,
 					y: outerPosition.y,
 					width: elementSize.width,
 					height: outerSize.height,
 				});
+
+				if (port.isDirectionIn()) {
+					portElement.on("change:position", () => {
+						owner.inPosition = portElement.getBBox().center().y;
+					});
+				} else {
+					portElement.on("change:position", () => {
+						owner.outPosition = portElement.getBBox().center().y;
+					});
+				}
 				break;
 		}
 
