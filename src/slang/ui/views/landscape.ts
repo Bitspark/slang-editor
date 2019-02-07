@@ -20,7 +20,7 @@ export class LandscapeView extends PaperView {
 	private dimensions: [number, number] = [0, 0];
 
 	constructor(frame: ViewFrame, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
-		super(frame);
+		super(frame, true);
 		this.addPanning();
 
 		if (filter) {

@@ -68,8 +68,9 @@ export namespace Styles {
 	}
 
 	export class Outer {
-		public static rx = 24;
-		public static ry = 24;
+		public static rx = 18;
+		public static ry = 18;
+		public static size = {width: 240, height: 147};
 		public static filter = {
 			name: "innerShadow",
 			args: {

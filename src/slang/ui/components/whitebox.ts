@@ -243,11 +243,13 @@ export class WhiteBoxComponent extends CellComponent {
 			}
 		}
 
+		const outerEdgeWidth = 3 - 1;
+
 		this.ports.top.map((p) => p.getShape()).forEach((port) => {
 			const currentPortPosition = port.get("position");
 			const targetPosition = {
 				x: currentPortPosition.x,
-				y: newPosition.y - pHeight,
+				y: newPosition.y - pHeight - outerEdgeWidth,
 			};
 			if (!animation) {
 				port.set({position: targetPosition});
@@ -261,7 +263,7 @@ export class WhiteBoxComponent extends CellComponent {
 			const currentPortPosition = port.get("position");
 			const targetPosition = {
 				x: currentPortPosition.x,
-				y: newPosition.y + newSize.height,
+				y: newPosition.y + newSize.height - outerEdgeWidth / 2,
 			};
 			if (!animation) {
 				port.set({position: targetPosition});
@@ -274,7 +276,7 @@ export class WhiteBoxComponent extends CellComponent {
 		this.ports.right.map((p) => p.getShape()).forEach((port) => {
 			const currentPortPosition = port.get("position");
 			const targetPosition = {
-				x: newPosition.x + newSize.width,
+				x: newPosition.x + newSize.width + outerEdgeWidth / 2,
 				y: currentPortPosition.y,
 			};
 			if (!animation) {
@@ -311,78 +313,6 @@ export class WhiteBoxComponent extends CellComponent {
 	}
 
 	private subscribe() {
-		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
-			if (!instance) {
-				this.buttons.mount({
-					view: () => m(".toolbox", [
-						m(Button, {
-							onClick: () => {
-								this.blueprint.save();
-								this.blueprint.requestDeployment();
-							},
-							class: "sl-blupr-deploy",
-						}, "Deploy"),
-						m(Button, {
-							onClick: () => {
-								this.blueprint.save();
-							},
-							class: "sl-blupr-deploy",
-						}, "Save"),
-					]),
-				});
-				this.input.unmount();
-				this.output.unmount();
-
-			} else {
-				this.buttons.mount({
-					view: () => m(".toolbox", [
-						m(Button, {
-							class: "sl-green-pulsing",
-						}, "Running"),
-						m(Button, {
-							onClick: () => {
-								this.blueprint.requestShutdown();
-							},
-							class: "sl-btn-warn",
-						}, "Shutdown"),
-					]),
-				});
-
-				const portIn = this.blueprint.getPortIn();
-
-				if (portIn) {
-					this.input.mount({
-						view: () => m(Box, m(InputConsole, {
-							onSubmit: (values: SlangTypeValue) => {
-								this.blueprint.pushInput(values);
-							},
-							type: portIn.getType(),
-						})),
-					});
-				}
-
-				const portOut = this.blueprint.getPortOut();
-
-				if (portOut) {
-					const outputValues: SlangTypeValue[] = [];
-
-					this.blueprint.subscribeOutputPushed((outputData: SlangTypeValue) => {
-						outputValues.unshift(outputData);
-						m.redraw();
-					}, this.blueprint.shutdownRequested);
-
-					this.output.mount({
-						view: () => m(Box, m(OutputConsole, {
-							onLoad: () => {
-								return outputValues;
-							},
-							type: portOut.getType(),
-						})),
-					});
-				}
-			}
-		});
-
 		this.blueprint.subscribeChildCreated(OperatorModel, (operator) => {
 			const opComp = this.addOperator(operator);
 			this.fitOuter(true);
@@ -463,6 +393,83 @@ export class WhiteBoxComponent extends CellComponent {
 			operator.getGenerics().subscribeGenericsChanged(() => refreshOperatorConnections(operator));
 			operator.getProperties().subscribeAssignmentChanged(() => refreshOperatorConnections(operator));
 		});
+
+		if (this.paperView.readOnly) {
+			return;
+		}
+
+		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
+			if (!instance) {
+				this.buttons.mount({
+					view: () => m(".toolbox", [
+						m(Button, {
+							onClick: () => {
+								this.blueprint.save();
+								this.blueprint.requestDeployment();
+							},
+							class: "sl-blupr-deploy",
+						}, "Deploy"),
+						m(Button, {
+							onClick: () => {
+								this.blueprint.save();
+							},
+							class: "sl-blupr-deploy",
+						}, "Save"),
+					]),
+				});
+				this.input.unmount();
+				this.output.unmount();
+
+			} else {
+				this.buttons.mount({
+					view: () => m(".toolbox", [
+						m(Button, {
+							class: "sl-green-pulsing",
+						}, "Running"),
+						m(Button, {
+							onClick: () => {
+								this.blueprint.requestShutdown();
+							},
+							class: "sl-btn-warn",
+						}, "Shutdown"),
+					]),
+				});
+
+				const portIn = this.blueprint.getPortIn();
+
+				if (portIn) {
+					this.input.mount({
+						view: () => m(Box, m(InputConsole, {
+							onSubmit: (values: SlangTypeValue) => {
+								this.blueprint.pushInput(values);
+							},
+							type: portIn.getType(),
+						})),
+					});
+				}
+
+				const portOut = this.blueprint.getPortOut();
+
+				if (portOut) {
+					const outputValues: SlangTypeValue[] = [];
+
+					this.blueprint.subscribeOutputPushed((outputData: SlangTypeValue) => {
+						outputValues.unshift(outputData);
+						m.redraw();
+					}, this.blueprint.shutdownRequested);
+
+					this.output.mount({
+						view: () => m(Box, m(OutputConsole, {
+							onLoad: () => {
+								return outputValues;
+							},
+							type: portOut.getType(),
+						})),
+					});
+				}
+			}
+		});
+
 	}
 
 	private createIsolatedPort(port: BlueprintPortModel, id: string, name: string, position: PortGroupPosition): IsolatedBlueprintPortComponent {
@@ -548,32 +555,31 @@ export class WhiteBoxComponent extends CellComponent {
 	}
 
 	private addOperator(operator: OperatorModel): OperatorBoxComponent {
-
 		const operatorComp = COMPONENT_FACTORY.createOperatorComponent(this.paperView, operator);
-
 		this.operators.push(operatorComp);
-
-		operatorComp.onClick(() => {
-			const comp = this
-				.createComponent({x: 0, y: 0, align: "c"})
-				.mount({
-					view: () => m(Modal, {
-							onClose: () => {
-								comp.destroy();
-							},
-						},
-						m(DashboardComponent, {
-							operator,
-							onSave: () => {
-								comp.destroy();
-							},
-						}),
-					),
-				});
-			return true;
-		});
-
 		this.attachPortInfo(operatorComp);
+
+		if (!this.paperView.readOnly) {
+			operatorComp.onClick(() => {
+				const comp = this
+					.createComponent({x: 0, y: 0, align: "c"})
+					.mount({
+						view: () => m(Modal, {
+								onClose: () => {
+									comp.destroy();
+								},
+							},
+							m(DashboardComponent, {
+								operator,
+								onSave: () => {
+									comp.destroy();
+								},
+							}),
+						),
+					});
+				return true;
+			});
+		}
 
 		return operatorComp;
 	}
@@ -671,11 +677,6 @@ export namespace WhiteBoxComponent {
 			position,
 			size,
 			z: -2,
-			attrs: {
-				root: {
-					class: "joint-cell joint-element sl-blackbox",
-				},
-			},
 		};
 	}
 
@@ -687,6 +688,11 @@ export namespace WhiteBoxComponent {
 			}) as any);
 			this.attr("draggable", false);
 			this.set("obstacle", false);
+
+			if (blueprint.isElementary()) {
+				const cssClass = this.attr("root/class");
+				this.attr("root/class", `${cssClass} sl-blupr-elem`);
+			}
 		}
 	}
 }

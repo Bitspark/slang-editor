@@ -153,9 +153,8 @@ export class BlueprintModel extends BlackBox {
 		this.genericIdentifiers = new Set<string>();
 
 		if (!geometry) {
-			const dfltSize = {width: 200, height: 200};
 			this.geometry = {
-				size: dfltSize,
+				size: {width: 240, height: 147},
 				port: {
 					in: {
 						position: 0,
@@ -220,6 +219,10 @@ export class BlueprintModel extends BlackBox {
 
 	public isLocal(): boolean {
 		return this.type === BlueprintType.Local;
+	}
+
+	public isElementary(): boolean {
+		return this.type === BlueprintType.Elementary;
 	}
 
 	public getType(): BlueprintType {

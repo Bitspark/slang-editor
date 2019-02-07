@@ -1,5 +1,4 @@
 import {dia} from "jointjs";
-import m, {ClassComponent, CVnode} from "mithril";
 
 import {XY} from "../../definitions/api";
 import {TypeIdentifier} from "../../definitions/type";
@@ -10,7 +9,6 @@ import {PropertyAssignments} from "../../core/abstract/utils/properties";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {LandscapeModel} from "../../core/models/landscape";
 
-import {AttachableComponent} from "../components/base";
 import {BlackBoxShape} from "../components/blackbox";
 import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
@@ -23,8 +21,8 @@ export class BlueprintView extends PaperView {
 	private readonly landscape: LandscapeModel;
 	private blueprintSelect: BlueprintSelectComponent | null = null;
 
-	constructor(frame: ViewFrame, private blueprint: BlueprintModel) {
-		super(frame);
+	constructor(frame: ViewFrame, private blueprint: BlueprintModel, readOnly: boolean = false) {
+		super(frame, readOnly || !blueprint.isLocal());
 		this.addPanning();
 		this.landscape = this.blueprint.getAncestorNode(LandscapeModel)!;
 		this.whiteBox = new WhiteBoxComponent(this, blueprint);
@@ -95,6 +93,11 @@ export class BlueprintView extends PaperView {
 			snapLinks: {radius: 75},
 			markAvailable: true,
 		});
+
+		if (this.readOnly) {
+			return paper;
+		}
+
 		paper.on("tool:remove", (linkView: dia.LinkView): void => {
 			const magnetS = linkView.getEndMagnet("source");
 			const magnetT = linkView.getEndMagnet("target");
@@ -121,19 +124,13 @@ export class BlueprintView extends PaperView {
 	}
 
 	private attachEventHandlers() {
+		if (this.readOnly) {
+			return;
+		}
+
 		this.whiteBox.onDblClick((_event: Event, x: number, y: number) => {
 			this.blueprintSelect = new BlueprintSelectComponent(this, {x, y});
 		});
-		let portInfo: AttachableComponent;
-		this.whiteBox.onPortMouseEnter((port: PortModel, x: number, y: number) => {
-			portInfo = this.whiteBox
-				.createComponent({x: x + 2, y: y + 2, align: "tl"})
-				.mount({
-					view: () => m(PortInfo, {port}),
-				});
-		});
-		this.whiteBox.onPortMouseLeave(() => portInfo.destroy());
-
 		this.graph.on("change:position change:size", (cell: dia.Cell) => {
 			// Moving around inner operators
 			if (!(cell instanceof BlackBoxShape)) {
@@ -187,23 +184,4 @@ export class BlueprintView extends PaperView {
 
 export interface Attrs {
 	port: PortModel;
-}
-
-class PortInfo implements ClassComponent<Attrs> {
-	// Note that class methods cannot infer parameter types
-	public oninit() {
-	}
-
-	public view({attrs}: CVnode<Attrs>) {
-		const port = attrs.port;
-		const portType = TypeIdentifier[port.getTypeIdentifier()].toLowerCase();
-
-		return m(".sl-port-info",
-			m(".sl-port-type", {
-					class: `sl-type-${portType}`,
-				},
-				portType),
-			m(".sl-port-name", port.getName()),
-		);
-	}
 }

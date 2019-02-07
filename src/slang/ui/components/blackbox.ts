@@ -246,6 +246,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 		super.refresh();
 		const operator = this.operator;
 		const blueprint = operator.getBlueprint();
+		const view = this.paperView;
 
 		if (operator.xy) {
 			this.updateXY(operator.xy);
@@ -259,24 +260,25 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 			.createComponent({x: 0, y: 0, align: "t"})
 			.mount({
 				view: () => [
-					m("", m(Button, {
-						tooltip: "Remove operator",
-						class: "sl-danger sl-btn-icon",
-						onClick: () => {
-							operator.destroy();
-						},
-					}, m("i.fas.fa-times"))),
+					!view.readOnly ?
+						m("", m(Button, {
+							tooltip: "Remove operator",
+							class: "sl-danger sl-btn-icon",
+							onClick: () => {
+								operator.destroy();
+							},
+						}, m("i.fas.fa-times")))
+						: undefined,
 
-					!blueprint.isLocal() ? undefined :
+					!blueprint.isElementary() ?
 						m("", m(Button, {
 							tooltip: "Open blueprint",
 							class: "sl-btn-icon",
 							onClick: () => {
-								if (blueprint.isLocal()) {
-									operator.getBlueprint().open();
-								}
+								operator.getBlueprint().open();
 							},
-						}, m("i.fas.fa-project-diagram"))),
+						}, m("i.fas.fa-project-diagram")))
+						: undefined,
 				],
 			})
 			.attachTo(this.shape, "tl");
@@ -287,6 +289,18 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 
 		this.shape.set("obstacle", true);
 		this.shape.attr("draggable", true);
+
+		if (view.readOnly) {
+			this.shape.attr({
+				body: {
+					cursor: "default",
+				},
+				label: {
+					cursor: "default",
+				},
+			});
+		}
+
 		this.attachPortEvents(operator);
 	}
 
