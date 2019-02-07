@@ -6,6 +6,7 @@ import {AppModel} from "../../src/slang/core/models/app";
 import {BlueprintType} from "../../src/slang/core/models/blueprint";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
 import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
+import {Styles} from "../../src/styles/studio";
 import {TestStorageApp} from "../helpers/TestStorageApp";
 
 import data from "../resources/definitions.json";
@@ -124,4 +125,14 @@ describe("A new blueprint", () => {
 		expect(Array.from(opG2G.getPortIn()!.getMapSubs()).length).toBe(0);
 		expect(Array.from(opG2G.getPortOut()!.getMapSubs()).length).toBe(0);
 	});
+
+	it("has default size", () => {
+		const bp = landscapeModel.createBlueprint({
+			uuid: uuidv4(),
+			meta: {name: "test-bp-1"},
+			type: BlueprintType.Local,
+		});
+		expect(bp.size).toEqual(Styles.Outer.size);
+	});
+
 });
