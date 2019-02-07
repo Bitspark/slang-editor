@@ -2,13 +2,12 @@ import uuidv4 from "uuid/v4";
 
 import {PortDirection} from "../../src/slang/core/abstract/port";
 import {GenericSpecifications} from "../../src/slang/core/abstract/utils/generics";
+import {blueprintModelToJSON} from "../../src/slang/core/mapper";
 import {AppModel} from "../../src/slang/core/models/app";
 import {BlueprintType} from "../../src/slang/core/models/blueprint";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
 import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
-import {Styles} from "../../src/styles/studio";
 import {TestStorageApp} from "../helpers/TestStorageApp";
-
 import data from "../resources/definitions.json";
 
 describe("A new blueprint", () => {
@@ -126,13 +125,34 @@ describe("A new blueprint", () => {
 		expect(Array.from(opG2G.getPortOut()!.getMapSubs()).length).toBe(0);
 	});
 
-	it("has default size", () => {
+	it("can be mapped to JSON", () => {
 		const bp = landscapeModel.createBlueprint({
 			uuid: uuidv4(),
 			meta: {name: "test-bp-1"},
 			type: BlueprintType.Local,
 		});
-		expect(bp.size).toEqual(Styles.Outer.size);
+
+		const bpJSON = blueprintModelToJSON(bp);
+
+		expect(bp.name).toEqual(bpJSON.meta.name);
+		expect(bp.size).toEqual(bpJSON.geometry!.size);
+	});
+
+	it("has port positions", () => {
+		const bp = landscapeModel.createBlueprint({
+			uuid: uuidv4(),
+			meta: {name: "test-bp-1"},
+			type: BlueprintType.Local,
+		});
+
+		expect(bp.inPosition).toEqual(0);
+		expect(bp.outPosition).toEqual(0);
+
+		bp.inPosition = 10;
+		expect(bp.inPosition).toEqual(10);
+
+		bp.outPosition = 20;
+		expect(bp.outPosition).toEqual(20);
 	});
 
 });

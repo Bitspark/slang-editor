@@ -9,7 +9,7 @@ module.exports = {
 		},
 		"./src/slang/core/models": {
 			functions: 50,
-			branches: 75,
+			branches: 70,
 			statements: 58,
 		},
 	},
