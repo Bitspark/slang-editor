@@ -37,7 +37,7 @@ module.exports = env => {
 			app: Path.resolve(__dirname, `../src/${configuration.ts}`)
 		},
 		output: {
-			path: Path.join(__dirname, "../build/studio"),
+			path: Path.join(__dirname, `../build/${configuration.name}`),
 			filename: "js/[name].js",
 		},
 		optimization: {
