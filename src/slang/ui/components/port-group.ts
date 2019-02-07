@@ -140,12 +140,12 @@ export class PortGroupComponent {
 		return this.groupPosition;
 	}
 
-	public setParent(parent: dia.Element, drawGenerics: boolean) {
+	public setParent(parent: dia.Element, ghostPorts: boolean) {
 		this.parentElement = parent;
-		this.refreshPorts(drawGenerics);
+		this.refreshPorts(ghostPorts);
 	}
 
-	public refreshPorts(drawGenerics: boolean) {
+	public refreshPorts(ghostPorts: boolean) {
 		const parentElement = this.parentElement;
 		if (!parentElement) {
 			throw new Error(`need parent`);
@@ -153,7 +153,7 @@ export class PortGroupComponent {
 
 		parentElement.removePorts(this.ports.map((port) => port.getPortElement()));
 
-		const ports = createPortItems(this, this.getGroupPosition(), this.port, drawGenerics, this.isBlackBox);
+		const ports = createPortItems(this, this.getGroupPosition(), this.port, ghostPorts, this.isBlackBox);
 
 		this.ports.length = 0;
 		this.ports.push.apply(this.ports, ports);

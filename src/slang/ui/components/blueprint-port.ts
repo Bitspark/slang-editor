@@ -17,7 +17,7 @@ export class IsolatedBlueprintPortComponent {
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("mouseleft");
 
-	constructor(name: string, identity: string, port: PortModel, position: PortGroupPosition) {
+	constructor(name: string, identity: string, port: PortModel, position: PortGroupPosition, ghostPorts: boolean) {
 		this.portGroup = new PortGroupComponent("PortGroup", port, position, 0, 1, false);
 		const portGroups = {PortGroup: this.portGroup.getPortGroupElement()};
 
@@ -60,7 +60,7 @@ export class IsolatedBlueprintPortComponent {
 				}
 			});
 
-		this.portGroup.setParent(this.rectangle, true);
+		this.portGroup.setParent(this.rectangle, ghostPorts);
 		this.refresh();
 	}
 

@@ -13,6 +13,11 @@ const configurations = [
 		"name": "embedded",
 		"html": "html/embedded.html",
 		"ts": "entries/embedded.ts"
+	},
+	{
+		"name": "documentation",
+		"html": "html/documentation.html",
+		"ts": "entries/documentation.ts"
 	}
 ];
 

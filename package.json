@@ -7,6 +7,8 @@
     "start": "webpack-dev-server --open --config webpack/webpack.config.dev.js",
     "start-embedded": "npm start -- --env.slang-mode embedded",
     "build-embedded": "webpack --config webpack/webpack.config.prod.js --colors --env.slang-mode embedded",
+    "start-documentation": "npm start -- --env.slang-mode documentation",
+    "build-documentation": "webpack --config webpack/webpack.config.prod.js --colors --env.slang-mode documentation",
     "lint-fix": "tslint --fix -p tsconfig.json -c tslint.json -t verbose",
     "lint": "tslint -p tsconfig.json -c tslint.json",
     "deps": "dependency-cruise --exclude \"^node_modules\" --validate .dependency-cruiser.json ./src/slang",
