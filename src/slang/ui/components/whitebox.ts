@@ -675,11 +675,6 @@ export namespace WhiteBoxComponent {
 			position,
 			size,
 			z: -2,
-			attrs: {
-				root: {
-					class: "joint-cell joint-element sl-blackbox",
-				},
-			},
 		};
 	}
 
@@ -691,6 +686,11 @@ export namespace WhiteBoxComponent {
 			}) as any);
 			this.attr("draggable", false);
 			this.set("obstacle", false);
+
+			if (blueprint.isElementary()) {
+				const cssClass = this.attr("root/class");
+				this.attr("root/class", `${cssClass} sl-blupr-elem`);
+			}
 		}
 	}
 }

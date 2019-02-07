@@ -48,6 +48,13 @@ $blackbox-color-label: $black;
 		fill: $blueprint-color-fill;
 		stroke-width: 1px;
 	}
+
+	&.sl-blupr-elem {
+		.sl-rectangle {
+			cursor: not-allowed;
+			fill: transparentize($black, .9);
+		}
+	}
 }
 
 // BLUEPRINT PORT
