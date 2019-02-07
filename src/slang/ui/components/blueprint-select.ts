@@ -174,7 +174,7 @@ export class BlueprintSelectComponent extends CellComponent {
 	}
 
 	private getBlueprints(): BlueprintModel[] {
-		return this.blueprints.filter(this.isFilterExprIncluded, this)
+		return this.blueprints.filter(this.isFilterExprIncluded, this);
 	}
 
 	private placeGhostRect({}: XY, blueprint?: BlueprintModel): BlackBoxShape {
