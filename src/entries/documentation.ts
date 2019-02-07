@@ -42,7 +42,7 @@ import {ViewFrame} from "../slang/ui/frame";
 			continue;
 		}
 
-		const blueprintId = el.dataset.blueprint as string;
+		const blueprintId = el.dataset.operator as string;
 
 		app.addFrame(new ViewFrame(el), true);
 		app.load().then(() => {
