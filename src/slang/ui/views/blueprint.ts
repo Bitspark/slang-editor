@@ -22,7 +22,7 @@ export class BlueprintView extends PaperView {
 	private blueprintSelect: BlueprintSelectComponent | null = null;
 
 	constructor(frame: ViewFrame, private blueprint: BlueprintModel, readOnly: boolean = false) {
-		super(frame, readOnly);
+		super(frame, readOnly || !blueprint.isLocal());
 		this.addPanning();
 		this.landscape = this.blueprint.getAncestorNode(LandscapeModel)!;
 		this.whiteBox = new WhiteBoxComponent(this, blueprint);
