@@ -30,7 +30,7 @@ export interface Size {
 	height: number;
 }
 
-export interface BlueprintPortGeometry {
+export interface PortGroupGeometry {
 	in: {
 		position: number,
 	};
@@ -41,7 +41,7 @@ export interface BlueprintPortGeometry {
 
 export interface BlueprintGeometry {
 	size: Size;
-	port: BlueprintPortGeometry;
+	port: PortGroupGeometry;
 }
 
 export interface BlueprintMeta {
@@ -64,7 +64,12 @@ export interface BlueprintInstance {
 	url: string;
 }
 
-export class BlueprintModel extends BlackBox {
+export interface HasMoveablePortGroups {
+	inPosition: number;
+	outPosition: number;
+}
+
+export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 
 	// Geometry
 
@@ -135,7 +140,6 @@ export class BlueprintModel extends BlackBox {
 	private inputPushed = new SlangSubject<SlangTypeValue>("input-pushed");
 	private outputPushed = new SlangSubject<SlangTypeValue>("output-pushed");
 	private readonly fakeGenerics = new GenericSpecifications(FAKE_GENERIC_VALUES);
-
 	private readonly geometry: BlueprintGeometry;
 
 	// Properties
@@ -152,21 +156,17 @@ export class BlueprintModel extends BlackBox {
 		this.type = type;
 		this.genericIdentifiers = new Set<string>();
 
-		if (!geometry) {
-			this.geometry = {
-				size: {width: 240, height: 147},
-				port: {
-					in: {
-						position: 0,
-					},
-					out: {
-						position: 0,
-					},
+		this.geometry = !geometry ? {
+			size: {width: 240, height: 147},
+			port: {
+				in: {
+					position: 0,
 				},
-			};
-		} else {
-			this.geometry = geometry;
-		}
+				out: {
+					position: 0,
+				},
+			},
+		} : geometry;
 
 		this.subscribeChildCreated(OperatorModel, (operator) => {
 			operator.reconstruct();
@@ -251,10 +251,6 @@ export class BlueprintModel extends BlackBox {
 
 	public getGeometry(): BlueprintGeometry {
 		return this.geometry;
-	}
-
-	public setPortGeometry(portGeo: BlueprintPortGeometry) {
-		this.geometry.port = portGeo;
 	}
 
 	public hasProperties(): boolean {
