@@ -1,4 +1,3 @@
-import {Styles} from "../../../styles/studio";
 import {OperatorGeometry} from "../../definitions/api";
 import {SlangParsing} from "../../definitions/parsing";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
@@ -155,7 +154,7 @@ export class BlueprintModel extends BlackBox {
 
 		if (!geometry) {
 			this.geometry = {
-				size: Styles.Outer.size,
+				size: {width: 240, height: 147},
 				port: {
 					in: {
 						position: 0,
