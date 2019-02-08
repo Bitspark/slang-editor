@@ -130,11 +130,14 @@ export class BlueprintSelectComponent extends CellComponent {
 	private readonly landscape: LandscapeModel;
 	private readonly menu: AttachableComponent;
 	private filterExpr: string = "";
+	private readonly blueprints: BlueprintModel[];
 
 	constructor(blueprintView: BlueprintView, {x, y}: XY) {
 		super(blueprintView, {x, y});
 		this.blueprint = blueprintView.getBlueprint();
 		this.landscape = this.blueprint.getAncestorNode(LandscapeModel)!;
+		this.blueprints = Array.from(this.landscape.getChildNodes(BlueprintModel))
+			.sort((a: BlueprintModel, b: BlueprintModel) => a.name.localeCompare(b.name));
 		this.shape = this.placeGhostRect({x, y});
 		this.menu = this.createComponent({x: 0, y: 0, align: "tl"})
 			.attachTo(this.shape, "c")
@@ -171,28 +174,7 @@ export class BlueprintSelectComponent extends CellComponent {
 	}
 
 	private getBlueprints(): BlueprintModel[] {
-		const blueprintsMap = new Map<BlueprintModel, number>();
-		for (const op of this.blueprint.getOperators()) {
-			const bp = op.getBlueprint();
-			const v = blueprintsMap.get(bp);
-			const cnt: number = (v) ? v : 0;
-			blueprintsMap.set(bp, cnt + 1);
-		}
-
-		const blueprints: BlueprintModel[] = Array.from(blueprintsMap.entries())
-			.filter(([bp]: [BlueprintModel, number]) => this.isFilterExprIncluded(bp))
-			.sort((a: [BlueprintModel, number], b: [BlueprintModel, number]) => a[1] - b[1])
-			.map(([bp]: [BlueprintModel, number]) => bp);
-
-		for (const bp of this.landscape.getChildNodes(BlueprintModel)) {
-			if (blueprints.length >= 60) {
-				break;
-			}
-			if (this.isFilterExprIncluded(bp) && blueprints.indexOf(bp) < 0) {
-				blueprints.push(bp);
-			}
-		}
-		return blueprints;
+		return this.blueprints.filter(this.isFilterExprIncluded, this);
 	}
 
 	private placeGhostRect({}: XY, blueprint?: BlueprintModel): BlackBoxShape {

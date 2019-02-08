@@ -61,6 +61,19 @@ describe("An operator delegate", () => {
 		s2sOp = bpNew.createOperator("s2s1", s2sBp, null, null);
 	});
 
+	it("has port positions", () => {
+		const dlgBpDlg = dlgBp.findDelegate("dlg1")!;
+
+		expect(dlgBpDlg.inPosition).toEqual(0);
+		expect(dlgBpDlg.outPosition).toEqual(0);
+
+		dlgBpDlg.inPosition = 10;
+		expect(dlgBpDlg.inPosition).toEqual(10);
+
+		dlgBpDlg.outPosition = 20;
+		expect(dlgBpDlg.outPosition).toEqual(20);
+	});
+
 	it("can be connected", () => {
 		const dlgOpDlg = dlgOp.findDelegate("dlg1")!;
 		expect(dlgOpDlg).toBeTruthy();

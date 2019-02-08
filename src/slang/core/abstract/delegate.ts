@@ -3,7 +3,7 @@ import {PortOwner} from "./port-owner";
 import {Connections} from "./utils/connections";
 
 export abstract class GenericDelegateModel<B extends BlackBox> extends PortOwner {
-	protected constructor(parent: B, private name: string, streamSource: boolean) {
+	protected constructor(parent: B, public readonly name: string, streamSource: boolean) {
 		super(parent, streamSource);
 	}
 

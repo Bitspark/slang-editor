@@ -229,7 +229,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 	private operatorControl?: AttachableComponent;
 
 	constructor(paperView: PaperView, protected readonly operator: OperatorModel) {
-		super(paperView, !paperView.readOnly);
+		super(paperView, paperView.isEditable);
 
 		operator.getGenerics().subscribeGenericsChanged(() => {
 			this.refresh();
@@ -260,7 +260,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 			.createComponent({x: 0, y: 0, align: "t"})
 			.mount({
 				view: () => [
-					!view.readOnly ?
+					view.isEditable ?
 						m("", m(Button, {
 							tooltip: "Remove operator",
 							class: "sl-danger sl-btn-icon",
@@ -270,7 +270,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 						}, m("i.fas.fa-times")))
 						: undefined,
 
-					!blueprint.isElementary() ?
+					view.isDescendable && !blueprint.isElementary() ?
 						m("", m(Button, {
 							tooltip: "Open blueprint",
 							class: "sl-btn-icon",
@@ -290,7 +290,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 		this.shape.set("obstacle", true);
 		this.shape.attr("draggable", true);
 
-		if (view.readOnly) {
+		if (view.isReadOnly) {
 			this.shape.attr({
 				body: {
 					cursor: "default",

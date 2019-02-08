@@ -14,15 +14,15 @@ import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {WhiteBoxComponent} from "../components/whitebox";
 import {ViewFrame} from "../frame";
-import {PaperView} from "./paper-view";
+import {PaperView, PaperViewArgs} from "./paper-view";
 
 export class BlueprintView extends PaperView {
 	private readonly whiteBox: WhiteBoxComponent;
 	private readonly landscape: LandscapeModel;
 	private blueprintSelect: BlueprintSelectComponent | null = null;
 
-	constructor(frame: ViewFrame, private blueprint: BlueprintModel, readOnly: boolean = false) {
-		super(frame, readOnly || !blueprint.isLocal());
+	constructor(frame: ViewFrame, private blueprint: BlueprintModel, args: PaperViewArgs) {
+		super(frame, args);
 		this.addPanning();
 		this.landscape = this.blueprint.getAncestorNode(LandscapeModel)!;
 		this.whiteBox = new WhiteBoxComponent(this, blueprint);
@@ -94,7 +94,7 @@ export class BlueprintView extends PaperView {
 			markAvailable: true,
 		});
 
-		if (this.readOnly) {
+		if (this.isReadOnly) {
 			return paper;
 		}
 
@@ -124,7 +124,7 @@ export class BlueprintView extends PaperView {
 	}
 
 	private attachEventHandlers() {
-		if (this.readOnly) {
+		if (this.isReadOnly) {
 			return;
 		}
 
