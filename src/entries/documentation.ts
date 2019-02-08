@@ -15,6 +15,13 @@ import {ViewFrame} from "../slang/ui/frame";
 	const appModel = AppModel.create(`embedded-slang`);
 	const app = new Slang(appModel);
 
+	app.setDefaultViewArgs({
+		editable: false,
+		descendable: false,
+		hscrollable: false,
+		vscrollable: false,
+	});
+
 	new OperatorDataApp(appModel, COMPONENT_FACTORY);
 
 	const blueprints: BlueprintApiResponse[] = [];
