@@ -1,5 +1,5 @@
 import {dia, shapes} from "jointjs";
-import uuidv4 = require("uuid/v4");
+import uuidv4 from "uuid/v4";
 
 import {SlangType} from "../../definitions/type";
 
