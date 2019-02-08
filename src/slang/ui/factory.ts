@@ -1,9 +1,9 @@
-import {BlueprintModel} from "../../core/models/blueprint";
-import {OperatorModel} from "../../core/models/operator";
+import {BlueprintModel} from "../core/models/blueprint";
+import {OperatorModel} from "../core/models/operator";
 
-import {PaperView} from "../views/paper-view";
-import {BlackBoxShape, OperatorBoxComponent} from "./blackbox";
-import {DashboardModuleComponent, PropertyFormDashboardModuleComponent} from "./dashboard";
+import {BlackBoxShape, OperatorBoxComponent} from "./components/blackbox";
+import {DashboardModuleComponent, PropertyFormDashboardModuleComponent} from "./components/dashboard";
+import {PaperView} from "./views/paper-view";
 
 export class ComponentFactory {
 	private readonly blackBoxShape = new Map<BlueprintModel, typeof BlackBoxShape>();
@@ -48,5 +48,3 @@ export class ComponentFactory {
 		this.opDashboardModuleClasses.set(blueprint, modules);
 	}
 }
-
-export const COMPONENT_FACTORY = new ComponentFactory();

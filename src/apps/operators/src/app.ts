@@ -5,7 +5,7 @@ import {LandscapeModel} from "../../../slang/core/models/landscape";
 import {OperatorModel} from "../../../slang/core/models/operator";
 import {TypeIdentifier} from "../../../slang/definitions/type";
 import {BlackBoxShape, BlackBoxShapeAttrs} from "../../../slang/ui/components/blackbox";
-import {ComponentFactory} from "../../../slang/ui/components/factory";
+import {ComponentFactory} from "../../../slang/ui/factory";
 
 export class OperatorDataApp extends SlangApp {
 	constructor(app: AppModel, componentFactory: ComponentFactory) {

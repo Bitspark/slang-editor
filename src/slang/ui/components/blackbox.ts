@@ -12,7 +12,6 @@ import {BlueprintModel} from "../../core/models/blueprint";
 import {OperatorModel} from "../../core/models/operator";
 import {PaperView} from "../views/paper-view";
 import {AttachableComponent, CellComponent} from "./base";
-import {COMPONENT_FACTORY} from "./factory";
 import {PortGroupComponent} from "./port-group";
 import {Tk} from "./toolkit";
 
@@ -210,7 +209,7 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 	}
 
 	protected createShape(): BlackBoxShape {
-		const blackBoxShapeType = COMPONENT_FACTORY.getBlackBoxShape(this.blueprint);
+		const blackBoxShapeType = this.paperView.getFactory().getBlackBoxShape(this.blueprint);
 		const shape = new blackBoxShapeType({
 			id: this.blueprint.getIdentity(),
 			portGroups: this.portGroups,
@@ -305,7 +304,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 	}
 
 	protected createShape(): BlackBoxShape {
-		const blackBoxShapeType = COMPONENT_FACTORY.getBlackBoxShape(this.operator.getBlueprint());
+		const blackBoxShapeType = this.paperView.getFactory().getBlackBoxShape(this.operator.getBlueprint());
 		const shape = new blackBoxShapeType({
 			id: this.operator.getIdentity(),
 			position: this.operator.xy,

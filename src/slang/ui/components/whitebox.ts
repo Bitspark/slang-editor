@@ -17,7 +17,6 @@ import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {ConnectionComponent} from "./connection";
 import {InputConsole, OutputConsole} from "./console";
 import {DashboardComponent} from "./dashboard";
-import {COMPONENT_FACTORY} from "./factory";
 import {PortGroupPosition} from "./port-group";
 import {Tk} from "./toolkit";
 
@@ -605,7 +604,7 @@ export class WhiteBoxComponent extends CellComponent {
 	}
 
 	private addOperator(operator: OperatorModel): OperatorBoxComponent {
-		const operatorComp = COMPONENT_FACTORY.createOperatorComponent(this.paperView, operator);
+		const operatorComp = this.paperView.getFactory().createOperatorComponent(this.paperView, operator);
 		this.operators.push(operatorComp);
 		this.attachPortInfo(operatorComp);
 
@@ -620,6 +619,7 @@ export class WhiteBoxComponent extends CellComponent {
 								},
 							},
 							m(DashboardComponent, {
+								factory: this.paperView.getFactory(),
 								operator,
 								onSave: () => {
 									comp.destroy();

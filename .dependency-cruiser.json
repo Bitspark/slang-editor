@@ -76,9 +76,11 @@
 		},
 
 		/* cutom rules: */
+		
+		// LAYER RULES
 		{
 			"name": "illegal-def-dependency",
-			"comment": "",
+			"comment": "layer 0: Definitions",
 			"severity": "error",
 			"from": {
 				"path": "^src/slang/definitions"
@@ -89,7 +91,7 @@
 		},
 		{
 			"name": "illegal-abstract-core-dependency",
-			"comment": "",
+			"comment": "layer 1.0: Abstract core",
 			"severity": "error",
 			"from": {
 				"path": "^src/slang/core/abstract"
@@ -100,7 +102,7 @@
 		},
 		{
 			"name": "illegal-core-dependency",
-			"comment": "",
+			"comment": "layer 1.1: Core",
 			"severity": "error",
 			"from": {
 				"path": "^src/slang/core"
@@ -111,7 +113,7 @@
 		},
 		{
 			"name": "illegal-ui-dependency",
-			"comment": "",
+			"comment": "layer 2: User interface",
 			"severity": "error",
 			"from": {
 				"path": "^src/slang/ui"
@@ -121,14 +123,37 @@
 			}
 		},
 		{
-			"name": "illegal-directory-structure",
-			"comment": "",
+			"name": "illegal-directory-structure forth",
+			"comment": "only these directories are valid: definitions, core, ui, styles",
 			"severity": "error",
 			"from": {
 				"pathNot": "^src/(slang/(app.ts|slang.ts|core|definitions|ui)|styles)"
 			},
 			"to": {}
 		},
+		{
+			"name": "illegal-directory-structure back",
+			"comment": "only these directories are valid: definitions, core, ui, styles",
+			"severity": "error",
+			"from": {},
+			"to": {
+				"pathNot": "^src/(slang/(app.ts|slang.ts|core|definitions|ui)|styles)"
+			}
+		},
+		
+		// CIRCULAR RULES
+		{
+			"name": "no-circular-in-ui",
+			"severity": "error",
+			"comment": "No circular dependencies within UI",
+			"from": {
+				"path": "^src/slang/ui"
+			},
+			"to": {
+				"circular": true
+			}
+		},
+		
 		/* recommended default rules: */
 		{
 			"name": "not-to-test",

@@ -21,6 +21,7 @@ export class LandscapeView extends PaperView {
 
 	constructor(frame: ViewFrame, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
 		super(frame, {
+			factory: frame.getFactory(),
 			editable: false,
 			hscrollable: false,
 			vscrollable: true,
