@@ -329,6 +329,10 @@ export abstract class PaperView extends View {
 		return this.args.vscrollable;
 	}
 
+	public get isDescendable(): boolean {
+		return this.args.descendable === true;
+	}
+
 	private allowedScrollDelta(deltaX: number, deltaY: number): [number, number] | false {
 		const allowedDeltaX = this.isHScrollable ? deltaX : 0;
 		const allowedDeltaY = this.isVScrollable ? deltaY : 0;

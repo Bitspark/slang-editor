@@ -260,7 +260,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 			.createComponent({x: 0, y: 0, align: "t"})
 			.mount({
 				view: () => [
-					!view.isReadOnly ?
+					view.isEditable ?
 						m("", m(Button, {
 							tooltip: "Remove operator",
 							class: "sl-danger sl-btn-icon",
@@ -270,7 +270,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 						}, m("i.fas.fa-times")))
 						: undefined,
 
-					!blueprint.isElementary() ?
+					view.isDescendable && !blueprint.isElementary() ?
 						m("", m(Button, {
 							tooltip: "Open blueprint",
 							class: "sl-btn-icon",

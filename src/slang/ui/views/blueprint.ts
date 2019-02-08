@@ -22,7 +22,6 @@ export class BlueprintView extends PaperView {
 	private blueprintSelect: BlueprintSelectComponent | null = null;
 
 	constructor(frame: ViewFrame, private blueprint: BlueprintModel, args: PaperViewArgs) {
-		// TODO make non-locals isReadOnly
 		super(frame, args);
 		this.addPanning();
 		this.landscape = this.blueprint.getAncestorNode(LandscapeModel)!;
