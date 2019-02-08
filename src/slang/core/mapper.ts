@@ -65,6 +65,11 @@ export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApi
 				if (portOut) {
 					portDef.out = typeModelToJSON(portOut.getType());
 				}
+
+				if (!portDef.geometry) {
+					portDef.geometry = delegate.getGeometry();
+				}
+
 				result[delegate.getName()] = portDef;
 			}),
 		properties: iter2map<PropertyModel, PropertyApiResponse>(blueprint.getProperties(),
@@ -295,7 +300,7 @@ function toTypeIdentifier(typeName: string): TypeIdentifier {
 
 function setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupsApiResponse) {
 	Object.keys(delegates).forEach((delegateName: string) => {
-		blueprint.createDelegate({name: delegateName}, (delegate) => {
+		blueprint.createDelegate({name: delegateName, geometry: delegates[delegateName].geometry}, (delegate) => {
 			createPort(delegates[delegateName].in, delegate, PortDirection.In);
 			createPort(delegates[delegateName].out, delegate, PortDirection.Out);
 		});
