@@ -12,6 +12,7 @@ export interface PaperViewArgs {
 	vscrollable: boolean;
 	editable: boolean;
 	descendable?: boolean;
+	runnable?: boolean;
 }
 
 export abstract class PaperView extends View {
@@ -331,6 +332,10 @@ export abstract class PaperView extends View {
 
 	public get isDescendable(): boolean {
 		return this.args.descendable === true;
+	}
+
+	public get isRunnable(): boolean {
+		return this.args.runnable === true;
 	}
 
 	private allowedScrollDelta(deltaX: number, deltaY: number): [number, number] | false {

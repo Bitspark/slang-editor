@@ -43,6 +43,7 @@ export class Slang {
 				hscrollable: true,
 				vscrollable: true,
 				descendable: true,
+				runnable: true,
 			});
 			this.outlet.setView(view);
 		});
