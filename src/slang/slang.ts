@@ -1,7 +1,7 @@
 import "../styles/studio.scss";
 
 import {AppModel} from "./core/models/app";
-import {BlueprintModel, BlueprintType} from "./core/models/blueprint";
+import {BlueprintModel} from "./core/models/blueprint";
 import {ViewFrame} from "./ui/frame";
 import {BlueprintView} from "./ui/views/blueprint";
 import {LandscapeView} from "./ui/views/landscape";
@@ -35,10 +35,17 @@ export class Slang {
 
 	private subscribe(): void {
 		this.app.subscribeOpenedBlueprintChanged((blueprint) => {
-			if (blueprint !== null && this.outlet) {
-				const view = new BlueprintView(this.outlet, blueprint, false);
-				this.outlet.setView(view);
+			if (!blueprint || !this.outlet) {
+				return;
 			}
+			const view = new BlueprintView(this.outlet, blueprint, {
+				editable: blueprint.isLocal(),
+				hscrollable: true,
+				vscrollable: true,
+				descendable: true,
+				runnable: true,
+			});
+			this.outlet.setView(view);
 		});
 
 		this.app.subscribeOpenedLandscapeChanged((landscape) => {
@@ -48,7 +55,7 @@ export class Slang {
 			const view = new LandscapeView(
 				this.outlet,
 				landscape,
-				((bp) => bp.getType() === BlueprintType.Local) as (bp: BlueprintModel) => boolean);
+				((bp) => bp.isLocal()) as (bp: BlueprintModel) => boolean);
 			this.outlet.setView(view);
 		});
 	}

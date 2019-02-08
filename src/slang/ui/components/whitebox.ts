@@ -395,33 +395,40 @@ export class WhiteBoxComponent extends CellComponent {
 			operator.getProperties().subscribeAssignmentChanged(() => refreshOperatorConnections(operator));
 		});
 
-		if (this.paperView.readOnly) {
-			return;
-		}
+		const view = this.paperView;
 
 		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
 			if (!instance) {
+
 				this.buttons.mount({
 					view: () => m(".toolbox", [
-						m(Button, {
-							onClick: () => {
-								this.blueprint.save();
-								this.blueprint.requestDeployment();
-							},
-							class: "sl-blupr-deploy",
-						}, "Deploy"),
-						m(Button, {
-							onClick: () => {
-								this.blueprint.save();
-							},
-							class: "sl-blupr-deploy",
-						}, "Save"),
+						view.isRunnable
+							? m(Button, {
+								onClick: () => {
+									if (view.isEditable) {
+										this.blueprint.save();
+									}
+									this.blueprint.requestDeployment();
+								},
+								class: "sl-blupr-deploy",
+							}, "Deploy")
+							: undefined,
+						view.isEditable
+							? m(Button, {
+								onClick: () => {
+									this.blueprint.save();
+								},
+								class: "sl-blupr-deploy",
+							}, "Save")
+							: undefined,
 					]),
 				});
+
 				this.input.unmount();
 				this.output.unmount();
 
-			} else {
+			} else if (view.isRunnable) {
+
 				this.buttons.mount({
 					view: () => m(".toolbox", [
 						m(Button, {
@@ -468,6 +475,7 @@ export class WhiteBoxComponent extends CellComponent {
 						})),
 					});
 				}
+
 			}
 		});
 
@@ -601,7 +609,7 @@ export class WhiteBoxComponent extends CellComponent {
 		this.operators.push(operatorComp);
 		this.attachPortInfo(operatorComp);
 
-		if (!this.paperView.readOnly) {
+		if (!this.paperView.isReadOnly) {
 			operatorComp.onClick(() => {
 				const comp = this
 					.createComponent({x: 0, y: 0, align: "c"})
