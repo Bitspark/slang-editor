@@ -7,6 +7,13 @@ import {SlangSubjectTrigger} from "../../core/abstract/utils/events";
 import {ViewFrame} from "../frame";
 import {View} from "./view";
 
+export interface PaperViewArgs {
+	hscrollable: boolean;
+	vscrollable: boolean;
+	editable: boolean;
+	descendable?: boolean;
+}
+
 export abstract class PaperView extends View {
 
 	protected readonly graph = new dia.Graph();
@@ -19,8 +26,8 @@ export abstract class PaperView extends View {
 	private minScale: number = 0.35;
 	private maxScale: number = 2.5;
 
-	protected constructor(frame: ViewFrame, readOnly: boolean = false) {
-		super(frame, readOnly);
+	protected constructor(frame: ViewFrame, private args: PaperViewArgs) {
+		super(frame);
 		this.paper = this.createPaper();
 		this.redirectPaperEvents();
 	}
@@ -91,7 +98,7 @@ export abstract class PaperView extends View {
 			gridSize: 5,
 			drawGrid: false,
 			interactive(cellView: dia.CellView) {
-				if (view.readOnly) {
+				if (view.isReadOnly) {
 					return false;
 				}
 
@@ -291,6 +298,22 @@ export abstract class PaperView extends View {
 		origin.attr("body/ry", "24");
 		origin.attr("draggable", false);
 		origin.set("obstacle", false);
+	}
+
+	public get isEditable(): boolean {
+		return this.args.editable;
+	}
+
+	public get isReadOnly(): boolean {
+		return !this.isEditable;
+	}
+
+	public get isHScrollable(): boolean {
+		return this.args.hscrollable;
+	}
+
+	public get isVScrollable(): boolean {
+		return this.args.vscrollable;
 	}
 }
 

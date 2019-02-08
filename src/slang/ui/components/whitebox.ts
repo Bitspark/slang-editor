@@ -394,7 +394,7 @@ export class WhiteBoxComponent extends CellComponent {
 			operator.getProperties().subscribeAssignmentChanged(() => refreshOperatorConnections(operator));
 		});
 
-		if (this.paperView.readOnly) {
+		if (this.paperView.isReadOnly) {
 			return;
 		}
 
@@ -559,7 +559,7 @@ export class WhiteBoxComponent extends CellComponent {
 		this.operators.push(operatorComp);
 		this.attachPortInfo(operatorComp);
 
-		if (!this.paperView.readOnly) {
+		if (!this.paperView.isReadOnly) {
 			operatorComp.onClick(() => {
 				const comp = this
 					.createComponent({x: 0, y: 0, align: "c"})

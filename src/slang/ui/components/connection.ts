@@ -144,7 +144,7 @@ export class ConnectionComponent extends CellComponent {
 				".connection": {
 					strokeOpacity: Styles.Connection.GhostConnection.strokeOpacity,
 				},
-				".tool-remove": paperView.readOnly ? {
+				".tool-remove": paperView.isReadOnly ? {
 					display: "none",
 				} : undefined,
 			},

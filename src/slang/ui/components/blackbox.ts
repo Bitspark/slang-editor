@@ -260,7 +260,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 			.createComponent({x: 0, y: 0, align: "t"})
 			.mount({
 				view: () => [
-					!view.readOnly ?
+					!view.isReadOnly ?
 						m("", m(Button, {
 							tooltip: "Remove operator",
 							class: "sl-danger sl-btn-icon",
@@ -290,7 +290,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 		this.shape.set("obstacle", true);
 		this.shape.attr("draggable", true);
 
-		if (view.readOnly) {
+		if (view.isReadOnly) {
 			this.shape.attr({
 				body: {
 					cursor: "default",
