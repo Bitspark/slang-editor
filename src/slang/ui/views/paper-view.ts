@@ -216,10 +216,16 @@ export abstract class PaperView extends View {
 	}
 
 	protected scroll(deltaX: number, deltaY: number) {
+		const allowed = this.allowedScrollDelta(deltaX, deltaY);
+		if (!allowed) {
+			return;
+		}
+		const [allowedDeltaX, allowedDeltaY] = allowed;
+
 		const translation = this.paper.translate();
 		const [px, py] = [translation.tx, translation.ty];
 
-		this.paper.translate(px + deltaX, py + deltaY);
+		this.paper.translate(px + allowedDeltaX, py + allowedDeltaY);
 		this.positionChanged.next();
 	}
 
@@ -243,10 +249,17 @@ export abstract class PaperView extends View {
 		};
 
 		const doPanning = (x: number, y: number) => {
-			if (panning && that.userInputMode === "zoom/pan") {
-				paper.translate(x - startX, y - startY);
-				that.positionChanged.next();
+			if (!panning || that.userInputMode !== "zoom/pan") {
+				return;
 			}
+			const allowed = this.allowedScrollDelta(x - startX, y - startY);
+			if (!allowed) {
+				return;
+			}
+			const [allowedDeltaX, allowedDeltaY] = allowed;
+			const {tx, ty} = paper.translate();
+			paper.translate(allowedDeltaX ? allowedDeltaX : tx, allowedDeltaY ? allowedDeltaY : ty);
+			that.positionChanged.next();
 		};
 
 		paper.on("blank:pointerdown", (evt: Event, x: number, y: number) => {
@@ -315,6 +328,16 @@ export abstract class PaperView extends View {
 	public get isVScrollable(): boolean {
 		return this.args.vscrollable;
 	}
+
+	private allowedScrollDelta(deltaX: number, deltaY: number): [number, number] | false {
+		const allowedDeltaX = this.isHScrollable ? deltaX : 0;
+		const allowedDeltaY = this.isVScrollable ? deltaY : 0;
+		if (!(allowedDeltaX || allowedDeltaY)) {
+			return false;
+		}
+		return [allowedDeltaX, allowedDeltaY];
+	}
+
 }
 
 (util.filter as any).innerShadow = (args: any) => {
