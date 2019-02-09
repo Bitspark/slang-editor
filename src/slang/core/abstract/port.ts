@@ -59,13 +59,13 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			switch (this.typeIdentifier) {
 				case TypeIdentifier.Map: {
 					for (const [subName, subType] of type.getMapSubs()) {
-						this.createChildNode(portCtor, {name: subName, type: subType, direction});
+						this.createChildNode(portCtor, {direction, name: subName, type: subType});
 					}
 					break;
 				}
 				case TypeIdentifier.Stream: {
 					const subType = type.getStreamSub();
-					this.createChildNode(portCtor, {name: "~", type: subType, direction});
+					this.createChildNode(portCtor, {direction, name: "~", type: subType});
 					break;
 				}
 				case TypeIdentifier.Generic: {
@@ -82,7 +82,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 						if (sub) {
 							sub.reconstruct(subType, portCtor, direction);
 						} else {
-							this.createChildNode(portCtor, {name: subName, type: subType, direction});
+							this.createChildNode(portCtor, {direction, name: subName, type: subType});
 						}
 					}
 					for (const sub of this.getMapSubs()) {

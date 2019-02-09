@@ -495,7 +495,7 @@ export class StreamPort {
 
 		newMapType.addMapSub(subName, new SlangType(newMapType, other.getTypeIdentifier()));
 		portId.push(subName);
-		return {type: mapType, portId};
+		return {portId, type: mapType};
 	}
 
 	private buildStreamType(): SlangBehaviorSubject<StreamType> {

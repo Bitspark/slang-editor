@@ -101,6 +101,11 @@
 		"no-collapsible-if": true,
 		"no-else-after-return": true,
 		"no-unused": true,
+		"no-accessor-recursion": true,
+		"no-var-before-return": true,
+		"object-shorthand-properties-first": true,
+		"prefer-const-enum": true,
+		"prefer-while": true,
 		"naming-convention": [
 			true,
 			{

@@ -3,8 +3,8 @@ import {dia, g, routers, util as jointUtil} from "jointjs";
 const util = jointUtil as any;
 
 const joint = {
-	util: jointUtil as any,
 	routers,
+	util: jointUtil as any,
 };
 
 const config = {
@@ -20,14 +20,14 @@ const config = {
 		const diagonalCost = this.diagonalCost();
 
 		return [
-			{offsetX: step, offsetY: 0, cost},
-			{offsetX: step, offsetY: step, cost: diagonalCost},
-			{offsetX: 0, offsetY: step, cost},
-			{offsetX: -step, offsetY: step, cost: diagonalCost},
-			{offsetX: -step, offsetY: 0, cost},
-			{offsetX: -step, offsetY: -step, cost: diagonalCost},
-			{offsetX: 0, offsetY: -step, cost},
-			{offsetX: step, offsetY: -step, cost: diagonalCost},
+			{cost, offsetX: step, offsetY: 0},
+			{cost: diagonalCost, offsetX: step, offsetY: step},
+			{cost, offsetX: 0, offsetY: step},
+			{cost: diagonalCost, offsetX: -step, offsetY: step},
+			{cost, offsetX: -step, offsetY: 0},
+			{cost: diagonalCost, offsetX: -step, offsetY: -step},
+			{cost, offsetX: 0, offsetY: -step},
+			{cost: diagonalCost, offsetX: step, offsetY: -step},
 		];
 	},
 

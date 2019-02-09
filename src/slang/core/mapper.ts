@@ -208,7 +208,7 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: BlueprintAp
 		const bpGeo = bpDef.geometry;
 		const geometry = (services && bpGeo) ? Object.assign(bpGeo, {port: services.main.geometry!}) : undefined;
 
-		const blueprint = landscape.createBlueprint({uuid: bpDef.id, meta: bpDef.meta, type, geometry});
+		const blueprint = landscape.createBlueprint({type, geometry, uuid: bpDef.id, meta: bpDef.meta});
 		if (services) {
 			setBlueprintServices(blueprint, services);
 		}
@@ -308,7 +308,7 @@ function setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupsA
 }
 
 function createPort(typeDef: TypeDefApiResponse, owner: BlueprintModel | BlueprintDelegateModel, direction: PortDirection): BlueprintPortModel {
-	return owner.createPort({name: "", type: createTypeModel(typeDef), direction});
+	return owner.createPort({direction, name: "", type: createTypeModel(typeDef)});
 }
 
 function createTypeModel(typeDef: TypeDefApiResponse): SlangType {

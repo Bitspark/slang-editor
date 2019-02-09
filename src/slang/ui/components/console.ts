@@ -312,9 +312,9 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 
 	private renderInput(type: SlangType, initValue: SlangTypeValue | undefined): m.Children {
 		return m(Input.ConsoleEntry, {
+			initValue,
 			label: "", class: "",
 			type: type!,
-			initValue,
 			onInput: (v: any) => {
 				this.value = v;
 			},

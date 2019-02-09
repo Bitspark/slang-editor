@@ -37,10 +37,10 @@ export const GRAPH_VALUE_TYPE: ConsoleValueType<GraphType> = {
 		oncreate({attrs, dom}: CVnodeDOM<Output.ValueTypeAttrs<GraphType>>) {
 			const graphData = attrs.value.map(({name, data}) => {
 				return {
+					name,
 					x: data.map(({x}) => x),
 					y: data.map(({y}) => y),
 					mode: "lines+markers",
-					name,
 				} as Partial<ScatterData>;
 			});
 			const layout = {

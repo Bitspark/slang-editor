@@ -185,11 +185,11 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		const operatorGenerics = generics ? generics : new GenericSpecifications([]);
 		const operatorProperties = properties ? properties : new PropertyAssignments([], operatorGenerics);
 		return this.createChildNode(OperatorModel, {
-			name: name ? name : this.getNextOperatorName(blueprint),
 			blueprint,
+			geometry,
+			name: name ? name : this.getNextOperatorName(blueprint),
 			generics: operatorGenerics,
 			properties: operatorProperties,
-			geometry,
 		});
 	}
 

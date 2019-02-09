@@ -160,14 +160,14 @@ export abstract class BlackBoxComponent extends CellComponent {
 			(_cellView: dia.CellView, _event: MouseEvent, x: number, y: number, portId: string) => {
 				const port = blackbox.findNodeById(portId);
 				if (port) {
-					this.portMouseEntered.next({port: port as PortModel, x, y});
+					this.portMouseEntered.next({x, y, port: port as PortModel});
 				}
 			});
 		this.shape.on("port:mouseout",
 			(_cellView: dia.CellView, _event: MouseEvent, x: number, y: number, portId: string) => {
 				const port = blackbox.findNodeById(portId);
 				if (port) {
-					this.portMouseLeft.next({port: port as PortModel, x, y});
+					this.portMouseLeft.next({x, y, port: port as PortModel});
 				}
 			});
 	}
@@ -370,9 +370,9 @@ export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", 
 
 	public static placeGhost(paperView: PaperView, label: string, position?: g.PlainPoint): BlackBoxShape {
 		const shape = new BlackBoxShape({
-			id: "",
 			label,
 			position,
+			id: "",
 		});
 
 		shape.set("obstacle", true);

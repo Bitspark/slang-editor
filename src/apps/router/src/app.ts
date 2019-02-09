@@ -52,7 +52,7 @@ export class RouterApp extends SlangApp {
 			const title = `${blueprint.name} Blueprint | Slang Studio`;
 			const uuid = blueprint.uuid;
 			const url = `blueprint/${uuid}`;
-			window.history.pushState({type: "blueprint", uuid}, title, url);
+			window.history.pushState({uuid, type: "blueprint"}, title, url);
 		});
 		this.app.subscribeOpenedLandscapeChanged((blueprint) => {
 			if (blueprint === null) {

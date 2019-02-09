@@ -108,10 +108,10 @@ export class WhiteBoxComponent extends CellComponent {
 		const {width, height} = this.blueprint.size;
 
 		const bbox = this.paperView.getCellsBBox(operatorRectangles) || new g.Rect({
-			x: -width / 2,
-			y: -height / 2,
 			width,
 			height,
+			x: -width / 2,
+			y: -height / 2,
 		});
 
 		bbox.width = Math.max(width, bbox.width);
@@ -146,8 +146,8 @@ export class WhiteBoxComponent extends CellComponent {
 			const y = portElem.position().y;
 			portElem.set({
 				position: {
-					x: bbox.x + bbox.width,
 					y,
+					x: bbox.x + bbox.width,
 				},
 			});
 		});
@@ -620,8 +620,8 @@ export class WhiteBoxComponent extends CellComponent {
 								},
 							},
 							m(DashboardComponent, {
-								factory: this.paperView.getFactory(),
 								operator,
+								factory: this.paperView.getFactory(),
 								onSave: () => {
 									comp.destroy();
 								},
