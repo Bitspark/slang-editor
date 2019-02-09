@@ -11,7 +11,7 @@ import {Tk} from "./toolkit";
 interface DashboardAttrs {
 	factory: ComponentFactory;
 	operator: OperatorModel;
-	onSave: () => void;
+	onSave(): void;
 }
 
 export class DashboardComponent implements ClassComponent<DashboardAttrs> {
@@ -34,7 +34,7 @@ export class DashboardComponent implements ClassComponent<DashboardAttrs> {
 
 export interface DashboardModuleAttrs {
 	operator: OperatorModel;
-	onSave: () => void;
+	onSave(): void;
 }
 
 export interface DashboardModuleComponent extends ClassComponent<DashboardModuleAttrs> {

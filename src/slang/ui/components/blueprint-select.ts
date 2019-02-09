@@ -11,11 +11,11 @@ import {BlackBoxShape} from "./blackbox";
 import {MithrilKeyboardEvent, MithrilMouseEvent, Tk} from "./toolkit";
 
 export interface Attrs {
-	onSelect: (bp: BlueprintModel) => void;
-	onHover: (bp?: BlueprintModel) => void;
-	onFilter: (filter: string) => void;
-	onExit: () => void;
-	onLoad: () => BlueprintModel[];
+	onSelect(bp: BlueprintModel): void;
+	onHover(bp?: BlueprintModel): void;
+	onFilter(filter: string): void;
+	onExit(): void;
+	onLoad(): BlueprintModel[];
 }
 
 class BlueprintMenuComponent implements ClassComponent<Attrs> {

@@ -65,6 +65,7 @@
 		},
 		"no-require-imports": true,
 		"no-import-side-effect": true,
+		"prefer-method-signature": true,
 		// Rules from tslint-eslint-rules
 		"no-constant-condition": true,
 		"no-inner-declarations": true,
