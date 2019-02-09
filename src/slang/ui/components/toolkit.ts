@@ -61,6 +61,7 @@ export namespace Tk {
 
 	export class List implements ClassComponent<ListAttrs> {
 		public oninit() {
+			return;
 		}
 
 		public view({children, attrs}: CVnode<ListAttrs>) {
@@ -79,6 +80,7 @@ export namespace Tk {
 
 	export class ListItem implements ClassComponent<ListItemAttrs> {
 		public oninit() {
+			return;
 		}
 
 		public view({children, attrs}: CVnode<ListItemAttrs>) {
@@ -93,6 +95,7 @@ export namespace Tk {
 
 	export class ListHead extends ListItem {
 		public oninit() {
+			return;
 		}
 
 		public view({children, attrs}: CVnode<ListItemAttrs>) {
@@ -119,6 +122,7 @@ export namespace Tk {
 		private bounceInterval = 500;
 
 		public oninit() {
+			return;
 		}
 
 		public view({attrs, children}: CVnode<ButtonAttrs>) {

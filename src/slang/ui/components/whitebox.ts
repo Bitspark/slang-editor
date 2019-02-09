@@ -244,13 +244,13 @@ export class WhiteBoxComponent extends CellComponent {
 			}
 		}
 
-		const outerEdgeWidth = 3 - 1;
+		const outerEdge = 1;
 
 		this.ports.top.map((p) => p.getShape()).forEach((port) => {
 			const currentPortPosition = port.get("position");
 			const targetPosition = {
 				x: currentPortPosition.x,
-				y: newPosition.y - pHeight - outerEdgeWidth,
+				y: newPosition.y - pHeight - outerEdge * 2,
 			};
 			if (!animation) {
 				port.set({position: targetPosition});
@@ -264,7 +264,7 @@ export class WhiteBoxComponent extends CellComponent {
 			const currentPortPosition = port.get("position");
 			const targetPosition = {
 				x: currentPortPosition.x,
-				y: newPosition.y + newSize.height - outerEdgeWidth / 2,
+				y: newPosition.y + newSize.height - outerEdge,
 			};
 			if (!animation) {
 				port.set({position: targetPosition});
@@ -277,7 +277,7 @@ export class WhiteBoxComponent extends CellComponent {
 		this.ports.right.map((p) => p.getShape()).forEach((port) => {
 			const currentPortPosition = port.get("position");
 			const targetPosition = {
-				x: newPosition.x + newSize.width + outerEdgeWidth / 2,
+				x: newPosition.x + newSize.width + outerEdge,
 				y: currentPortPosition.y,
 			};
 			if (!animation) {
@@ -696,6 +696,7 @@ export interface Attrs {
 class PortInfo implements ClassComponent<Attrs> {
 	// Note that class methods cannot infer parameter types
 	public oninit() {
+		return;
 	}
 
 	public view({attrs}: CVnode<Attrs>) {

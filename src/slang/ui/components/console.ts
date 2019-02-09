@@ -228,9 +228,11 @@ export namespace Output {
 
 	export abstract class ValueType<T> implements ClassComponent<ValueTypeAttrs<T>> {
 		public oncreate?(_vnode: m.CVnodeDOM<ValueTypeAttrs<T>>): any {
+			return;
 		}
 
 		public onupdate?(_vnode: m.CVnodeDOM<ValueTypeAttrs<T>>): any {
+			return;
 		}
 
 		public abstract view(vnode: m.CVnode<ValueTypeAttrs<T>>): m.Children | void | null;

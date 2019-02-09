@@ -26,6 +26,7 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 
 	// Note that class methods cannot infer parameter types
 	public oninit({}: CVnode<Attrs>) {
+		return;
 	}
 
 	public setMenuSlice(menuTotalSize: number) {

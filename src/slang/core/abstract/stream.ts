@@ -167,7 +167,8 @@ export class StreamType {
 	public fixedDepth(start = 0, current = 0): number {
 		let sum = start;
 		if (!this.isPlaceholder()) {
-			sum += Math.pow(2, current);
+			const base = 2;
+			sum += Math.pow(base, current);
 		}
 
 		if (!this.baseStream) {
@@ -428,8 +429,9 @@ export class StreamPort {
 	}
 
 	public createGenericType(other: PortModel): { type: SlangType, portId: string[] } {
-		const [nextStreamType, nextStreamDepth] = this.getStreamType().getStreamStep(other.getStreamPort().getStreamType());
+		const maxRandomNumber = 100;
 
+		const [nextStreamType, nextStreamDepth] = this.getStreamType().getStreamStep(other.getStreamPort().getStreamType());
 		if (nextStreamDepth === -1) {
 			throw new Error(`cannot find suitable stream stack`);
 		}
@@ -441,7 +443,7 @@ export class StreamPort {
 			mapType = this.port.getType();
 		}
 
-		const subName = `gen_${other.getName()}_${(new Date().getTime()) % 100}`;
+		const subName = `gen_${other.getName()}_${(new Date().getTime()) % maxRandomNumber}`;
 
 		if (nextStreamDepth === 0) {
 			mapType.addMapSub(subName, new SlangType(mapType, other.getTypeIdentifier()));
@@ -484,7 +486,7 @@ export class StreamPort {
 
 		for (let i = 0; i < nextStreamDepth; i++) {
 			const newStreamType = new SlangType(newMapType, TypeIdentifier.Stream);
-			const newStreamName = `gen_str_${(new Date().getTime()) % 100}`;
+			const newStreamName = `gen_str_${(new Date().getTime()) % maxRandomNumber}`;
 			newMapType.addMapSub(newStreamName, newStreamType);
 			portId.push(newStreamName);
 

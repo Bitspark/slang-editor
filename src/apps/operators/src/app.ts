@@ -7,6 +7,9 @@ import {TypeIdentifier} from "../../../slang/definitions/type";
 import {BlackBoxShape, BlackBoxShapeAttrs} from "../../../slang/ui/components/blackbox";
 import {ComponentFactory} from "../../../slang/ui/factory";
 
+const ROUND_CORNER = 12;
+const FONT_SIZE = 9;
+
 export class OperatorDataApp extends SlangApp {
 	constructor(app: AppModel, componentFactory: ComponentFactory) {
 		super(app, componentFactory);
@@ -40,10 +43,13 @@ class DataBlackBoxShape extends BlackBoxShape {
 	constructor(attrs: BlackBoxShapeAttrs) {
 		super(attrs);
 
-		this.attr("body/rx", 12);
-		this.attr("body/ry", 12);
-		this.attr("label/font-size", 9);
-		this.resize(120, 24);
+		const width = 120;
+		const height = 24;
+
+		this.attr("body/rx", ROUND_CORNER);
+		this.attr("body/ry", ROUND_CORNER);
+		this.attr("label/font-size", FONT_SIZE);
+		this.resize(width, height);
 	}
 }
 
@@ -55,9 +61,10 @@ class ValueBlackBoxShape extends DataBlackBoxShape {
 		const label = (typeof value !== "undefined") ? JSON.stringify(value) : "value?";
 		const maxLength = 24;
 
+		const dots = "...";
 		this.attr("label/text",
 			label.length <= maxLength ? label :
-				`${label.substr(0, maxLength - 2)}...`,
+				`${label.substr(0, maxLength - dots.length)}${dots}`,
 		);
 	}
 }
@@ -70,9 +77,10 @@ class EvalBlackBoxShape extends DataBlackBoxShape {
 		const label = (typeof expr !== "undefined") ? (expr as string) : "expression?";
 		const maxLength = 24;
 
+		const dots = "...";
 		this.attr("label/text",
 			label.length <= maxLength ? label :
-				`${label.substr(0, maxLength - 2)}...`,
+				`${label.substr(0, maxLength - dots.length)}${dots}`,
 		);
 	}
 }
@@ -81,10 +89,13 @@ class ConvertBlackBoxShape extends DataBlackBoxShape {
 	constructor(attrs: BlackBoxShapeAttrs) {
 		super(attrs);
 
-		this.attr("body/rx", 12);
-		this.attr("body/ry", 12);
-		this.attr("label/font-size", 9);
-		this.resize(80, 24);
+		const width = 80;
+		const height = 24;
+
+		this.attr("body/rx", ROUND_CORNER);
+		this.attr("body/ry", ROUND_CORNER);
+		this.attr("label/font-size", FONT_SIZE);
+		this.resize(width, height);
 	}
 
 	public setupForOperator(operator: OperatorModel) {

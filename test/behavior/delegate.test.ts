@@ -7,6 +7,8 @@ import {OperatorModel} from "../../src/slang/core/models/operator";
 import {TestStorageApp} from "../helpers/TestStorageApp";
 import data from "../resources/definitions.json";
 
+// tslint:disable:no-magic-numbers
+
 describe("A blueprint delegate", () => {
 	let appModel: AppModel;
 	let landscapeModel: LandscapeModel;

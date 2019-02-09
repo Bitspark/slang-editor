@@ -49,19 +49,24 @@ export class PortComponent {
 			paintOrder: "stroke fill",
 		};
 
+		const unchanged = 0;
+		const turnAround = 180;
+		const turnRight = 90;
+		const turnLeft = -90;
+
 		const rotation = isBlackBox ? port.isDirectionIn() : port.isDirectionOut();
 		switch (position) {
 			case "top":
-				attrs.transform = `rotate(${rotation ? 0 : 180})`;
+				attrs.transform = `rotate(${rotation ? unchanged : turnAround})`;
 				break;
 			case "right":
-				attrs.transform = `rotate(${rotation ? 90 : -90})`;
+				attrs.transform = `rotate(${rotation ? turnRight : turnLeft})`;
 				break;
 			case "bottom":
-				attrs.transform = `rotate(${rotation ? 180 : 0})`;
+				attrs.transform = `rotate(${rotation ? turnAround : unchanged})`;
 				break;
 			case "left":
-				attrs.transform = `rotate(${rotation ? -90 : 90})`;
+				attrs.transform = `rotate(${rotation ? turnLeft : turnRight})`;
 				break;
 		}
 

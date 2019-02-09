@@ -7,11 +7,19 @@ const joint = {
 	util: jointUtil as any,
 };
 
+const sqrt2 = Math.sqrt(2);
+
+const degrees45 = 45;
+const degrees90 = 90;
+const degrees135 = 135;
+const degrees180 = 180;
+const degrees360 = 360;
+
 const config = {
-	maxAllowedDirectionChange: 135,
+	maxAllowedDirectionChange: degrees135,
 
 	diagonalCost() {
-		return 1.4142 * this.step;
+		return sqrt2 * this.step;
 	},
 
 	directions() {
@@ -41,18 +49,18 @@ const config = {
 		let a = {x: to.x, y: from.y};
 		let b = {x: from.x, y: to.y};
 
-		if (theta % 180 > 90) {
+		if (theta % degrees180 > degrees90) {
 			const t = a;
 			a = b;
 			b = t;
 		}
 
-		const p1 = (theta % 90) < 45 ? a : b;
+		const p1 = (theta % degrees90) < degrees45 ? a : b;
 		const l1 = new g.Line(from, p1);
 
-		const alpha = 90 * Math.ceil(theta / 90);
+		const alpha = degrees90 * Math.ceil(theta / degrees90);
 
-		const p2 = g.Point.fromPolar(l1.squaredLength(), g.toRad(alpha + 135), p1);
+		const p2 = g.Point.fromPolar(l1.squaredLength(), g.toRad(alpha + degrees135), p1);
 		const l2 = new g.Line(to, p2);
 
 		const intersectionPoint = (l1 as any).intersection(l2);
@@ -60,7 +68,7 @@ const config = {
 
 		const directionFrom = intersectionPoint ? point : from;
 
-		const quadrant = 360 / opt.directions.length;
+		const quadrant = degrees360 / opt.directions.length;
 		const angleTheta = directionFrom.theta(to);
 		const normalizedAngle = g.normalizeAngle(angleTheta + (quadrant / 2));
 		const directionAngle = quadrant * Math.floor(normalizedAngle / quadrant);
@@ -348,7 +356,7 @@ function getTargetAnchor(linkView: any, opt: any) {
 // corrects for grid deformation between start and end
 function getDirectionAngle(start: any, end: any, numDirections: any, grid: any, opt: any) {
 
-	const quadrant = 360 / numDirections;
+	const quadrant = degrees360 / numDirections;
 	const angleTheta = start.theta(fixAngleEnd(start, end, grid, opt));
 	const normalizedAngle = g.normalizeAngle(angleTheta + (quadrant / 2));
 	return quadrant * Math.floor(normalizedAngle / quadrant);
@@ -379,7 +387,7 @@ function fixAngleEnd(start: any, end: any, grid: any, opt: any) {
 function getDirectionChange(angle1: any, angle2: any) {
 
 	const directionChange = Math.abs(angle1 - angle2);
-	return (directionChange > 180) ? (360 - directionChange) : directionChange;
+	return (directionChange > degrees180) ? (degrees360 - directionChange) : directionChange;
 }
 
 // fix direction offsets according to current grid

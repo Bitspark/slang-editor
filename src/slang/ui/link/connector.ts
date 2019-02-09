@@ -25,8 +25,10 @@ function slangConnectorFunction(sourcePoint: g.PlainPoint, targetPoint: g.PlainP
 		let segment = g.Path.createSegment("M", sourcePointI);
 		path.appendSegment(segment);
 
+		// tslint:disable:no-magic-numbers
 		const oneThird = 1 / 3;
 		const twoThird = 2 / 3;
+		// tslint:enable:no-magic-numbers
 
 		let nextDistance: number | undefined;
 		for (let index = 0, n = routeI.length; index < n; index++) {

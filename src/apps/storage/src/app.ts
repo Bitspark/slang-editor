@@ -16,6 +16,7 @@ export class APIStorageApp extends SlangApp {
 	}
 
 	protected onReady(): void {
+		return;
 	}
 
 	private subscribe() {
@@ -35,7 +36,7 @@ export class APIStorageApp extends SlangApp {
 	}
 
 	private store(blueprint: BlueprintModel): void {
-		this.api.storeBlueprint(blueprintModelToJSON(blueprint)).then(() => {});
+		this.api.storeBlueprint(blueprintModelToJSON(blueprint));
 	}
 }
 
@@ -47,6 +48,7 @@ export class StaticStorageApp extends SlangApp {
 	}
 
 	protected onReady(): void {
+		return;
 	}
 
 	private subscribe() {

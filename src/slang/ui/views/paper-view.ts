@@ -354,11 +354,12 @@ export abstract class PaperView extends View {
 }
 
 (util.filter as any).innerShadow = (args: any) => {
+	const blurRadius = 4;
 	return `<filter>
 <feComponentTransfer in="SourceAlpha">
     <feFuncA type="table" tableValues="1 0" />
 </feComponentTransfer>
-<feGaussianBlur stdDeviation="${Number.isFinite(args.blur) ? args.blur : 4}"/>
+<feGaussianBlur stdDeviation="${Number.isFinite(args.blur) ? args.blur : blurRadius}"/>
 <feOffset dx="${args.dx || 0}" dy="${args.dy || 0}" result="offsetblur"/>
 <feFlood flood-color="${args.color || "black"}" result="color"/>
 <feComposite in2="offsetblur" operator="in"/>

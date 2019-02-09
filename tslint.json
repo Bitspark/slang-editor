@@ -22,8 +22,7 @@
 			"warn"
 		],
 		"no-empty": [
-			true,
-			"allow-empty-functions"
+			true
 		],
 		"no-unused-expression": [
 			true,
@@ -67,12 +66,18 @@
 		"no-import-side-effect": true,
 		"prefer-method-signature": true,
 		"no-void-expression": true,
+		"no-implicit-dependencies": true,
+		"no-inferred-empty-object-type": true,
+		"adjacent-overload-signatures": true,
+		"return-undefined": true,
+		"no-magic-numbers": [true, -2, -1, -0.5, 0, 0.5, 1, 2],
 		// Rules from tslint-eslint-rules
 		"no-constant-condition": true,
 		"no-inner-declarations": true,
 		"no-irregular-whitespace": true,
 		"no-unexpected-multiline": true,
 		"valid-typeof": true,
+		"no-multi-spaces": true,
 		"cyclomatic-complexity": [
 			true,
 			20
@@ -180,6 +185,6 @@
 	"linterOptions": {
 		"exclude": [
 			"node_modules/**"
-        ]
+		]
 	}
 }

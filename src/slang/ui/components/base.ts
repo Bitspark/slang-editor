@@ -20,6 +20,7 @@ abstract class Component {
 	}
 
 	public destroy() {
+		return;
 	}
 
 	protected updateXY({x, y}: XY) {

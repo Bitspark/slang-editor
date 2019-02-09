@@ -349,7 +349,7 @@ function constructRectAttrs(attrs: BlackBoxShapeAttrs): dia.Element.GenericAttri
 				.reduce((result: { [key: string]: dia.Element.PortGroup }, group) => {
 					result[group.getName()] = group.getPortGroupElement();
 					return result;
-				}, {}),
+				}, {} as { [key: string]: dia.Element.PortGroup }),
 		},
 	};
 }

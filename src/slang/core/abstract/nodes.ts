@@ -185,7 +185,8 @@ export abstract class SlangNode {
 	}
 
 	private nextId(): string {
-		this.lastId = Number(Number.parseInt(this.lastId, 16) + 1).toString(16);
+		const hexRadix = 16;
+		this.lastId = Number(Number.parseInt(this.lastId, hexRadix) + 1).toString(hexRadix);
 		return this.lastId;
 	}
 
