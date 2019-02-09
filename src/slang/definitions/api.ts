@@ -109,7 +109,9 @@ export class ApiService {
 			"/operator/",
 			{},
 			(data: any) => (data as { objects: any }).objects as BlueprintApiResponse[],
-			(err: any) => console.error(err),
+			(err: any) => {
+				console.error(err);
+			},
 		);
 	}
 
@@ -121,13 +123,17 @@ export class ApiService {
 			}
 			return true;
 		};
-		const error = (err: any) => console.error(err);
+		const error = (err: any) => {
+			console.error(err);
+		};
 
 		return new Promise<boolean>((resolve) => {
 			const reqInit = {method: "post", body: JSON.stringify(blueprintDefJSON)};
 			fetch(`${this.host}/operator/def/`, reqInit)
 				.then((response: Response) => response.json())
-				.then((data: any) => resolve(process(data)))
+				.then((data: any) => {
+					resolve(process(data));
+				})
 				.catch(error);
 		});
 	}
@@ -142,7 +148,9 @@ export class ApiService {
 				}
 				throw(data);
 			},
-			(err: any) => console.error(err),
+			(err: any) => {
+				console.error(err);
+			},
 		);
 	}
 
@@ -156,7 +164,9 @@ export class ApiService {
 				}
 				throw(data);
 			},
-			(err: any) => console.error(err),
+			(err: any) => {
+				console.error(err);
+			},
 		);
 	}
 
@@ -165,7 +175,9 @@ export class ApiService {
 			instanceUrl,
 			inputData,
 			(outputData: SlangTypeValue) => outputData,
-			(err: any) => console.error(err),
+			(err: any) => {
+				console.error(err);
+			},
 		);
 	}
 
@@ -174,7 +186,9 @@ export class ApiService {
 			const reqInit = (method !== "get") ? {method, body: JSON.stringify(data)} : {};
 			fetch(this.host + path, reqInit)
 				.then((response: Response) => response.json())
-				.then((responseParsed: any) => resolve(process(responseParsed)))
+				.then((responseParsed: any) => {
+					resolve(process(responseParsed));
+				})
 				.catch(error);
 		});
 	}

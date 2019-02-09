@@ -23,7 +23,7 @@ export class APIStorageApp extends SlangApp {
 			return this.load();
 		});
 		this.app.subscribeStoreRequested((blueprint: BlueprintModel) => {
-			return this.store(blueprint);
+			this.store(blueprint);
 		});
 	}
 

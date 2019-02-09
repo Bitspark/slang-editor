@@ -41,7 +41,9 @@ export abstract class CellComponent extends Component {
 
 	public destroy() {
 		super.destroy();
-		this.components.forEach((c) => c.destroy());
+		this.components.forEach((c) => {
+			c.destroy();
+		});
 		this.components = [];
 		this.shape.remove();
 	}

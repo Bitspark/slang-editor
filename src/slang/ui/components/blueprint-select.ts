@@ -110,7 +110,9 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 								this.activeMenuItemIdx = i + this.menuSliceStartIdx;
 								attrs.onHover(blueprint);
 							},
-							onMouseLeave: () => attrs.onHover(undefined),
+							onMouseLeave: () => {
+								attrs.onHover(undefined);
+							},
 						},
 						m(".sl-blupr-title", blueprint.name));
 				}),

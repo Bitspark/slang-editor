@@ -172,7 +172,9 @@ export class OperatorModel extends BlackBox {
 				}
 			}
 		}
-		obsoleteDelegates.forEach((obsoleteDelegate) => obsoleteDelegate.destroy());
+		obsoleteDelegates.forEach((obsoleteDelegate) => {
+			obsoleteDelegate.destroy();
+		});
 	}
 
 	// Actions

@@ -176,7 +176,9 @@ export class LandscapeView extends PaperView {
 		this.blueprintRects.set(blueprint.name, blueprintBox.getShape());
 
 		// JointJS -> Model
-		blueprintBox.onClick(() => blueprint.open());
+		blueprintBox.onClick(() => {
+			blueprint.open();
+		});
 	}
 
 }

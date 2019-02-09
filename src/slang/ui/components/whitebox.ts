@@ -331,9 +331,12 @@ export class WhiteBoxComponent extends CellComponent {
 		});
 
 		this.blueprint.getFakeGenerics().subscribeGenericsChanged(() => {
-			this.ports.top.forEach((p) => p.refresh());
-			this.ports.bottom.forEach((p) => p.refresh());
-
+			this.ports.top.forEach((p) => {
+				p.refresh();
+			});
+			this.ports.bottom.forEach((p) => {
+				p.refresh();
+			});
 			this.connections.forEach((component) => {
 				const connection = component.getConnection();
 				if (!connection.source.isConnectedWith(connection.destination)) {
@@ -391,8 +394,12 @@ export class WhiteBoxComponent extends CellComponent {
 		};
 
 		this.blueprint.subscribeChildCreated(OperatorModel, (operator) => {
-			operator.getGenerics().subscribeGenericsChanged(() => refreshOperatorConnections(operator));
-			operator.getProperties().subscribeAssignmentChanged(() => refreshOperatorConnections(operator));
+			operator.getGenerics().subscribeGenericsChanged(() => {
+				refreshOperatorConnections(operator);
+			});
+			operator.getProperties().subscribeAssignmentChanged(() => {
+				refreshOperatorConnections(operator);
+			});
 		});
 
 		const view = this.paperView;
