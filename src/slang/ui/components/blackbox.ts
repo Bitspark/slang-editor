@@ -2,15 +2,14 @@ import {dia, g, shapes} from "jointjs";
 import m from "mithril";
 
 import {Styles} from "../../../styles/studio";
-
-import {XY} from "../../definitions/api";
-
 import {BlackBox} from "../../core/abstract/blackbox";
 import {PortModel} from "../../core/abstract/port";
 import {SlangSubject} from "../../core/abstract/utils/events";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {OperatorModel} from "../../core/models/operator";
+import {XY} from "../../definitions/api";
 import {PaperView} from "../views/paper-view";
+
 import {AttachableComponent, CellComponent} from "./base";
 import {PortGroupComponent} from "./port-group";
 import {Tk} from "./toolkit";

@@ -1,5 +1,4 @@
 import {SlangType, TypeIdentifier} from "../../../definitions/type";
-
 import {BlackBox} from "../blackbox";
 import {PortModel} from "../port";
 import {PortOwner} from "../port-owner";

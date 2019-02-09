@@ -7,7 +7,6 @@ import {BlueprintType} from "../../src/slang/core/models/blueprint";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
 import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
 import {TestStorageApp} from "../helpers/TestStorageApp";
-
 import data from "../resources/definitions.json";
 
 describe("A property", () => {

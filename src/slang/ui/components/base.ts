@@ -2,11 +2,9 @@ import {dia} from "jointjs";
 import m from "mithril";
 
 import {XY} from "../../definitions/api";
-
 import {PaperView} from "../views/paper-view";
-import {Tk} from "./toolkit";
 
-import Container = Tk.Container;
+import {Tk} from "./toolkit";
 
 export type Alignment =
 	"tl" | "t" | "tr" |
@@ -105,7 +103,7 @@ abstract class HtmlComponent extends Component {
 				this.draw();
 			},
 			view: () => {
-				return m(Container, {
+				return m(Tk.Container, {
 						onmousewheel: (e: WheelEvent) => {
 							e.preventDefault();
 							e.stopPropagation();

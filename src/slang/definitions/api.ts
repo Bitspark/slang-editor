@@ -1,4 +1,5 @@
 import {BlueprintMeta} from "../core/models/blueprint";
+
 import {SlangTypeValue} from "./type";
 
 export interface XY {

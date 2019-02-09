@@ -4,6 +4,7 @@ import {BlueprintModel} from "../../core/models/blueprint";
 import {OperatorModel} from "../../core/models/operator";
 import {isUndefined, SlangType, SlangTypeValue} from "../../definitions/type";
 import {ComponentFactory} from "../factory";
+
 import {Input} from "./console";
 import {Tk} from "./toolkit";
 

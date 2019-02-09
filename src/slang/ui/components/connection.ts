@@ -11,6 +11,7 @@ import {TypeIdentifier} from "../../definitions/type";
 import {slangConnector} from "../link/connector";
 import {slangRouter} from "../link/router";
 import {PaperView} from "../views/paper-view";
+
 import {CellComponent} from "./base";
 
 const connectionLink = dia.Link.define("Connection", {

@@ -1,7 +1,3 @@
-import "./common";
-
-import "../styles/standalone.scss";
-
 import {AutoTriggerApp} from "../apps/autotrigger/src/app";
 import {DeploymentApp} from "../apps/deployment/src/app";
 import {OperatorDataApp} from "../apps/operators/src/app";
@@ -11,6 +7,11 @@ import {AppModel} from "../slang/core/models/app";
 import {Slang} from "../slang/slang";
 import {ComponentFactory} from "../slang/ui/factory";
 import {ViewFrame} from "../slang/ui/frame";
+// tslint:disable-next-line
+import "../styles/standalone.scss";
+
+// tslint:disable-next-line
+import "./common";
 
 function slangStudioStandalone(el: HTMLElement): Promise<void> {
 	return new Promise<void>((resolve) => {

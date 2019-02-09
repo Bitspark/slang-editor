@@ -1,11 +1,10 @@
 import {dia, g, shapes, util} from "jointjs";
 
-import {XY} from "../../definitions/api";
-
 import {SlangSubjectTrigger} from "../../core/abstract/utils/events";
-
+import {XY} from "../../definitions/api";
 import {ComponentFactory} from "../factory";
 import {ViewFrame} from "../frame";
+
 import {View} from "./view";
 
 export interface PaperViewArgs {

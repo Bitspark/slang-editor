@@ -1,19 +1,18 @@
 import {dia} from "jointjs";
 
-import {XY} from "../../definitions/api";
-import {TypeIdentifier} from "../../definitions/type";
-
 import {GenericPortModel, PortModel} from "../../core/abstract/port";
 import {GenericSpecifications} from "../../core/abstract/utils/generics";
 import {PropertyAssignments} from "../../core/abstract/utils/properties";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {LandscapeModel} from "../../core/models/landscape";
-
+import {XY} from "../../definitions/api";
+import {TypeIdentifier} from "../../definitions/type";
 import {BlackBoxShape} from "../components/blackbox";
 import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {WhiteBoxComponent} from "../components/whitebox";
 import {ViewFrame} from "../frame";
+
 import {PaperView, PaperViewArgs} from "./paper-view";
 
 export class BlueprintView extends PaperView {

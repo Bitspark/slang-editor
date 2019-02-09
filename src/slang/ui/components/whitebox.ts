@@ -11,6 +11,7 @@ import {OperatorModel} from "../../core/models/operator";
 import {BlueprintPortModel} from "../../core/models/port";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 import {PaperView} from "../views/paper-view";
+
 import {AttachableComponent, CellComponent} from "./base";
 import {BlackBoxComponent, OperatorBoxComponent} from "./blackbox";
 import {IsolatedBlueprintPortComponent} from "./blueprint-port";

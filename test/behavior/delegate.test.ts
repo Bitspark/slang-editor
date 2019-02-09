@@ -5,7 +5,6 @@ import {BlueprintModel, BlueprintType} from "../../src/slang/core/models/bluepri
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
 import {OperatorModel} from "../../src/slang/core/models/operator";
 import {TestStorageApp} from "../helpers/TestStorageApp";
-
 import data from "../resources/definitions.json";
 
 describe("A blueprint delegate", () => {

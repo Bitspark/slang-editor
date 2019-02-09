@@ -58,6 +58,13 @@
 			"check-open-brace",
 			"check-whitespace"
 		],
+		"ordered-imports": {
+			"options": {
+				"grouped-imports": true
+			}
+		},
+		"no-require-imports": true,
+		"no-import-side-effect": true,
 		// Rules from tslint-eslint-rules
 		"no-constant-condition": true,
 		"no-inner-declarations": true,

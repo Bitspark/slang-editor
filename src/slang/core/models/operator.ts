@@ -1,11 +1,11 @@
-import {SlangTypeValue} from "../../definitions/type";
-
 import {OperatorGeometry, XY} from "../../definitions/api";
+import {SlangTypeValue} from "../../definitions/type";
 import {BlackBox} from "../abstract/blackbox";
 import {PortModelArgs} from "../abstract/port";
 import {Connections} from "../abstract/utils/connections";
 import {GenericSpecifications} from "../abstract/utils/generics";
 import {PropertyAssignments, PropertyEvaluator, PropertyModel} from "../abstract/utils/properties";
+
 import {BlueprintModel, BlueprintType} from "./blueprint";
 import {OperatorDelegateModel, OperatorDelegateModelArgs} from "./delegate";
 import {OperatorPortModel} from "./port";

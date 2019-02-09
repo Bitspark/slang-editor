@@ -1,3 +1,4 @@
+// tslint:disable-next-line
 import "../styles/studio.scss";
 
 import {AppModel} from "./core/models/app";

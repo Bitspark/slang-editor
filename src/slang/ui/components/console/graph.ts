@@ -1,6 +1,7 @@
 import m, {CVnode, CVnodeDOM} from "mithril";
 import * as Plotly from "plotly.js";
 import {Config, ScatterData} from "plotly.js";
+
 import {TypeIdentifier} from "../../../definitions/type";
 import {ConsoleValueType, Output} from "../console";
 
