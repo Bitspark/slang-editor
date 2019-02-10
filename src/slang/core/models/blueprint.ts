@@ -51,6 +51,7 @@ export interface BlueprintMeta {
 	shortDescription?: string;
 	description?: string;
 	docUrl?: string;
+	tags?: string[];
 }
 
 export interface BlueprintModelArgs {
