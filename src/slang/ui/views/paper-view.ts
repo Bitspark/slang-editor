@@ -44,11 +44,11 @@ export abstract class PaperView extends View {
 		this.positionChanged.next();
 	}
 
-	public toClientXY(xy: XY): XY {
-		return this.paper.localToClientPoint(xy);
+	public toBrowserXY(xy: XY): XY {
+		return this.paper.localToPaperPoint(xy);
 	}
 
-	public toLocalXY(xy: XY): XY {
+	public toSVGXY(xy: XY): XY {
 		return this.paper.clientToLocalPoint(xy);
 	}
 
@@ -198,7 +198,7 @@ export abstract class PaperView extends View {
 					const portId = evTarget.parentElement.getAttribute("port");
 					if (portId) {
 						const {clientX, clientY} = evt;
-						const {x, y} = this.toLocalXY({x: clientX, y: clientY});
+						const {x, y} = this.toSVGXY({x: clientX, y: clientY});
 						cellView.model.trigger("port:" + eventName, cellView, evt, x, y, portId);
 						return;
 					}
