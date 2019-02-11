@@ -10,6 +10,7 @@ export class ViewFrame {
 		this.viewEl = document.createElement("div");
 		this.viewEl.classList.add("view");
 		container.appendChild(this.viewEl);
+		container.style.overflow = "hidden";
 
 		const that = this;
 		window.addEventListener("resize", () => {
