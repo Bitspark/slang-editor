@@ -11,13 +11,13 @@ import {OperatorModel} from "../../core/models/operator";
 import {BlueprintPortModel} from "../../core/models/port";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 import {PaperView} from "../views/paper-view";
+
 import {AttachableComponent, CellComponent} from "./base";
 import {BlackBoxComponent, OperatorBoxComponent} from "./blackbox";
 import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {ConnectionComponent} from "./connection";
 import {InputConsole, OutputConsole} from "./console";
 import {DashboardComponent} from "./dashboard";
-import {COMPONENT_FACTORY} from "./factory";
 import {PortGroupPosition} from "./port-group";
 import {Tk} from "./toolkit";
 
@@ -108,10 +108,10 @@ export class WhiteBoxComponent extends CellComponent {
 		const {width, height} = this.blueprint.size;
 
 		const bbox = this.paperView.getCellsBBox(operatorRectangles) || new g.Rect({
-			x: -width / 2,
-			y: -height / 2,
 			width,
 			height,
+			x: -width / 2,
+			y: -height / 2,
 		});
 
 		bbox.width = Math.max(width, bbox.width);
@@ -146,8 +146,8 @@ export class WhiteBoxComponent extends CellComponent {
 			const y = portElem.position().y;
 			portElem.set({
 				position: {
-					x: bbox.x + bbox.width,
 					y,
+					x: bbox.x + bbox.width,
 				},
 			});
 		});
@@ -244,13 +244,13 @@ export class WhiteBoxComponent extends CellComponent {
 			}
 		}
 
-		const outerEdgeWidth = 3 - 1;
+		const outerEdge = 1;
 
 		this.ports.top.map((p) => p.getShape()).forEach((port) => {
 			const currentPortPosition = port.get("position");
 			const targetPosition = {
 				x: currentPortPosition.x,
-				y: newPosition.y - pHeight - outerEdgeWidth,
+				y: newPosition.y - pHeight - outerEdge * 2,
 			};
 			if (!animation) {
 				port.set({position: targetPosition});
@@ -264,7 +264,7 @@ export class WhiteBoxComponent extends CellComponent {
 			const currentPortPosition = port.get("position");
 			const targetPosition = {
 				x: currentPortPosition.x,
-				y: newPosition.y + newSize.height - outerEdgeWidth / 2,
+				y: newPosition.y + newSize.height - outerEdge,
 			};
 			if (!animation) {
 				port.set({position: targetPosition});
@@ -277,7 +277,7 @@ export class WhiteBoxComponent extends CellComponent {
 		this.ports.right.map((p) => p.getShape()).forEach((port) => {
 			const currentPortPosition = port.get("position");
 			const targetPosition = {
-				x: newPosition.x + newSize.width + outerEdgeWidth / 2,
+				x: newPosition.x + newSize.width + outerEdge,
 				y: currentPortPosition.y,
 			};
 			if (!animation) {
@@ -331,9 +331,12 @@ export class WhiteBoxComponent extends CellComponent {
 		});
 
 		this.blueprint.getFakeGenerics().subscribeGenericsChanged(() => {
-			this.ports.top.forEach((p) => p.refresh());
-			this.ports.bottom.forEach((p) => p.refresh());
-
+			this.ports.top.forEach((p) => {
+				p.refresh();
+			});
+			this.ports.bottom.forEach((p) => {
+				p.refresh();
+			});
 			this.connections.forEach((component) => {
 				const connection = component.getConnection();
 				if (!connection.source.isConnectedWith(connection.destination)) {
@@ -391,8 +394,12 @@ export class WhiteBoxComponent extends CellComponent {
 		};
 
 		this.blueprint.subscribeChildCreated(OperatorModel, (operator) => {
-			operator.getGenerics().subscribeGenericsChanged(() => refreshOperatorConnections(operator));
-			operator.getProperties().subscribeAssignmentChanged(() => refreshOperatorConnections(operator));
+			operator.getGenerics().subscribeGenericsChanged(() => {
+				refreshOperatorConnections(operator);
+			});
+			operator.getProperties().subscribeAssignmentChanged(() => {
+				refreshOperatorConnections(operator);
+			});
 		});
 
 		const view = this.paperView;
@@ -605,7 +612,7 @@ export class WhiteBoxComponent extends CellComponent {
 	}
 
 	private addOperator(operator: OperatorModel): OperatorBoxComponent {
-		const operatorComp = COMPONENT_FACTORY.createOperatorComponent(this.paperView, operator);
+		const operatorComp = this.paperView.getFactory().createOperatorComponent(this.paperView, operator);
 		this.operators.push(operatorComp);
 		this.attachPortInfo(operatorComp);
 
@@ -621,6 +628,7 @@ export class WhiteBoxComponent extends CellComponent {
 							},
 							m(DashboardComponent, {
 								operator,
+								factory: this.paperView.getFactory(),
 								onSave: () => {
 									comp.destroy();
 								},
@@ -688,6 +696,7 @@ export interface Attrs {
 class PortInfo implements ClassComponent<Attrs> {
 	// Note that class methods cannot infer parameter types
 	public oninit() {
+		return;
 	}
 
 	public view({attrs}: CVnode<Attrs>) {

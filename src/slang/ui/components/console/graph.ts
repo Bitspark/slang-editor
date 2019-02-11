@@ -1,6 +1,7 @@
 import m, {CVnode, CVnodeDOM} from "mithril";
 import * as Plotly from "plotly.js";
 import {Config, ScatterData} from "plotly.js";
+
 import {TypeIdentifier} from "../../../definitions/type";
 import {ConsoleValueType, Output} from "../console";
 
@@ -36,10 +37,10 @@ export const GRAPH_VALUE_TYPE: ConsoleValueType<GraphType> = {
 		oncreate({attrs, dom}: CVnodeDOM<Output.ValueTypeAttrs<GraphType>>) {
 			const graphData = attrs.value.map(({name, data}) => {
 				return {
+					name,
 					x: data.map(({x}) => x),
 					y: data.map(({y}) => y),
 					mode: "lines+markers",
-					name,
 				} as Partial<ScatterData>;
 			});
 			const layout = {

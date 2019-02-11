@@ -7,6 +7,7 @@ import {Connections} from "../abstract/utils/connections";
 import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../abstract/utils/events";
 import {GenericSpecifications} from "../abstract/utils/generics";
 import {PropertyAssignments, PropertyModel} from "../abstract/utils/properties";
+
 import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
 import {LandscapeModel} from "./landscape";
 import {OperatorModel} from "./operator";
@@ -184,11 +185,11 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		const operatorGenerics = generics ? generics : new GenericSpecifications([]);
 		const operatorProperties = properties ? properties : new PropertyAssignments([], operatorGenerics);
 		return this.createChildNode(OperatorModel, {
-			name: name ? name : this.getNextOperatorName(blueprint),
 			blueprint,
+			geometry,
+			name: name ? name : this.getNextOperatorName(blueprint),
 			generics: operatorGenerics,
 			properties: operatorProperties,
-			geometry,
 		});
 	}
 

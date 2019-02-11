@@ -10,6 +10,8 @@ import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
 import {TestStorageApp} from "../helpers/TestStorageApp";
 import data from "../resources/definitions.json";
 
+// tslint:disable:no-magic-numbers
+
 describe("A new blueprint", () => {
 	let appModel: AppModel;
 	let landscapeModel: LandscapeModel;

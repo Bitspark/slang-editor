@@ -1,5 +1,6 @@
 import {SlangNode} from "../abstract/nodes";
 import {SlangBehaviorSubject} from "../abstract/utils/events";
+
 import {AppModel} from "./app";
 import {BlueprintModel, BlueprintModelArgs} from "./blueprint";
 
@@ -16,7 +17,8 @@ export class LandscapeModel extends SlangNode {
 	}
 
 	public findBlueprint(uuid: string): BlueprintModel | undefined {
-		if (uuid.indexOf(" ") >= 0 || uuid.split("-").length !== 5) {
+		const uuidDashCount = 5;
+		if (uuid.indexOf(" ") >= 0 || uuid.split("-").length !== uuidDashCount) {
 			// Valid uuid e.g.: "dc1aa556-d62e-4e07-adbb-53dc317481b0"
 			throw Error(`given blueprint uuid is not valid: ${uuid}`);
 		}

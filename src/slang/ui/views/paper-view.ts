@@ -1,13 +1,14 @@
 import {dia, g, shapes, util} from "jointjs";
 
-import {XY} from "../../definitions/api";
-
 import {SlangSubjectTrigger} from "../../core/abstract/utils/events";
-
+import {XY} from "../../definitions/api";
+import {ComponentFactory} from "../factory";
 import {ViewFrame} from "../frame";
+
 import {View} from "./view";
 
 export interface PaperViewArgs {
+	factory: ComponentFactory;
 	hscrollable: boolean;
 	vscrollable: boolean;
 	editable: boolean;
@@ -28,9 +29,13 @@ export abstract class PaperView extends View {
 	private maxScale: number = 2.5;
 
 	protected constructor(frame: ViewFrame, private args: PaperViewArgs) {
-		super(frame);
+		super(frame, args.factory);
 		this.paper = this.createPaper();
 		this.redirectPaperEvents();
+	}
+
+	public getFactory(): ComponentFactory {
+		return this.factory;
 	}
 
 	public resize(width: number, height: number) {
@@ -346,15 +351,15 @@ export abstract class PaperView extends View {
 		}
 		return [allowedDeltaX, allowedDeltaY];
 	}
-
 }
 
 (util.filter as any).innerShadow = (args: any) => {
+	const blurRadius = 4;
 	return `<filter>
 <feComponentTransfer in="SourceAlpha">
     <feFuncA type="table" tableValues="1 0" />
 </feComponentTransfer>
-<feGaussianBlur stdDeviation="${Number.isFinite(args.blur) ? args.blur : 4}"/>
+<feGaussianBlur stdDeviation="${Number.isFinite(args.blur) ? args.blur : blurRadius}"/>
 <feOffset dx="${args.dx || 0}" dy="${args.dy || 0}" result="offsetblur"/>
 <feFlood flood-color="${args.color || "black"}" result="color"/>
 <feComposite in2="offsetblur" operator="in"/>

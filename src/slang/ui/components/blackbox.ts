@@ -2,17 +2,15 @@ import {dia, g, shapes} from "jointjs";
 import m from "mithril";
 
 import {Styles} from "../../../styles/studio";
-
-import {XY} from "../../definitions/api";
-
 import {BlackBox} from "../../core/abstract/blackbox";
 import {PortModel} from "../../core/abstract/port";
 import {SlangSubject} from "../../core/abstract/utils/events";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {OperatorModel} from "../../core/models/operator";
+import {XY} from "../../definitions/api";
 import {PaperView} from "../views/paper-view";
+
 import {AttachableComponent, CellComponent} from "./base";
-import {COMPONENT_FACTORY} from "./factory";
 import {PortGroupComponent} from "./port-group";
 import {Tk} from "./toolkit";
 
@@ -162,14 +160,14 @@ export abstract class BlackBoxComponent extends CellComponent {
 			(_cellView: dia.CellView, _event: MouseEvent, x: number, y: number, portId: string) => {
 				const port = blackbox.findNodeById(portId);
 				if (port) {
-					this.portMouseEntered.next({port: port as PortModel, x, y});
+					this.portMouseEntered.next({x, y, port: port as PortModel});
 				}
 			});
 		this.shape.on("port:mouseout",
 			(_cellView: dia.CellView, _event: MouseEvent, x: number, y: number, portId: string) => {
 				const port = blackbox.findNodeById(portId);
 				if (port) {
-					this.portMouseLeft.next({port: port as PortModel, x, y});
+					this.portMouseLeft.next({x, y, port: port as PortModel});
 				}
 			});
 	}
@@ -210,7 +208,7 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 	}
 
 	protected createShape(): BlackBoxShape {
-		const blackBoxShapeType = COMPONENT_FACTORY.getBlackBoxShape(this.blueprint);
+		const blackBoxShapeType = this.paperView.getFactory().getBlackBoxShape(this.blueprint);
 		const shape = new blackBoxShapeType({
 			id: this.blueprint.getIdentity(),
 			portGroups: this.portGroups,
@@ -305,7 +303,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 	}
 
 	protected createShape(): BlackBoxShape {
-		const blackBoxShapeType = COMPONENT_FACTORY.getBlackBoxShape(this.operator.getBlueprint());
+		const blackBoxShapeType = this.paperView.getFactory().getBlackBoxShape(this.operator.getBlueprint());
 		const shape = new blackBoxShapeType({
 			id: this.operator.getIdentity(),
 			position: this.operator.xy,
@@ -351,7 +349,7 @@ function constructRectAttrs(attrs: BlackBoxShapeAttrs): dia.Element.GenericAttri
 				.reduce((result: { [key: string]: dia.Element.PortGroup }, group) => {
 					result[group.getName()] = group.getPortGroupElement();
 					return result;
-				}, {}),
+				}, {} as { [key: string]: dia.Element.PortGroup }),
 		},
 	};
 }
@@ -372,9 +370,9 @@ export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", 
 
 	public static placeGhost(paperView: PaperView, label: string, position?: g.PlainPoint): BlackBoxShape {
 		const shape = new BlackBoxShape({
-			id: "",
 			label,
 			position,
+			id: "",
 		});
 
 		shape.set("obstacle", true);

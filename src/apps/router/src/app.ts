@@ -1,7 +1,7 @@
 import {SlangApp} from "../../../slang/app";
 import {AppModel} from "../../../slang/core/models/app";
 import {LandscapeModel} from "../../../slang/core/models/landscape";
-import {ComponentFactory} from "../../../slang/ui/components/factory";
+import {ComponentFactory} from "../../../slang/ui/factory";
 
 export class RouterApp extends SlangApp {
 
@@ -14,17 +14,19 @@ export class RouterApp extends SlangApp {
 	public checkRoute(): void {
 		const url = window.location.pathname;
 		const paths = url.split("/");
-		if (paths.length <= 2) {
+		const blueprintPathDepth = 2;
+		if (paths.length <= blueprintPathDepth) {
 			this.openLandscape();
 			return;
 		}
 		switch (paths[1]) {
 			case "blueprint":
-				this.openBlueprint(paths[2]);
+				this.openBlueprint(paths[blueprintPathDepth]);
 		}
 	}
 
 	protected onReady(): void {
+		return;
 	}
 
 	private openBlueprint(uuid: string) {
@@ -52,7 +54,7 @@ export class RouterApp extends SlangApp {
 			const title = `${blueprint.name} Blueprint | Slang Studio`;
 			const uuid = blueprint.uuid;
 			const url = `blueprint/${uuid}`;
-			window.history.pushState({type: "blueprint", uuid}, title, url);
+			window.history.pushState({uuid, type: "blueprint"}, title, url);
 		});
 		this.app.subscribeOpenedLandscapeChanged((blueprint) => {
 			if (blueprint === null) {

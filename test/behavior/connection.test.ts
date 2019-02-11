@@ -8,7 +8,6 @@ import {LandscapeModel} from "../../src/slang/core/models/landscape";
 import {OperatorModel} from "../../src/slang/core/models/operator";
 import {SlangType} from "../../src/slang/definitions/type";
 import {TestStorageApp} from "../helpers/TestStorageApp";
-
 import data from "../resources/definitions.json";
 
 describe("A connection", () => {
@@ -49,7 +48,9 @@ describe("A connection", () => {
 
 		const s2sOp = bpNew.createOperator("s2s", bpS2S, null, null);
 
-		expect(() => bpPortIn.connect(s2sOp.getPortIn()!, false)).toThrow();
+		expect(() => {
+			bpPortIn.connect(s2sOp.getPortIn()!, false);
+		}).toThrow();
 		expect(bpPortIn.isConnectedWith(s2sOp.getPortIn()!)).toBeFalsy();
 	});
 
@@ -64,7 +65,9 @@ describe("A connection", () => {
 		s2sOp2.getPortOut()!.connect(s2sOp3.getPortIn()!, true);
 		expect(s2sOp2.getPortOut()!.isConnectedWith(s2sOp3.getPortIn()!)).toBeTruthy();
 
-		expect(() => s2sOp3.getPortOut()!.connect(s2sOp1.getPortIn()!, false)).toThrow();
+		expect(() => {
+			s2sOp3.getPortOut()!.connect(s2sOp1.getPortIn()!, false);
+		}).toThrow();
 		expect(s2sOp3.getPortOut()!.isConnectedWith(s2sOp1.getPortIn()!)).toBeFalsy();
 	});
 
@@ -75,7 +78,9 @@ describe("A connection", () => {
 		s2sDlgOp1.findDelegate("dlg1")!.getPortOut()!.connect(s2sDlgOp2.getPortIn()!, true);
 		expect(s2sDlgOp1.findDelegate("dlg1")!.getPortOut()!.isConnectedWith(s2sDlgOp2.getPortIn()!)).toBeTruthy();
 
-		expect(() => s2sDlgOp2.findDelegate("dlg1")!.getPortOut()!.connect(s2sDlgOp1.getPortIn()!, true)).toThrow();
+		expect(() => {
+			s2sDlgOp2.findDelegate("dlg1")!.getPortOut()!.connect(s2sDlgOp1.getPortIn()!, true);
+		}).toThrow();
 		expect(s2sDlgOp2.findDelegate("dlg1")!.getPortOut()!.isConnectedWith(s2sDlgOp1.getPortIn()!)).toBeFalsy();
 	});
 

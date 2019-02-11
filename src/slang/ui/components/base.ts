@@ -2,11 +2,9 @@ import {dia} from "jointjs";
 import m from "mithril";
 
 import {XY} from "../../definitions/api";
-
 import {PaperView} from "../views/paper-view";
-import {Tk} from "./toolkit";
 
-import Container = Tk.Container;
+import {Tk} from "./toolkit";
 
 export type Alignment =
 	"tl" | "t" | "tr" |
@@ -22,6 +20,7 @@ abstract class Component {
 	}
 
 	public destroy() {
+		return;
 	}
 
 	protected updateXY({x, y}: XY) {
@@ -43,7 +42,9 @@ export abstract class CellComponent extends Component {
 
 	public destroy() {
 		super.destroy();
-		this.components.forEach((c) => c.destroy());
+		this.components.forEach((c) => {
+			c.destroy();
+		});
 		this.components = [];
 		this.shape.remove();
 	}
@@ -105,7 +106,7 @@ abstract class HtmlComponent extends Component {
 				this.draw();
 			},
 			view: () => {
-				return m(Container, {
+				return m(Tk.Container, {
 						onmousewheel: (e: WheelEvent) => {
 							e.preventDefault();
 							e.stopPropagation();

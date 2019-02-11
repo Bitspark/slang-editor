@@ -5,22 +5,17 @@ import {BlueprintModel} from "../../core/models/blueprint";
 import {LandscapeModel} from "../../core/models/landscape";
 import {OperatorGeometry, XY} from "../../definitions/api";
 import {BlueprintView} from "../views/blueprint";
+
 import {AttachableComponent, CellComponent} from "./base";
 import {BlackBoxShape} from "./blackbox";
 import {MithrilKeyboardEvent, MithrilMouseEvent, Tk} from "./toolkit";
 
-import ListHead = Tk.ListHead;
-import StringInput = Tk.StringInput;
-import ListItem = Tk.ListItem;
-import List = Tk.List;
-import Box = Tk.Box;
-
 export interface Attrs {
-	onSelect: (bp: BlueprintModel) => void;
-	onHover: (bp?: BlueprintModel) => void;
-	onFilter: (filter: string) => void;
-	onExit: () => void;
-	onLoad: () => BlueprintModel[];
+	onSelect(bp: BlueprintModel): void;
+	onHover(bp?: BlueprintModel): void;
+	onFilter(filter: string): void;
+	onExit(): void;
+	onLoad(): BlueprintModel[];
 }
 
 class BlueprintMenuComponent implements ClassComponent<Attrs> {
@@ -31,6 +26,7 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 
 	// Note that class methods cannot infer parameter types
 	public oninit({}: CVnode<Attrs>) {
+		return;
 	}
 
 	public setMenuSlice(menuTotalSize: number) {
@@ -86,14 +82,14 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 					}
 				},
 			},
-			m(List, {
+			m(Tk.List, {
 					onMouseLeave: (e: MithrilMouseEvent) => {
 						e.redraw = false;
 						attrs.onHover(undefined);
 					},
 				},
-				m(ListHead, {},
-					m(StringInput, {
+				m(Tk.ListHead, {},
+					m(Tk.StringInput, {
 						class: "sl-fullwidth",
 						label: "",
 						onInput: (f: string) => {
@@ -105,7 +101,7 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 				),
 
 				blueprints.slice(this.menuSliceStartIdx, this.menuSliceEndIdx + 1).map((blueprint: BlueprintModel, i: number) => {
-					return m(ListItem, {
+					return m(Tk.ListItem, {
 							class: (this.activeMenuItemIdx - this.menuSliceStartIdx === i ? "highlighted" : ""),
 							onClick: (e: MithrilMouseEvent) => {
 								e.redraw = false;
@@ -115,7 +111,9 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 								this.activeMenuItemIdx = i + this.menuSliceStartIdx;
 								attrs.onHover(blueprint);
 							},
-							onMouseLeave: () => attrs.onHover(undefined),
+							onMouseLeave: () => {
+								attrs.onHover(undefined);
+							},
 						},
 						m(".sl-blupr-title", blueprint.name));
 				}),
@@ -142,7 +140,7 @@ export class BlueprintSelectComponent extends CellComponent {
 		this.menu = this.createComponent({x: 0, y: 0, align: "tl"})
 			.attachTo(this.shape, "c")
 			.mount({
-				view: () => m(Box, m(BlueprintMenuComponent, {
+				view: () => m(Tk.Box, m(BlueprintMenuComponent, {
 					onLoad: () => this.getBlueprints(),
 					onFilter: (fltrExpr: string) => {
 						this.filterExpr = fltrExpr;

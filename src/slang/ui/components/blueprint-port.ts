@@ -3,6 +3,7 @@ import {dia, shapes} from "jointjs";
 import {Styles} from "../../../styles/studio";
 import {PortModel} from "../../core/abstract/port";
 import {SlangSubject} from "../../core/abstract/utils/events";
+
 import {PortGroupComponent, PortGroupPosition} from "./port-group";
 
 export class IsolatedBlueprintPortComponent {
@@ -35,9 +36,9 @@ export class IsolatedBlueprintPortComponent {
 					stroke: "none",
 				},
 				label: {
+					transform,
 					class: "sl-label",
 					text: name,
-					transform,
 				},
 			},
 			ports: {
@@ -49,14 +50,14 @@ export class IsolatedBlueprintPortComponent {
 			(_cellView: dia.CellView, _event: MouseEvent, x: number, y: number, portId: string) => {
 				const childPort = port.findNodeById(portId);
 				if (childPort) {
-					this.portMouseEntered.next({port: childPort as PortModel, x, y});
+					this.portMouseEntered.next({x, y, port: childPort as PortModel});
 				}
 			});
 		this.rectangle.on("port:mouseout",
 			(_cellView: dia.CellView, _event: MouseEvent, x: number, y: number, portId: string) => {
 				const childPort = port.findNodeById(portId);
 				if (childPort) {
-					this.portMouseLeft.next({port: childPort as PortModel, x, y});
+					this.portMouseLeft.next({x, y, port: childPort as PortModel});
 				}
 			});
 

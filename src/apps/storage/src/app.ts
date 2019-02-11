@@ -4,7 +4,7 @@ import {AppModel} from "../../../slang/core/models/app";
 import {BlueprintModel} from "../../../slang/core/models/blueprint";
 import {LandscapeModel} from "../../../slang/core/models/landscape";
 import {ApiService, BlueprintApiResponse} from "../../../slang/definitions/api";
-import {ComponentFactory} from "../../../slang/ui/components/factory";
+import {ComponentFactory} from "../../../slang/ui/factory";
 
 export class APIStorageApp extends SlangApp {
 	private api: ApiService;
@@ -16,6 +16,7 @@ export class APIStorageApp extends SlangApp {
 	}
 
 	protected onReady(): void {
+		return;
 	}
 
 	private subscribe() {
@@ -23,7 +24,7 @@ export class APIStorageApp extends SlangApp {
 			return this.load();
 		});
 		this.app.subscribeStoreRequested((blueprint: BlueprintModel) => {
-			return this.store(blueprint);
+			this.store(blueprint);
 		});
 	}
 
@@ -35,7 +36,7 @@ export class APIStorageApp extends SlangApp {
 	}
 
 	private store(blueprint: BlueprintModel): void {
-		this.api.storeBlueprint(blueprintModelToJSON(blueprint)).then(() => {});
+		this.api.storeBlueprint(blueprintModelToJSON(blueprint));
 	}
 }
 
@@ -47,6 +48,7 @@ export class StaticStorageApp extends SlangApp {
 	}
 
 	protected onReady(): void {
+		return;
 	}
 
 	private subscribe() {

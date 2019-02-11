@@ -2,7 +2,6 @@ import {AppModel} from "../../src/slang/core/models/app";
 import {BlueprintModel} from "../../src/slang/core/models/blueprint";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
 import {TestStorageApp} from "../helpers/TestStorageApp";
-
 import data from "../resources/definitions.json";
 
 describe("The landscape", () => {

@@ -1,5 +1,7 @@
 import {StreamType} from "../../src/slang/core/abstract/stream";
 
+// tslint:disable:no-magic-numbers
+
 describe("A stream type", () => {
 
 	it("returns correct depth", () => {

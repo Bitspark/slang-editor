@@ -1,6 +1,7 @@
 import m, {ClassComponent, CVnode} from "mithril";
 
 import {SlangType, SlangTypeDef, SlangTypeValue, TypeIdentifier} from "../../definitions/type";
+
 import {BINARY_VALUE_TYPE} from "./console/binary";
 import {FILE_VALUE_TYPE, IMAGE_VALUE_TYPE} from "./console/file";
 import {GRAPH_VALUE_TYPE} from "./console/graph";
@@ -227,9 +228,11 @@ export namespace Output {
 
 	export abstract class ValueType<T> implements ClassComponent<ValueTypeAttrs<T>> {
 		public oncreate?(_vnode: m.CVnodeDOM<ValueTypeAttrs<T>>): any {
+			return;
 		}
 
 		public onupdate?(_vnode: m.CVnodeDOM<ValueTypeAttrs<T>>): any {
+			return;
 		}
 
 		public abstract view(vnode: m.CVnode<ValueTypeAttrs<T>>): m.Children | void | null;
@@ -278,7 +281,7 @@ export namespace Output {
 
 interface InputConsoleAttrs {
 	type: SlangType;
-	onSubmit: (value: SlangTypeValue) => void;
+	onSubmit(value: SlangTypeValue): void;
 }
 
 export class InputConsole implements ClassComponent<InputConsoleAttrs> {
@@ -311,9 +314,9 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 
 	private renderInput(type: SlangType, initValue: SlangTypeValue | undefined): m.Children {
 		return m(Input.ConsoleEntry, {
+			initValue,
 			label: "", class: "",
 			type: type!,
-			initValue,
 			onInput: (v: any) => {
 				this.value = v;
 			},
@@ -323,7 +326,7 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 
 interface OutputConsoleAttrs {
 	type: SlangType;
-	onLoad: () => SlangTypeValue[];
+	onLoad(): SlangTypeValue[];
 }
 
 export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {

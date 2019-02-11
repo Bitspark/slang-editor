@@ -17,7 +17,7 @@ export enum Keypress {
 export namespace Tk {
 	interface ModalAttrs {
 		title?: string;
-		onClose?: () => void;
+		onClose?(): void;
 	}
 
 	export class Modal implements ClassComponent<ModalAttrs> {
@@ -52,15 +52,16 @@ export namespace Tk {
 
 	interface ListAttrs {
 		class?: string;
-		onMouseEnter?: (e: MithrilMouseEvent) => void;
-		onMouseLeave?: (e: MithrilMouseEvent) => void;
 		onKey?: {
 			[keyevent in keyof Keypress]: (e: MithrilKeyboardEvent) => void
 		};
+		onMouseEnter?(e: MithrilMouseEvent): void;
+		onMouseLeave?(e: MithrilMouseEvent): void;
 	}
 
 	export class List implements ClassComponent<ListAttrs> {
 		public oninit() {
+			return;
 		}
 
 		public view({children, attrs}: CVnode<ListAttrs>) {
@@ -72,13 +73,14 @@ export namespace Tk {
 
 	interface ListItemAttrs {
 		class?: string;
-		onMouseEnter?: (e: MithrilMouseEvent) => void;
-		onMouseLeave?: (e: MithrilMouseEvent) => void;
-		onClick?: (e: MithrilMouseEvent) => void;
+		onMouseEnter?(e: MithrilMouseEvent): void;
+		onMouseLeave?(e: MithrilMouseEvent): void;
+		onClick?(e: MithrilMouseEvent): void;
 	}
 
 	export class ListItem implements ClassComponent<ListItemAttrs> {
 		public oninit() {
+			return;
 		}
 
 		public view({children, attrs}: CVnode<ListItemAttrs>) {
@@ -93,6 +95,7 @@ export namespace Tk {
 
 	export class ListHead extends ListItem {
 		public oninit() {
+			return;
 		}
 
 		public view({children, attrs}: CVnode<ListItemAttrs>) {
@@ -106,12 +109,12 @@ export namespace Tk {
 	}
 
 	interface ButtonAttrs {
-		onClick?: (e: MithrilMouseEvent) => void;
 		tooltip?: string;
 		class?: string;
 		notAllowed?: boolean;
 		inactive?: boolean;
 		full?: boolean;
+		onClick?(e: MithrilMouseEvent): void;
 	}
 
 	export class Button implements ClassComponent<ButtonAttrs> {
@@ -119,6 +122,7 @@ export namespace Tk {
 		private bounceInterval = 500;
 
 		public oninit() {
+			return;
 		}
 
 		public view({attrs, children}: CVnode<ButtonAttrs>) {
@@ -173,8 +177,8 @@ export namespace Tk {
 		class: string;
 		autofocus?: boolean;
 		initValue?: T;
-		onInput: (value: T) => void;
-		onchange?: (file: File) => void;
+		onInput(value: T): void;
+		onchange?(file: File): void;
 	}
 
 	export interface Input<T> extends ClassComponent<InputAttrs<T>> {

@@ -1,10 +1,8 @@
 import {dia, g} from "jointjs";
 
 import {Styles} from "../../../styles/studio";
-
-import {TypeIdentifier} from "../../definitions/type";
-
 import {PortModel} from "../../core/abstract/port";
+import {TypeIdentifier} from "../../definitions/type";
 
 import {PortComponent} from "./port";
 

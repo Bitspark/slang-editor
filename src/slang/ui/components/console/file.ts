@@ -34,7 +34,7 @@ export const FILE_VALUE_TYPE: ConsoleValueType<{ file: string, name: string }> =
 				initValue: undefined,
 				onInput: (file: File) => {
 					selectFile(file, ({content, name}) => {
-						origOnInput({file: content, name});
+						origOnInput({name, file: content});
 					});
 				},
 			}));
@@ -58,7 +58,7 @@ export const IMAGE_VALUE_TYPE: ConsoleValueType<{ image: string, name: string }>
 				initValue: undefined,
 				onInput: (file: File) => {
 					selectFile(file, ({content, name}) => {
-						origOnInput({image: content, name});
+						origOnInput({name, image: content});
 					});
 				},
 			}));

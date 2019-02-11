@@ -1,3 +1,4 @@
+// tslint:disable-next-line
 import "../styles/studio.scss";
 
 import {AppModel} from "./core/models/app";
@@ -39,6 +40,7 @@ export class Slang {
 				return;
 			}
 			const view = new BlueprintView(this.outlet, blueprint, {
+				factory: this.outlet.getFactory(),
 				editable: blueprint.isLocal(),
 				hscrollable: true,
 				vscrollable: true,

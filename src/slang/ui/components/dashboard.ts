@@ -3,18 +3,20 @@ import m, {ClassComponent, CVnode} from "mithril";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {OperatorModel} from "../../core/models/operator";
 import {isUndefined, SlangType, SlangTypeValue} from "../../definitions/type";
+import {ComponentFactory} from "../factory";
+
 import {Input} from "./console";
-import {COMPONENT_FACTORY} from "./factory";
 import {Tk} from "./toolkit";
 
 interface DashboardAttrs {
+	factory: ComponentFactory;
 	operator: OperatorModel;
-	onSave: () => void;
+	onSave(): void;
 }
 
 export class DashboardComponent implements ClassComponent<DashboardAttrs> {
 	public view({attrs}: CVnode<DashboardAttrs>): any {
-		const dashboardModules = COMPONENT_FACTORY.getDashboardModules(attrs.operator);
+		const dashboardModules = attrs.factory.getDashboardModules(attrs.operator);
 		return m("div.sl-operator-dashboard", {
 			onmousewheel: (e: WheelEvent) => {
 				e.stopPropagation();
@@ -32,7 +34,7 @@ export class DashboardComponent implements ClassComponent<DashboardAttrs> {
 
 export interface DashboardModuleAttrs {
 	operator: OperatorModel;
-	onSave: () => void;
+	onSave(): void;
 }
 
 export interface DashboardModuleComponent extends ClassComponent<DashboardModuleAttrs> {
@@ -99,8 +101,9 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 	private renderPropertyInput(fieldName: string, _fieldAttrs: { type: SlangType, initValue?: SlangTypeValue }): m.Children {
 		const {type, initValue} = this.formBody.get(fieldName)!;
 		return m(Input.ConsoleEntry, {
-			label: fieldName, class: "",
 			type,
+			label: fieldName,
+			class: "",
 			initValue: !this.formData.has(fieldName) ? initValue : undefined,
 			onInput: (v: any) => {
 				this.formData.set(fieldName, v);

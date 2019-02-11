@@ -84,7 +84,7 @@ export class PropertyAssignments {
 
 		this.assignments.forEach((assignment) => {
 			assignment.subscribeAssignmentChanged((newValue) => {
-				this.assignmentChanged.next({property: assignment.getProperty(), newValue});
+				this.assignmentChanged.next({newValue, property: assignment.getProperty()});
 			});
 		});
 	}

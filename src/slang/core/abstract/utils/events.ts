@@ -128,7 +128,9 @@ export class SlangNodeSetBehaviorSubject<T extends SlangNode> extends SlangBagSu
 
 	public subscribeAdded(next: (value: T) => void): Subscription {
 		if (this.nodes) {
-			this.nodes.forEach((node) => next(node));
+			this.nodes.forEach((node) => {
+				next(node);
+			});
 		}
 		return super.subscribeAdded(next);
 	}

@@ -11,6 +11,7 @@ export class TestStorageApp extends SlangApp {
 	}
 
 	protected onReady(): void {
+		return;
 	}
 
 	private subscribe() {

@@ -45,7 +45,9 @@ export abstract class PortOwner extends SlangNode {
 				obsoletePorts.delete(poPort);
 			}
 		}
-		obsoletePorts.forEach((obsoletePort) => obsoletePort.destroy());
+		obsoletePorts.forEach((obsoletePort) => {
+			obsoletePort.destroy();
+		});
 	}
 
 	public abstract isDelegate(): boolean;

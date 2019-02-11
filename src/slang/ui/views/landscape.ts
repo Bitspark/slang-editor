@@ -1,14 +1,13 @@
 import {dia, shapes} from "jointjs";
-import uuidv4 = require("uuid/v4");
-
-import {SlangType} from "../../definitions/type";
+import uuidv4 from "uuid/v4";
 
 import {PortDirection} from "../../core/abstract/port";
 import {BlueprintModel, BlueprintType} from "../../core/models/blueprint";
 import {LandscapeModel} from "../../core/models/landscape";
-
+import {SlangType} from "../../definitions/type";
 import {BlackBoxShape, BlueprintBoxComponent} from "../components/blackbox";
 import {ViewFrame} from "../frame";
+
 import {PaperView} from "./paper-view";
 
 export class LandscapeView extends PaperView {
@@ -21,6 +20,7 @@ export class LandscapeView extends PaperView {
 
 	constructor(frame: ViewFrame, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
 		super(frame, {
+			factory: frame.getFactory(),
 			editable: false,
 			hscrollable: false,
 			vscrollable: true,
@@ -75,7 +75,13 @@ export class LandscapeView extends PaperView {
 	}
 
 	private reorderEqually(blueprintNames: string[], width: number, height: number) {
-		const columns = Math.min(5, Math.floor((width - 400) / 200));
+		const maxColumns = 5;
+
+		const yOffset = 100;
+		const rowHeight = 140;
+		const columnWidth = 200;
+
+		const columns = Math.min(maxColumns, Math.floor(width / columnWidth - 2));
 		const rows = Math.max((blueprintNames.length + 1) / columns);
 
 		let i = 0;
@@ -93,8 +99,8 @@ export class LandscapeView extends PaperView {
 					rect = this.addBlueprintButton;
 				}
 
-				const posX = (col - columns / 2 + 0.5) * 200;
-				const posY = -height / 2 + 100 + (row + 1) * 140 + 100;
+				const posX = (col - columns / 2 + 0.5) * columnWidth;
+				const posY = -height / 2 + yOffset + (row + 1) * rowHeight + yOffset;
 
 				rect.position(posX - rect.getBBox().width / 2, posY - rect.getBBox().height / 2);
 
@@ -105,7 +111,7 @@ export class LandscapeView extends PaperView {
 		// Slang logo
 		const logo = this.slangLogo;
 		const logoPosX = 0;
-		const logoPosY = -height / 2 + 100;
+		const logoPosY = -height / 2 + yOffset;
 		logo.position(logoPosX - logo.getBBox().width / 2, logoPosY - logo.getBBox().height / 2);
 	}
 
@@ -176,7 +182,9 @@ export class LandscapeView extends PaperView {
 		this.blueprintRects.set(blueprint.name, blueprintBox.getShape());
 
 		// JointJS -> Model
-		blueprintBox.onClick(() => blueprint.open());
+		blueprintBox.onClick(() => {
+			blueprint.open();
+		});
 	}
 
 }
