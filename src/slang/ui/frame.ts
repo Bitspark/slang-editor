@@ -11,6 +11,7 @@ export class ViewFrame {
 		this.viewEl.classList.add("view");
 		container.appendChild(this.viewEl);
 		container.style.overflow = "hidden";
+		container.style.position = "relative";
 
 		const that = this;
 		window.addEventListener("resize", () => {
