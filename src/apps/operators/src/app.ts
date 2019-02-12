@@ -43,7 +43,7 @@ class DataBlackBoxShape extends BlackBoxShape {
 		this.attr("body/rx", 12);
 		this.attr("body/ry", 12);
 		this.attr("label/font-size", 9);
-		this.resize(120, 24);
+		this.resize(120, 25);
 	}
 }
 
@@ -84,7 +84,7 @@ class ConvertBlackBoxShape extends DataBlackBoxShape {
 		this.attr("body/rx", 12);
 		this.attr("body/ry", 12);
 		this.attr("label/font-size", 9);
-		this.resize(80, 24);
+		this.resize(80, 25);
 	}
 
 	public setupForOperator(operator: OperatorModel) {
