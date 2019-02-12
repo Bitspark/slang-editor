@@ -22,11 +22,14 @@ export class OperatorDataApp extends SlangApp {
 			throw new Error(`unknown blueprintName "${uuid}"`);
 		}
 		return blueprint;
-
 	}
 
 	protected register(uuid: string, ctr: typeof BlackBoxShape) {
-		this.componentFactory!.registerBlackBoxShape(this.getBlueprint(uuid), ctr);
+		try {
+			this.componentFactory!.registerBlackBoxShape(this.getBlueprint(uuid), ctr);
+		} catch (e) {
+			return;
+		}
 	}
 
 	protected onReady() {
