@@ -22,8 +22,6 @@ import {ViewFrame} from "../slang/ui/frame";
 		vscrollable: false,
 	});
 
-	new OperatorDataApp(appModel, COMPONENT_FACTORY);
-
 	const blueprints: BlueprintApiResponse[] = [];
 
 	for (const el of document.querySelectorAll(`script[type="text/slang"]`)) {
@@ -43,6 +41,8 @@ import {ViewFrame} from "../slang/ui/frame";
 	}
 
 	fillLandscape(appModel.getChildNode(LandscapeModel)!, blueprints);
+
+	new OperatorDataApp(appModel, COMPONENT_FACTORY);
 
 	for (const el of document.getElementsByClassName("slang-embedded")) {
 		if (!(el instanceof HTMLElement)) {
