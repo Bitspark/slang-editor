@@ -44,7 +44,7 @@ class DataBlackBoxShape extends BlackBoxShape {
 		super(attrs);
 
 		const width = 120;
-		const height = 24;
+		const height = 25;
 
 		this.attr("body/rx", ROUND_CORNER);
 		this.attr("body/ry", ROUND_CORNER);
@@ -90,7 +90,7 @@ class ConvertBlackBoxShape extends DataBlackBoxShape {
 		super(attrs);
 
 		const width = 80;
-		const height = 24;
+		const height = 25;
 
 		this.attr("body/rx", ROUND_CORNER);
 		this.attr("body/ry", ROUND_CORNER);
