@@ -77,6 +77,7 @@ export interface BlueprintDefApiResponse {
 			height: number,
 		},
 	};
+	tests?: any;
 }
 
 export interface ConnectionsApiResponse {

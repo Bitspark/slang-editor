@@ -36,6 +36,7 @@ export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApi
 	const blueprintGeometry = blueprint.getGeometry();
 	return {
 		id: blueprint.uuid,
+		tests: blueprint.tests,
 		meta: blueprint.getMeta(),
 		geometry: blueprintGeometry,
 		operators: iter2map<OperatorModel, { [_: string]: OperatorApiResponse }>(blueprint.getOperators(),
@@ -207,8 +208,9 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: BlueprintAp
 		const services = bpDef.services;
 		const bpGeo = bpDef.geometry;
 		const geometry = (services && bpGeo) ? Object.assign(bpGeo, {port: services.main.geometry!}) : undefined;
+		const tests = bpDef.tests;
 
-		const blueprint = landscape.createBlueprint({type, geometry, uuid: bpDef.id, meta: bpDef.meta});
+		const blueprint = landscape.createBlueprint({uuid: bpDef.id, meta: bpDef.meta, type, geometry, tests});
 		if (services) {
 			setBlueprintServices(blueprint, services);
 		}
