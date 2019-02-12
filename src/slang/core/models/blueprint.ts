@@ -58,6 +58,7 @@ export interface BlueprintModelArgs {
 	type: BlueprintType;
 	meta: BlueprintMeta;
 	geometry?: BlueprintGeometry;
+	tests?: any;
 }
 
 export interface BlueprintInstance {
@@ -130,6 +131,7 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 	}
 
 	public readonly uuid: string;
+	public readonly tests: any;
 	public shutdownRequested = new SlangSubject<boolean>("shutdown-triggered");
 	// Topics::self
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
@@ -150,12 +152,13 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 	private properties: PropertyModel[] = [];
 	private genericIdentifiers: Set<string>;
 
-	constructor(parent: LandscapeModel, {uuid, type, meta, geometry}: BlueprintModelArgs) {
+	constructor(parent: LandscapeModel, {uuid, type, meta, geometry, tests}: BlueprintModelArgs) {
 		super(parent, true);
 		this.uuid = uuid;
 		this.meta = meta;
 		this.type = type;
 		this.genericIdentifiers = new Set<string>();
+		this.tests = tests;
 
 		this.geometry = !geometry ? {
 			size: {width: 240, height: 147},
