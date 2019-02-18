@@ -65,7 +65,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				}
 				case TypeIdentifier.Stream: {
 					const subType = type.getStreamSub();
-					this.createChildNode(portCtor, {direction, name: "~", type: subType});
+					this.createChildNode(portCtor, {name: this.name, type: subType, direction});
 					break;
 				}
 				case TypeIdentifier.Generic: {
@@ -389,6 +389,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 	public isGeneric(): boolean {
 		return this.typeIdentifier === TypeIdentifier.Generic;
+	}
+
+	public isStream(): boolean {
+		return this.typeIdentifier === TypeIdentifier.Stream;
 	}
 
 	// Actions
