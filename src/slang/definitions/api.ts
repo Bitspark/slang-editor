@@ -132,10 +132,10 @@ export class ApiService {
 		});
 	}
 
-	public async deployBlueprint(blueprintName: string): Promise<DeploymentStatusApiResponse> {
-		return this.httpPost<{ fqn: string, props: any, gens: any, stream: boolean }, DeploymentStatusApiResponse>(
+	public async deployBlueprint(blueprintId: string): Promise<DeploymentStatusApiResponse> {
+		return this.httpPost<{ id: string, props: any, gens: any, stream: boolean }, DeploymentStatusApiResponse>(
 			"/run/",
-			{fqn: blueprintName, props: {}, gens: {}, stream: false},
+			{id: blueprintId, props: {}, gens: {}, stream: false},
 			(data: any) => {
 				if (data.status === "success") {
 					return data as DeploymentStatusApiResponse;
