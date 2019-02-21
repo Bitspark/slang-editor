@@ -1,7 +1,6 @@
 import {Subscription} from "rxjs";
 
 import {SlangType, TypeIdentifier} from "../../definitions/type";
-
 import {BlackBox} from "./blackbox";
 import {SlangNode} from "./nodes";
 import {PortOwner} from "./port-owner";
@@ -10,7 +9,6 @@ import {canConnectTo} from "./utils/connection-check";
 import {Connections} from "./utils/connections";
 import {SlangSubject} from "./utils/events";
 import {GenericSpecifications} from "./utils/generics";
-import {OperatorModel} from "../models/operator";
 
 export enum PortDirection {
 	In, // 0
@@ -26,6 +24,7 @@ export interface PortGenerics {
 export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 	protected connectedWith: PortModel[] = [];
+	protected typeIdentifier = TypeIdentifier.Unspecified;
 
 	// Topics
 	// self
@@ -35,7 +34,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	// Properties
 	private readonly name: string;
 	private readonly direction: PortDirection;
-	private typeIdentifier = TypeIdentifier.Unspecified;
 	private genericIdentifier?: string;
 	private streamDepth = 0;
 
@@ -465,6 +463,23 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		this.disconnected.subscribe(cb);
 	}
 
+	public specifyGenericPort(generics: PortGenerics, other: PortModel): PortModel {
+		const specifications = generics.specifications;
+		const identifier = generics.identifier;
+
+		if (this.typeIdentifier === TypeIdentifier.Unspecified) {
+			this.typeIdentifier = TypeIdentifier.Map;
+		} else if (this.typeIdentifier !== TypeIdentifier.Map) {
+			// TODO: Replace this legacy solution once all specifications are ensured to be maps
+			specifications.specify(identifier, other.getType());
+			return this;
+		}
+
+		const {type, portId} = this.streamPort.createGenericType(other);
+		specifications.specify(identifier, type);
+		return this.findGenericPort(portId);
+	}
+
 	// Private methods
 
 	private subscribe(): void {
@@ -564,31 +579,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		if (!this.isGenericLike()) {
 			throw new Error(`not a generic-like port`);
 		}
-
-		const generics = this.fetchGenerics();
-		const specifications = generics.specifications;
-		const identifier = generics.identifier;
-
-		// TODO see #192
-		const owner = this.getAncestorNode(BlackBox);
-		if (owner instanceof OperatorModel && owner.getBlueprint().uuid === "d1191456-3583-4eaf-8ec1-e486c3818c60") {
-			if (this.typeIdentifier === TypeIdentifier.Unspecified) {
-				specifications.specify(identifier, other.getType());
-			}
-			return this;
-		}
-
-		if (this.typeIdentifier === TypeIdentifier.Unspecified) {
-			this.typeIdentifier = TypeIdentifier.Map;
-		} else if (this.typeIdentifier !== TypeIdentifier.Map) {
-			// TODO: Replace this legacy solution once all specifications are ensured to be maps
-			specifications.specify(identifier, other.getType());
-			return this;
-		}
-
-		const {type, portId} = this.streamPort.createGenericType(other);
-		specifications.specify(identifier, type);
-		return this.findGenericPort(portId);
+		return this.specifyGenericPort(this.fetchGenerics(), other);
 	}
 
 	private connectDirectlyTo(destination: PortModel, createGenerics: boolean): void {
