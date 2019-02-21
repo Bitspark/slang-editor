@@ -193,6 +193,10 @@ export function canConnectTo(source: PortModel, destination: PortModel, createGe
 		return false;
 	}
 
+	if (source.isGenericLike() && destination.isGenericLike() && (source.getType().isUnspecified() || destination.getType().isUnspecified())) {
+		return false;
+	}
+
 	const sourceConnectedWith = Array.from(source.getConnectedWith());
 	const destinationConnectedWith = Array.from(destination.getConnectedWith());
 
@@ -230,6 +234,5 @@ export function canConnectTo(source: PortModel, destination: PortModel, createGe
 	} else if (!streamsGenericLikeCompatible(source, destination)) {
 		return false;
 	}
-
 	return true;
 }
