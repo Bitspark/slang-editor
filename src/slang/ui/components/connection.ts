@@ -156,7 +156,6 @@ export class ConnectionComponent extends CellComponent {
 			},
 		});
 		this.refresh();
-		this.render();
 
 		[[connection.source, connection.destination], [connection.destination, connection.source]].forEach(([port, other]) => {
 			port.getStreamPort().subscribeRefreshStreamType((stream) => {

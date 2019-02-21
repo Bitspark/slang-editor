@@ -373,6 +373,10 @@ export class SlangType {
 		return this.typeIdentifier === TypeIdentifier.Generic;
 	}
 
+	public isUnspecified(): boolean {
+		return this.typeIdentifier === TypeIdentifier.Unspecified;
+	}
+
 	public isTrigger(): boolean {
 		return this.typeIdentifier === TypeIdentifier.Trigger;
 	}
