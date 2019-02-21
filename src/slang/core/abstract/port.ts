@@ -10,6 +10,7 @@ import {canConnectTo} from "./utils/connection-check";
 import {Connections} from "./utils/connections";
 import {SlangSubject} from "./utils/events";
 import {GenericSpecifications} from "./utils/generics";
+import {OperatorModel} from "../models/operator";
 
 export enum PortDirection {
 	In, // 0
@@ -255,7 +256,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 					if (!subPort.anySubstreamConnected()) {
 						continue;
 					}
-
 					const subType = subPort.getConnectedType();
 					if (!subType.isVoid()) {
 						type.addMapSub(subPort.getName(), subType);
@@ -268,6 +268,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			case TypeIdentifier.Generic:
 				type.setGenericIdentifier(this.getGenericIdentifier());
 				break;
+			default:
+				if (!this.anySubstreamConnected()) {
+					return SlangType.newUnspecified();
+				}
 		}
 		return type;
 	}
@@ -565,16 +569,24 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		const specifications = generics.specifications;
 		const identifier = generics.identifier;
 
-		// TODO: Replace this legacy solution once all specifications are ensured to be maps
+		// TODO see #192
+		const owner = this.getAncestorNode(BlackBox);
+		if (owner instanceof OperatorModel && owner.getBlueprint().uuid === "d1191456-3583-4eaf-8ec1-e486c3818c60") {
+			if (this.typeIdentifier === TypeIdentifier.Unspecified) {
+				specifications.specify(identifier, other.getType());
+			}
+			return this;
+		}
+
 		if (this.typeIdentifier === TypeIdentifier.Unspecified) {
 			this.typeIdentifier = TypeIdentifier.Map;
 		} else if (this.typeIdentifier !== TypeIdentifier.Map) {
+			// TODO: Replace this legacy solution once all specifications are ensured to be maps
 			specifications.specify(identifier, other.getType());
 			return this;
 		}
 
 		const {type, portId} = this.streamPort.createGenericType(other);
-
 		specifications.specify(identifier, type);
 		return this.findGenericPort(portId);
 	}
