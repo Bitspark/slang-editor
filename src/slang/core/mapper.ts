@@ -1,7 +1,10 @@
 import {
 	BlueprintApiResponse,
-	BlueprintDefApiResponse, ConnectionsApiResponse,
-	GenericSpecificationsApiResponse, OperatorApiResponse, PortGroupApiResponse,
+	BlueprintDefApiResponse,
+	ConnectionsApiResponse,
+	GenericSpecificationsApiResponse,
+	OperatorApiResponse,
+	PortGroupApiResponse,
 	PortGroupsApiResponse,
 	PropertyApiResponse,
 	PropertyAssignmentsApiResponse,
@@ -100,7 +103,10 @@ function operatorModelToJSON(operator: OperatorModel): OperatorApiResponse {
 			}),
 		generics: iter2map<[string, SlangType], GenericSpecificationsApiResponse>(operator.getGenerics().getIterator(),
 			(result, [name, type]) => {
-				result[name] = typeModelToJSON(type);
+				const typeJson = typeModelToJSON(type);
+				if (typeJson) {
+					result[name] = typeJson;
+				}
 			}),
 	};
 }
@@ -109,7 +115,7 @@ function typeModelToJSON(type: SlangType): TypeDefApiResponse {
 	switch (type.getTypeIdentifier()) {
 		case TypeIdentifier.Map:
 			return {
-				type: fromTypeIdentifier(type.getTypeIdentifier()),
+				type: fromTypeIdentifier(type.getTypeIdentifier())!,
 				map: iter2map<[string, SlangType], any>(type.getMapSubs(), (obj, [name, slType]) => {
 					obj[name] = typeModelToJSON(slType);
 					return obj;
@@ -117,16 +123,16 @@ function typeModelToJSON(type: SlangType): TypeDefApiResponse {
 			};
 		case TypeIdentifier.Stream:
 			return {
-				type: fromTypeIdentifier(type.getTypeIdentifier()),
+				type: fromTypeIdentifier(type.getTypeIdentifier())!,
 				stream: typeModelToJSON(type.getStreamSub()),
 			};
 		case TypeIdentifier.Generic:
 			return {
-				type: fromTypeIdentifier(type.getTypeIdentifier()),
+				type: fromTypeIdentifier(type.getTypeIdentifier())!,
 				generic: type.getGenericIdentifier(),
 			};
 		default:
-			return {type: fromTypeIdentifier(type.getTypeIdentifier())};
+			return {type: fromTypeIdentifier(type.getTypeIdentifier())!};
 	}
 }
 
@@ -180,8 +186,11 @@ function operatorPortDef(port: OperatorPortModel): string {
 
 }
 
-function fromTypeIdentifier(t: TypeIdentifier): "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic" {
-	return TypeIdentifier[t].toLowerCase() as "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic";
+function fromTypeIdentifier(t: TypeIdentifier): "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic" | undefined {
+	if (t !== TypeIdentifier.Unspecified) {
+		return TypeIdentifier[t].toLowerCase() as "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic";
+	}
+	return undefined;
 }
 
 /*
