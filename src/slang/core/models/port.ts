@@ -1,5 +1,5 @@
 import {SlangType, TypeIdentifier} from "../../definitions/type";
-import {GenericPortModel, PortDirection, PortGenerics, PortModelArgs} from "../abstract/port";
+import {GenericPortModel, PortDirection, PortGenerics, PortModel, PortModelArgs} from "../abstract/port";
 import {BlueprintFakeGeneric, BlueprintModel} from "./blueprint";
 import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
 import {OperatorModel} from "./operator";
@@ -43,5 +43,20 @@ export class OperatorPortModel extends GenericPortModel<OperatorModel | Operator
 
 	public isSource(): boolean {
 		return this.isDirectionOut();
+	}
+
+	public specifyGenericPort(generics: PortGenerics, other: PortModel): PortModel {
+		const specifications = generics.specifications;
+		const identifier = generics.identifier;
+
+		// TODO see #192
+		const owner = this.getAncestorNode(OperatorModel);
+		if (owner && owner.getBlueprint().uuid === "d1191456-3583-4eaf-8ec1-e486c3818c60") {
+			if (this.typeIdentifier === TypeIdentifier.Unspecified) {
+				specifications.specify(identifier, other.getType());
+			}
+			return this;
+		}
+		return super.specifyGenericPort(generics, other);
 	}
 }
