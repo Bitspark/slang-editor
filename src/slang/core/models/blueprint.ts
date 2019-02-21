@@ -481,7 +481,7 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 	}
 
 	private getNextOperatorName(blueprint: BlueprintModel): string {
-		const operatorBaseName = blueprint.getShortName().toLowerCase();
+		const operatorBaseName = blueprint.getShortName().toLowerCase().replace(/[^A-Za-z0-9]/g, "").replace(" ", "");
 		if (!this.findOperator(operatorBaseName)) {
 			return operatorBaseName;
 		}
