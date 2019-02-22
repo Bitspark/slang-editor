@@ -3,6 +3,7 @@ import {DeploymentApp} from "../apps/deployment/src/app";
 import {OperatorDataApp} from "../apps/operators/src/app";
 import {RouterApp} from "../apps/router/src/app";
 import {APIStorageApp} from "../apps/storage/src/app";
+import {SLANG_ASPECTS} from "../slang/aspects";
 import {AppModel} from "../slang/core/models/app";
 import {Slang} from "../slang/slang";
 import {ComponentFactory} from "../slang/ui/factory";
@@ -27,8 +28,13 @@ function slangStudioStandalone(el: HTMLElement): Promise<void> {
 		const frame = new ViewFrame(el, factory);
 		app.addFrame(frame, true);
 
+		new APIStorageApp(appModel, SLANG_ASPECTS, "http://localhost:5149/");
+		new DeploymentApp(appModel, SLANG_ASPECTS, "http://localhost:5149/");
+		new OperatorDataApp(appModel, SLANG_ASPECTS, COMPONENT_FACTORY);
+		new AutoTriggerApp(appModel, SLANG_ASPECTS);
+
 		app.load().then(() => {
-			const router = new RouterApp(appModel, factory);
+			const router = new RouterApp(appModel, SLANG_ASPECTS);
 			router.checkRoute();
 			resolve();
 		});

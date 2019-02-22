@@ -9,7 +9,6 @@ import {LandscapeView} from "./ui/views/landscape";
 import {PaperViewArgs} from "./ui/views/paper-view";
 
 export class Slang {
-
 	private readonly frames: ViewFrame[] = [];
 	private outlet: ViewFrame | null = null;
 	private defaultViewArgs: PaperViewArgs | null = null;
@@ -70,5 +69,4 @@ export class Slang {
 			this.outlet.setView(view);
 		});
 	}
-
 }

@@ -3,6 +3,7 @@ import "./common";
 import "../styles/embedded.scss";
 
 import {OperatorDataApp} from "../apps/operators/src/app";
+import {SLANG_ASPECTS} from "../slang/aspects";
 import {fillLandscape} from "../slang/core/mapper";
 import {AppModel} from "../slang/core/models/app";
 import {LandscapeModel} from "../slang/core/models/landscape";
@@ -42,7 +43,7 @@ import {ViewFrame} from "../slang/ui/frame";
 
 	fillLandscape(appModel.getChildNode(LandscapeModel)!, blueprints);
 
-	new OperatorDataApp(appModel, COMPONENT_FACTORY);
+	new OperatorDataApp(appModel, SLANG_ASPECTS, COMPONENT_FACTORY);
 
 	for (const el of document.getElementsByClassName("slang-embedded")) {
 		if (!(el instanceof HTMLElement)) {

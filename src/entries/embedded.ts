@@ -1,4 +1,5 @@
 import {StaticStorageApp} from "../apps/storage/src/app";
+import {SLANG_ASPECTS} from "../slang/aspects";
 import {AppModel} from "../slang/core/models/app";
 import {LandscapeModel} from "../slang/core/models/landscape";
 import {Slang} from "../slang/slang";
@@ -19,6 +20,7 @@ export function slangStudioEmbedded(el: HTMLElement, blueprintName: string): Pro
 
 		const app = new Slang(appModel);
 		app.addFrame(new ViewFrame(el, factory), true);
+		new StaticStorageApp(appModel, SLANG_ASPECTS, "https://files.bitspark.de/slang-operators/slang-definitions.json");
 
 		app.load().then(() => {
 			const blueprint = appModel.getChildNode([LandscapeModel])!.findBlueprint(blueprintName);
