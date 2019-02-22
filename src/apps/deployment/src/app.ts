@@ -1,15 +1,15 @@
 import {SlangApp} from "../../../slang/app";
+import {SlangAspects} from "../../../slang/aspects";
 import {AppModel} from "../../../slang/core/models/app";
 import {BlueprintInstance, BlueprintModel} from "../../../slang/core/models/blueprint";
 import {ApiService} from "../../../slang/definitions/api";
 import {SlangTypeValue} from "../../../slang/definitions/type";
-import {ComponentFactory} from "../../../slang/ui/components/factory";
 
 export class DeploymentApp extends SlangApp {
 	private api: ApiService;
 
-	constructor(app: AppModel, componentFactory: ComponentFactory, host: string) {
-		super(app, componentFactory);
+	constructor(app: AppModel, aspect: SlangAspects, host: string) {
+		super(app, aspect);
 		this.api = new ApiService(host);
 	}
 

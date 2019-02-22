@@ -1,12 +1,12 @@
 import {SlangApp} from "../../../slang/app";
+import {SlangAspects} from "../../../slang/aspects";
 import {AppModel} from "../../../slang/core/models/app";
 import {LandscapeModel} from "../../../slang/core/models/landscape";
-import {ComponentFactory} from "../../../slang/ui/components/factory";
 
 export class RouterApp extends SlangApp {
 
-	constructor(app: AppModel, componentFactory: ComponentFactory) {
-		super(app, componentFactory);
+	constructor(app: AppModel, aspect: SlangAspects) {
+		super(app, aspect);
 		this.subscribe();
 		this.addEventListeners();
 	}

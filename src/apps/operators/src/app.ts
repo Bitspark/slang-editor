@@ -1,17 +1,11 @@
 import {SlangApp} from "../../../slang/app";
-import {AppModel} from "../../../slang/core/models/app";
 import {BlueprintModel} from "../../../slang/core/models/blueprint";
 import {LandscapeModel} from "../../../slang/core/models/landscape";
 import {OperatorModel} from "../../../slang/core/models/operator";
 import {TypeIdentifier} from "../../../slang/definitions/type";
 import {BlackBoxShape, BlackBoxShapeAttrs} from "../../../slang/ui/components/blackbox";
-import {ComponentFactory} from "../../../slang/ui/components/factory";
 
 export class OperatorDataApp extends SlangApp {
-	constructor(app: AppModel, componentFactory: ComponentFactory) {
-		super(app, componentFactory);
-	}
-
 	protected getBlueprint(uuid: string): BlueprintModel {
 		const landscape = this.app.getChildNode(LandscapeModel)!;
 		const blueprint = landscape.findBlueprint(uuid);
@@ -23,7 +17,7 @@ export class OperatorDataApp extends SlangApp {
 
 	protected register(uuid: string, ctr: typeof BlackBoxShape) {
 		try {
-			this.componentFactory!.registerBlackBoxShape(this.getBlueprint(uuid), ctr);
+			this.compFactory!.registerBlackBoxShape(this.getBlueprint(uuid), ctr);
 		} catch (e) {
 			return;
 		}

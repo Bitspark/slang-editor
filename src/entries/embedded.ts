@@ -3,10 +3,10 @@ import "./common";
 import "../styles/embedded.scss";
 
 import {StaticStorageApp} from "../apps/storage/src/app";
+import {SLANG_ASPECTS} from "../slang/aspects";
 import {AppModel} from "../slang/core/models/app";
 import {LandscapeModel} from "../slang/core/models/landscape";
 import {Slang} from "../slang/slang";
-import {COMPONENT_FACTORY} from "../slang/ui/components/factory";
 import {ViewFrame} from "../slang/ui/frame";
 
 export function slangStudioEmbedded(el: HTMLElement, blueprintName: string): Promise<void> {
@@ -14,7 +14,7 @@ export function slangStudioEmbedded(el: HTMLElement, blueprintName: string): Pro
 		const appModel = AppModel.create(`embedded-${blueprintName}`);
 		const app = new Slang(appModel);
 		app.addFrame(new ViewFrame(el), true);
-		new StaticStorageApp(appModel, COMPONENT_FACTORY, "https://files.bitspark.de/slang-operators/slang-definitions.json");
+		new StaticStorageApp(appModel, SLANG_ASPECTS, "https://files.bitspark.de/slang-operators/slang-definitions.json");
 
 		app.load().then(() => {
 			const blueprint = appModel.getChildNode([LandscapeModel])!.findBlueprint(blueprintName);
