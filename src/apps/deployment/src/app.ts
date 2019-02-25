@@ -1,9 +1,10 @@
 import {SlangApp} from "../../../slang/app";
-import {SlangAspects} from "../../../slang/aspects";
+import {BlueprintToolBoxType, SlangAspects} from "../../../slang/aspects";
 import {AppModel} from "../../../slang/core/models/app";
-import {BlueprintInstance, BlueprintModel} from "../../../slang/core/models/blueprint";
+import {BlueprintModel} from "../../../slang/core/models/blueprint";
 import {ApiService} from "../../../slang/definitions/api";
 import {SlangTypeValue} from "../../../slang/definitions/type";
+import {PaperView} from "../../../slang/ui/views/paper-view";
 
 export class DeploymentApp extends SlangApp {
 	private api: ApiService;
@@ -14,36 +15,62 @@ export class DeploymentApp extends SlangApp {
 	}
 
 	protected onReady(): void {
-		this.app.subscribeOpenedBlueprintChanged((blueprint) => {
-			if (blueprint === null) {
-				return;
+		this.aspects!.registerBlueprintToolboxButton((view: PaperView, blueprint: BlueprintModel): BlueprintToolBoxType[] => {
+			const l: BlueprintToolBoxType[] = [];
+
+			if (view.isRunnable) {
+				if (blueprint.isDeployed()) {
+					l.push({
+						onclick: async () => {
+							await this.shutdown(blueprint);
+						},
+						class: "sl-btn-warn",
+						label: "Shutdown",
+					});
+				} else {
+					l.push({
+						onclick: async () => {
+							if (view.isEditable) {
+								blueprint.save();
+							}
+							await this.deploy(blueprint);
+						},
+						label: "Deploy",
+					});
+				}
 			}
-			blueprint.subscribeDeploymentRequested(() => {
-				this.deploy(blueprint);
-			});
-			blueprint.subscribeShutdownRequested(() => {
-				this.shutdown(blueprint);
-			});
-			blueprint.subscribeInputPushed((inputData: SlangTypeValue) => {
-				this.pushInput(blueprint, inputData);
-			});
+
+			if (view.isEditable) {
+				l.push({
+					onclick: () => {
+						blueprint.save();
+					},
+					label: "Save",
+				});
+			}
+
+			return l;
+		});
+
+	}
+
+	private async deploy(blueprint: BlueprintModel) {
+		if (blueprint.isDeployed()) {
+			return;
+		}
+		blueprint.deploy(await this.api.deployBlueprint(blueprint.uuid));
+		blueprint.subscribeInputPushed((inputData: SlangTypeValue) => {
+			this.pushInput(blueprint, inputData);
 		});
 	}
 
-	private deploy(blueprint: BlueprintModel): void {
-		this.api.deployBlueprint(blueprint.uuid).then(({url, handle}) => {
-			blueprint.deploy({url, handle} as BlueprintInstance);
-		});
-	}
-
-	private shutdown(blueprint: BlueprintModel): void {
+	private async shutdown(blueprint: BlueprintModel) {
 		const access = blueprint.getInstanceAccess();
 		if (!access) {
 			return;
 		}
-		this.api.shutdownBlueprintInstance(access.handle).then(() => {
-			blueprint.shutdown();
-		});
+		await this.api.shutdownBlueprintInstance(access.handle);
+		blueprint.shutdown();
 	}
 
 	private pushInput(blueprint: BlueprintModel, inputData: SlangTypeValue): void {

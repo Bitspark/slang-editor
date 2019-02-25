@@ -132,13 +132,11 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 
 	public readonly uuid: string;
 	public readonly tests: any;
-	public shutdownRequested = new SlangSubject<boolean>("shutdown-triggered");
 	// Topics::self
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
 	private saveChanges = new SlangSubjectTrigger("save-changes");
 
 	// Topics::Deployment
-	private deploymentRequested = new SlangSubject<boolean>("deployment-triggered");
 	private instance = new SlangBehaviorSubject<BlueprintInstance | null>("instance", null);
 	private inputPushed = new SlangSubject<SlangTypeValue>("input-pushed");
 	private outputPushed = new SlangSubject<SlangTypeValue>("output-pushed");
@@ -426,18 +424,6 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		}
 	}
 
-	public requestDeployment() {
-		if (!this.isDeployed()) {
-			this.deploymentRequested.next(true);
-		}
-	}
-
-	public requestShutdown() {
-		if (this.isDeployed()) {
-			this.shutdownRequested.next(true);
-		}
-	}
-
 	public deploy(instanceAcess: BlueprintInstance) {
 		this.instance.next(instanceAcess);
 	}
@@ -462,14 +448,6 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 
 	public subscribeDeployed(cb: (instance: BlueprintInstance | null) => void): void {
 		this.instance.subscribe(cb);
-	}
-
-	public subscribeDeploymentRequested(cb: () => void): void {
-		this.deploymentRequested.subscribe(cb);
-	}
-
-	public subscribeShutdownRequested(cb: () => void): void {
-		this.shutdownRequested.subscribe(cb);
 	}
 
 	public subscribeInputPushed(cb: (inputData: SlangTypeValue) => void): void {

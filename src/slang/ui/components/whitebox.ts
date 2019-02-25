@@ -2,6 +2,7 @@ import {dia, g, layout, shapes} from "jointjs";
 import m, {ClassComponent, CVnode} from "mithril";
 
 import {Styles} from "../../../styles/studio";
+import {SLANG_ASPECTS} from "../../aspects";
 import {GenericPortModel, PortModel} from "../../core/abstract/port";
 import {Connection} from "../../core/abstract/utils/connections";
 import {SlangSubject} from "../../core/abstract/utils/events";
@@ -397,51 +398,19 @@ export class WhiteBoxComponent extends CellComponent {
 
 		const view = this.paperView;
 
+		this.buttons.mount({
+			view: () => m(".toolbox",
+				SLANG_ASPECTS.getBlueprintToolboxButtons(this.paperView, this.blueprint)
+					.map((btnAttrs) => m(Button, {onClick: btnAttrs.onclick}, btnAttrs.label))),
+		});
+
 		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
 			if (!instance) {
-
-				this.buttons.mount({
-					view: () => m(".toolbox", [
-						view.isRunnable
-							? m(Button, {
-								onClick: () => {
-									if (view.isEditable) {
-										this.blueprint.save();
-									}
-									this.blueprint.requestDeployment();
-								},
-								class: "sl-blupr-deploy",
-							}, "Deploy")
-							: undefined,
-						view.isEditable
-							? m(Button, {
-								onClick: () => {
-									this.blueprint.save();
-								},
-								class: "sl-blupr-deploy",
-							}, "Save")
-							: undefined,
-					]),
-				});
 
 				this.input.unmount();
 				this.output.unmount();
 
 			} else if (view.isRunnable) {
-
-				this.buttons.mount({
-					view: () => m(".toolbox", [
-						m(Button, {
-							class: "sl-green-pulsing",
-						}, "Running"),
-						m(Button, {
-							onClick: () => {
-								this.blueprint.requestShutdown();
-							},
-							class: "sl-btn-warn",
-						}, "Shutdown"),
-					]),
-				});
 
 				const portIn = this.blueprint.getPortIn();
 
@@ -464,7 +433,7 @@ export class WhiteBoxComponent extends CellComponent {
 					this.blueprint.subscribeOutputPushed((outputData: SlangTypeValue) => {
 						outputValues.unshift(outputData);
 						m.redraw();
-					}, this.blueprint.shutdownRequested);
+					});
 
 					this.output.mount({
 						view: () => m(Box, m(OutputConsole, {
