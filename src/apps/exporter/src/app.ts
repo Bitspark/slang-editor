@@ -2,9 +2,9 @@ import {SlangApp} from "../../../slang/app";
 import {BlueprintToolBoxType} from "../../../slang/aspects";
 import {SlangSubject} from "../../../slang/core/abstract/utils/events";
 import {blueprintModelToJSON} from "../../../slang/core/mapper";
-import {BlueprintModel, BlueprintType} from "../../../slang/core/models/blueprint";
+import {BlueprintModel} from "../../../slang/core/models/blueprint";
 import {
-	BlueprintApiResponse,
+	BlueprintDefApiResponse,
 	GenericSpecificationsApiResponse,
 	PropertyAssignmentsApiResponse,
 } from "../../../slang/definitions/api";
@@ -16,7 +16,7 @@ interface BlueprintExportJSON {
 		properties: PropertyAssignmentsApiResponse;
 		generics: GenericSpecificationsApiResponse;
 	};
-	blueprints: BlueprintApiResponse[];
+	blueprints: BlueprintDefApiResponse[];
 }
 
 export class BlueprintExporterApp extends SlangApp {
@@ -45,7 +45,7 @@ export class BlueprintExporterApp extends SlangApp {
 	}
 
 	protected export(blueprint: BlueprintModel): void {
-		const exportedBlueprints = new Map<string, BlueprintApiResponse>();
+		const exportedBlueprints = new Map<string, BlueprintDefApiResponse>();
 		const remainingBlueprints: BlueprintModel[] = [blueprint];
 
 		while (remainingBlueprints.length > 0) {
@@ -54,10 +54,7 @@ export class BlueprintExporterApp extends SlangApp {
 				continue;
 			}
 
-			exportedBlueprints.set(currBp.uuid, {
-				def: blueprintModelToJSON(currBp),
-				type: BlueprintType[currBp.getType()],
-			});
+			exportedBlueprints.set(currBp.uuid, blueprintModelToJSON(currBp));
 
 			for (const op of currBp.getOperators()) {
 				remainingBlueprints.push(op.getBlueprint());
