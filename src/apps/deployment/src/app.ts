@@ -40,6 +40,7 @@ export class DeploymentApp extends SlangApp {
 				}
 			}
 
+			// TODO to storage
 			if (view.isEditable) {
 				l.push({
 					onclick: () => {
