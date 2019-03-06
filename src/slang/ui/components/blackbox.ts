@@ -96,7 +96,7 @@ export abstract class BlackBoxComponent extends CellComponent {
 	private clicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("clicked");
 	private dblclicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("dblclicked");
 
-	protected constructor(paperView: PaperView, private readonly ghostPorts: boolean) {
+	protected constructor(paperView: PaperView, private readonly createGhostPorts: boolean) {
 		super(paperView, {x: 0, y: 0});
 	}
 
@@ -107,7 +107,7 @@ export abstract class BlackBoxComponent extends CellComponent {
 		}
 		this.shape = this.createShape();
 		this.portGroups.forEach((group) => {
-			group.setParent(this.shape, this.ghostPorts);
+			group.setParent(this.shape, this.createGhostPorts);
 		});
 
 		this.shape.on("pointerclick",

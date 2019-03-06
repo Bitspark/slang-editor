@@ -32,8 +32,7 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
 	}
 
 	if (createGhostPorts && port.isGenericLike() &&
-		port.getTypeIdentifier() === TypeIdentifier.Map ||
-		port.getTypeIdentifier() === TypeIdentifier.Unspecified) {
+		(port.getTypeIdentifier() === TypeIdentifier.Map || port.getTypeIdentifier() === TypeIdentifier.Unspecified)) {
 		portItems.push(new PortComponent(port, parent, true, isBlackBox));
 	}
 
@@ -140,12 +139,12 @@ export class PortGroupComponent {
 		return this.groupPosition;
 	}
 
-	public setParent(parent: dia.Element, ghostPorts: boolean) {
+	public setParent(parent: dia.Element, createGhostPorts: boolean) {
 		this.parentElement = parent;
-		this.refreshPorts(ghostPorts);
+		this.refreshPorts(createGhostPorts);
 	}
 
-	public refreshPorts(ghostPorts: boolean) {
+	public refreshPorts(createGhostPorts: boolean) {
 		const parentElement = this.parentElement;
 		if (!parentElement) {
 			throw new Error(`need parent`);
@@ -153,7 +152,7 @@ export class PortGroupComponent {
 
 		parentElement.removePorts(this.ports.map((port) => port.getPortElement()));
 
-		const ports = createPortItems(this, this.getGroupPosition(), this.port, ghostPorts, this.isBlackBox);
+		const ports = createPortItems(this, this.getGroupPosition(), this.port, createGhostPorts, this.isBlackBox);
 
 		this.ports.length = 0;
 		this.ports.push.apply(this.ports, ports);
