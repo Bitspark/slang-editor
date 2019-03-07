@@ -20,7 +20,7 @@ module.exports = env => (merge(common(env), {
 	},
 	plugins: [
 		new Webpack.DefinePlugin({
-			'process.env.NODE_ENV': JSON.stringify('development')
+			'process.env.NODE_ENV': JSON.stringify('development'),
 		})
 	],
 	module: {

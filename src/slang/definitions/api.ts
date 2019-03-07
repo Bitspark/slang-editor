@@ -91,18 +91,24 @@ export interface BlueprintApiResponse {
 
 export class ApiService {
 
-	private static normalizeUrl(host: string): string {
-		let [protocol, url] = (host.startsWith("//")) ? ["", host] : host.split("://");
-		protocol = (protocol) ? protocol + ":" : "";
-		url = url.replace("//", "/");
-		url = (url.endsWith("/")) ? url.slice(0, -1) : url;
-		return `${protocol}//${url}`;
+	private static normalizeUrl(url: string): string {
+		let scheme = null;
+		let schemePath = url;
+
+		if (url.startsWith("//") || url.indexOf("://") > 0) {
+			[scheme, schemePath] = (url.startsWith("//")) ? ["", url] : url.split("://");
+			scheme = (scheme) ? scheme + ":" : "";
+		}
+		schemePath = schemePath.replace("//", "/");
+		schemePath = (schemePath.endsWith("/")) ? schemePath.slice(0, -1) : schemePath;
+
+		return (scheme) ? `${scheme}//${schemePath}` : schemePath;
 	}
 
-	private readonly host: string;
+	private readonly url: string;
 
 	constructor(host: string) {
-		this.host = ApiService.normalizeUrl(host);
+		this.url = ApiService.normalizeUrl(host);
 	}
 
 	public async getBlueprints(): Promise<BlueprintApiResponse[]> {
@@ -130,7 +136,7 @@ export class ApiService {
 
 		return new Promise<boolean>((resolve) => {
 			const reqInit = {method: "post", body: JSON.stringify(blueprintDefJSON)};
-			fetch(`${this.host}/operator/def/`, reqInit)
+			fetch(`${this.url}/operator/def/`, reqInit)
 				.then((response: Response) => response.json())
 				.then((data: any) => {
 					resolve(process(data));
@@ -185,7 +191,7 @@ export class ApiService {
 	private fetch<S, T>(method: string, path: string, data: S, process: (responseParsed: any) => T, error: (error: any) => void): Promise<T> {
 		return new Promise<T>((resolve) => {
 			const reqInit = (method !== "get") ? {method, body: JSON.stringify(data)} : {};
-			fetch(this.host + path, reqInit)
+			fetch(this.url + path, reqInit)
 				.then((response: Response) => response.json())
 				.then((responseParsed: any) => {
 					resolve(process(responseParsed));
