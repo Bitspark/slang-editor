@@ -19,7 +19,7 @@ module.exports = env => merge(common(env), {
 		new Webpack.optimize.ModuleConcatenationPlugin(),
 		new MiniCssExtractPlugin({
 			filename: 'bundle.css'
-		})
+		}),
 	],
 	module: {
 		rules: [

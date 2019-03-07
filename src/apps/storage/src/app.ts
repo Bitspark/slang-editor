@@ -9,9 +9,9 @@ import {ApiService, BlueprintApiResponse} from "../../../slang/definitions/api";
 export class APIStorageApp extends SlangApp {
 	private api: ApiService;
 
-	constructor(app: AppModel, aspect: SlangAspects, host: string) {
+	constructor(app: AppModel, aspect: SlangAspects, url: string) {
 		super(app, aspect);
-		this.api = new ApiService(host);
+		this.api = new ApiService(url);
 		this.subscribe();
 	}
 
