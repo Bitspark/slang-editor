@@ -244,7 +244,8 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: BlueprintAp
 			const opData = operators[opName];
 			const blueprint = landscape.findBlueprint(opData.operator);
 			if (!blueprint) {
-				throw new Error(`unknown blueprint '${opData.operator}'`);
+				console.error(new Error(`unknown blueprint '${opData.operator}'`));
+				return;
 			}
 
 			try {
@@ -265,25 +266,30 @@ export function fillLandscape(landscape: LandscapeModel, bpDataList: BlueprintAp
 		}
 
 		Object.keys(connections).forEach((sourcePortReference: string) => {
-			const sourcePort = outerBlueprint.resolvePortReference(sourcePortReference);
-			if (!sourcePort) {
-				console.error(`${outerBlueprint.name}: port ${sourcePortReference} cannot be resolved`);
+			try {
+				const sourcePort = outerBlueprint.resolvePortReference(sourcePortReference);
+				if (!sourcePort) {
+					console.error(`${outerBlueprint.name}: port ${sourcePortReference} cannot be resolved`);
+					return;
+				}
+
+				const destinationPortReferences = connections[sourcePortReference];
+				for (const destinationPortReference of destinationPortReferences) {
+					const destinationPort = outerBlueprint.resolvePortReference(destinationPortReference);
+					if (!destinationPort) {
+						console.error(`${outerBlueprint.name}: port ${destinationPortReference} cannot be resolved`);
+						continue;
+					}
+
+					try {
+						sourcePort.connect(destinationPort, false);
+					} catch (e) {
+						console.error(`${outerBlueprint.name}: ${sourcePort.getPortReference()} -> ${destinationPort.getPortReference()} - ${e.toString()}`);
+					}
+				}
+			} catch (e) {
+				console.error(`${outerBlueprint.name}: ${sourcePortReference} -> [...]`);
 				return;
-			}
-
-			const destinationPortReferences = connections[sourcePortReference];
-			for (const destinationPortReference of destinationPortReferences) {
-				const destinationPort = outerBlueprint.resolvePortReference(destinationPortReference);
-				if (!destinationPort) {
-					console.error(`${outerBlueprint.name}: port ${destinationPortReference} cannot be resolved`);
-					continue;
-				}
-
-				try {
-					sourcePort.connect(destinationPort, false);
-				} catch (e) {
-					console.error(`${outerBlueprint.name}: ${sourcePort.getPortReference()} -> ${destinationPort.getPortReference()} - ${e.toString()}`);
-				}
 			}
 		});
 	});
