@@ -86,8 +86,8 @@ describe("An operator delegate", () => {
 		dlgOpDlgPortOut.connect(s2sOp.getPortIn()!, true);
 		s2sOp.getPortOut()!.connect(dlgOpDlgPortIn, true);
 
-		expect(dlgOpDlgPortOut.isConnectedWith(s2sOp.getPortIn()!));
-		expect(s2sOp.getPortOut()!.isConnectedWith(dlgOpDlgPortIn));
+		expect(dlgOpDlgPortOut.isConnectedWith(s2sOp.getPortIn()!)).toBeTruthy();
+		expect(s2sOp.getPortOut()!.isConnectedWith(dlgOpDlgPortIn)).toBeTruthy();
 	});
 
 	it("return correct connections", () => {

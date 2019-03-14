@@ -96,8 +96,8 @@ describe("A new blueprint", () => {
 
 		const newPort = bpPortIn.getMapSubs().next().value;
 
-		expect(newPort.isConnectedWith(opPortIn));
-		expect(opPortIn.isConnectedWith(newPort));
+		expect(newPort.isConnectedWith(opPortIn)).toBeTruthy();
+		expect(opPortIn.isConnectedWith(newPort)).toBeTruthy();
 
 		newPort.disconnectTo(opPortIn);
 
@@ -129,12 +129,12 @@ describe("A new blueprint", () => {
 
 		const newPort = bpPortIn.getMapSubs().next().value;
 
-		expect(newPort.isConnectedWith(opPortIn));
-		expect(opPortIn.isConnectedWith(newPort));
+		expect(newPort.isConnectedWith(opPortIn)).toBeTruthy();
+		expect(opPortIn.isConnectedWith(newPort)).toBeTruthy();
 
 		opNew.destroy();
 
-		expect(!newPort.isConnected());
+		expect(newPort.isConnected()).toBeFalsy();
 		expect(Array.from(bpPortIn.getMapSubs()).length).toEqual(0);
 	});
 

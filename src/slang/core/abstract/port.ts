@@ -35,7 +35,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	private readonly name: string;
 	private readonly direction: PortDirection;
 	private genericIdentifier?: string;
-	private streamDepth = 0;
 
 	// Mixins
 	private readonly streamPort: StreamPort;
@@ -295,7 +294,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	}
 
 	public getStreamDepth(): number {
-		return this.streamDepth;
+		return this.streamPort.getStreamType().getStreamDepth();
 	}
 
 	public getDescendantPorts(): Array<GenericPortModel<O>> {
