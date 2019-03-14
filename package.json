@@ -4,10 +4,10 @@
   "description": "Web application for Slang, a visual programming language.",
   "scripts": {
     "build": "webpack --config webpack/webpack.config.prod.js --colors",
-    "start": "webpack-dev-server --open --config webpack/webpack.config.dev.js --env.apiUrl 'http://localhost:5149'",
-    "start-embedded": "npm start -- --env.slangMode embedded --env.apiUrl 'http://localhost:5149'",
+    "start": "webpack-dev-server --open --config webpack/webpack.config.dev.js --env.apiUrl http://localhost:5149",
+    "start-embedded": "npm start -- --env.slangMode embedded --env.apiUrl http://localhost:5149",
     "build-embedded": "webpack --config webpack/webpack.config.prod.js --colors --env.slangMode embedded",
-    "start-documentation": "npm start -- --env.slangMode documentation --env.apiUrl 'http://localhost:5149'",
+    "start-documentation": "npm start -- --env.slangMode documentation --env.apiUrl http://localhost:5149",
     "build-documentation": "webpack --config webpack/webpack.config.prod.js --colors --env.slangMode documentation",
     "lint-fix": "tslint --fix -p tsconfig.json -c tslint.json -t verbose",
     "lint": "tslint -p tsconfig.json -c tslint.json",
