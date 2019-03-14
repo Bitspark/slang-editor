@@ -32,7 +32,7 @@ describe("A port", () => {
 		op = bpNew.createOperator("dlg_op", bp, null, null);
 	});
 
-	it("return correct string reference", () => {
+	it("returns correct string reference", () => {
 		const portIn = op.getPortIn()!;
 		const portOut = op.getPortOut()!;
 

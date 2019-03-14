@@ -184,5 +184,32 @@
       "connections": {}
     },
     "type": "local"
+  },
+  {
+    "def": {
+      "id": "1e365eba-75c0-416f-883d-dbd2eb802c6a",
+      "meta": {
+        "name": "GenericsAndProperties"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "generic",
+            "generic": "itemType"
+          },
+          "out": {
+            "type": "string"
+          }
+        }
+      },
+      "operators": {},
+      "connections": {},
+      "properties": {
+        "test": {
+          "type": "string"
+        }
+      }
+    },
+    "type": "local"
   }
 ]

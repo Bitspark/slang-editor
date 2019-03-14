@@ -182,19 +182,17 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		return this.fakeGenerics;
 	}
 
-	public createOperator(name: string | null, blueprint: BlueprintModel, properties: PropertyAssignments | null, generics: GenericSpecifications | null, geometry?: OperatorGeometry): OperatorModel {
-		const operatorGenerics = generics ? generics : new GenericSpecifications([]);
-		const operatorProperties = properties ? properties : new PropertyAssignments([], operatorGenerics);
+	public createOperator(name: string | null, blueprint: BlueprintModel, properties: PropertyAssignments, generics: GenericSpecifications, geometry?: OperatorGeometry): OperatorModel {
 		return this.createChildNode(OperatorModel, {
 			name: name ? name : this.getNextOperatorName(blueprint),
 			blueprint,
-			generics: operatorGenerics,
-			properties: operatorProperties,
+			generics,
+			properties,
 			geometry,
 		});
 	}
 
-	public createBlankOperator(blueprint: BlueprintModel, geometry: OperatorGeometry): OperatorModel {
+	public createBlankOperator(blueprint: BlueprintModel, geometry?: OperatorGeometry): OperatorModel {
 		const name = this.getNextOperatorName(blueprint);
 		return this.createChildNode(OperatorModel, {
 			name,

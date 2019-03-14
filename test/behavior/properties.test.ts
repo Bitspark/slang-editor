@@ -38,7 +38,7 @@ describe("A property", () => {
 		const gens = new GenericSpecifications(["valueType"]);
 		const props = new PropertyAssignments([new PropertyModel("value", SlangType.newGeneric("valueType"))], gens);
 		const opValue = bpNew.createOperator("val", bpValue, props, gens);
-		const opS2S = bpNew.createOperator("s2s", bpS2S, null, null);
+		const opS2S = bpNew.createBlankOperator(bpS2S);
 
 		gens.specify("valueType", SlangType.newString());
 
@@ -61,7 +61,7 @@ describe("A property", () => {
 			type: BlueprintType.Local,
 		});
 
-		const opProps = bpNew.createBlankOperator(bpProps, {position: {x: 0, y: 0}});
+		const opProps = bpNew.createBlankOperator(bpProps);
 
 		opProps.getProperties().get("ports").assign(["a", "b", "c"]);
 
@@ -72,6 +72,31 @@ describe("A property", () => {
 		["sub_a_number", "sub_a_number", "sub_a_number"].forEach((subName) => {
 			expect(subNames).toContain(subName);
 		});
+	});
+
+	it("can be changed without duplicate generic ports", () => {
+		const bpGenProps = landscapeModel.findBlueprint("1e365eba-75c0-416f-883d-dbd2eb802c6a")!;
+		const bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
+		const bpNew = landscapeModel.createBlueprint({
+			uuid: uuidv4(),
+			meta: {name: "test-prop-3"},
+			type: BlueprintType.Local,
+		});
+
+		const opGenProps1 = bpNew.createBlankOperator(bpGenProps);
+		const opS2S1 = bpNew.createBlankOperator(bpS2S);
+
+		opS2S1.getPortOut()!.connect(opGenProps1.getPortIn()!, true);
+
+		expect(opGenProps1.getPortIn()!.getTypeIdentifier()).toEqual(TypeIdentifier.Map);
+		expect(opGenProps1.getPortIn()!.getMapSubs().next().value.isConnected()).toBeTruthy();
+		expect(Array.from(opGenProps1.getPortIn()!.getMapSubs()).length).toEqual(1);
+
+		opGenProps1.getProperties().get("test").assign("val123");
+		expect(Array.from(opGenProps1.getPortIn()!.getMapSubs()).length).toEqual(1);
+
+		opGenProps1.getProperties().get("test").assign("val321");
+		expect(Array.from(opGenProps1.getPortIn()!.getMapSubs()).length).toEqual(1);
 	});
 
 });
