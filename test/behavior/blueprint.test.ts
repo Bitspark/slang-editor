@@ -10,6 +10,7 @@ import {LandscapeModel} from "../../src/slang/core/models/landscape";
 import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
 import {TestStorageApp} from "../helpers/TestStorageApp";
 import data from "../resources/definitions.json";
+import {OperatorModel} from "../../src/slang/core/models/operator";
 
 describe("A new blueprint", () => {
 	let appModel: AppModel;
@@ -51,6 +52,21 @@ describe("A new blueprint", () => {
 		expect(opNew.getPortOut()).toBeTruthy();
 	});
 
+	it("can have operators deleted", () => {
+		const bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
+		const bpNew = landscapeModel.createBlueprint({
+			uuid: uuidv4(),
+			meta: {name: "test-bp-3"},
+			type: BlueprintType.Local,
+		});
+
+		const opNew = bpNew.createBlankOperator(bpS2S);
+		expect(Array.from(bpNew.getChildNodes(OperatorModel)).length).toEqual(1);
+
+		opNew.destroy();
+		expect(Array.from(bpNew.getChildNodes(OperatorModel)).length).toEqual(0);
+	});
+
 	it("can have ports created and removed dynamically", () => {
 		// Test setup:
 		// [ -> [S2S] ]
@@ -84,6 +100,40 @@ describe("A new blueprint", () => {
 
 		newPort.disconnectTo(opPortIn);
 
+		expect(Array.from(bpPortIn.getMapSubs()).length).toEqual(0);
+	});
+
+	it("can have blueprint ports removed when deleting connected operator", () => {
+		// Test setup:
+		// [ -> [S2S] ]
+
+		const bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
+
+		const bpNew = landscapeModel.createBlueprint({
+			uuid: uuidv4(),
+			meta: {name: "test-bp-3"},
+			type: BlueprintType.Local,
+		});
+		bpNew.createPort({name: "", direction: PortDirection.In, type: SlangType.newUnspecified()});
+		bpNew.createPort({name: "", direction: PortDirection.Out, type: SlangType.newUnspecified()});
+
+		const opNew = bpNew.createBlankOperator(bpS2S);
+
+		const bpPortIn = bpNew.getPortIn()!;
+		const opPortIn = opNew.getPortIn()!;
+
+		opPortIn.connect(bpPortIn, true);
+
+		expect(Array.from(bpPortIn.getMapSubs()).length).toEqual(1);
+
+		const newPort = bpPortIn.getMapSubs().next().value;
+
+		expect(newPort.isConnectedWith(opPortIn));
+		expect(opPortIn.isConnectedWith(newPort));
+
+		opNew.destroy();
+
+		expect(!newPort.isConnected());
 		expect(Array.from(bpPortIn.getMapSubs()).length).toEqual(0);
 	});
 
