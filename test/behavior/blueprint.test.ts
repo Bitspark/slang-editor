@@ -7,10 +7,11 @@ import {blueprintModelToJSON} from "../../src/slang/core/mapper";
 import {AppModel} from "../../src/slang/core/models/app";
 import {BlueprintType} from "../../src/slang/core/models/blueprint";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
+import {OperatorModel} from "../../src/slang/core/models/operator";
 import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
 import {TestStorageApp} from "../helpers/TestStorageApp";
+
 import data from "../resources/definitions.json";
-import {OperatorModel} from "../../src/slang/core/models/operator";
 
 describe("A new blueprint", () => {
 	let appModel: AppModel;
@@ -186,8 +187,13 @@ describe("A new blueprint", () => {
 
 		const bpJSON = blueprintModelToJSON(bp);
 
-		expect(bp.name).toEqual(bpJSON.meta.name);
-		expect(bp.size).toEqual(bpJSON.geometry!.size);
+		expect(bpJSON.meta.name).toEqual(bp.name);
+		expect(bpJSON.geometry!.size).toEqual(bp.size);
+	});
+
+	it("is mapped to JSON correctly", () => {
+		const bpJSON = blueprintModelToJSON(landscapeModel.findBlueprint("cbc2cb11-c30a-4194-825c-f042902bd18b")!);
+		expect(bpJSON).toEqual({id: "cbc2cb11-c30a-4194-825c-f042902bd18b", meta: {name: "PropertyPorts"}, geometry: {size: {width: 240, height: 147}, port: {in: {position: 0}, out: {position: 0}}}, operators: {}, services: {main: {in: {type: "map", map: {"sub_{ports}_number": {type: "number"}}}, geometry: {in: {position: 0}, out: {position: 0}}, out: {type: "primitive"}}}, delegates: {}, properties: {ports: {type: "stream", stream: {type: "string"}}}, connections: {}});
 	});
 
 	it("has port positions", () => {
