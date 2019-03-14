@@ -7,7 +7,6 @@ import {BlueprintType} from "../../src/slang/core/models/blueprint";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
 import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
 import {TestStorageApp} from "../helpers/TestStorageApp";
-
 import data from "../resources/definitions.json";
 
 describe("A property", () => {
@@ -91,16 +90,17 @@ describe("A property", () => {
 
 		outPort.connect(inPort, true);
 
+		let inPortSub = inPort.getMapSubs().next().value;
+
 		expect(inPort.getTypeIdentifier()).toEqual(TypeIdentifier.Map);
 		expect(Array.from(inPort.getMapSubs()).length).toEqual(1);
-
-		let inPortSub = inPort.getMapSubs().next().value;
 		expect(inPortSub.isConnected()).toBeTruthy();
 		expect(inPortSub.isConnectedWith(outPort)).toBeTruthy();
 
 		opGenProps1.getProperties().get("test").assign("val123");
 		inPortSub = inPort.getMapSubs().next().value;
 
+		expect(inPort.getTypeIdentifier()).toEqual(TypeIdentifier.Map);
 		expect(Array.from(inPort.getMapSubs()).length).toEqual(1);
 		expect(inPortSub.isConnected()).toBeTruthy();
 		expect(inPortSub.isConnectedWith(outPort)).toBeTruthy();
@@ -108,6 +108,7 @@ describe("A property", () => {
 		opGenProps1.getProperties().get("test").assign("val321");
 		inPortSub = inPort.getMapSubs().next().value;
 
+		expect(inPort.getTypeIdentifier()).toEqual(TypeIdentifier.Map);
 		expect(Array.from(inPort.getMapSubs()).length).toEqual(1);
 		expect(inPortSub.isConnected()).toBeTruthy();
 		expect(inPortSub.isConnectedWith(outPort)).toBeTruthy();
