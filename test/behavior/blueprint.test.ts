@@ -2,7 +2,7 @@ import uuidv4 from "uuid/v4";
 
 import {PortDirection} from "../../src/slang/core/abstract/port";
 import {GenericSpecifications} from "../../src/slang/core/abstract/utils/generics";
-import {blueprintModelToJSON} from "../../src/slang/core/mapper";
+import {blueprintModelToJson} from "../../src/slang/core/mapper";
 import {AppModel} from "../../src/slang/core/models/app";
 import {BlueprintType} from "../../src/slang/core/models/blueprint";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
@@ -134,7 +134,7 @@ describe("A new blueprint", () => {
 			type: BlueprintType.Local,
 		});
 
-		const bpJSON = blueprintModelToJSON(bp);
+		const bpJSON = blueprintModelToJson(bp);
 
 		expect(bp.name).toEqual(bpJSON.meta.name);
 		expect(bp.size).toEqual(bpJSON.geometry!.size);

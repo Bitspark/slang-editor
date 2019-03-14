@@ -5,10 +5,10 @@ import "../styles/embedded.scss";
 import {BlueprintExporterApp} from "../apps/exporter/src/app";
 import {OperatorDataApp} from "../apps/operators/src/app";
 import {SLANG_ASPECTS} from "../slang/aspects";
-import {fillLandscape} from "../slang/core/mapper";
+import {loadBlueprints} from "../slang/core/mapper";
 import {AppModel} from "../slang/core/models/app";
 import {LandscapeModel} from "../slang/core/models/landscape";
-import {BlueprintApiResponse, BlueprintDefApiResponse} from "../slang/definitions/api";
+import {BlueprintApiResponse, BlueprintJson} from "../slang/definitions/api";
 import {Slang} from "../slang/slang";
 import {COMPONENT_FACTORY} from "../slang/ui/components/factory";
 import {ViewFrame} from "../slang/ui/frame";
@@ -33,7 +33,7 @@ import {ViewFrame} from "../slang/ui/frame";
 
 		const blueprintId = el.dataset.operator as string;
 		const blueprintType = el.dataset.type as string;
-		const blueprintDef = JSON.parse(el.innerText) as BlueprintDefApiResponse;
+		const blueprintDef = JSON.parse(el.innerText) as BlueprintJson;
 
 		if (blueprintDef.id !== blueprintId) {
 			throw new Error(`blueprint ids don't match: ${blueprintId} !== ${blueprintDef.id}`);
@@ -42,7 +42,7 @@ import {ViewFrame} from "../slang/ui/frame";
 		blueprints.push({type: blueprintType, def: blueprintDef});
 	}
 
-	fillLandscape(appModel.getChildNode(LandscapeModel)!, blueprints);
+	loadBlueprints(appModel.getChildNode(LandscapeModel)!, blueprints);
 
 	new OperatorDataApp(appModel, SLANG_ASPECTS, COMPONENT_FACTORY);
 	new BlueprintExporterApp(appModel, SLANG_ASPECTS);

@@ -1,6 +1,6 @@
 import {SlangApp} from "../../../slang/app";
 import {SlangAspects} from "../../../slang/aspects";
-import {blueprintModelToJSON, fillLandscape} from "../../../slang/core/mapper";
+import {blueprintModelToJson, loadBlueprints} from "../../../slang/core/mapper";
 import {AppModel} from "../../../slang/core/models/app";
 import {BlueprintModel} from "../../../slang/core/models/blueprint";
 import {LandscapeModel} from "../../../slang/core/models/landscape";
@@ -30,13 +30,13 @@ export class APIStorageApp extends SlangApp {
 
 	private async load(): Promise<void> {
 		return new Promise<void>(async (resolve) => {
-			fillLandscape(this.app.getChildNode(LandscapeModel)!, await this.api.getBlueprints());
+			loadBlueprints(this.app.getChildNode(LandscapeModel)!, await this.api.getBlueprints());
 			resolve();
 		});
 	}
 
 	private store(blueprint: BlueprintModel): void {
-		this.api.storeBlueprint(blueprintModelToJSON(blueprint));
+		this.api.storeBlueprint(blueprintModelToJson(blueprint));
 	}
 }
 
@@ -62,7 +62,7 @@ export class StaticStorageApp extends SlangApp {
 				.then((response: Response) => response.json())
 				.then(async (data: any) => {
 					const objects = data.objects as BlueprintApiResponse[];
-					fillLandscape(this.app.getChildNode(LandscapeModel)!, objects);
+					loadBlueprints(this.app.getChildNode(LandscapeModel)!, objects);
 					resolve();
 				});
 		});

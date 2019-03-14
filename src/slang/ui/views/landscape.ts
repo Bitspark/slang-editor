@@ -17,8 +17,9 @@ export class LandscapeView extends PaperView {
 
 	private readonly filter: ((blueprint: BlueprintModel) => boolean) | null;
 	private blueprintRects = new Map<string, shapes.standard.Rectangle>();
-	private addBlueprintButton: dia.Element;
-	private slangLogo: dia.Element;
+	private addBlueprintButton!: dia.Element;
+	private importBlueprintButton!: dia.Element;
+	private slangLogo!: dia.Element;
 	private dimensions: [number, number] = [0, 0];
 
 	constructor(frame: ViewFrame, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
@@ -35,9 +36,6 @@ export class LandscapeView extends PaperView {
 		} else {
 			this.filter = null;
 		}
-
-		this.addBlueprintButton = this.createAddBlueprintButton();
-		this.slangLogo = this.createSlangLogo();
 
 		this.redraw();
 		this.subscribe(landscape);
@@ -57,6 +55,7 @@ export class LandscapeView extends PaperView {
 		this.graph.clear();
 
 		this.addBlueprintButton = this.createAddBlueprintButton();
+		this.importBlueprintButton = this.createImportBlueprintButton();
 		this.slangLogo = this.createSlangLogo();
 
 		this.reorder();
@@ -92,14 +91,16 @@ export class LandscapeView extends PaperView {
 			for (let col = 0; col < columns; col++) {
 				let rect: dia.Element | null = null;
 
-				if (i > 0) {
-					const blueprintName = blueprintNames[i - 1];
+				if (i === 0) {
+					rect = this.addBlueprintButton;
+				} else if (i === 1) {
+					rect = this.importBlueprintButton;
+				} else {
+					const blueprintName = blueprintNames[i - 2];
 					if (!blueprintName) {
 						break;
 					}
 					rect = this.blueprintRects.get(blueprintName)!;
-				} else {
-					rect = this.addBlueprintButton;
 				}
 
 				const posX = (col - columns / 2 + 0.5) * columnWidth;
@@ -122,14 +123,8 @@ export class LandscapeView extends PaperView {
 		if (!this.graph) {
 			throw new Error(`no graph`);
 		}
-
-		const rect = BlackBoxShape.placeGhost(this, "＋");
-		rect.attr("draggable", false);
-		rect.attr("label/cursor", "pointer");
-		rect.attr("label/font-size", "28");
-		rect.attr("body/cursor", "pointer");
-
-		rect.on("pointerup", () => {
+		const rect = this.createBlueprintButton();
+		rect.on("pointerclick", () => {
 			const newBlueprint = this.landscape.createBlueprint({
 				uuid: uuidv4(),
 				meta: {name: `Unnamed${new Date().getTime()}`},
@@ -148,6 +143,28 @@ export class LandscapeView extends PaperView {
 			newBlueprint.open();
 		});
 
+		return rect;
+	}
+
+	private createImportBlueprintButton(): dia.Element {
+		if (!this.graph) {
+			throw new Error(`no graph`);
+		}
+		const rect = this.createBlueprintButton();
+
+		rect.on("pointerclick", () => {
+			this.landscape.upload();
+		});
+
+		return rect;
+	}
+
+	private createBlueprintButton(): dia.Element {
+		const rect = BlackBoxShape.placeGhost(this, "＋");
+		rect.attr("draggable", false);
+		rect.attr("label/cursor", "pointer");
+		rect.attr("label/font-size", "28");
+		rect.attr("body/cursor", "pointer");
 		return rect;
 	}
 

@@ -61,7 +61,7 @@ export interface OperatorApiResponse {
 	generics: GenericSpecificationsApiResponse;
 }
 
-export interface BlueprintDefApiResponse {
+export interface BlueprintJson {
 	id: string;
 	meta: BlueprintMeta;
 	operators?: {
@@ -86,7 +86,7 @@ export interface ConnectionsApiResponse {
 
 export interface BlueprintApiResponse {
 	type: string;
-	def: BlueprintDefApiResponse;
+	def: BlueprintJson;
 }
 
 export class ApiService {
@@ -122,7 +122,7 @@ export class ApiService {
 		);
 	}
 
-	public async storeBlueprint(blueprintDefJSON: BlueprintDefApiResponse): Promise<any> {
+	public async storeBlueprint(blueprintDefJSON: BlueprintJson): Promise<any> {
 		const process = (data: any) => {
 			if (data) {
 				console.error(data);
