@@ -8,9 +8,9 @@ module.exports = {
 			statements: 73,
 		},
 		"./src/slang/core/models": {
-			functions: 50,
-			branches: 70,
-			statements: 58,
+			functions: 65,
+			branches: 67,
+			statements: 67,
 		},
 	},
 	coveragePathIgnorePatterns: [
