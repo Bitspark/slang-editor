@@ -86,17 +86,31 @@ describe("A property", () => {
 		const opGenProps1 = bpNew.createBlankOperator(bpGenProps);
 		const opS2S1 = bpNew.createBlankOperator(bpS2S);
 
-		opS2S1.getPortOut()!.connect(opGenProps1.getPortIn()!, true);
+		const outPort = opS2S1.getPortOut()!;
+		const inPort = opGenProps1.getPortIn()!;
 
-		expect(opGenProps1.getPortIn()!.getTypeIdentifier()).toEqual(TypeIdentifier.Map);
-		expect(opGenProps1.getPortIn()!.getMapSubs().next().value.isConnected()).toBeTruthy();
-		expect(Array.from(opGenProps1.getPortIn()!.getMapSubs()).length).toEqual(1);
+		outPort.connect(inPort, true);
+
+		expect(inPort.getTypeIdentifier()).toEqual(TypeIdentifier.Map);
+		expect(Array.from(inPort.getMapSubs()).length).toEqual(1);
+
+		let inPortSub = inPort.getMapSubs().next().value;
+		expect(inPortSub.isConnected()).toBeTruthy();
+		expect(inPortSub.isConnectedWith(outPort)).toBeTruthy();
 
 		opGenProps1.getProperties().get("test").assign("val123");
-		expect(Array.from(opGenProps1.getPortIn()!.getMapSubs()).length).toEqual(1);
+		inPortSub = inPort.getMapSubs().next().value;
+
+		expect(Array.from(inPort.getMapSubs()).length).toEqual(1);
+		expect(inPortSub.isConnected()).toBeTruthy();
+		expect(inPortSub.isConnectedWith(outPort)).toBeTruthy();
 
 		opGenProps1.getProperties().get("test").assign("val321");
-		expect(Array.from(opGenProps1.getPortIn()!.getMapSubs()).length).toEqual(1);
+		inPortSub = inPort.getMapSubs().next().value;
+
+		expect(Array.from(inPort.getMapSubs()).length).toEqual(1);
+		expect(inPortSub.isConnected()).toBeTruthy();
+		expect(inPortSub.isConnectedWith(outPort)).toBeTruthy();
 	});
 
 });
