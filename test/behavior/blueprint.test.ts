@@ -2,6 +2,7 @@ import uuidv4 from "uuid/v4";
 
 import {PortDirection} from "../../src/slang/core/abstract/port";
 import {GenericSpecifications} from "../../src/slang/core/abstract/utils/generics";
+import {PropertyAssignments} from "../../src/slang/core/abstract/utils/properties";
 import {blueprintModelToJSON} from "../../src/slang/core/mapper";
 import {AppModel} from "../../src/slang/core/models/app";
 import {BlueprintType} from "../../src/slang/core/models/blueprint";
@@ -45,7 +46,7 @@ describe("A new blueprint", () => {
 		bpNew.createPort({name: "", type: new SlangType(null, TypeIdentifier.Map), direction: PortDirection.In});
 		bpNew.createPort({name: "", type: new SlangType(null, TypeIdentifier.Map), direction: PortDirection.Out});
 
-		const opNew = bpNew.createOperator("s2s", bpS2S, null, null);
+		const opNew = bpNew.createBlankOperator(bpS2S);
 		expect(opNew.getPortIn()).toBeTruthy();
 		expect(opNew.getPortOut()).toBeTruthy();
 	});
@@ -64,7 +65,7 @@ describe("A new blueprint", () => {
 		bpNew.createPort({name: "", direction: PortDirection.In, type: SlangType.newUnspecified()});
 		bpNew.createPort({name: "", direction: PortDirection.Out, type: SlangType.newUnspecified()});
 
-		const opNew = bpNew.createOperator("s2s", bpS2S, null, null);
+		const opNew = bpNew.createBlankOperator(bpS2S);
 
 		const bpPortIn = bpNew.getPortIn()!;
 		const opPortIn = opNew.getPortIn()!;
@@ -99,15 +100,16 @@ describe("A new blueprint", () => {
 			type: BlueprintType.Local,
 		});
 
-		const opS2S1 = bpNew.createOperator("s2s_1", bpS2S, null, null);
-		const opG2G = bpNew.createOperator("g2g", bpG2G, null, new GenericSpecifications(["itemType"]));
+		const opS2S1 = bpNew.createBlankOperator(bpS2S);
+		const gens = new GenericSpecifications(["itemType"]);
+		const opG2G = bpNew.createOperator("g2g", bpG2G, new PropertyAssignments([].values(), gens), gens);
 
 		opS2S1.getPortOut()!.connect(opG2G.getPortIn()!, true);
 
 		expect(Array.from(opG2G.getPortIn()!.getMapSubs()).length).toBe(1);
 		expect(Array.from(opG2G.getPortOut()!.getMapSubs()).length).toBe(1);
 
-		const opS2S2 = bpNew.createOperator("s2s_2", bpS2S, null, null);
+		const opS2S2 = bpNew.createBlankOperator(bpS2S);
 
 		opS2S2.getPortIn()!.connect(opG2G.getPortOut()!.getMapSubs().next().value, true);
 

@@ -29,7 +29,7 @@ describe("A port", () => {
 		bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), meta: {name: "test-bp-2"}, type: BlueprintType.Local});
 
 		bp = landscapeModel.findBlueprint("717867d5-f84e-400c-bdc4-1a374f34e3a5")!;
-		op = bpNew.createOperator("dlg_op", bp, null, null);
+		op = bpNew.createBlankOperator(bp);
 	});
 
 	it("returns correct string reference", () => {

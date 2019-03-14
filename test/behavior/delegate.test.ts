@@ -57,8 +57,8 @@ describe("An operator delegate", () => {
 		dlgBp = landscapeModel.findBlueprint("9547e231-26a9-4de0-9b25-b2e1b3fdb1d1")!;
 		s2sBp = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
 
-		dlgOp = bpNew.createOperator("dlg", dlgBp, null, null);
-		s2sOp = bpNew.createOperator("s2s1", s2sBp, null, null);
+		dlgOp = bpNew.createBlankOperator(dlgBp);
+		s2sOp = bpNew.createBlankOperator(s2sBp);
 	});
 
 	it("has port positions", () => {
