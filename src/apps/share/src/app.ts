@@ -20,7 +20,7 @@ interface SlangFileJSON {
 	blueprints: BlueprintsJson;
 }
 
-export class BlueprintExporterApp extends SlangApp {
+export class BlueprintShareApp extends SlangApp {
 
 	private exportRequested = new SlangSubject<BlueprintModel>("blueprint-export");
 	private importRequested = new SlangSubject<SlangFileJSON>("blueprint-import");

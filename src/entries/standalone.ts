@@ -1,7 +1,7 @@
 import {AutoTriggerApp} from "../apps/autotrigger/src/app";
 import {DeploymentApp} from "../apps/deployment/src/app";
-import {BlueprintExporterApp} from "../apps/exporter/src/app";
 import {OperatorDataApp} from "../apps/operators/src/app";
+import {BlueprintShareApp} from "../apps/share/src/app";
 import {APIStorageApp} from "../apps/storage/src/app";
 import {SLANG_ASPECTS} from "../slang/aspects";
 import {AppModel} from "../slang/core/models/app";
@@ -35,7 +35,7 @@ function slangStudioStandalone(el: HTMLElement): Promise<void> {
 		new DeploymentApp(appModel, SLANG_ASPECTS, APIURL);
 		new OperatorDataApp(appModel, SLANG_ASPECTS, COMPONENT_FACTORY);
 		new AutoTriggerApp(appModel, SLANG_ASPECTS);
-		new BlueprintExporterApp(appModel, SLANG_ASPECTS);
+		new BlueprintShareApp(appModel, SLANG_ASPECTS);
 
 		app.load().then(() => {
 			appModel.getChildNode(LandscapeModel)!.open();

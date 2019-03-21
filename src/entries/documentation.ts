@@ -2,8 +2,8 @@ import "./common";
 
 import "../styles/embedded.scss";
 
-import {BlueprintExporterApp} from "../apps/exporter/src/app";
 import {OperatorDataApp} from "../apps/operators/src/app";
+import {BlueprintShareApp} from "../apps/share/src/app";
 import {SLANG_ASPECTS} from "../slang/aspects";
 import {AppModel} from "../slang/core/models/app";
 import {LandscapeModel} from "../slang/core/models/landscape";
@@ -45,7 +45,7 @@ import {ViewFrame} from "../slang/ui/frame";
 	// loadBlueprints(appModel.getChildNode(LandscapeModel)!, blueprints);
 
 	new OperatorDataApp(appModel, SLANG_ASPECTS, COMPONENT_FACTORY);
-	new BlueprintExporterApp(appModel, SLANG_ASPECTS);
+	new BlueprintShareApp(appModel, SLANG_ASPECTS);
 
 	for (const el of document.getElementsByClassName("slang-embedded")) {
 		if (!(el instanceof HTMLElement)) {
