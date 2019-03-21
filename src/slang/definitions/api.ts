@@ -54,7 +54,7 @@ export interface OperatorGeometry {
 	position: XY;
 }
 
-export interface OperatorApiResponse {
+export interface OperatorJson {
 	operator: string;
 	geometry?: OperatorGeometry;
 	properties: PropertyAssignmentsApiResponse;
@@ -65,7 +65,7 @@ export interface BlueprintJson {
 	id: string;
 	meta: BlueprintMeta;
 	operators?: {
-		[operatorName: string]: OperatorApiResponse,
+		[operatorName: string]: OperatorJson,
 	};
 	properties?: PropertyApiResponse;
 	services?: PortGroupsApiResponse;
@@ -78,10 +78,17 @@ export interface BlueprintJson {
 		},
 	};
 	tests?: any;
+	complete?: boolean;
 }
 
 export interface ConnectionsApiResponse {
 	[sourcePortReference: string]: [string];
+}
+
+export interface BlueprintsJson {
+	local: BlueprintJson[];
+	library: BlueprintJson[];
+	elementary: BlueprintJson[];
 }
 
 export interface BlueprintApiResponse {
@@ -111,11 +118,18 @@ export class ApiService {
 		this.url = ApiService.normalizeUrl(host);
 	}
 
-	public async getBlueprints(): Promise<BlueprintApiResponse[]> {
-		return this.httpGet<{}, BlueprintApiResponse[]>(
+	public async getBlueprints(): Promise<BlueprintsJson> {
+		return this.httpGet<{}, BlueprintsJson>(
 			"/operator/",
 			{},
-			(data: any) => (data as { objects: any }).objects as BlueprintApiResponse[],
+			(data: any) => {
+				const bpdef: BlueprintApiResponse[] = (data as { objects: any }).objects;
+				return {
+					elementary: bpdef.filter((bp) => bp.type === "elementary").map((bp) => bp.def),
+					library: bpdef.filter((bp) => bp.type === "library").map((bp) => bp.def),
+					local: bpdef.filter((bp) => bp.type === "local").map((bp) => bp.def),
+				};
+			},
 			(err: any) => {
 				console.error(err);
 			},

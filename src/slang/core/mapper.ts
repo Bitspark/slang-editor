@@ -1,9 +1,9 @@
 import {
-	BlueprintApiResponse,
-	BlueprintDefApiResponse,
+	BlueprintJson,
+	BlueprintsJson,
 	ConnectionsApiResponse,
 	GenericSpecificationsApiResponse,
-	OperatorApiResponse,
+	OperatorJson,
 	PortGroupApiResponse,
 	PortGroupsApiResponse,
 	PropertyApiResponse,
@@ -24,7 +24,7 @@ import {BlueprintPortModel, OperatorPortModel} from "./models/port";
 
 /*
 \
- \ Model --> JSON
+ \ MODEL --> JSON
   \
  */
 
@@ -35,14 +35,14 @@ function iter2map<S, T>(iter: Iterable<S>, process: (result: T, curr: S) => void
 	}, {} as T);
 }
 
-export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApiResponse {
+export function blueprintModelToJson(blueprint: BlueprintModel): BlueprintJson {
 	const blueprintGeometry = blueprint.getGeometry();
 	return {
 		id: blueprint.uuid,
 		tests: blueprint.tests,
 		meta: blueprint.getMeta(),
 		geometry: blueprintGeometry,
-		operators: iter2map<OperatorModel, { [_: string]: OperatorApiResponse }>(blueprint.getOperators(),
+		operators: iter2map<OperatorModel, { [_: string]: OperatorJson }>(blueprint.getOperators(),
 			(result, operator) => {
 				result[operator.getName()] = operatorModelToJSON(operator);
 			}),
@@ -93,7 +93,7 @@ export function blueprintModelToJSON(blueprint: BlueprintModel): BlueprintDefApi
 	};
 }
 
-function operatorModelToJSON(operator: OperatorModel): OperatorApiResponse {
+function operatorModelToJSON(operator: OperatorModel): OperatorJson {
 	return {
 		operator: operator.getBlueprint().uuid,
 		geometry: operator.getGeometry(),
@@ -199,94 +199,169 @@ function fromTypeIdentifier(t: TypeIdentifier): "string" | "number" | "boolean" 
   \
  */
 
-export function fillLandscape(landscape: LandscapeModel, bpDataList: BlueprintApiResponse[]) {
-	const blueprintToOperator = new Map<BlueprintModel, BlueprintDefApiResponse>();
-	// 1) Add Blueprints
-	bpDataList.forEach((bpData) => {
-		const type: BlueprintType | null = ({
-			local: BlueprintType.Local,
-			library: BlueprintType.Library,
-			elementary: BlueprintType.Elementary,
-		} as any)[bpData.type];
-
-		if (type === null) {
-			throw new Error(`unknown blueprint type '${bpData.type}'`);
-		}
-
-		const bpDef = bpData.def;
-		const services = bpDef.services;
-		const bpGeo = bpDef.geometry;
-		const geometry = (services && bpGeo) ? Object.assign(bpGeo, {port: services.main.geometry!}) : undefined;
-		const tests = bpDef.tests;
-
-		const blueprint = landscape.createBlueprint({uuid: bpDef.id, meta: bpDef.meta, type, geometry, tests});
-		if (services) {
-			setBlueprintServices(blueprint, services);
-		}
-		if (bpData.def.delegates) {
-			setBlueprintDelegates(blueprint, bpData.def.delegates);
-		}
-		if (bpData.def.properties) {
-			setBlueprintProperties(blueprint, bpData.def.properties);
-		}
-		const def = bpData.def;
-		blueprintToOperator.set(blueprint, def);
+export function loadBlueprints(landscape: LandscapeModel, blueprintsJson: BlueprintsJson) {
+	// 1) Create unfinsihed blueprints (only with some basic information)
+	blueprintsJson.elementary.forEach((blueprintJson) => {
+		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Elementary);
 	});
+	blueprintsJson.library.forEach((blueprintJson) => {
+		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Library);
+	});
+	blueprintsJson.local.forEach((blueprintJson) => {
+		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Local);
+	});
+	finishBlueprintModelsInstantiation(landscape, blueprintsJson);
+}
 
-	// 2) Add Operators. Use previously defined Blueprints for assigning Operator.blueprint
-	blueprintToOperator.forEach((bpDef: BlueprintDefApiResponse, outerBlueprint: BlueprintModel) => {
-		const operators = bpDef.operators;
-		if (!operators) {
+/*
+export function updateBlueprints(landscape: LandscapeModel, blueprintJsonList: BlueprintJson[]) {
+	const blueprintJsonToUpdate = new Array<BlueprintJson>();
+	blueprintJsonList.forEach((bpJson: BlueprintJson) => {
+		let bp = landscape.findBlueprint(bpJson.id);
+
+		// New Blueprint
+		if (!bp) {
+			createUnfinishedBlueprintModel(landscape, bpJson, BlueprintType.Local);
 			return;
 		}
 
-		Object.keys(operators).forEach((opName: string) => {
-			const opData = operators[opName];
-			const blueprint = landscape.findBlueprint(opData.operator);
-			if (!blueprint) {
-				throw new Error(`unknown blueprint '${opData.operator}'`);
+		// Existing Blueprint
+		if (!bp.isLocal()) {
+			return;
+		}
+
+		if (bpJson.tests) {
+			bp.tests = bpJson.tests;
+		}
+
+		if (bpJson.geometry) {
+			bp.size = bpJson.geometry.size;
+		}
+
+		if (bpJson.properties) {
+			setBlueprintProperties(bp, bpJson.properties);
+		}
+
+		if (bpJson.services && bpJson.services.main) {
+			const mainSrv = bpJson.services.main;
+
+			if (mainSrv.geometry) {
+				bp.inPosition = mainSrv.geometry.in.position;
+				bp.outPosition = mainSrv.geometry.out.position;
 			}
 
-			try {
-				const generics = createGenericSpecifications(blueprint, opData.generics);
-				const properties = createPropertyAssignments(blueprint, opData.properties, generics);
-				outerBlueprint.createOperator(opName, blueprint, properties, generics, opData.geometry);
-			} catch (e) {
-				console.error(`${outerBlueprint.name} (${blueprint.name}): ${e.stack}`);
-			}
-		});
+		}
+
+			setBlueprintServices(bp, services);
+
+		if (bpJson.delegates) {
+			setBlueprintDelegates(bp, bpJson.delegates);
+		}
+		blueprintJsonToUpdate.push(bpJson);
+	});
+
+	finishBlueprintModelsInstantiation(landscape, blueprintJsonToUpdate);
+}
+*/
+
+function createUnfinishedBlueprintModel(landscape: LandscapeModel, bpDef: BlueprintJson, bpType: BlueprintType): BlueprintModel {
+	const services = bpDef.services;
+	const bpGeo = bpDef.geometry;
+	const geometry = (services && bpGeo) ? Object.assign(bpGeo, {port: services.main.geometry!}) : undefined;
+	const tests = bpDef.tests;
+
+	const blueprint = landscape.createBlueprint({uuid: bpDef.id, meta: bpDef.meta, type: bpType, geometry, tests});
+	if (services) {
+		setBlueprintServices(blueprint, services);
+	}
+	if (bpDef.delegates) {
+		setBlueprintDelegates(blueprint, bpDef.delegates);
+	}
+	if (bpDef.properties) {
+		setBlueprintProperties(blueprint, bpDef.properties);
+	}
+
+	return blueprint;
+}
+
+function finishBlueprintModelsInstantiation(landscape: LandscapeModel, blueprintsJson: BlueprintsJson) {
+	return;
+	const onlyBpWithOps = (bpjsonlist: BlueprintJson[]) => bpjsonlist.filter((bpjson) => bpjson.operators && Object.keys(bpjson.operators).length > 0);
+	const blueprintJsonList = onlyBpWithOps(blueprintsJson.library).concat(onlyBpWithOps(blueprintsJson.local));
+
+	// 2) Add Operators. Use previously defined Blueprints for assigning Operator.blueprint
+	blueprintJsonList.forEach((bpJson: BlueprintJson) => {
+		const outerBlueprint = landscape.findBlueprint(bpJson.id);
+		if (!outerBlueprint) {
+			return;
+		}
+
+		const operators = bpJson.operators!;
+
+		instantiateBlueprintOperators(landscape, outerBlueprint, operators);
 	});
 
 	// 3) Connect operator and blueprint ports
-	blueprintToOperator.forEach((bpDef: BlueprintDefApiResponse, outerBlueprint: BlueprintModel) => {
+	blueprintJsonList.forEach((bpDef: BlueprintJson) => {
+		const outerBlueprint = landscape.findBlueprint(bpDef.id);
+		if (!outerBlueprint) {
+			return;
+		}
+
 		const connections = bpDef.connections;
 		if (!connections) {
 			return;
 		}
 
-		Object.keys(connections).forEach((sourcePortReference: string) => {
-			const sourcePort = outerBlueprint.resolvePortReference(sourcePortReference);
-			if (!sourcePort) {
-				console.error(`${outerBlueprint.name}: port ${sourcePortReference} cannot be resolved`);
-				return;
-			}
-
-			const destinationPortReferences = connections[sourcePortReference];
-			for (const destinationPortReference of destinationPortReferences) {
-				const destinationPort = outerBlueprint.resolvePortReference(destinationPortReference);
-				if (!destinationPort) {
-					console.error(`${outerBlueprint.name}: port ${destinationPortReference} cannot be resolved`);
-					continue;
-				}
-
-				try {
-					sourcePort.connect(destinationPort, false);
-				} catch (e) {
-					console.error(`${outerBlueprint.name}: ${sourcePort.getPortReference()} -> ${destinationPort.getPortReference()} - ${e.toString()}`);
-				}
-			}
-		});
+		connectBlueprintOperators(outerBlueprint, connections);
 	});
+}
+
+function instantiateBlueprintOperators(landscape: LandscapeModel, blueprint: BlueprintModel, operatorJsonByName: { [k: string]: OperatorJson }) {
+	Object.keys(operatorJsonByName).forEach((opName: string) => {
+		try {
+			operatorJsonToModel(landscape, blueprint, opName, operatorJsonByName[opName]);
+		} catch (e) {
+			console.error(`${blueprint.name} (${opName}): ${e.stack}`);
+		}
+	});
+}
+
+function connectBlueprintOperators(blueprint: BlueprintModel, connections: ConnectionsApiResponse) {
+	Object.keys(connections).forEach((sourcePortReference: string) => {
+		const sourcePort = blueprint.resolvePortReference(sourcePortReference);
+		if (!sourcePort) {
+			console.error(`${blueprint.name}: port ${sourcePortReference} cannot be resolved`);
+			return;
+		}
+
+		const destinationPortReferences = connections[sourcePortReference];
+		for (const destinationPortReference of destinationPortReferences) {
+			const destinationPort = blueprint.resolvePortReference(destinationPortReference);
+			if (!destinationPort) {
+				console.error(`${blueprint.name}: port ${destinationPortReference} cannot be resolved`);
+				continue;
+			}
+
+			try {
+				sourcePort.connect(destinationPort, false);
+			} catch (e) {
+				console.error(`${blueprint.name}: ${sourcePort.getPortReference()} -> ${destinationPort.getPortReference()} - ${e.toString()}`);
+			}
+		}
+	});
+}
+
+function operatorJsonToModel(landscape: LandscapeModel, outerBlueprint: BlueprintModel, opName: string, opJson: OperatorJson): OperatorModel {
+	const blueprint = landscape.findBlueprint(opJson.operator);
+
+	if (!blueprint) {
+		throw new Error(`unknown blueprint '${opJson.operator}'`);
+	}
+
+	const generics = createGenericSpecifications(blueprint, opJson.generics);
+	const properties = createPropertyAssignments(blueprint, opJson.properties, generics);
+	return outerBlueprint.createOperator(opName, blueprint, properties, generics, opJson.geometry);
 }
 
 function toTypeIdentifier(typeName: string): TypeIdentifier {

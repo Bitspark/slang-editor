@@ -20,12 +20,12 @@ export class AppModel extends SlangNode {
 	private loadRequested = new SlangSubjectTrigger("load-requested");
 	private storeRequested = new SlangSubject<BlueprintModel>("save-requested");
 
-	private readonly landscape: LandscapeModel;
+	private landscape: LandscapeModel;
 	private loading: Array<Promise<void>> = [];
 
 	public constructor({}: AppModelArgs) {
 		super(null);
-		this.landscape = this.createChildNode(LandscapeModel, {});
+		this.landscape = this.createLandscape();
 		this.subscribeLandscape(this.landscape);
 	}
 
@@ -40,6 +40,15 @@ export class AppModel extends SlangNode {
 			this.ready.next(true);
 			resolve();
 		});
+	}
+
+	public createLandscape(): LandscapeModel {
+		return this.createChildNode(LandscapeModel, {});
+	}
+
+	public switchLandscape(newLandscape: LandscapeModel) {
+		this.landscape.destroy();
+		this.landscape = newLandscape;
 	}
 
 	// Subscriptions

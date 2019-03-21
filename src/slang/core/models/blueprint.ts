@@ -132,7 +132,7 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 	}
 
 	public readonly uuid: string;
-	public readonly tests: any;
+	public tests: any;
 	// Topics::self
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
 	private saveChanges = new SlangSubjectTrigger("save-changes");

@@ -4,7 +4,7 @@ import {blueprintModelToJson, loadBlueprints} from "../../../slang/core/mapper";
 import {AppModel} from "../../../slang/core/models/app";
 import {BlueprintModel} from "../../../slang/core/models/blueprint";
 import {LandscapeModel} from "../../../slang/core/models/landscape";
-import {ApiService, BlueprintApiResponse} from "../../../slang/definitions/api";
+import {ApiService, BlueprintsJson} from "../../../slang/definitions/api";
 
 export class APIStorageApp extends SlangApp {
 	private api: ApiService;
@@ -61,7 +61,7 @@ export class StaticStorageApp extends SlangApp {
 			fetch(this.url)
 				.then((response: Response) => response.json())
 				.then(async (data: any) => {
-					const objects = data.objects as BlueprintApiResponse[];
+					const objects = data.objects as BlueprintsJson;
 					loadBlueprints(this.app.getChildNode(LandscapeModel)!, objects);
 					resolve();
 				});

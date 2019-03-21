@@ -1,11 +1,11 @@
 import {SlangApp} from "../../../slang/app";
 import {BlueprintToolBoxType} from "../../../slang/aspects";
 import {SlangSubject} from "../../../slang/core/abstract/utils/events";
-import {blueprintModelToJson, updateBlueprints} from "../../../slang/core/mapper";
-import {BlueprintModel} from "../../../slang/core/models/blueprint";
+import {blueprintModelToJson, loadBlueprints} from "../../../slang/core/mapper";
+import {BlueprintModel, BlueprintType} from "../../../slang/core/models/blueprint";
 import {LandscapeModel} from "../../../slang/core/models/landscape";
 import {
-	BlueprintJson,
+	BlueprintJson, BlueprintsJson,
 	GenericSpecificationsApiResponse,
 	PropertyAssignmentsApiResponse,
 } from "../../../slang/definitions/api";
@@ -17,7 +17,7 @@ interface SlangFileJSON {
 		properties: PropertyAssignmentsApiResponse;
 		generics: GenericSpecificationsApiResponse;
 	};
-	blueprints: BlueprintJson[];
+	blueprints: BlueprintsJson;
 }
 
 export class BlueprintExporterApp extends SlangApp {
@@ -109,15 +109,17 @@ export class BlueprintExporterApp extends SlangApp {
 	}
 
 	protected import(slangFile: SlangFileJSON) {
-		if (slangFile.blueprints.length === 0) {
+		const bpJson = slangFile.blueprints;
+		if (bpJson.local.length === 0 && bpJson.library.length === 0) {
 			return;
 		}
-		const landscape = this.app.getChildNode(LandscapeModel)!;
-		updateBlueprints(landscape, slangFile.blueprints);
+		const landscape = this.app.createLandscape();
+		loadBlueprints(landscape, bpJson);
+		this.app.switchLandscape(landscape);
 	}
 
 	protected export(blueprint: BlueprintModel): void {
-		const exportedBlueprints = new Map<string, BlueprintJson>();
+		const exportedBlueprints = new Map<string, [BlueprintJson, BlueprintType]>();
 		const remainingBlueprints: BlueprintModel[] = [blueprint];
 
 		while (remainingBlueprints.length > 0) {
@@ -126,16 +128,21 @@ export class BlueprintExporterApp extends SlangApp {
 				continue;
 			}
 
-			exportedBlueprints.set(currBp.uuid, blueprintModelToJson(currBp));
+			exportedBlueprints.set(currBp.uuid, [blueprintModelToJson(currBp), currBp.getType()]);
 
 			for (const op of currBp.getOperators()) {
 				remainingBlueprints.push(op.getBlueprint());
 			}
 		}
 
+		const bplist = Array.from(exportedBlueprints.values());
 		this.downloadRequested.next({
 			main: blueprint.uuid,
-			blueprints: Array.from(exportedBlueprints.values()),
+			blueprints: {
+				elementary: bplist.filter((each) => each[1] === BlueprintType.Elementary).map((each) => each[0]),
+				library: bplist.filter((each) => each[1] === BlueprintType.Library).map((each) => each[0]),
+				local: bplist.filter((each) => each[1] === BlueprintType.Local).map((each) => each[0]),
+			},
 		});
 
 	}

@@ -5,7 +5,6 @@ import "../styles/embedded.scss";
 import {BlueprintExporterApp} from "../apps/exporter/src/app";
 import {OperatorDataApp} from "../apps/operators/src/app";
 import {SLANG_ASPECTS} from "../slang/aspects";
-import {loadBlueprints} from "../slang/core/mapper";
 import {AppModel} from "../slang/core/models/app";
 import {LandscapeModel} from "../slang/core/models/landscape";
 import {BlueprintApiResponse, BlueprintJson} from "../slang/definitions/api";
@@ -42,7 +41,8 @@ import {ViewFrame} from "../slang/ui/frame";
 		blueprints.push({type: blueprintType, def: blueprintDef});
 	}
 
-	loadBlueprints(appModel.getChildNode(LandscapeModel)!, blueprints);
+	// TODO
+	// loadBlueprints(appModel.getChildNode(LandscapeModel)!, blueprints);
 
 	new OperatorDataApp(appModel, SLANG_ASPECTS, COMPONENT_FACTORY);
 	new BlueprintExporterApp(appModel, SLANG_ASPECTS);
