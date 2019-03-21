@@ -201,6 +201,7 @@ function fromTypeIdentifier(t: TypeIdentifier): "string" | "number" | "boolean" 
 
 export function loadBlueprints(landscape: LandscapeModel, blueprintsJson: BlueprintsJson) {
 	// 1) Create unfinsihed blueprints (only with some basic information)
+
 	blueprintsJson.elementary.forEach((blueprintJson) => {
 		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Elementary);
 	});
