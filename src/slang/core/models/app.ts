@@ -25,8 +25,10 @@ export class AppModel extends SlangNode {
 
 	public constructor({}: AppModelArgs) {
 		super(null);
+		this.subscribeChildCreated(LandscapeModel, (landscape) => {
+			this.subscribeLandscape(landscape);
+		});
 		this.landscape = this.createLandscape();
-		this.subscribeLandscape(this.landscape);
 	}
 
 	// Actions
@@ -49,6 +51,7 @@ export class AppModel extends SlangNode {
 	public switchLandscape(newLandscape: LandscapeModel) {
 		this.landscape.destroy();
 		this.landscape = newLandscape;
+		this.landscape.open();
 	}
 
 	// Subscriptions

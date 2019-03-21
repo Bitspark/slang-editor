@@ -285,7 +285,6 @@ function createUnfinishedBlueprintModel(landscape: LandscapeModel, bpDef: Bluepr
 }
 
 function finishBlueprintModelsInstantiation(landscape: LandscapeModel, blueprintsJson: BlueprintsJson) {
-	return;
 	const onlyBpWithOps = (bpjsonlist: BlueprintJson[]) => bpjsonlist.filter((bpjson) => bpjson.operators && Object.keys(bpjson.operators).length > 0);
 	const blueprintJsonList = onlyBpWithOps(blueprintsJson.library).concat(onlyBpWithOps(blueprintsJson.local));
 
