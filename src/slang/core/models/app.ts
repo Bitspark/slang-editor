@@ -51,7 +51,6 @@ export class AppModel extends SlangNode {
 	public switchLandscape(newLandscape: LandscapeModel) {
 		this.landscape.destroy();
 		this.landscape = newLandscape;
-		this.landscape.open();
 	}
 
 	// Subscriptions

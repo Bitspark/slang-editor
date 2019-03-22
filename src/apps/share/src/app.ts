@@ -116,6 +116,20 @@ export class BlueprintShareApp extends SlangApp {
 		const landscape = this.app.createLandscape();
 		loadBlueprints(landscape, bpJson);
 		this.app.switchLandscape(landscape);
+
+		if (!slangFile.main) {
+			landscape.open();
+			return;
+		}
+
+		const blueprint = landscape.findBlueprint(slangFile.main);
+
+		if (!blueprint) {
+			landscape.open();
+			return;
+		}
+
+		blueprint.open();
 	}
 
 	protected export(blueprint: BlueprintModel): void {
