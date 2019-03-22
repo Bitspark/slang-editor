@@ -9,9 +9,9 @@ import {LandscapeModel} from "../slang/core/models/landscape";
 import {Slang} from "../slang/slang";
 import {ComponentFactory} from "../slang/ui/factory";
 import {ViewFrame} from "../slang/ui/frame";
+
 // tslint:disable-next-line
 import "../styles/standalone.scss";
-
 // tslint:disable-next-line
 import "./common";
 
@@ -22,18 +22,13 @@ function slangStudioStandalone(el: HTMLElement): Promise<void> {
 		const appModel = AppModel.create("slang");
 		const factory = new ComponentFactory();
 
-		new APIStorageApp(appModel, factory, "http://localhost:5149/");
-		new DeploymentApp(appModel, factory, "http://localhost:5149/");
-		new OperatorDataApp(appModel, factory);
-		new AutoTriggerApp(appModel, factory);
-
 		const app = new Slang(appModel);
 		const frame = new ViewFrame(el, factory);
 		app.addFrame(frame, true);
 
 		new APIStorageApp(appModel, SLANG_ASPECTS, APIURL);
 		new DeploymentApp(appModel, SLANG_ASPECTS, APIURL);
-		new OperatorDataApp(appModel, SLANG_ASPECTS, COMPONENT_FACTORY);
+		new OperatorDataApp(appModel, SLANG_ASPECTS, factory);
 		new AutoTriggerApp(appModel, SLANG_ASPECTS);
 		new BlueprintShareApp(appModel, SLANG_ASPECTS);
 

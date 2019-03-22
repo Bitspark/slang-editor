@@ -1,7 +1,3 @@
-import "./common";
-
-import "../styles/embedded.scss";
-
 import {OperatorDataApp} from "../apps/operators/src/app";
 import {BlueprintShareApp} from "../apps/share/src/app";
 import {SLANG_ASPECTS} from "../slang/aspects";
@@ -9,14 +5,22 @@ import {AppModel} from "../slang/core/models/app";
 import {LandscapeModel} from "../slang/core/models/landscape";
 import {BlueprintApiResponse, BlueprintJson} from "../slang/definitions/api";
 import {Slang} from "../slang/slang";
-import {COMPONENT_FACTORY} from "../slang/ui/components/factory";
+import {ComponentFactory} from "../slang/ui/factory";
 import {ViewFrame} from "../slang/ui/frame";
+
+// tslint:disable-next-line
+import "../styles/standalone.scss";
+// tslint:disable-next-line
+import "./common";
 
 (window as any).startSlang = () => {
 	const appModel = AppModel.create(`embedded-slang`);
 	const app = new Slang(appModel);
 
+	const factory = new ComponentFactory();
+
 	app.setDefaultViewArgs({
+		factory,
 		editable: false,
 		descendable: false,
 		hscrollable: false,
@@ -44,7 +48,7 @@ import {ViewFrame} from "../slang/ui/frame";
 	// TODO
 	// loadBlueprints(appModel.getChildNode(LandscapeModel)!, blueprints);
 
-	new OperatorDataApp(appModel, SLANG_ASPECTS, COMPONENT_FACTORY);
+	new OperatorDataApp(appModel, SLANG_ASPECTS, factory);
 	new BlueprintShareApp(appModel, SLANG_ASPECTS);
 
 	for (const el of document.getElementsByClassName("slang-embedded")) {
@@ -54,7 +58,7 @@ import {ViewFrame} from "../slang/ui/frame";
 
 		const blueprintId = el.dataset.operator as string;
 
-		app.addFrame(new ViewFrame(el), true);
+		app.addFrame(new ViewFrame(el, factory), true);
 		app.load().then(() => {
 			const blueprint = appModel.getChildNode([LandscapeModel])!.findBlueprint(blueprintId);
 			if (blueprint) {

@@ -471,7 +471,7 @@ export class WhiteBoxComponent extends CellComponent {
 		};
 
 		const that = this;
-		const portComponent = new IsolatedBlueprintPortComponent(name, id, port, invertedPosition[pos], !this.paperView.readOnly);
+		const portComponent = new IsolatedBlueprintPortComponent(name, id, port, invertedPosition[pos], !this.paperView.isReadOnly);
 		const portElement = portComponent.getShape();
 		this.paperView.renderCell(portElement);
 

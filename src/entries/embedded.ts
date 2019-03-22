@@ -7,7 +7,6 @@ import {ComponentFactory} from "../slang/ui/factory";
 import {ViewFrame} from "../slang/ui/frame";
 // tslint:disable-next-line
 import "../styles/embedded.scss";
-
 // tslint:disable-next-line
 import "./common";
 
@@ -15,8 +14,6 @@ export function slangStudioEmbedded(el: HTMLElement, blueprintName: string): Pro
 	return new Promise<void>((resolve) => {
 		const appModel = AppModel.create(`embedded-${blueprintName}`);
 		const factory = new ComponentFactory();
-
-		new StaticStorageApp(appModel, factory, "https://files.bitspark.de/slang-operators/slang-definitions.json");
 
 		const app = new Slang(appModel);
 		app.addFrame(new ViewFrame(el, factory), true);

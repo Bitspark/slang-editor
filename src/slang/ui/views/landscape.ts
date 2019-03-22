@@ -1,9 +1,6 @@
 import {dia, shapes} from "jointjs";
 import uuidv4 from "uuid/v4";
 
-import {SlangType} from "../../definitions/type";
-import uuidv4 from "uuid/v4";
-
 import {PortDirection} from "../../core/abstract/port";
 import {BlueprintModel, BlueprintType} from "../../core/models/blueprint";
 import {LandscapeModel} from "../../core/models/landscape";
