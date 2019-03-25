@@ -16,7 +16,6 @@ export class LandscapeView extends PaperView {
 	private blueprintRects = new Map<string, shapes.standard.Rectangle>();
 	private addBlueprintButton!: dia.Element;
 	private importBlueprintButton!: dia.Element;
-	private slangLogo!: dia.Element;
 	private dimensions: [number, number] = [0, 0];
 
 	constructor(frame: ViewFrame, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
@@ -51,9 +50,8 @@ export class LandscapeView extends PaperView {
 
 		this.graph.clear();
 
-		this.addBlueprintButton = this.createAddBlueprintButton();
-		this.importBlueprintButton = this.createImportBlueprintButton();
-		this.slangLogo = this.createSlangLogo();
+		this.addBlueprintButton = this.createAddBlueprintButton("CREATE NEW");
+		this.importBlueprintButton = this.createImportBlueprintButton("IMPORT");
 
 		this.reorder();
 	}
@@ -74,11 +72,11 @@ export class LandscapeView extends PaperView {
 	}
 
 	private reorderEqually(blueprintNames: string[], width: number, height: number) {
-		const maxColumns = 5;
+		const maxColumns = 4;
 
-		const yOffset = 100;
-		const rowHeight = 140;
-		const columnWidth = 200;
+		const yOffset = 0;
+		const rowHeight = 105;
+		const columnWidth = 140;
 
 		const columns = Math.min(maxColumns, Math.floor(width / columnWidth - 2));
 		const rows = Math.max((blueprintNames.length + 1) / columns);
@@ -108,19 +106,13 @@ export class LandscapeView extends PaperView {
 				i++;
 			}
 		}
-
-		// Slang logo
-		const logo = this.slangLogo;
-		const logoPosX = 0;
-		const logoPosY = -height / 2 + yOffset;
-		logo.position(logoPosX - logo.getBBox().width / 2, logoPosY - logo.getBBox().height / 2);
 	}
 
-	private createAddBlueprintButton(): dia.Element {
+	private createAddBlueprintButton(label: string): dia.Element {
 		if (!this.graph) {
 			throw new Error(`no graph`);
 		}
-		const rect = this.createBlueprintButton();
+		const rect = this.createBlueprintButton(label);
 		rect.on("pointerclick", () => {
 			const newBlueprint = this.landscape.createBlueprint({
 				uuid: uuidv4(),
@@ -143,11 +135,11 @@ export class LandscapeView extends PaperView {
 		return rect;
 	}
 
-	private createImportBlueprintButton(): dia.Element {
+	private createImportBlueprintButton(label: string): dia.Element {
 		if (!this.graph) {
 			throw new Error(`no graph`);
 		}
-		const rect = this.createBlueprintButton();
+		const rect = this.createBlueprintButton(label);
 
 		rect.on("pointerclick", () => {
 			this.landscape.upload();
@@ -156,38 +148,13 @@ export class LandscapeView extends PaperView {
 		return rect;
 	}
 
-	private createBlueprintButton(): dia.Element {
-		const rect = BlackBoxShape.placeGhost(this, "＋");
+	private createBlueprintButton(label: string): dia.Element {
+		const rect = BlackBoxShape.placeGhost(this, label);
 		rect.attr("draggable", false);
 		rect.attr("label/cursor", "pointer");
-		rect.attr("label/font-size", "28");
+		rect.attr("label/font-size", "12");
 		rect.attr("body/cursor", "pointer");
 		return rect;
-	}
-
-	private createSlangLogo(): dia.Element {
-		if (!this.graph) {
-			throw new Error(`no graph`);
-		}
-
-		const image = new shapes.basic.Image({
-			size: {
-				width: 177,
-				height: 203,
-			},
-			attrs: {
-				image: {
-					"xlink:href": "https://files.bitspark.de/slang2.png",
-					"width": 177,
-					"height": 203,
-					"cursor": "default",
-				},
-			},
-		});
-		image.attr("draggable", false);
-		this.graph.addCell(image);
-
-		return image;
 	}
 
 	private addBlueprint(blueprint: BlueprintModel) {
