@@ -214,57 +214,6 @@ export function loadBlueprints(landscape: LandscapeModel, blueprintsJson: Bluepr
 	finishBlueprintModelsInstantiation(landscape, blueprintsJson);
 }
 
-/*
-export function updateBlueprints(landscape: LandscapeModel, blueprintJsonList: BlueprintJson[]) {
-	const blueprintJsonToUpdate = new Array<BlueprintJson>();
-	blueprintJsonList.forEach((bpJson: BlueprintJson) => {
-		let bp = landscape.findBlueprint(bpJson.id);
-
-		// New Blueprint
-		if (!bp) {
-			createUnfinishedBlueprintModel(landscape, bpJson, BlueprintType.Local);
-			return;
-		}
-
-		// Existing Blueprint
-		if (!bp.isLocal()) {
-			return;
-		}
-
-		if (bpJson.tests) {
-			bp.tests = bpJson.tests;
-		}
-
-		if (bpJson.geometry) {
-			bp.size = bpJson.geometry.size;
-		}
-
-		if (bpJson.properties) {
-			setBlueprintProperties(bp, bpJson.properties);
-		}
-
-		if (bpJson.services && bpJson.services.main) {
-			const mainSrv = bpJson.services.main;
-
-			if (mainSrv.geometry) {
-				bp.inPosition = mainSrv.geometry.in.position;
-				bp.outPosition = mainSrv.geometry.out.position;
-			}
-
-		}
-
-			setBlueprintServices(bp, services);
-
-		if (bpJson.delegates) {
-			setBlueprintDelegates(bp, bpJson.delegates);
-		}
-		blueprintJsonToUpdate.push(bpJson);
-	});
-
-	finishBlueprintModelsInstantiation(landscape, blueprintJsonToUpdate);
-}
-*/
-
 function createUnfinishedBlueprintModel(landscape: LandscapeModel, bpDef: BlueprintJson, bpType: BlueprintType): BlueprintModel {
 	const services = bpDef.services;
 	const bpGeo = bpDef.geometry;

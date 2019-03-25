@@ -156,5 +156,4 @@ describe("A new blueprint", () => {
 		bp.outPosition = 20;
 		expect(bp.outPosition).toEqual(20);
 	});
-
 });
