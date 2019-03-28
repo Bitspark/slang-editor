@@ -2,13 +2,11 @@ import {dia, g, shapes, util} from "jointjs";
 
 import {SlangSubjectTrigger} from "../../core/abstract/utils/events";
 import {XY} from "../../definitions/api";
-import {ComponentFactory} from "../factory";
 import {ViewFrame} from "../frame";
 
 import {View} from "./view";
 
 export interface PaperViewArgs {
-	factory: ComponentFactory;
 	hscrollable: boolean;
 	vscrollable: boolean;
 	editable: boolean;
@@ -29,13 +27,9 @@ export abstract class PaperView extends View {
 	private maxScale: number = 2.5;
 
 	protected constructor(frame: ViewFrame, private args: PaperViewArgs) {
-		super(frame, args.factory);
+		super(frame);
 		this.paper = this.createPaper();
 		this.redirectPaperEvents();
-	}
-
-	public getFactory(): ComponentFactory {
-		return this.factory;
 	}
 
 	public resize(width: number, height: number) {

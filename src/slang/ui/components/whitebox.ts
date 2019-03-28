@@ -2,7 +2,6 @@ import {dia, g, layout, shapes} from "jointjs";
 import m, {ClassComponent, CVnode} from "mithril";
 
 import {Styles} from "../../../styles/studio";
-import {SLANG_ASPECTS} from "../../aspects";
 import {GenericPortModel, PortModel} from "../../core/abstract/port";
 import {Connection} from "../../core/abstract/utils/connections";
 import {SlangSubject} from "../../core/abstract/utils/events";
@@ -404,10 +403,11 @@ export class WhiteBoxComponent extends CellComponent {
 		});
 
 		const view = this.paperView;
+		const aspects = view.aspects;
 
 		this.buttons.mount({
 			view: () => m(".toolbox",
-				SLANG_ASPECTS.getBlueprintToolboxButtons(this.paperView, this.blueprint)
+				aspects.getBlueprintToolboxButtons(this.paperView, this.blueprint)
 					.map((btnAttrs) => m(Button, {onClick: btnAttrs.onclick}, btnAttrs.label))),
 		});
 

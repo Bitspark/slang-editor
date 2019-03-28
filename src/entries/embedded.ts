@@ -1,9 +1,8 @@
 import {StaticStorageApp} from "../apps/storage/src/app";
-import {SLANG_ASPECTS} from "../slang/aspects";
+import {SlangAspects} from "../slang/aspects";
 import {AppModel} from "../slang/core/models/app";
 import {LandscapeModel} from "../slang/core/models/landscape";
 import {Slang} from "../slang/slang";
-import {ComponentFactory} from "../slang/ui/factory";
 import {ViewFrame} from "../slang/ui/frame";
 // tslint:disable-next-line
 import "../styles/embedded.scss";
@@ -13,11 +12,11 @@ import "./common";
 export function slangStudioEmbedded(el: HTMLElement, blueprintName: string): Promise<void> {
 	return new Promise<void>((resolve) => {
 		const appModel = AppModel.create(`embedded-${blueprintName}`);
-		const factory = new ComponentFactory();
+		const aspects = new SlangAspects();
 
 		const app = new Slang(appModel);
-		app.addFrame(new ViewFrame(el, factory), true);
-		new StaticStorageApp(appModel, SLANG_ASPECTS, "https://files.bitspark.de/slang-operators/slang-definitions.json");
+		app.addFrame(new ViewFrame(el, aspects), true);
+		new StaticStorageApp(appModel, aspects, "https://files.bitspark.de/slang-operators/slang-definitions.json");
 
 		app.load().then(() => {
 			const blueprint = appModel.getChildNode([LandscapeModel])!.findBlueprint(blueprintName);

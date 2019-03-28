@@ -1,9 +1,9 @@
-import {SlangApp} from "../../../slang/app";
-import {BlueprintModel} from "../../../slang/core/models/blueprint";
-import {LandscapeModel} from "../../../slang/core/models/landscape";
-import {OperatorModel} from "../../../slang/core/models/operator";
-import {TypeIdentifier} from "../../../slang/definitions/type";
-import {BlackBoxShape, BlackBoxShapeAttrs} from "../../../slang/ui/components/blackbox";
+import {SlangApp} from "../../slang/app";
+import {BlueprintModel} from "../../slang/core/models/blueprint";
+import {LandscapeModel} from "../../slang/core/models/landscape";
+import {OperatorModel} from "../../slang/core/models/operator";
+import {TypeIdentifier} from "../../slang/definitions/type";
+import {BlackBoxShape, BlackBoxShapeAttrs} from "../../slang/ui/components/blackbox";
 
 const ROUND_CORNER = 12;
 const FONT_SIZE = 9;
@@ -20,7 +20,7 @@ export class OperatorDataApp extends SlangApp {
 
 	protected register(uuid: string, ctr: typeof BlackBoxShape) {
 		try {
-			this.compFactory!.registerBlackBoxShape(this.getBlueprint(uuid), ctr);
+			this.aspects.factory.registerBlackBoxShape(this.getBlueprint(uuid), ctr);
 		} catch (e) {
 			return;
 		}

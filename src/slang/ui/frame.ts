@@ -1,4 +1,5 @@
-import {ComponentFactory} from "./factory";
+import {SlangAspects} from "../aspects";
+
 import {View} from "./views/view";
 
 export class ViewFrame {
@@ -6,7 +7,7 @@ export class ViewFrame {
 	private view: View | null = null;
 	private readonly viewEl: HTMLElement;
 
-	public constructor(private readonly container: HTMLElement, protected readonly factory: ComponentFactory) {
+	public constructor(private readonly container: HTMLElement, protected readonly aspects: SlangAspects) {
 		this.viewEl = document.createElement("div");
 		this.viewEl.classList.add("view");
 		container.appendChild(this.viewEl);
@@ -26,8 +27,8 @@ export class ViewFrame {
 		});
 	}
 
-	public getFactory(): ComponentFactory {
-		return this.factory;
+	public getAspects(): SlangAspects {
+		return this.aspects;
 	}
 
 	public setView(view: View) {

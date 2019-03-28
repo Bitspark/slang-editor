@@ -46,7 +46,6 @@ export class Slang {
 			}
 
 			const viewArgs = this.defaultViewArgs || {
-				factory: this.outlet.getFactory(),
 				editable: blueprint.isLocal(),
 				hscrollable: true,
 				vscrollable: true,

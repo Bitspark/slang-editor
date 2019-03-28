@@ -1,13 +1,12 @@
 import {AutoTriggerApp} from "../apps/autotrigger/src/app";
 import {DeploymentApp} from "../apps/deployment/src/app";
-import {OperatorDataApp} from "../apps/operators/src/app";
+import {OperatorDataApp} from "../apps/operators/app";
 import {BlueprintShareApp} from "../apps/share/src/app";
 import {APIStorageApp} from "../apps/storage/src/app";
-import {SLANG_ASPECTS} from "../slang/aspects";
+import {SlangAspects} from "../slang/aspects";
 import {AppModel} from "../slang/core/models/app";
 import {LandscapeModel} from "../slang/core/models/landscape";
 import {Slang} from "../slang/slang";
-import {ComponentFactory} from "../slang/ui/factory";
 import {ViewFrame} from "../slang/ui/frame";
 
 // tslint:disable-next-line
@@ -20,17 +19,16 @@ declare const APIURL: string;
 function slangStudioStandalone(el: HTMLElement): Promise<void> {
 	return new Promise<void>((resolve) => {
 		const appModel = AppModel.create("slang");
-		const factory = new ComponentFactory();
-
+		const aspects = new SlangAspects();
 		const app = new Slang(appModel);
-		const frame = new ViewFrame(el, factory);
+		const frame = new ViewFrame(el, aspects);
 		app.addFrame(frame, true);
 
-		new APIStorageApp(appModel, SLANG_ASPECTS, APIURL);
-		new DeploymentApp(appModel, SLANG_ASPECTS, APIURL);
-		new OperatorDataApp(appModel, SLANG_ASPECTS, factory);
-		new AutoTriggerApp(appModel, SLANG_ASPECTS);
-		new BlueprintShareApp(appModel, SLANG_ASPECTS);
+		new APIStorageApp(appModel, aspects, APIURL);
+		new DeploymentApp(appModel, aspects, APIURL);
+		new OperatorDataApp(appModel, aspects);
+		new AutoTriggerApp(appModel, aspects);
+		new BlueprintShareApp(appModel, aspects);
 
 		app.load().then(() => {
 			appModel.getChildNode(LandscapeModel)!.open();
