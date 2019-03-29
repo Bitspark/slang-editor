@@ -26,7 +26,6 @@ export class Form implements ClassComponent<FormAttrs> {
 		return m("form", {
 				class: (attrs.isValid ? "sl-invalid" : ""),
 				onsubmit: (e: Event) => {
-					console.log("---> onsubmit");
 					e.preventDefault();
 					if (attrs.onsubmit) {
 						attrs.onsubmit();
