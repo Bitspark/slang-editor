@@ -120,8 +120,8 @@ export class SlangType {
 		return new SlangType(null, TypeIdentifier.Unspecified);
 	}
 
-	public static newNumber(): SlangType {
-		return new SlangType(null, TypeIdentifier.Number);
+	public static new(tid: TypeIdentifier) {
+		return new SlangType(null, tid);
 	}
 
 	public static newString(): SlangType {
@@ -138,9 +138,9 @@ export class SlangType {
 		return new SlangType(null, TypeIdentifier.Map);
 	}
 
-	public static newStream(subType: SlangType): SlangType {
+	public static newStream(subTid: TypeIdentifier): SlangType {
 		const streamType = new SlangType(null, TypeIdentifier.Stream);
-		streamType.setStreamSub(subType);
+		streamType.setStreamSub(SlangType.new(subTid));
 		return streamType;
 	}
 

@@ -313,7 +313,7 @@ function operatorJsonToModel(landscape: LandscapeModel, outerBlueprint: Blueprin
 	return outerBlueprint.createOperator(opName, blueprint, properties, generics, opJson.geometry);
 }
 
-function toTypeIdentifier(typeName: string): TypeIdentifier {
+export function toTypeIdentifier(typeName: string): TypeIdentifier {
 	const type = ({
 		number: TypeIdentifier.Number,
 		binary: TypeIdentifier.Binary,
@@ -324,10 +324,10 @@ function toTypeIdentifier(typeName: string): TypeIdentifier {
 		generic: TypeIdentifier.Generic,
 		stream: TypeIdentifier.Stream,
 		map: TypeIdentifier.Map,
-	} as { [_: string]: TypeIdentifier })[typeName];
+	} as { [_: string]: TypeIdentifier })[typeName.toLowerCase()];
 
-	if (type === null) {
-		throw new Error(`unknown property type '${TypeIdentifier[type]}'`);
+	if (!type) {
+		throw new Error(`unknown type identifier '${typeName}'`);
 	}
 
 	return type;

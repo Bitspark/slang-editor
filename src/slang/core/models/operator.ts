@@ -94,7 +94,6 @@ export class OperatorModel extends BlackBox {
 	}
 
 	public getGenerics(): GenericSpecifications {
-		// TODO return copy to prevent side-effects
 		return this.generics;
 	}
 

@@ -6,7 +6,7 @@ import {AppModel} from "../../src/slang/core/models/app";
 import {BlueprintModel, BlueprintType} from "../../src/slang/core/models/blueprint";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
 import {OperatorModel} from "../../src/slang/core/models/operator";
-import {SlangType} from "../../src/slang/definitions/type";
+import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
 import {TestStorageApp} from "../helpers/TestStorageApp";
 import data from "../resources/definitions.json";
 
@@ -33,7 +33,7 @@ describe("A connection", () => {
 	});
 
 	it("is possible between stream sub and single", () => {
-		const streamType = SlangType.newStream(SlangType.newString());
+		const streamType = SlangType.newStream(TypeIdentifier.String);
 		const bpPortIn = bpNew.createPort({type: streamType, direction: PortDirection.In, name: ""});
 
 		const s2sOp = bpNew.createOperator("s2s", bpS2S, null, null);
@@ -43,7 +43,7 @@ describe("A connection", () => {
 	});
 
 	it("is not possible between stream and single", () => {
-		const streamType = SlangType.newStream(SlangType.newString());
+		const streamType = SlangType.newStream(TypeIdentifier.String);
 		const bpPortIn = bpNew.createPort({type: streamType, direction: PortDirection.In, name: ""});
 
 		const s2sOp = bpNew.createOperator("s2s", bpS2S, null, null);
