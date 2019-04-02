@@ -145,7 +145,7 @@ export namespace Input {
 		private pre(objectValue: { [sub: string]: SlangTypeValue }): Map<string, SlangTypeValue> {
 			const mapValue = new Map<string, SlangTypeValue>();
 			for (const sub in objectValue) {
-				if (objectValue.hasOwnProperty(sub)) {
+				if (!objectValue.hasOwnProperty(sub)) {
 					continue;
 				}
 				mapValue.set(sub, objectValue[sub]);

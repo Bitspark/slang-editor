@@ -96,8 +96,7 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 		return formData;
 	}
 
-	private renderPropertyInput(fieldName: string, _fieldAttrs: { type: SlangType, initValue?: SlangTypeValue }): m.Children {
-		const {type, initValue} = this.formBody.get(fieldName)!;
+	private renderPropertyInput(fieldName: string, {type, initValue}: { type: SlangType, initValue?: SlangTypeValue }): m.Children {
 		return m(Input.ConsoleEntry, {
 			type,
 			label: fieldName,
