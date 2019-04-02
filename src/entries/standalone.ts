@@ -1,3 +1,9 @@
+// tslint:disable-next-line
+import "./common";
+
+// tslint:disable-next-line
+import "../styles/standalone.scss";
+
 import {AutoTriggerApp} from "../apps/autotrigger/src/app";
 import {DeploymentApp} from "../apps/deployment/src/app";
 import {OperatorDataApp} from "../apps/operators/app";
@@ -8,11 +14,6 @@ import {AppModel} from "../slang/core/models/app";
 import {LandscapeModel} from "../slang/core/models/landscape";
 import {Slang} from "../slang/slang";
 import {ViewFrame} from "../slang/ui/frame";
-
-// tslint:disable-next-line
-import "../styles/standalone.scss";
-// tslint:disable-next-line
-import "./common";
 
 declare const APIURL: string;
 

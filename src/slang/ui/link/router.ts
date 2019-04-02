@@ -24,7 +24,7 @@ const config = {
 		return sqrt2 * this.step;
 	},
 
-	directions: function () {
+	directions() {
 		const step = this.step;
 		const cost = this.cost();
 		const diagonalCost = this.diagonalCost();
@@ -41,7 +41,7 @@ const config = {
 		];
 	},
 
-	fallbackRoute: function (from: any, to: any, opt: any) {
+	fallbackRoute(from: any, to: any, opt: any) {
 		// Find a route which breaks by 45 degrees ignoring all obstacles.
 
 		var theta = from.theta(to);
@@ -52,28 +52,28 @@ const config = {
 		var b = {x: from.x, y: to.y};
 
 		if (theta % degrees180 > degrees90) {
-			const t = a;
+			var t = a;
 			a = b;
 			b = t;
 		}
 
-		const p1 = (theta % degrees90) < degrees45 ? a : b;
-		const l1 = new g.Line(from, p1);
+		var p1 = (theta % degrees90) < degrees45 ? a : b;
+		var l1 = new g.Line(from, p1);
 
-		const alpha = degrees90 * Math.ceil(theta / degrees90);
+		var alpha = degrees90 * Math.ceil(theta / degrees90);
 
-		const p2 = g.Point.fromPolar(l1.squaredLength(), g.toRad(alpha + degrees135), p1);
-		const l2 = new g.Line(to, p2);
+		var p2 = g.Point.fromPolar(l1.squaredLength(), g.toRad(alpha + degrees135), p1);
+		var l2 = new g.Line(to, p2);
 
 		var intersectionPoint = (l1 as any).intersection(l2);
 		var point = intersectionPoint ? intersectionPoint : to;
 
 		var directionFrom = intersectionPoint ? point : from;
 
-		const quadrant = degrees360 / opt.directions.length;
-		const angleTheta = directionFrom.theta(to);
-		const normalizedAngle = g.normalizeAngle(angleTheta + (quadrant / 2));
-		const directionAngle = quadrant * Math.floor(normalizedAngle / quadrant);
+		var quadrant = degrees360 / opt.directions.length;
+		var angleTheta = directionFrom.theta(to);
+		var normalizedAngle = g.normalizeAngle(angleTheta + (quadrant / 2));
+		var directionAngle = quadrant * Math.floor(normalizedAngle / quadrant);
 
 		opt.previousDirectionAngle = directionAngle;
 
@@ -119,13 +119,13 @@ const config = {
 	},
 
 	// cost of an orthogonal step
-	cost: function () {
+	cost() {
 
 		return this.step;
 	},
 
 	// a penalty received for direction change
-	penalties: function () {
+	penalties() {
 
 		return {
 			0: 0,
@@ -135,7 +135,7 @@ const config = {
 	},
 
 	// padding applied on the element bounding boxes
-	paddingBox: function (): g.Rect {
+	paddingBox(): g.Rect {
 		let step = this.step * 2;
 		return new g.Rect(
 			-step,
@@ -147,7 +147,7 @@ const config = {
 
 	// a router to use when the manhattan router fails
 	// (one of the partial routes returns null)
-	fallbackRouter: function (vertices: Array<g.Point>, opt: any, linkView: dia.LinkView): Array<g.PlainPoint> {
+	fallbackRouter(vertices: Array<g.Point>, opt: any, linkView: dia.LinkView): Array<g.PlainPoint> {
 		if (!util.isFunction(joint.routers.orthogonal)) {
 			throw new Error("Manhattan requires the orthogonal router as default fallback.");
 		}
@@ -351,9 +351,9 @@ function getTargetAnchor(linkView: any, opt: any) {
 // corrects for grid deformation between start and end
 function getDirectionAngle(start: any, end: any, numDirections: any, grid: any, opt: any) {
 
-	const quadrant = degrees360 / numDirections;
-	const angleTheta = start.theta(fixAngleEnd(start, end, grid, opt));
-	const normalizedAngle = g.normalizeAngle(angleTheta + (quadrant / 2));
+	let quadrant = degrees360 / numDirections;
+	let angleTheta = start.theta(fixAngleEnd(start, end, grid, opt));
+	let normalizedAngle = g.normalizeAngle(angleTheta + (quadrant / 2));
 	return quadrant * Math.floor(normalizedAngle / quadrant);
 }
 
@@ -381,7 +381,7 @@ function fixAngleEnd(start: any, end: any, grid: any, opt: any) {
 // return the change in direction between two direction angles
 function getDirectionChange(angle1: any, angle2: any) {
 
-	const directionChange = Math.abs(angle1 - angle2);
+	let directionChange = Math.abs(angle1 - angle2);
 	return (directionChange > degrees180) ? (degrees360 - directionChange) : directionChange;
 }
 

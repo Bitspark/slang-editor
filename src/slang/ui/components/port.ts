@@ -20,7 +20,7 @@ export class PortComponent {
 	}
 
 	private static getPortMarkup(port: PortModel, ghost: boolean): string {
-		const streamDepth = port.getStreamDepth();
+		const streamDepth = 0; // TODO
 		if (streamDepth < 0) {
 			throw new Error(`stream depth cannot be negative`);
 		}

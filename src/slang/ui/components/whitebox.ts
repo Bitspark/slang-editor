@@ -411,6 +411,12 @@ export class WhiteBoxComponent extends CellComponent {
 					.map((btnAttrs) => m(Button, {onClick: btnAttrs.onclick}, btnAttrs.label))),
 		});
 
+		this.buttons.mount({
+			view: () => m(".toolbox",
+				aspects.getBlueprintToolboxButtons(this.paperView, this.blueprint)
+					.map((btnAttrs) => m(Button, {onClick: btnAttrs.onclick}, btnAttrs.label))),
+		});
+
 		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
 			if (!instance) {
 
@@ -470,8 +476,7 @@ export class WhiteBoxComponent extends CellComponent {
 			right: "left",
 		};
 
-		const that = this;
-		const portComponent = new IsolatedBlueprintPortComponent(name, id, port, invertedPosition[pos], !this.paperView.isReadOnly);
+		const portComponent = new IsolatedBlueprintPortComponent(name, id, port, invertedPosition[pos], this.paperView.isEditable);
 		const portElement = portComponent.getShape();
 		this.paperView.renderCell(portElement);
 
@@ -565,8 +570,8 @@ export class WhiteBoxComponent extends CellComponent {
 		}
 
 		portElement.set("restrictTranslate", (): g.PlainRect => {
-			const outerPosition = that.shape.get("position") as g.PlainPoint;
-			const outerSize = that.shape.get("size") as g.PlainRect;
+			const outerPosition = this.shape.get("position") as g.PlainPoint;
+			const outerSize = this.shape.get("size") as g.PlainRect;
 			return calculateRestrictedRect(outerPosition, outerSize);
 		});
 

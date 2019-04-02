@@ -1,16 +1,18 @@
+// tslint:disable-next-line
+import "./common";
+
+// tslint:disable-next-line
+import "../styles/embedded.scss";
+
 import {OperatorDataApp} from "../apps/operators/app";
 import {BlueprintShareApp} from "../apps/share/src/app";
 import {SlangAspects} from "../slang/aspects";
+import {loadBlueprints} from "../slang/core/mapper";
 import {AppModel} from "../slang/core/models/app";
 import {LandscapeModel} from "../slang/core/models/landscape";
-import {BlueprintApiResponse, BlueprintJson} from "../slang/definitions/api";
+import {BlueprintJson, BlueprintsJson} from "../slang/definitions/api";
 import {Slang} from "../slang/slang";
 import {ViewFrame} from "../slang/ui/frame";
-
-// tslint:disable-next-line
-import "../styles/standalone.scss";
-// tslint:disable-next-line
-import "./common";
 
 (window as any).startSlang = () => {
 	const appModel = AppModel.create(`embedded-slang`);
@@ -24,7 +26,7 @@ import "./common";
 		vscrollable: false,
 	});
 
-	const blueprints: BlueprintApiResponse[] = [];
+	const blueprints: BlueprintsJson = {elementary: [], library: [], local: []};
 
 	for (const el of document.querySelectorAll(`script[type="text/slang"]`)) {
 		if (!(el instanceof HTMLScriptElement)) {
@@ -39,11 +41,20 @@ import "./common";
 			throw new Error(`blueprint ids don't match: ${blueprintId} !== ${blueprintDef.id}`);
 		}
 
-		blueprints.push({type: blueprintType, def: blueprintDef});
+		switch (blueprintType) {
+			case "elementary":
+				blueprints.elementary.push(blueprintDef);
+				break;
+			case "library":
+				blueprints.library.push(blueprintDef);
+				break;
+			case "local":
+				blueprints.local.push(blueprintDef);
+				break;
+		}
 	}
 
-	// TODO
-	// loadBlueprints(appModel.getChildNode(LandscapeModel)!, blueprints);
+	loadBlueprints(appModel.getChildNode(LandscapeModel)!, blueprints);
 
 	new OperatorDataApp(appModel, aspects);
 	new BlueprintShareApp(appModel, aspects);

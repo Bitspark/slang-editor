@@ -1,7 +1,6 @@
 import {Subscription} from "rxjs";
 
 import {SlangType, TypeIdentifier} from "../../definitions/type";
-
 import {BlackBox} from "./blackbox";
 import {SlangNode} from "./nodes";
 import {PortOwner} from "./port-owner";
@@ -36,7 +35,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	private readonly name: string;
 	private readonly direction: PortDirection;
 	private genericIdentifier?: string;
-	private streamDepth = 0;
 
 	// Mixins
 	private readonly streamPort: StreamPort;
@@ -54,6 +52,18 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	}
 
 	public reconstruct(type: SlangType, portCtor: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel, direction: PortDirection, generic: boolean = false): void {
+		/*
+		 * When generic == true then this method is called because this port is generic-like and its specification has changed
+		 * When generic == false then this method is called because the port is being reconstructed
+		 *   either because is is being constructed for the first time
+		 *   or because a property has changed
+		 * In case a property has changed and this port is generic-like we need to take care to not reset its type
+		 */
+
+		if (!generic && this.isGenericLike() && !this.getType().isUnspecified()) {
+			return;
+		}
+
 		if (this.typeIdentifier !== type.getTypeIdentifier()) {
 			this.typeIdentifier = type.getTypeIdentifier();
 			switch (this.typeIdentifier) {
@@ -284,7 +294,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	}
 
 	public getStreamDepth(): number {
-		return this.streamDepth;
+		return this.streamPort.getStreamType().getStreamDepth();
 	}
 
 	public getDescendantPorts(): Array<GenericPortModel<O>> {

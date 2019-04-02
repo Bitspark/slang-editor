@@ -220,7 +220,7 @@ function createUnfinishedBlueprintModel(landscape: LandscapeModel, bpDef: Bluepr
 	const geometry = (services && bpGeo) ? Object.assign(bpGeo, {port: services.main.geometry!}) : undefined;
 	const tests = bpDef.tests;
 
-	const blueprint = landscape.createBlueprint({uuid: bpDef.id, meta: bpDef.meta, type: bpType, geometry, tests});
+	const blueprint = landscape.createBlueprint({geometry, tests, uuid: bpDef.id, meta: bpDef.meta, type: bpType});
 	if (services) {
 		setBlueprintServices(blueprint, services);
 	}
@@ -244,10 +244,7 @@ function finishBlueprintModelsInstantiation(landscape: LandscapeModel, blueprint
 		if (!outerBlueprint) {
 			return;
 		}
-
-		const operators = bpJson.operators!;
-
-		instantiateBlueprintOperators(landscape, outerBlueprint, operators);
+		instantiateBlueprintOperators(landscape, outerBlueprint, bpJson.operators!);
 	});
 
 	// 3) Connect operator and blueprint ports
@@ -261,7 +258,6 @@ function finishBlueprintModelsInstantiation(landscape: LandscapeModel, blueprint
 		if (!connections) {
 			return;
 		}
-
 		connectBlueprintOperators(outerBlueprint, connections);
 	});
 }

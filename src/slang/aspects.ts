@@ -12,6 +12,7 @@ export interface BlueprintToolBoxType {
 
 export class SlangAspects {
 	public readonly factory = new ComponentFactory();
+
 	private aspectBlueprintToolbox = new Array<(view: PaperView, blupr: BlueprintModel) => BlueprintToolBoxType[]>();
 
 	public getBlueprintToolboxButtons(view: PaperView, blueprint: BlueprintModel): BlueprintToolBoxType[] {

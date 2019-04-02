@@ -227,7 +227,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 	private operatorControl?: AttachableComponent;
 
 	constructor(paperView: PaperView, protected readonly operator: OperatorModel) {
-		super(paperView, !paperView.isReadOnly);
+		super(paperView, paperView.isEditable);
 
 		operator.getGenerics().subscribeGenericsChanged(() => {
 			this.refresh();

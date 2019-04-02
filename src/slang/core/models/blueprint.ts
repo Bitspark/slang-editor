@@ -132,7 +132,7 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 	}
 
 	public readonly uuid: string;
-	public tests: any;
+	public readonly tests: any;
 	// Topics::self
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
 	private saveChanges = new SlangSubjectTrigger("save-changes");
@@ -183,19 +183,17 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		return this.fakeGenerics;
 	}
 
-	public createOperator(name: string | null, blueprint: BlueprintModel, properties: PropertyAssignments | null, generics: GenericSpecifications | null, geometry?: OperatorGeometry): OperatorModel {
-		const operatorGenerics = generics ? generics : new GenericSpecifications([]);
-		const operatorProperties = properties ? properties : new PropertyAssignments([], operatorGenerics);
+	public createOperator(name: string | null, blueprint: BlueprintModel, properties: PropertyAssignments, generics: GenericSpecifications, geometry?: OperatorGeometry): OperatorModel {
 		return this.createChildNode(OperatorModel, {
 			blueprint,
+			generics,
 			geometry,
+			properties,
 			name: name ? name : this.getNextOperatorName(blueprint),
-			generics: operatorGenerics,
-			properties: operatorProperties,
 		});
 	}
 
-	public createBlankOperator(blueprint: BlueprintModel, geometry: OperatorGeometry): OperatorModel {
+	public createBlankOperator(blueprint: BlueprintModel, geometry?: OperatorGeometry): OperatorModel {
 		const name = this.getNextOperatorName(blueprint);
 		return this.createChildNode(OperatorModel, {
 			name,

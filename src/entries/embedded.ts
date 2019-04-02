@@ -1,13 +1,15 @@
+// tslint:disable-next-line
+import "./common";
+
+// tslint:disable-next-line
+import "../styles/embedded.scss";
+
 import {StaticStorageApp} from "../apps/storage/src/app";
 import {SlangAspects} from "../slang/aspects";
 import {AppModel} from "../slang/core/models/app";
 import {LandscapeModel} from "../slang/core/models/landscape";
 import {Slang} from "../slang/slang";
 import {ViewFrame} from "../slang/ui/frame";
-// tslint:disable-next-line
-import "../styles/embedded.scss";
-// tslint:disable-next-line
-import "./common";
 
 export function slangStudioEmbedded(el: HTMLElement, blueprintName: string): Promise<void> {
 	return new Promise<void>((resolve) => {
@@ -15,6 +17,7 @@ export function slangStudioEmbedded(el: HTMLElement, blueprintName: string): Pro
 		const aspects = new SlangAspects();
 
 		const app = new Slang(appModel);
+
 		app.addFrame(new ViewFrame(el, aspects), true);
 		new StaticStorageApp(appModel, aspects, "https://files.bitspark.de/slang-operators/slang-definitions.json");
 

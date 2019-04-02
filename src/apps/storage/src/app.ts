@@ -36,7 +36,9 @@ export class APIStorageApp extends SlangApp {
 	}
 
 	private store(blueprint: BlueprintModel): void {
-		this.api.storeBlueprint(blueprintModelToJson(blueprint));
+		this.api.storeBlueprint(blueprintModelToJson(blueprint)).then(() => {
+			return;
+		});
 	}
 }
 
