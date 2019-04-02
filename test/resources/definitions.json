@@ -171,152 +171,142 @@
       "connections": {}
     },
     {
-      "def": {
-        "id": "1e365eba-75c0-416f-883d-dbd2eb802c6a",
-        "meta": {
-          "name": "GenericsAndProperties"
-        },
-        "services": {
-          "main": {
-            "in": {
-              "type": "generic",
-              "generic": "itemType"
-            },
-            "out": {
-              "type": "string"
-            }
-          }
-        },
-        "operators": {},
-        "connections": {},
-        "properties": {
-          "test": {
+      "id": "1e365eba-75c0-416f-883d-dbd2eb802c6a",
+      "meta": {
+        "name": "GenericsAndProperties"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "generic",
+            "generic": "itemType"
+          },
+          "out": {
             "type": "string"
           }
+        }
+      },
+      "operators": {},
+      "connections": {},
+      "properties": {
+        "test": {
+          "type": "string"
         }
       }
     },
     {
-      "def": {
-        "id": "475f9092-8925-4a5c-b279-186f524da4b4",
-        "meta": {
-          "name": "TwoStreams"
-        },
-        "services": {
-          "main": {
-            "in": {
-              "type": "map",
-              "map": {
-                "a": {
-                  "type": "stream",
-                  "stream": {
-                    "type": "generic",
-                    "generic": "itemType1"
-                  }
-                },
-                "b": {
-                  "type": "stream",
-                  "stream": {
-                    "type": "generic",
-                    "generic": "itemType2"
-                  }
+      "id": "475f9092-8925-4a5c-b279-186f524da4b4",
+      "meta": {
+        "name": "TwoStreams"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "map",
+            "map": {
+              "a": {
+                "type": "stream",
+                "stream": {
+                  "type": "generic",
+                  "generic": "itemType1"
+                }
+              },
+              "b": {
+                "type": "stream",
+                "stream": {
+                  "type": "generic",
+                  "generic": "itemType2"
                 }
               }
-            },
-            "out": {
-              "type": "string"
             }
+          },
+          "out": {
+            "type": "string"
           }
-        },
-        "operators": {},
-        "connections": {},
-        "properties": {}
-      }
+        }
+      },
+      "operators": {},
+      "connections": {},
+      "properties": {}
     },
     {
-      "def": {
-        "id": "12cfe9ae-2586-4285-bc67-71b19864f1b9",
-        "meta": {
-          "name": "StringToNumberStream"
-        },
-        "services": {
-          "main": {
-            "in": {
-              "type": "string"
-            },
-            "out": {
-              "type": "stream",
-              "stream": {
-                "type": "number"
+      "id": "12cfe9ae-2586-4285-bc67-71b19864f1b9",
+      "meta": {
+        "name": "StringToNumberStream"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "string"
+          },
+          "out": {
+            "type": "stream",
+            "stream": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
+    },
+    {
+      "id": "1cbe6fa4-7501-49ca-95c3-a0fa428711ff",
+      "meta": {
+        "name": "TwoIn"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "map",
+            "map": {
+              "a": {
+                "type": "string"
+              },
+              "b": {
+                "type": "string"
               }
             }
+          },
+          "out": {
+            "type": "string"
           }
-        },
-        "operators": {},
-        "connections": {}
-      }
+        }
+      },
+      "operators": {},
+      "connections": {}
     },
     {
-      "def": {
-        "id": "1cbe6fa4-7501-49ca-95c3-a0fa428711ff",
-        "meta": {
-          "name": "TwoIn"
-        },
-        "services": {
-          "main": {
-            "in": {
-              "type": "map",
-              "map": {
-                "a": {
+      "id": "cd9dabfe-6664-4788-a8d3-0f6d5b2dbe6a",
+      "meta": {
+        "name": "TwoStreamsOut"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "string"
+          },
+          "out": {
+            "type": "map",
+            "map": {
+              "a": {
+                "type": "stream",
+                "stream": {
                   "type": "string"
-                },
-                "b": {
+                }
+              },
+              "b": {
+                "type": "stream",
+                "stream": {
                   "type": "string"
                 }
               }
-            },
-            "out": {
-              "type": "string"
             }
           }
-        },
-        "operators": {},
-        "connections": {}
-      }
-    },
-    {
-      "def": {
-        "id": "cd9dabfe-6664-4788-a8d3-0f6d5b2dbe6a",
-        "meta": {
-          "name": "TwoStreamsOut"
-        },
-        "services": {
-          "main": {
-            "in": {
-              "type": "string"
-            },
-            "out": {
-              "type": "map",
-              "map": {
-                "a": {
-                  "type": "stream",
-                  "stream": {
-                    "type": "string"
-                  }
-                },
-                "b": {
-                  "type": "stream",
-                  "stream": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operators": {},
-        "connections": {}
-      }      
+        }
+      },
+      "operators": {},
+      "connections": {}
     }
   ]
 }

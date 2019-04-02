@@ -1,6 +1,7 @@
 import {Subscription} from "rxjs";
 
 import {SlangType, TypeIdentifier} from "../../definitions/type";
+
 import {BlackBox} from "./blackbox";
 import {SlangNode} from "./nodes";
 import {PortOwner} from "./port-owner";
@@ -75,7 +76,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				}
 				case TypeIdentifier.Stream: {
 					const subType = type.getStreamSub();
-					this.createChildNode(portCtor, {name: this.name, type: subType, direction});
+					this.createChildNode(portCtor, {direction, name: this.name, type: subType});
 					break;
 				}
 				case TypeIdentifier.Generic: {
