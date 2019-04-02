@@ -2,7 +2,6 @@ export interface ParsedPortInformation {
 	blueprint: string | undefined;
 	instance: string;
 	delegate: string | undefined;
-	service: string | undefined;
 	directionIn: boolean;
 	port: string;
 }
@@ -17,7 +16,6 @@ export class SlangParsing {
 			blueprint: undefined,
 			instance: "",
 			delegate: undefined,
-			service: undefined,
 			directionIn: false,
 			port: "",
 		};
@@ -47,35 +45,26 @@ export class SlangParsing {
 		parsedInfo.port = referenceSplit[portIdx];
 
 		if (instancePart === "") {
-			parsedInfo.instance = "";
-			parsedInfo.service = "main";
-		} else {
-			if (instancePart.indexOf(".") !== -1 && instancePart.indexOf("@") !== -1) {
-				// Delegate and service must not both occur in string
-				return undefined;
-			}
-			if (instancePart.indexOf(".") !== -1) {
-				const instanceSplit = instancePart.split(".");
-				if (instanceSplit.length === 2) {
-					parsedInfo.instance = instanceSplit[0];
-					parsedInfo.delegate = instanceSplit[1];
-				}
-			} else if (instancePart.indexOf("@") !== -1) {
-				const instanceSplit = instancePart.split("@");
-				if (instanceSplit.length === 2) {
-					parsedInfo.instance = instanceSplit[1];
-					parsedInfo.service = instanceSplit[0];
-				}
-			} else {
-				parsedInfo.instance = instancePart;
-				parsedInfo.service = "main";
-			}
+			return parsedInfo;
 		}
 
-		const splitInstance = parsedInfo.instance.split("#");
+		const splitInstance = instancePart.split("#");
 		if (splitInstance.length === 2) {
 			parsedInfo.blueprint = splitInstance[0];
 			parsedInfo.instance = splitInstance[1];
+		} else if (splitInstance.length === 1) {
+			parsedInfo.instance = splitInstance[0];
+		} else {
+			return undefined;
+		}
+
+		if (parsedInfo.instance.indexOf(".") !== -1) {
+			const instanceSplit = parsedInfo.instance.split(".");
+			if (instanceSplit.length !== 2) {
+				return undefined;
+			}
+			parsedInfo.instance = instanceSplit[0];
+			parsedInfo.delegate = instanceSplit[1];
 		}
 
 		return parsedInfo;

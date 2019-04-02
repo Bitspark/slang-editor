@@ -1,4 +1,13 @@
-import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
+import {
+	SlangType, SlangTypeJson,
+	SlangTypeMap,
+	SlangTypeStream,
+	SlangTypeValue,
+	TypeIdentifier,
+} from "../../src/slang/definitions/type";
+import isUndefined = SlangTypeValue.isUndefined;
+import copy = SlangTypeValue.copy;
+import equals = SlangTypeJson.equals;
 
 // tslint:disable:no-magic-numbers
 
@@ -24,6 +33,7 @@ describe("A Slang type", () => {
 		const typeCpy = type.copy();
 		expect(typeCpy.getTypeIdentifier()).toEqual(TypeIdentifier.String);
 		expect(typeCpy.isString()).toEqual(true);
+		expect(typeCpy.isPrimitive()).toEqual(true);
 	});
 
 	it("can be a number", () => {
@@ -31,6 +41,7 @@ describe("A Slang type", () => {
 		const typeCpy = type.copy();
 		expect(typeCpy.getTypeIdentifier()).toEqual(TypeIdentifier.Number);
 		expect(typeCpy.isNumber()).toEqual(true);
+		expect(typeCpy.isPrimitive()).toEqual(true);
 	});
 
 	it("can be a boolean", () => {
@@ -38,6 +49,7 @@ describe("A Slang type", () => {
 		const typeCpy = type.copy();
 		expect(typeCpy.getTypeIdentifier()).toEqual(TypeIdentifier.Boolean);
 		expect(typeCpy.isBoolean()).toEqual(true);
+		expect(typeCpy.isPrimitive()).toEqual(true);
 	});
 
 	it("can be a binary", () => {
@@ -45,6 +57,14 @@ describe("A Slang type", () => {
 		const typeCpy = type.copy();
 		expect(typeCpy.getTypeIdentifier()).toEqual(TypeIdentifier.Binary);
 		expect(typeCpy.isBinary()).toEqual(true);
+		expect(typeCpy.isPrimitive()).toEqual(true);
+	});
+
+	it("can be a primitive", () => {
+		const type = new SlangType(null, TypeIdentifier.Primitive);
+		const typeCpy = type.copy();
+		expect(typeCpy.getTypeIdentifier()).toEqual(TypeIdentifier.Primitive);
+		expect(typeCpy.isPrimitive()).toEqual(true);
 	});
 
 	it("can be a trigger", () => {
@@ -52,6 +72,7 @@ describe("A Slang type", () => {
 		const typeCpy = type.copy();
 		expect(typeCpy.getTypeIdentifier()).toEqual(TypeIdentifier.Trigger);
 		expect(typeCpy.isTrigger()).toEqual(true);
+		expect(typeCpy.isPrimitive()).toEqual(false);
 	});
 
 	it("can be a generic", () => {
@@ -60,6 +81,7 @@ describe("A Slang type", () => {
 		const typeCpy = type.copy();
 		expect(typeCpy.getTypeIdentifier()).toEqual(TypeIdentifier.Generic);
 		expect(typeCpy.isGeneric()).toEqual(true);
+		expect(typeCpy.isPrimitive()).toEqual(false);
 
 		expect(typeCpy.getGenericIdentifier()).toEqual("testType");
 		typeCpy.setGenericIdentifier("anotherType");
@@ -73,6 +95,7 @@ describe("A Slang type", () => {
 		const typeCpy = type.copy();
 		expect(typeCpy.getTypeIdentifier()).toEqual(TypeIdentifier.Stream);
 		expect(typeCpy.isStream()).toEqual(true);
+		expect(typeCpy.isPrimitive()).toEqual(false);
 
 		expect(typeCpy.getStreamSub().isString()).toEqual(true);
 		typeCpy.setStreamSub(new SlangType(typeCpy, TypeIdentifier.Number));
@@ -86,6 +109,7 @@ describe("A Slang type", () => {
 		const typeCpy = type.copy();
 		expect(typeCpy.getTypeIdentifier()).toEqual(TypeIdentifier.Map);
 		expect(typeCpy.isMap()).toEqual(true);
+		expect(typeCpy.isPrimitive()).toEqual(false);
 
 		expect(typeCpy.findMapSub("a")!.isString()).toEqual(true);
 		typeCpy.addMapSub("a", new SlangType(typeCpy, TypeIdentifier.Number));
@@ -98,7 +122,217 @@ describe("A Slang type", () => {
 
 });
 
-// TODO: union
-// TODO: equals
-// TODO: getTypeDef
-// TODO: isVoid
+describe("SlangTypeValue.isUndefined", () => {
+
+	it("returns true", () => {
+		expect(isUndefined(undefined)).toEqual(true);
+	});
+
+	it("returns false", () => {
+		expect(isUndefined(0)).toEqual(false);
+		expect(isUndefined(null)).toEqual(false);
+		expect(isUndefined("")).toEqual(false);
+		expect(isUndefined(-1)).toEqual(false);
+		expect(isUndefined("test")).toEqual(false);
+		expect(isUndefined(123)).toEqual(false);
+		expect(isUndefined(false)).toEqual(false);
+	});
+
+});
+
+describe("SlangTypeValue.copy", () => {
+
+	it("returns a true map copy", () => {
+		const a = {a: 1};
+		const b = copy(a) as SlangTypeMap;
+		a.a = 2;
+		expect(b.a).toBe(1);
+	});
+
+	it("returns a true stream copy", () => {
+		const a = [1];
+		const b = copy(a) as SlangTypeStream;
+		a[0] = 4;
+		expect(b[0]).toBe(1);
+	});
+
+});
+
+describe("SlangTypeJson.equals", () => {
+
+	it("returns true", () => {
+		expect(equals({type: "string"}, {type: "string"})).toEqual(true);
+	});
+
+	it("returns false", () => {
+		expect(equals({type: "string"}, {type: "number"})).toEqual(false);
+	});
+
+});
+
+describe("Slang type unification", () => {
+
+	it("works in case of two maps", () => {
+		const map1 = SlangType.newMap();
+		const map2 = SlangType.newMap();
+
+		map1.createMapSub("a", TypeIdentifier.Boolean);
+		map2.createMapSub("b", TypeIdentifier.String);
+
+		const union = map1.union(map2);
+
+		expect(union.isMap()).toEqual(true);
+		expect(Array.from(union.getMapSubs()).length).toEqual(2);
+		expect(union.findMapSub("a")!.isBoolean()).toEqual(true);
+		expect(union.findMapSub("b")!.isString()).toEqual(true);
+	});
+
+	it("works in case of two deep maps", () => {
+		const map1 = SlangType.newMap();
+		const map2 = SlangType.newMap();
+
+		map1.createMapSub("a", TypeIdentifier.Map).createMapSub("b", TypeIdentifier.Boolean);
+		map2.createMapSub("a", TypeIdentifier.Map).createMapSub("c", TypeIdentifier.Number);
+
+		const union = map1.union(map2);
+		const unionSub = union.findMapSub("a")!;
+
+		expect(union.isMap()).toEqual(true);
+		expect(unionSub.isMap()).toEqual(true);
+		expect(Array.from(unionSub.getMapSubs()).length).toEqual(2);
+		expect(unionSub.findMapSub("b")!.isBoolean()).toEqual(true);
+		expect(unionSub.findMapSub("c")!.isNumber()).toEqual(true);
+	});
+
+	it("throws exceptions", () => {
+		const type1 = SlangType.newString();
+		const type2 = SlangType.newBoolean();
+
+		expect(() => type1.union(type2)).toThrow();
+	});
+
+});
+
+describe("Slang type equality", () => {
+
+	it("returns true in case of two maps", () => {
+		const map1 = SlangType.newMap();
+		const map2 = SlangType.newMap();
+
+		map1.createMapSub("a", TypeIdentifier.Boolean);
+		map2.createMapSub("a", TypeIdentifier.Boolean);
+
+		expect(map1.equals(map2)).toEqual(true);
+	});
+
+	it("returns false in case of two maps", () => {
+		const map1 = SlangType.newMap();
+		const map2 = SlangType.newMap();
+
+		map1.createMapSub("a", TypeIdentifier.Boolean);
+		map2.createMapSub("b", TypeIdentifier.Boolean);
+
+		expect(map1.equals(map2)).toEqual(false);
+	});
+
+	it("returns false in case of two maps", () => {
+		const map1 = SlangType.newMap();
+		const map2 = SlangType.newMap();
+
+		map1.createMapSub("a", TypeIdentifier.Boolean);
+		map2.createMapSub("a", TypeIdentifier.Number);
+
+		expect(map1.equals(map2)).toEqual(false);
+	});
+
+	it("returns false in case of two maps", () => {
+		const map1 = SlangType.newMap();
+		const map2 = SlangType.newMap();
+
+		map1.createMapSub("a", TypeIdentifier.Boolean);
+		map2.createMapSub("a", TypeIdentifier.Boolean);
+		map2.createMapSub("b", TypeIdentifier.Boolean);
+
+		expect(map1.equals(map2)).toEqual(false);
+	});
+
+	it("returns true in case of two streams", () => {
+		const stream1 = SlangType.newStream(TypeIdentifier.Number);
+		const stream2 = SlangType.newStream(TypeIdentifier.Number);
+
+		expect(stream1.equals(stream2)).toEqual(true);
+	});
+
+	it("returns true in case of two streams", () => {
+		const stream1 = SlangType.newStream(TypeIdentifier.Stream);
+		const stream2 = SlangType.newStream(TypeIdentifier.Stream);
+
+		stream1.getStreamSub().createStreamSub(TypeIdentifier.Number);
+		stream2.getStreamSub().createStreamSub(TypeIdentifier.Number);
+
+		expect(stream1.equals(stream2)).toEqual(true);
+	});
+
+	it("returns false in case of two streams", () => {
+		const stream1 = SlangType.newStream(TypeIdentifier.Number);
+		const stream2 = SlangType.newStream(TypeIdentifier.Binary);
+
+		expect(stream1.equals(stream2)).toEqual(false);
+	});
+
+	it("returns true in case of two generics", () => {
+		const gen1 = SlangType.newGeneric("typeA");
+		const gen2 = SlangType.newGeneric("typeA");
+
+		expect(gen1.equals(gen2)).toEqual(true);
+	});
+
+	it("returns false in case of two generics", () => {
+		const gen1 = SlangType.newGeneric("typeA");
+		const gen2 = SlangType.newGeneric("typeB");
+
+		expect(gen1.equals(gen2)).toEqual(false);
+	});
+
+});
+
+describe("Slang type type definition", () => {
+
+	it("can be generated from string", () => {
+		const type = SlangType.newString();
+		const def = type.getTypeDef();
+
+		expect(def).toEqual({type: "string"});
+	});
+
+	it("can be generated from map", () => {
+		const type = SlangType.newMap();
+		type.createMapSub("a", TypeIdentifier.Number);
+		type.createMapSub("b", TypeIdentifier.Trigger);
+		const def = type.getTypeDef();
+
+		expect(def).toEqual({type: "map", map: {a: {type: "number"}, b: {type: "trigger"}}});
+	});
+
+	it("can be generated from stream", () => {
+		const type = SlangType.newStream(TypeIdentifier.Number);
+		const def = type.getTypeDef();
+
+		expect(def).toEqual({type: "stream", stream: {type: "number"}});
+	});
+
+	it("can be generated from generic", () => {
+		const type = SlangType.newGeneric("testType");
+		const def = type.getTypeDef();
+
+		expect(def).toEqual({type: "generic", generic: "testType"});
+	});
+
+	it("can be generated from generic", () => {
+		const type = SlangType.newGeneric("testType");
+		const def = type.getTypeDef();
+
+		expect(def).toEqual({type: "generic", generic: "testType"});
+	});
+
+});

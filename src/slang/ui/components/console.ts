@@ -1,6 +1,6 @@
 import m, {ClassComponent, CVnode} from "mithril";
 
-import {SlangType, SlangTypeDef, SlangTypeValue, TypeIdentifier} from "../../definitions/type";
+import {SlangType, SlangTypeJson, SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 
 import {BINARY_VALUE_TYPE} from "./console/binary";
 import {FILE_VALUE_TYPE, IMAGE_VALUE_TYPE} from "./console/file";
@@ -8,7 +8,7 @@ import {GRAPH_VALUE_TYPE} from "./console/graph";
 import {Tk} from "./toolkit";
 
 export interface ConsoleValueType<T> {
-	typeDef: SlangTypeDef;
+	typeDef: SlangTypeJson;
 	input?: Input.ValueType<T>;
 	output?: Output.ValueType<T>;
 }

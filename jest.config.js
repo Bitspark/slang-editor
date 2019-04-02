@@ -4,8 +4,8 @@ module.exports = {
 	coverageThreshold: {
 		"./src/slang/definitions/": {
 			functions: 100,
-			branches: 100,
-			statements: 100,
+			branches: 80,
+			statements: 82,
 		},
 		"./src/slang/core/abstract": {
 			functions: 83,
