@@ -184,7 +184,7 @@ export namespace Tk {
 		public view({attrs, children}: CVnode<ButtonAttrs>) {
 			const that = this;
 
-			return m("button.sl-btn", {
+			return m("a.sl-btn", {
 				class: that.getClass(attrs),
 				inacitve: that.isInactive(attrs),
 				onclick: (that.isClickable(attrs)) ? (e: MithrilMouseEvent) => {
