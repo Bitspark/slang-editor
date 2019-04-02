@@ -2,7 +2,7 @@ import m, {ClassComponent, CVnode} from "mithril";
 
 import {BlueprintModel} from "../../core/models/blueprint";
 import {OperatorModel} from "../../core/models/operator";
-import {isUndefined, SlangType, SlangTypeValue} from "../../definitions/type";
+import {SlangType, SlangTypeValue} from "../../definitions/type";
 import {ComponentFactory} from "../factory";
 
 import {Input} from "./console";
@@ -88,7 +88,7 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 				return map;
 			}
 			const initValue = propAssign.getValue();
-			return map.set(propAssign.getName(), !isUndefined(initValue) ? {initValue, type} : {type});
+			return map.set(propAssign.getName(), !SlangTypeValue.isUndefined(initValue) ? {initValue, type} : {type});
 		}, new Map<string, { initValue?: SlangTypeValue, type: SlangType }>());
 	}
 

@@ -307,15 +307,10 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 			return undefined;
 		}
 
-		if (portInfo.service) {
-			if (portInfo.service !== "main" && portInfo.service !== "") {
-				throw new Error(`services other than main are not supported yet: ${portInfo.service}`);
-			}
-			if (portInfo.directionIn) {
-				port = blackbox.getPortIn();
-			} else {
-				port = blackbox.getPortOut();
-			}
+		if (portInfo.directionIn) {
+			port = blackbox.getPortIn();
+		} else {
+			port = blackbox.getPortOut();
 		}
 
 		if (portInfo.delegate) {

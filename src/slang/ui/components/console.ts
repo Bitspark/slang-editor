@@ -25,7 +25,7 @@ export class ConsoleValueTypeManager {
 
 	public static findInput(type: SlangType): Input.ValueType<any> | undefined {
 		const foundInpComps = ConsoleValueTypeManager.components
-			.filter((comp: ConsoleValueType<any>) => !!comp.input && SlangTypeDef.isEqual(comp.typeDef, type.getTypeDef()));
+			.filter((comp: ConsoleValueType<any>) => !!comp.input && SlangTypeJson.equals(comp.typeDef, type.getTypeDef()));
 		if (foundInpComps.length) {
 			return foundInpComps[0].input;
 		}
@@ -34,7 +34,7 @@ export class ConsoleValueTypeManager {
 
 	public static findOutput(type: SlangType): Output.ValueType<any> | undefined {
 		const foundOutComps = ConsoleValueTypeManager.components
-			.filter((comp: ConsoleValueType<any>) => !!comp.output && SlangTypeDef.isEqual(comp.typeDef, type.getTypeDef()));
+			.filter((comp: ConsoleValueType<any>) => !!comp.output && SlangTypeJson.equals(comp.typeDef, type.getTypeDef()));
 		if (foundOutComps.length) {
 			return foundOutComps[0].output;
 		}
