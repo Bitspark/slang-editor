@@ -361,6 +361,22 @@ export class SlangType {
 		return primitiveTypes.indexOf(this.getTypeIdentifier()) !== -1;
 	}
 
+	public isString(): boolean {
+		return this.typeIdentifier === TypeIdentifier.String;
+	}
+
+	public isNumber(): boolean {
+		return this.typeIdentifier === TypeIdentifier.Number;
+	}
+
+	public isBoolean(): boolean {
+		return this.typeIdentifier === TypeIdentifier.Boolean;
+	}
+
+	public isBinary(): boolean {
+		return this.typeIdentifier === TypeIdentifier.Binary;
+	}
+
 	public isMap(): boolean {
 		return this.typeIdentifier === TypeIdentifier.Map;
 	}
@@ -379,22 +395,5 @@ export class SlangType {
 
 	public isTrigger(): boolean {
 		return this.typeIdentifier === TypeIdentifier.Trigger;
-	}
-
-	public toString(tab = ""): string {
-		let str = TypeIdentifier[this.typeIdentifier] + "\n";
-		if (this.typeIdentifier === TypeIdentifier.Map) {
-			for (const sub of this.mapSubs!) {
-				str += tab + "  " + sub[0] + ": " + sub[1].toString(tab + "  ");
-			}
-		}
-		if (this.typeIdentifier === TypeIdentifier.Stream) {
-			str += tab + "  " + this.streamSub!.toString(tab + "  ");
-		}
-		if (this.typeIdentifier === TypeIdentifier.Generic) {
-			str += tab + "  " + "identifier: " + this.genericIdentifier;
-		}
-
-		return str;
 	}
 }
