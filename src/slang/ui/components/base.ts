@@ -91,6 +91,7 @@ abstract class HtmlComponent extends Component {
 
 	public destroy() {
 		super.destroy();
+		this.unmount();
 		this.htmlRoot.remove();
 	}
 
@@ -123,7 +124,7 @@ abstract class HtmlComponent extends Component {
 	}
 
 	public unmount(): this {
-		this.htmlRoot.innerHTML = "";
+		m.mount(this.htmlRoot, null);
 		return this;
 	}
 
