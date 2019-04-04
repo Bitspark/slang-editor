@@ -307,6 +307,28 @@
       },
       "operators": {},
       "connections": {}
+    },
+    {
+      "id": "10a6eea5-4d5b-43b6-9106-6820d1009e3b",
+      "meta": {
+        "name": "GenericInStream"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "stream",
+            "stream": {
+              "type": "generic",
+              "generic": "itemType"
+            }
+          },
+          "out": {
+            "type": "trigger"
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
     }
   ]
 }
