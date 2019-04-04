@@ -407,19 +407,12 @@ export class WhiteBoxComponent extends CellComponent {
 
 		this.buttons.mount({
 			view: () => m(".toolbox",
-				aspects.getBlueprintToolboxButtons(this.paperView, this.blueprint)
-					.map((btnAttrs) => m(Button, {onClick: btnAttrs.onclick}, btnAttrs.label))),
-		});
-
-		this.buttons.mount({
-			view: () => m(".toolbox",
-				aspects.getBlueprintToolboxButtons(this.paperView, this.blueprint)
+				aspects.getBlueprintToolboxButtons(this.paperView, this.blueprint, m.redraw)
 					.map((btnAttrs) => m(Button, {onClick: btnAttrs.onclick}, btnAttrs.label))),
 		});
 
 		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
 			if (!instance) {
-
 				this.input.unmount();
 				this.output.unmount();
 
