@@ -1,6 +1,5 @@
 import m, {CVnode} from "mithril";
 
-import {TypeIdentifier} from "../../../definitions/type";
 import {ConsoleValueType, Input, Output} from "../console";
 import {Tk} from "../toolkit";
 
@@ -20,10 +19,10 @@ function selectFile(file: File, onInput: (value: { content: string, name: string
 
 export const FILE_VALUE_TYPE: ConsoleValueType<{ file: string, name: string }> = {
 	typeDef: {
-		type: TypeIdentifier.Map,
+		type: "map",
 		map: {
-			file: {type: TypeIdentifier.Binary},
-			name: {type: TypeIdentifier.String},
+			file: {type: "binary"},
+			name: {type: "string"},
 		},
 	},
 
@@ -44,10 +43,10 @@ export const FILE_VALUE_TYPE: ConsoleValueType<{ file: string, name: string }> =
 
 export const IMAGE_VALUE_TYPE: ConsoleValueType<{ image: string, name: string }> = {
 	typeDef: {
-		type: TypeIdentifier.Map,
+		type: "map",
 		map: {
-			image: {type: TypeIdentifier.Binary},
-			name: {type: TypeIdentifier.String},
+			image: {type: "binary"},
+			name: {type: "string"},
 		},
 	},
 

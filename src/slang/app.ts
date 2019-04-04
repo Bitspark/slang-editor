@@ -1,8 +1,8 @@
+import {SlangAspects} from "./aspects";
 import {AppModel} from "./core/models/app";
-import {ComponentFactory} from "./ui/factory";
 
 export abstract class SlangApp {
-	protected constructor(protected app: AppModel, protected componentFactory: ComponentFactory | null) {
+	public constructor(protected app: AppModel, protected aspects: SlangAspects) {
 		this.app.subscribeReady(((readyState) => {
 			if (readyState) {
 				this.onReady();

@@ -15,7 +15,7 @@ jobs:
             - ./node_modules
       - run:
           name: build
-          command: npm run-script build
+          command: npm run-script build -- --env.apiUrl / --env.baseHref /app/
 
   lint:
     working_directory: ~/slang-studio

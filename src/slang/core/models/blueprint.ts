@@ -1,3 +1,4 @@
+import {filter} from "rxjs/operators";
 import {OperatorGeometry} from "../../definitions/api";
 import {SlangParsing} from "../../definitions/parsing";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
@@ -51,6 +52,7 @@ export interface BlueprintMeta {
 	shortDescription?: string;
 	description?: string;
 	docUrl?: string;
+	tags?: string[];
 }
 
 export interface BlueprintModelArgs {
@@ -58,6 +60,7 @@ export interface BlueprintModelArgs {
 	type: BlueprintType;
 	meta: BlueprintMeta;
 	geometry?: BlueprintGeometry;
+	tests?: any;
 }
 
 export interface BlueprintInstance {
@@ -130,13 +133,12 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 	}
 
 	public readonly uuid: string;
-	public shutdownRequested = new SlangSubject<boolean>("shutdown-triggered");
+	public readonly tests: any;
 	// Topics::self
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
 	private saveChanges = new SlangSubjectTrigger("save-changes");
 
 	// Topics::Deployment
-	private deploymentRequested = new SlangSubject<boolean>("deployment-triggered");
 	private instance = new SlangBehaviorSubject<BlueprintInstance | null>("instance", null);
 	private inputPushed = new SlangSubject<SlangTypeValue>("input-pushed");
 	private outputPushed = new SlangSubject<SlangTypeValue>("output-pushed");
@@ -150,12 +152,13 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 	private properties: PropertyModel[] = [];
 	private genericIdentifiers: Set<string>;
 
-	constructor(parent: LandscapeModel, {uuid, type, meta, geometry}: BlueprintModelArgs) {
+	constructor(parent: LandscapeModel, {uuid, type, meta, geometry, tests}: BlueprintModelArgs) {
 		super(parent, true);
 		this.uuid = uuid;
 		this.meta = meta;
 		this.type = type;
 		this.genericIdentifiers = new Set<string>();
+		this.tests = tests;
 
 		this.geometry = !geometry ? {
 			size: {width: 240, height: 147},
@@ -181,19 +184,17 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		return this.fakeGenerics;
 	}
 
-	public createOperator(name: string | null, blueprint: BlueprintModel, properties: PropertyAssignments | null, generics: GenericSpecifications | null, geometry?: OperatorGeometry): OperatorModel {
-		const operatorGenerics = generics ? generics : new GenericSpecifications([]);
-		const operatorProperties = properties ? properties : new PropertyAssignments([], operatorGenerics);
+	public createOperator(name: string | null, blueprint: BlueprintModel, properties: PropertyAssignments, generics: GenericSpecifications, geometry?: OperatorGeometry): OperatorModel {
 		return this.createChildNode(OperatorModel, {
 			blueprint,
+			generics,
 			geometry,
+			properties,
 			name: name ? name : this.getNextOperatorName(blueprint),
-			generics: operatorGenerics,
-			properties: operatorProperties,
 		});
 	}
 
-	public createBlankOperator(blueprint: BlueprintModel, geometry: OperatorGeometry): OperatorModel {
+	public createBlankOperator(blueprint: BlueprintModel, geometry?: OperatorGeometry): OperatorModel {
 		const name = this.getNextOperatorName(blueprint);
 		return this.createChildNode(OperatorModel, {
 			name,
@@ -307,15 +308,10 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 			return undefined;
 		}
 
-		if (portInfo.service) {
-			if (portInfo.service !== "main" && portInfo.service !== "") {
-				throw new Error(`services other than main are not supported yet: ${portInfo.service}`);
-			}
-			if (portInfo.directionIn) {
-				port = blackbox.getPortIn();
-			} else {
-				port = blackbox.getPortOut();
-			}
+		if (portInfo.directionIn) {
+			port = blackbox.getPortIn();
+		} else {
+			port = blackbox.getPortOut();
 		}
 
 		if (portInfo.delegate) {
@@ -423,18 +419,6 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		}
 	}
 
-	public requestDeployment() {
-		if (!this.isDeployed()) {
-			this.deploymentRequested.next(true);
-		}
-	}
-
-	public requestShutdown() {
-		if (this.isDeployed()) {
-			this.shutdownRequested.next(true);
-		}
-	}
-
 	public deploy(instanceAcess: BlueprintInstance) {
 		this.instance.next(instanceAcess);
 	}
@@ -461,24 +445,16 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		this.instance.subscribe(cb);
 	}
 
-	public subscribeDeploymentRequested(cb: (opened: boolean) => void): void {
-		this.deploymentRequested.subscribe(cb);
-	}
-
-	public subscribeShutdownRequested(cb: (opened: boolean) => void): void {
-		this.shutdownRequested.subscribe(cb);
-	}
-
 	public subscribeInputPushed(cb: (inputData: SlangTypeValue) => void): void {
-		this.inputPushed.subscribe(cb);
+		this.inputPushed.subscribe(cb, this.instance.pipe(filter((ins) => !ins)));
 	}
 
-	public subscribeOutputPushed(cb: (outputData: SlangTypeValue) => void, until?: SlangSubject<any>): void {
-		this.outputPushed.subscribe(cb, until);
+	public subscribeOutputPushed(cb: (outputData: SlangTypeValue) => void): void {
+		this.outputPushed.subscribe(cb);
 	}
 
 	private getNextOperatorName(blueprint: BlueprintModel): string {
-		const operatorBaseName = blueprint.getShortName().toLowerCase();
+		const operatorBaseName = blueprint.getShortName().toLowerCase().replace(/[^A-Za-z0-9]/g, "").replace(" ", "");
 		if (!this.findOperator(operatorBaseName)) {
 			return operatorBaseName;
 		}

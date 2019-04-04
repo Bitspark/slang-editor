@@ -6,13 +6,18 @@ import {BlueprintModel} from "./core/models/blueprint";
 import {ViewFrame} from "./ui/frame";
 import {BlueprintView} from "./ui/views/blueprint";
 import {LandscapeView} from "./ui/views/landscape";
+import {PaperViewArgs} from "./ui/views/paper-view";
 
 export class Slang {
-
 	private readonly frames: ViewFrame[] = [];
 	private outlet: ViewFrame | null = null;
+	private defaultViewArgs: PaperViewArgs | null = null;
 
 	constructor(private app: AppModel) {
+	}
+
+	public setDefaultViewArgs(defaultViewArgs: PaperViewArgs | null) {
+		this.defaultViewArgs = defaultViewArgs;
 	}
 
 	public addFrame(frame: ViewFrame, outlet: boolean = false): void {
@@ -39,14 +44,16 @@ export class Slang {
 			if (!blueprint || !this.outlet) {
 				return;
 			}
-			const view = new BlueprintView(this.outlet, blueprint, {
-				factory: this.outlet.getFactory(),
+
+			const viewArgs = this.defaultViewArgs || {
 				editable: blueprint.isLocal(),
 				hscrollable: true,
 				vscrollable: true,
 				descendable: true,
 				runnable: true,
-			});
+			};
+
+			const view = new BlueprintView(this.outlet, blueprint, viewArgs);
 			this.outlet.setView(view);
 		});
 
@@ -61,5 +68,4 @@ export class Slang {
 			this.outlet.setView(view);
 		});
 	}
-
 }

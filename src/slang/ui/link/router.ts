@@ -1,3 +1,5 @@
+// tslint:disable
+
 import {dia, g, routers, util as jointUtil} from "jointjs";
 
 const util = jointUtil as any;
@@ -42,42 +44,40 @@ const config = {
 	fallbackRoute(from: any, to: any, opt: any) {
 		// Find a route which breaks by 45 degrees ignoring all obstacles.
 
-		const theta = from.theta(to);
+		var theta = from.theta(to);
 
-		const route = [];
+		var route = [];
 
-		let a = {x: to.x, y: from.y};
-		let b = {x: from.x, y: to.y};
+		var a = {x: to.x, y: from.y};
+		var b = {x: from.x, y: to.y};
 
 		if (theta % degrees180 > degrees90) {
-			const t = a;
+			var t = a;
 			a = b;
 			b = t;
 		}
 
-		const p1 = (theta % degrees90) < degrees45 ? a : b;
-		const l1 = new g.Line(from, p1);
+		var p1 = (theta % degrees90) < degrees45 ? a : b;
+		var l1 = new g.Line(from, p1);
 
-		const alpha = degrees90 * Math.ceil(theta / degrees90);
+		var alpha = degrees90 * Math.ceil(theta / degrees90);
 
-		const p2 = g.Point.fromPolar(l1.squaredLength(), g.toRad(alpha + degrees135), p1);
-		const l2 = new g.Line(to, p2);
+		var p2 = g.Point.fromPolar(l1.squaredLength(), g.toRad(alpha + degrees135), p1);
+		var l2 = new g.Line(to, p2);
 
-		const intersectionPoint = (l1 as any).intersection(l2);
-		const point = intersectionPoint ? intersectionPoint : to;
+		var intersectionPoint = (l1 as any).intersection(l2);
+		var point = intersectionPoint ? intersectionPoint : to;
 
-		const directionFrom = intersectionPoint ? point : from;
+		var directionFrom = intersectionPoint ? point : from;
 
-		const quadrant = degrees360 / opt.directions.length;
-		const angleTheta = directionFrom.theta(to);
-		const normalizedAngle = g.normalizeAngle(angleTheta + (quadrant / 2));
-		const directionAngle = quadrant * Math.floor(normalizedAngle / quadrant);
+		var quadrant = degrees360 / opt.directions.length;
+		var angleTheta = directionFrom.theta(to);
+		var normalizedAngle = g.normalizeAngle(angleTheta + (quadrant / 2));
+		var directionAngle = quadrant * Math.floor(normalizedAngle / quadrant);
 
 		opt.previousDirectionAngle = directionAngle;
 
-		if (point) {
-			route.push(point.round());
-		}
+		if (point) route.push(point.round());
 		route.push(to);
 
 		return route;
@@ -115,7 +115,7 @@ const config = {
 		top: {x: 0, y: -1},
 		right: {x: 1, y: 0},
 		bottom: {x: 0, y: 1},
-		left: {x: -1, y: 0},
+		left: {x: -1, y: 0}
 	},
 
 	// cost of an orthogonal step
@@ -130,24 +130,24 @@ const config = {
 		return {
 			0: 0,
 			45: this.step / 2,
-			90: this.step / 2,
+			90: this.step / 2
 		};
 	},
 
 	// padding applied on the element bounding boxes
 	paddingBox(): g.Rect {
-		const step = this.step * 2;
+		let step = this.step * 2;
 		return new g.Rect(
 			-step,
 			-step,
 			2 * step,
-			2 * step,
+			2 * step
 		);
 	},
 
 	// a router to use when the manhattan router fails
 	// (one of the partial routes returns null)
-	fallbackRouter(vertices: g.Point[], opt: any, linkView: dia.LinkView): g.PlainPoint[] {
+	fallbackRouter(vertices: Array<g.Point>, opt: any, linkView: dia.LinkView): Array<g.PlainPoint> {
 		if (!util.isFunction(joint.routers.orthogonal)) {
 			throw new Error("Manhattan requires the orthogonal router as default fallback.");
 		}
@@ -157,7 +157,7 @@ const config = {
 
 	// if a function is provided, it's used to route the link while dragging an end
 	// i.e. function(from, to, opt) { return []; }
-	draggingRoute: null,
+	draggingRoute: null
 };
 
 // HELPER CLASSES //
@@ -177,14 +177,14 @@ class ObstacleMap {
 
 	public build(graph: any, link: any) {
 
-		const opt = this.options;
+		let opt = this.options;
 
 		// source or target element could be excluded from set of obstacles
-		const excludedEnds = util.toArray(opt.excludeEnds).reduce((res: any, item: any) => {
+		let excludedEnds = util.toArray(opt.excludeEnds).reduce(function (res: any, item: any) {
 
-			const end = link.get(item);
+			let end = link.get(item);
 			if (end) {
-				const cell = graph.getCell(end.id);
+				let cell = graph.getCell(end.id);
 				if (cell) {
 					res.push(cell);
 				}
@@ -196,25 +196,25 @@ class ObstacleMap {
 		// Exclude any embedded elements from the source and the target element.
 		let excludedAncestors: any = [];
 
-		const source = graph.getCell(link.get("source").id);
+		let source = graph.getCell(link.get("source").id);
 		if (source) {
-			excludedAncestors = util.union(excludedAncestors, source.getAncestors().map((cell: dia.Cell) => {
+			excludedAncestors = util.union(excludedAncestors, source.getAncestors().map(function (cell: dia.Cell) {
 				return cell.id;
 			}));
 		}
 
-		const target = graph.getCell(link.get("target").id);
+		let target = graph.getCell(link.get("target").id);
 		if (target) {
-			excludedAncestors = util.union(excludedAncestors, target.getAncestors().map((cell: dia.Cell) => {
+			excludedAncestors = util.union(excludedAncestors, target.getAncestors().map(function (cell: dia.Cell) {
 				return cell.id;
 			}));
 		}
 
 		const mapGridSize = this.mapGridSize;
 
-		graph.getElements().reduce((map: any, element: any) => {
+		graph.getElements().reduce(function (map: any, element: any) {
 			const isExcludedType = util.toArray(opt.excludeTypes).includes(element.get("type"));
-			const isExcludedEnd = excludedEnds.find((excluded: any) => {
+			const isExcludedEnd = excludedEnds.find(function (excluded: any) {
 				return excluded.id === element.id;
 			});
 			const isExcludedAncestor = excludedAncestors.includes(element.id);
@@ -222,14 +222,14 @@ class ObstacleMap {
 
 			const isExcluded = isExcludedType || isExcludedEnd || isExcludedAncestor || isExcludedExplicitly;
 			if (!isExcluded) {
-				const bbox = element.getBBox().moveAndExpand(opt.paddingBox);
+				let bbox = element.getBBox().moveAndExpand(opt.paddingBox);
 
-				const origin = bbox.origin().snapToGrid(mapGridSize);
-				const corner = bbox.corner().snapToGrid(mapGridSize);
+				let origin = bbox.origin().snapToGrid(mapGridSize);
+				let corner = bbox.corner().snapToGrid(mapGridSize);
 
 				for (let x = origin.x; x <= corner.x; x += mapGridSize) {
 					for (let y = origin.y; y <= corner.y; y += mapGridSize) {
-						const gridKey = x + "@" + y;
+						let gridKey = x + "@" + y;
 						map[gridKey] = map[gridKey] || [];
 						map[gridKey].push(bbox);
 					}
@@ -240,30 +240,31 @@ class ObstacleMap {
 		}, this.map);
 
 		return this;
-	}
+	};
 
-	public isPointAccessible(point: any) {
+	isPointAccessible(point: any) {
 		const mapKey = point.clone().snapToGrid(this.mapGridSize).toString();
-		return util.toArray(this.map[mapKey]).every((obstacle: any) => {
+		return util.toArray(this.map[mapKey]).every(function (obstacle: any) {
 			return !obstacle.containsPoint(point);
 		});
-	}
+	};
 }
 
 // Sorted Set
 // Set of items sorted by given value.
 class SortedSet {
-	public static readonly OPEN = 1;
-	public static readonly CLOSE = 2;
-
 	public items: any;
 	public hash: any;
 	public values: any;
+	public OPEN: any;
+	public CLOSE: any;
 
 	constructor() {
 		this.items = [];
 		this.hash = {};
 		this.values = {};
+		this.OPEN = 1;
+		this.CLOSE = 2;
 	}
 
 	public add(item: any, value: any) {
@@ -271,37 +272,39 @@ class SortedSet {
 			// item removal
 			this.items.splice(this.items.indexOf(item), 1);
 		} else {
-			this.hash[item] = SortedSet.OPEN;
+			this.hash[item] = this.OPEN;
 		}
 
 		this.values[item] = value;
 
-		const index = joint.util.sortedIndex(this.items, item, (i: number) => this.values[i]);
+		let index = joint.util.sortedIndex(this.items, item, function (this: any, i: number) {
+			return this.values[i];
+		}.bind(this));
 
 		this.items.splice(index, 0, item);
-	}
+	};
 
 	public remove(item: any) {
-		this.hash[item] = SortedSet.CLOSE;
-	}
+		this.hash[item] = this.CLOSE;
+	};
 
 	public isOpen(item: any) {
-		return this.hash[item] === SortedSet.OPEN;
-	}
+		return this.hash[item] === this.OPEN;
+	};
 
 	public isClose(item: any) {
-		return this.hash[item] === SortedSet.CLOSE;
-	}
+		return this.hash[item] === this.CLOSE;
+	};
 
 	public isEmpty() {
 		return this.items.length === 0;
-	}
+	};
 
 	public pop() {
 		const item = this.items.shift();
 		this.remove(item);
 		return item;
-	}
+	};
 }
 
 // HELPERS //
@@ -310,9 +313,7 @@ class SortedSet {
 function getSourceBBox(linkView: any, opt: any) {
 
 	// expand by padding box
-	if (opt && opt.paddingBox) {
-		return linkView.sourceBBox.clone().moveAndExpand(opt.paddingBox);
-	}
+	if (opt && opt.paddingBox) return linkView.sourceBBox.clone().moveAndExpand(opt.paddingBox);
 
 	return linkView.sourceBBox.clone();
 }
@@ -321,9 +322,7 @@ function getSourceBBox(linkView: any, opt: any) {
 function getTargetBBox(linkView: any, opt: any) {
 
 	// expand by padding box
-	if (opt && opt.paddingBox) {
-		return linkView.targetBBox.clone().moveAndExpand(opt.paddingBox);
-	}
+	if (opt && opt.paddingBox) return linkView.targetBBox.clone().moveAndExpand(opt.paddingBox);
 
 	return linkView.targetBBox.clone();
 }
@@ -331,24 +330,20 @@ function getTargetBBox(linkView: any, opt: any) {
 // return source anchor
 function getSourceAnchor(linkView: any, opt: any) {
 
-	if (linkView.sourceAnchor) {
-		return linkView.sourceAnchor;
-	}
+	if (linkView.sourceAnchor) return linkView.sourceAnchor;
 
 	// fallback: center of bbox
-	const sourceBBox = getSourceBBox(linkView, opt);
+	let sourceBBox = getSourceBBox(linkView, opt);
 	return sourceBBox.center();
 }
 
 // return target anchor
 function getTargetAnchor(linkView: any, opt: any) {
 
-	if (linkView.targetAnchor) {
-		return linkView.targetAnchor;
-	}
+	if (linkView.targetAnchor) return linkView.targetAnchor;
 
 	// fallback: center of bbox
-	const targetBBox = getTargetBBox(linkView, opt);
+	let targetBBox = getTargetBBox(linkView, opt);
 	return targetBBox.center(); // default
 }
 
@@ -356,9 +351,9 @@ function getTargetAnchor(linkView: any, opt: any) {
 // corrects for grid deformation between start and end
 function getDirectionAngle(start: any, end: any, numDirections: any, grid: any, opt: any) {
 
-	const quadrant = degrees360 / numDirections;
-	const angleTheta = start.theta(fixAngleEnd(start, end, grid, opt));
-	const normalizedAngle = g.normalizeAngle(angleTheta + (quadrant / 2));
+	let quadrant = degrees360 / numDirections;
+	let angleTheta = start.theta(fixAngleEnd(start, end, grid, opt));
+	let normalizedAngle = g.normalizeAngle(angleTheta + (quadrant / 2));
 	return quadrant * Math.floor(normalizedAngle / quadrant);
 }
 
@@ -369,16 +364,16 @@ function getDirectionAngle(start: any, end: any, numDirections: any, grid: any, 
 // this causes visible angle discrepancies if `opt.step` is much larger than `paper.gridSize`
 function fixAngleEnd(start: any, end: any, grid: any, opt: any) {
 
-	const step = opt.step;
+	let step = opt.step;
 
-	const diffX = end.x - start.x;
-	const diffY = end.y - start.y;
+	let diffX = end.x - start.x;
+	let diffY = end.y - start.y;
 
-	const gridStepsX = diffX / grid.x;
-	const gridStepsY = diffY / grid.y;
+	let gridStepsX = diffX / grid.x;
+	let gridStepsY = diffY / grid.y;
 
-	const distanceX = gridStepsX * step;
-	const distanceY = gridStepsY * step;
+	let distanceX = gridStepsX * step;
+	let distanceY = gridStepsY * step;
 
 	return new g.Point(start.x + distanceX, start.y + distanceY);
 }
@@ -386,16 +381,18 @@ function fixAngleEnd(start: any, end: any, grid: any, opt: any) {
 // return the change in direction between two direction angles
 function getDirectionChange(angle1: any, angle2: any) {
 
-	const directionChange = Math.abs(angle1 - angle2);
+	let directionChange = Math.abs(angle1 - angle2);
 	return (directionChange > degrees180) ? (degrees360 - directionChange) : directionChange;
 }
 
 // fix direction offsets according to current grid
-function getGridOffsets(_directions: any, grid: any, opt: any) {
+// @ts-ignore
+function getGridOffsets(directions: any, grid: any, opt: any) {
 
-	const step = opt.step;
+	let step = opt.step;
 
-	util.toArray(opt.directions).forEach((direction: any) => {
+	util.toArray(opt.directions).forEach(function (direction: any) {
+
 		direction.gridOffsetX = (direction.offsetX / step) * grid.x;
 		direction.gridOffsetY = (direction.offsetY / step) * grid.y;
 	});
@@ -407,7 +404,7 @@ function getGrid(step: any, source: any, target: any) {
 	return {
 		source: source.clone(),
 		x: getGridDimension(target.x - source.x, step),
-		y: getGridDimension(target.y - source.y, step),
+		y: getGridDimension(target.y - source.y, step)
 	};
 }
 
@@ -415,22 +412,18 @@ function getGrid(step: any, source: any, target: any) {
 function getGridDimension(diff: any, step: any) {
 
 	// return step if diff = 0
-	if (!diff) {
-		return step;
-	}
+	if (!diff) return step;
 
-	const absDiff = Math.abs(diff);
-	const numSteps = Math.round(absDiff / step);
+	let absDiff = Math.abs(diff);
+	let numSteps = Math.round(absDiff / step);
 
 	// return absDiff if less than one step apart
-	if (!numSteps) {
-		return absDiff;
-	}
+	if (!numSteps) return absDiff;
 
 	// otherwise, return corrected step
-	const roundedDiff = numSteps * step;
-	const remainder = absDiff - roundedDiff;
-	const stepCorrection = remainder / numSteps;
+	let roundedDiff = numSteps * step;
+	let remainder = absDiff - roundedDiff;
+	let stepCorrection = remainder / numSteps;
 
 	return step + stepCorrection;
 }
@@ -438,10 +431,10 @@ function getGridDimension(diff: any, step: any) {
 // return a clone of point snapped to grid
 function snapToGrid(point: any, grid: any) {
 
-	const source = grid.source;
+	let source = grid.source;
 
-	const snappedX = g.snapToGrid(point.x - source.x, grid.x) + source.x;
-	const snappedY = g.snapToGrid(point.y - source.y, grid.y) + source.y;
+	let snappedX = g.snapToGrid(point.x - source.x, grid.x) + source.x;
+	let snappedY = g.snapToGrid(point.y - source.y, grid.y) + source.y;
 
 	return new g.Point(snappedX, snappedY);
 }
@@ -449,9 +442,7 @@ function snapToGrid(point: any, grid: any) {
 // round the point to opt.precision
 function round(point: any, opt: any) {
 
-	if (!point) {
-		return point;
-	}
+	if (!point) return point;
 
 	return point.round(opt.precision);
 }
@@ -469,7 +460,7 @@ function normalizePoint(point: any) {
 
 	return new g.Point(
 		point.x === 0 ? 0 : Math.abs(point.x) / point.x,
-		point.y === 0 ? 0 : Math.abs(point.y) / point.y,
+		point.y === 0 ? 0 : Math.abs(point.y) / point.y
 	);
 }
 
@@ -478,7 +469,7 @@ function normalizePoint(point: any) {
 // reconstructs a route by concatenating points with their parents
 function reconstructRoute(parents: any, points: any, tailPoint: any, from: any, to: any, opt: any) {
 
-	const route = [];
+	let route = [];
 
 	let prevDiff = normalizePoint(to.difference(tailPoint));
 
@@ -490,7 +481,7 @@ function reconstructRoute(parents: any, points: any, tailPoint: any, from: any, 
 
 		point = round(points[currentKey], opt);
 
-		const diff = normalizePoint(point.difference(round(parent.clone(), opt)));
+		let diff = normalizePoint(point.difference(round(parent.clone(), opt)));
 		if (!diff.equals(prevDiff)) {
 			route.unshift(point);
 			prevDiff = diff;
@@ -500,9 +491,9 @@ function reconstructRoute(parents: any, points: any, tailPoint: any, from: any, 
 		parent = parents[currentKey];
 	}
 
-	const leadPoint = round(points[currentKey], opt);
+	let leadPoint = round(points[currentKey], opt);
 
-	const fromDiff = normalizePoint(leadPoint.difference(from));
+	let fromDiff = normalizePoint(leadPoint.difference(from));
 	if (!fromDiff.equals(prevDiff)) {
 		route.unshift(leadPoint);
 	}
@@ -516,10 +507,8 @@ function estimateCost(from: any, endPoints: any) {
 	let min = Infinity;
 
 	for (let i = 0, len = endPoints.length; i < len; i++) {
-		const cost = from.manhattanDistance(endPoints[i]);
-		if (cost < min) {
-			min = cost;
-		}
+		let cost = from.manhattanDistance(endPoints[i]);
+		if (cost < min) min = cost;
 	}
 
 	return min;
@@ -532,41 +521,42 @@ function estimateCost(from: any, endPoints: any) {
 // (since those directions are unobstructed by the bbox)
 function getRectPoints(anchor: any, bbox: any, directionList: any, grid: any, opt: any) {
 
-	const directionMap = opt.directionMap;
+	let directionMap = opt.directionMap;
 
-	const snappedAnchor = round(snapToGrid(anchor, grid), opt);
-	const snappedCenter = round(snapToGrid(bbox.center(), grid), opt);
-	const anchorCenterVector = snappedAnchor.difference(snappedCenter);
+	let snappedAnchor = round(snapToGrid(anchor, grid), opt);
+	let snappedCenter = round(snapToGrid(bbox.center(), grid), opt);
+	let anchorCenterVector = snappedAnchor.difference(snappedCenter);
 
-	const keys = util.isObject(directionMap) ? Object.keys(directionMap) : [];
-	const dirList = util.toArray(directionList);
-	const rectPoints = keys.reduce((res: any, key: any) => {
+	let keys = util.isObject(directionMap) ? Object.keys(directionMap) : [];
+	let dirList = util.toArray(directionList);
+	let rectPoints = keys.reduce(function (res: any, key: any) {
+
 		if (dirList.includes(key)) {
-			const direction = directionMap[key];
+			let direction = directionMap[key];
 
 			// create a line that is guaranteed to intersect the bbox if bbox is in the direction
 			// even if anchor lies outside of bbox
-			const endpoint = new g.Point(
+			let endpoint = new g.Point(
 				snappedAnchor.x + direction.x * (Math.abs(anchorCenterVector.x) + bbox.width),
-				snappedAnchor.y + direction.y * (Math.abs(anchorCenterVector.y) + bbox.height),
+				snappedAnchor.y + direction.y * (Math.abs(anchorCenterVector.y) + bbox.height)
 			);
-			const intersectionLine = new g.Line(anchor, endpoint);
+			let intersectionLine = new g.Line(anchor, endpoint);
 
 			// get the farther intersection, in case there are two
 			// (that happens if anchor lies next to bbox)
-			const intersections: any = intersectionLine.intersect(bbox) || [];
-			const numIntersections = intersections.length;
+			let intersections: any = intersectionLine.intersect(bbox) || [];
+			let numIntersections = intersections.length;
 			let farthestIntersectionDistance;
 			let farthestIntersection = null;
 			for (let i = 0; i < numIntersections; i++) {
-				const currentIntersection = intersections[i];
-				const distance = snappedAnchor.squaredDistance(currentIntersection);
+				let currentIntersection = intersections[i];
+				let distance = snappedAnchor.squaredDistance(currentIntersection);
 				if (farthestIntersectionDistance === undefined || (distance > farthestIntersectionDistance)) {
 					farthestIntersectionDistance = distance;
 					farthestIntersection = snapToGrid(currentIntersection, grid);
 				}
 			}
-			const point = round(farthestIntersection, opt);
+			let point = round(farthestIntersection, opt);
 
 			// if an intersection was found in this direction, it is our rectPoint
 			if (point) {
@@ -584,21 +574,18 @@ function getRectPoints(anchor: any, bbox: any, directionList: any, grid: any, op
 	}, []);
 
 	// if anchor lies outside of bbox, add it to the array of points
-	if (!bbox.containsPoint(snappedAnchor)) {
-		rectPoints.push(snappedAnchor);
-	}
+	if (!bbox.containsPoint(snappedAnchor)) rectPoints.push(snappedAnchor);
 
 	return rectPoints;
 }
 
 // finds the route between two points/rectangles (`from`, `to`) implementing A* algorithm
 // rectangles get rect points assigned by getRectPoints()
-// tslint:disable-next-line
 function findRoute(this: any, from: any, to: any, map: any, opt: any) {
+
 	// Get grid for this route.
 
-	let sourceAnchor;
-	let targetAnchor;
+	let sourceAnchor, targetAnchor;
 
 	if (from instanceof g.Rect) { // `from` is sourceBBox
 		sourceAnchor = getSourceAnchor(this, opt).clone();
@@ -612,15 +599,12 @@ function findRoute(this: any, from: any, to: any, map: any, opt: any) {
 		targetAnchor = to.clone();
 	}
 
-	const grid = getGrid(opt.step, sourceAnchor, targetAnchor);
+	let grid = getGrid(opt.step, sourceAnchor, targetAnchor);
 
 	// Get pathfinding points.
 
-	let start;
-	let end;
-
-	let startPoints;
-	let endPoints;
+	let start, end;
+	let startPoints, endPoints;
 
 	// set of points we start pathfinding from
 	if (from instanceof g.Rect) { // `from` is sourceBBox
@@ -652,37 +636,36 @@ function findRoute(this: any, from: any, to: any, map: any, opt: any) {
 
 		// The set of tentative points to be evaluated, initially containing the start points.
 		// Rounded to nearest integer for simplicity.
-		const openSet = new SortedSet();
+		let openSet = new SortedSet();
 		// Keeps reference to actual points for given elements of the open set.
-		const points: any = {};
+		let points: any = {};
 		// Keeps reference to a point that is immediate predecessor of given element.
-		const parents: any = {};
+		let parents: any = {};
 		// Cost from start to a point along best known path.
-		const costs: any = {};
+		let costs: any = {};
 
 		for (let i = 0, n = startPoints.length; i < n; i++) {
-			const point = startPoints[i];
+			let point = startPoints[i];
 
-			const key = getKey(point);
+			let key = getKey(point);
 			openSet.add(key, estimateCost(point, endPoints));
 			points[key] = point;
 			costs[key] = 0;
 		}
 
-		const previousRouteDirectionAngle = opt.previousDirectionAngle; // undefined for first route
-		const isPathBeginning = (previousRouteDirectionAngle === undefined);
+		let previousRouteDirectionAngle = opt.previousDirectionAngle; // undefined for first route
+		let isPathBeginning = (previousRouteDirectionAngle === undefined);
 
 		// directions
-		let direction;
-		let directionChange;
-		const directions = opt.directions;
+		let direction, directionChange;
+		let directions = opt.directions;
 		getGridOffsets(directions, grid, opt);
 
-		const numDirections = directions.length;
+		let numDirections = directions.length;
 
-		const endPointsKeys = util.toArray(endPoints).reduce((res: any, endPoint: any) => {
+		let endPointsKeys = util.toArray(endPoints).reduce(function (res: any, endPoint: any) {
 
-			const key = getKey(endPoint);
+			let key = getKey(endPoint);
 			res.push(key);
 			return res;
 		}, []);
@@ -692,24 +675,19 @@ function findRoute(this: any, from: any, to: any, map: any, opt: any) {
 		while (!openSet.isEmpty() && loopsRemaining > 0) {
 
 			// remove current from the open list
-			const currentKey = openSet.pop();
-			const currentPoint = points[currentKey];
-			const currentParent = parents[currentKey];
-			const currentCost = costs[currentKey];
+			let currentKey = openSet.pop();
+			let currentPoint = points[currentKey];
+			let currentParent = parents[currentKey];
+			let currentCost = costs[currentKey];
 
-			const isRouteBeginning = (currentParent === undefined); // undefined for route starts
-			const isStart = currentPoint.equals(start); // (is source anchor or `from` point) = can leave in any direction
+			let isRouteBeginning = (currentParent === undefined); // undefined for route starts
+			let isStart = currentPoint.equals(start); // (is source anchor or `from` point) = can leave in any direction
 
 			let previousDirectionAngle;
-			if (!isRouteBeginning) {
-				previousDirectionAngle = getDirectionAngle(currentParent, currentPoint, numDirections, grid, opt);
-			} else if (!isPathBeginning) {
-				previousDirectionAngle = previousRouteDirectionAngle;
-			} else if (!isStart) {
-				previousDirectionAngle = getDirectionAngle(start, currentPoint, numDirections, grid, opt);
-			} else {
-				previousDirectionAngle = null;
-			}
+			if (!isRouteBeginning) previousDirectionAngle = getDirectionAngle(currentParent, currentPoint, numDirections, grid, opt); // a vertex on the route
+			else if (!isPathBeginning) previousDirectionAngle = previousRouteDirectionAngle; // beginning of route on the path
+			else if (!isStart) previousDirectionAngle = getDirectionAngle(start, currentPoint, numDirections, grid, opt); // beginning of path, start rect point
+			else previousDirectionAngle = null; // beginning of path, source anchor or `from` point
 
 			// check if we reached any endpoint
 			if (endPointsKeys.indexOf(currentKey) >= 0) {
@@ -721,56 +699,48 @@ function findRoute(this: any, from: any, to: any, map: any, opt: any) {
 			for (let i = 0; i < numDirections; i++) {
 				direction = directions[i];
 
-				const directionAngle = direction.angle;
+				let directionAngle = direction.angle;
 				directionChange = getDirectionChange(previousDirectionAngle, directionAngle);
 
 				// if the direction changed rapidly, don't use this point
 				// any direction is allowed for starting points
-				if (!(isPathBeginning && isStart) && directionChange > opt.maxAllowedDirectionChange) {
-					continue;
-				}
+				if (!(isPathBeginning && isStart) && directionChange > opt.maxAllowedDirectionChange) continue;
 
-				const neighborPoint = currentPoint.clone().offset(direction.gridOffsetX, direction.gridOffsetY);
-				const neighborKey = getKey(neighborPoint);
+				let neighborPoint = currentPoint.clone().offset(direction.gridOffsetX, direction.gridOffsetY);
+				let neighborKey = getKey(neighborPoint);
 
 				// Closed points from the openSet were already evaluated.
-				if (openSet.isClose(neighborKey) || !map.isPointAccessible(neighborPoint)) {
-					continue;
-				}
+				if (openSet.isClose(neighborKey) || !map.isPointAccessible(neighborPoint)) continue;
 
 				// We can only enter end points at an acceptable angle.
 				if (endPointsKeys.indexOf(neighborKey) >= 0) { // neighbor is an end point
 					round(neighborPoint, opt); // remove rounding errors
 
-					const isNeighborEnd = neighborPoint.equals(end); // (is target anchor or `to` point) = can be entered in any direction
+					let isNeighborEnd = neighborPoint.equals(end); // (is target anchor or `to` point) = can be entered in any direction
 
 					if (!isNeighborEnd) {
-						const endDirectionAngle = getDirectionAngle(neighborPoint, end, numDirections, grid, opt);
-						const endDirectionChange = getDirectionChange(directionAngle, endDirectionAngle);
+						let endDirectionAngle = getDirectionAngle(neighborPoint, end, numDirections, grid, opt);
+						let endDirectionChange = getDirectionChange(directionAngle, endDirectionAngle);
 
-						if (endDirectionChange > opt.maxAllowedDirectionChange) {
-							continue;
-						}
+						if (endDirectionChange > opt.maxAllowedDirectionChange) continue;
 					}
 				}
 
 				// The current direction is ok.
 
-				const neighborCost = direction.cost;
-				const neighborPenalty = isStart ? 0 : opt.penalties[directionChange]; // no penalties for start point
-				const costFromStart = currentCost + neighborCost + neighborPenalty;
+				let neighborCost = direction.cost;
+				let neighborPenalty = isStart ? 0 : opt.penalties[directionChange]; // no penalties for start point
+				let costFromStart = currentCost + neighborCost + neighborPenalty;
 
-				if (openSet.isOpen(neighborKey) && costFromStart >= costs[neighborKey]) {
-					continue;
+				if (!openSet.isOpen(neighborKey) || (costFromStart < costs[neighborKey])) {
+					// neighbor point has not been processed yet
+					// or the cost of the path from start is lower than previously calculated
+
+					points[neighborKey] = neighborPoint;
+					parents[neighborKey] = currentPoint;
+					costs[neighborKey] = costFromStart;
+					openSet.add(neighborKey, costFromStart + estimateCost(neighborPoint, endPoints));
 				}
-
-				// neighbor point has not been processed yet
-				// or the cost of the path from start is lower than previously calculated
-
-				points[neighborKey] = neighborPoint;
-				parents[neighborKey] = currentPoint;
-				costs[neighborKey] = costFromStart;
-				openSet.add(neighborKey, costFromStart + estimateCost(neighborPoint, endPoints));
 			}
 
 			loopsRemaining--;
@@ -789,10 +759,10 @@ function resolveOptions(opt: any) {
 	opt.penalties = util.result(opt, "penalties");
 	opt.paddingBox = util.result(opt, "paddingBox");
 
-	util.toArray(opt.directions).forEach((direction: any) => {
+	util.toArray(opt.directions).forEach(function (direction: any) {
 
-		const point1 = new g.Point(0, 0);
-		const point2 = new g.Point(direction.offsetX, direction.offsetY);
+		let point1 = new g.Point(0, 0);
+		let point2 = new g.Point(direction.offsetX, direction.offsetY);
 
 		direction.angle = g.normalizeAngle(point1.theta(point2));
 	});
@@ -806,16 +776,16 @@ function router(vertices: any, opt: any, linkView: any) {
 	// enable/disable linkView perpendicular option
 	linkView.options.perpendicular = !!opt.perpendicular;
 
-	const sourceBBox = getSourceBBox(linkView, opt);
-	const targetBBox = getTargetBBox(linkView, opt);
+	let sourceBBox = getSourceBBox(linkView, opt);
+	let targetBBox = getTargetBBox(linkView, opt);
 
-	const sourceAnchor = getSourceAnchor(linkView, opt);
-	// let targetAnchor = getTargetAnchor(linkView, opt);
+	let sourceAnchor = getSourceAnchor(linkView, opt);
+	//let targetAnchor = getTargetAnchor(linkView, opt);
 
 	// pathfinding
-	const map = (new ObstacleMap(opt)).build(linkView.paper.model, linkView.model);
-	const oldVertices = util.toArray(vertices).map(g.Point);
-	const newVertices: any = [];
+	let map = (new ObstacleMap(opt)).build(linkView.paper.model, linkView.model);
+	let oldVertices = util.toArray(vertices).map(g.Point);
+	let newVertices: any = [];
 	let tailPoint = sourceAnchor; // the origin of first route's grid, does not need snapping
 
 	// find a route by concatenating all partial routes (routes need to pass through vertices)
@@ -825,7 +795,7 @@ function router(vertices: any, opt: any, linkView: any) {
 
 		let partialRoute = null;
 
-		const from = to || sourceBBox;
+		let from = to || sourceBBox;
 		to = oldVertices[i];
 
 		if (!to) {
@@ -837,12 +807,12 @@ function router(vertices: any, opt: any, linkView: any) {
 
 			// If the target is a point (i.e. it's not an element), we
 			// should use dragging route instead of main routing method if it has been provided.
-			const isEndingAtPoint = !linkView.model.get("source").id || !linkView.model.get("target").id;
+			let isEndingAtPoint = !linkView.model.get("source").id || !linkView.model.get("target").id;
 
 			if (isEndingAtPoint && util.isFunction(opt.draggingRoute)) {
 				// Make sure we are passing points only (not rects).
-				const dragFrom = (from === sourceBBox) ? sourceAnchor : from;
-				const dragTo = to.origin();
+				let dragFrom = (from === sourceBBox) ? sourceAnchor : from;
+				let dragTo = to.origin();
 
 				partialRoute = opt.draggingRoute.call(linkView, dragFrom, dragTo, opt);
 			}
@@ -855,12 +825,10 @@ function router(vertices: any, opt: any, linkView: any) {
 			return opt.fallbackRouter(vertices, opt, linkView);
 		}
 
-		const leadPoint = partialRoute[0];
+		let leadPoint = partialRoute[0];
 
 		// remove the first point if the previous partial route had the same point as last
-		if (leadPoint && leadPoint.equals(tailPoint)) {
-			partialRoute.shift();
-		}
+		if (leadPoint && leadPoint.equals(tailPoint)) partialRoute.shift();
 
 		// save tailPoint for next iteration
 		tailPoint = partialRoute[partialRoute.length - 1] || tailPoint;

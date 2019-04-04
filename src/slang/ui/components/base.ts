@@ -16,7 +16,7 @@ export interface Position extends XY {
 }
 
 abstract class Component {
-	protected constructor(private xy: XY) {
+	protected constructor(private svgXY: XY) {
 	}
 
 	public destroy() {
@@ -24,11 +24,11 @@ abstract class Component {
 	}
 
 	protected updateXY({x, y}: XY) {
-		this.xy = {x, y};
+		this.svgXY = {x, y};
 	}
 
 	protected get position(): XY {
-		return this.xy;
+		return this.svgXY;
 	}
 }
 
@@ -75,6 +75,7 @@ abstract class HtmlComponent extends Component {
 		el.style.position = "absolute";
 		return el;
 	}
+
 	protected readonly htmlRoot: HTMLElement;
 	protected readonly align: Alignment;
 
@@ -90,6 +91,7 @@ abstract class HtmlComponent extends Component {
 
 	public destroy() {
 		super.destroy();
+		this.unmount();
 		this.htmlRoot.remove();
 	}
 
@@ -122,12 +124,12 @@ abstract class HtmlComponent extends Component {
 	}
 
 	public unmount(): this {
-		this.htmlRoot.innerHTML = "";
+		m.mount(this.htmlRoot, null);
 		return this;
 	}
 
-	protected getClientXY(): XY {
-		return this.paperView.toClientXY(this.position);
+	protected getBrowserXY(): XY {
+		return this.paperView.toBrowserXY(this.position);
 	}
 
 	protected updateXY(xy: XY) {
@@ -136,7 +138,7 @@ abstract class HtmlComponent extends Component {
 	}
 
 	protected draw() {
-		const {x, y} = this.getClientXY();
+		const {x, y} = this.getBrowserXY();
 		const align = this.align;
 
 		let top;

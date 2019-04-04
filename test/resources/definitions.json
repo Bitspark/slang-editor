@@ -1,6 +1,8 @@
-[
-  {
-    "def": {
+{
+  "elementary": [],
+  "library": [],
+  "local": [
+    {
       "meta": {
         "name": "Value"
       },
@@ -25,10 +27,7 @@
       "operators": {},
       "connections": {}
     },
-    "type": "local"
-  },
-  {
-    "def": {
+    {
       "id": "ba24c37f-2b04-44b4-97ad-fd931c9ab77b",
       "meta": {
         "name": "StringToString"
@@ -46,10 +45,7 @@
       "operators": {},
       "connections": {}
     },
-    "type": "local"
-  },
-  {
-    "def": {
+    {
       "id": "dc1aa556-d62e-4e07-adbb-53dc317481b0",
       "meta": {
         "name": "GenericToGeneric"
@@ -69,10 +65,7 @@
       "operators": {},
       "connections": {}
     },
-    "type": "local"
-  },
-  {
-    "def": {
+    {
       "id": "9547e231-26a9-4de0-9b25-b2e1b3fdb1d1",
       "meta": {
         "name": "StringToPrimitiveDelegate"
@@ -100,10 +93,7 @@
       "operators": {},
       "connections": {}
     },
-    "type": "local"
-  },
-  {
-    "def": {
+    {
       "id": "cbc2cb11-c30a-4194-825c-f042902bd18b",
       "meta": {
         "name": "PropertyPorts"
@@ -134,10 +124,7 @@
       "operators": {},
       "connections": {}
     },
-    "type": "local"
-  },
-  {
-    "def": {
+    {
       "id": "717867d5-f84e-400c-bdc4-1a374f34e3a5",
       "meta": {
         "name": "MapAndStreamPorts"
@@ -183,6 +170,143 @@
       "operators": {},
       "connections": {}
     },
-    "type": "local"
-  }
-]
+    {
+      "id": "1e365eba-75c0-416f-883d-dbd2eb802c6a",
+      "meta": {
+        "name": "GenericsAndProperties"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "generic",
+            "generic": "itemType"
+          },
+          "out": {
+            "type": "string"
+          }
+        }
+      },
+      "operators": {},
+      "connections": {},
+      "properties": {
+        "test": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "id": "475f9092-8925-4a5c-b279-186f524da4b4",
+      "meta": {
+        "name": "TwoStreams"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "map",
+            "map": {
+              "a": {
+                "type": "stream",
+                "stream": {
+                  "type": "generic",
+                  "generic": "itemType1"
+                }
+              },
+              "b": {
+                "type": "stream",
+                "stream": {
+                  "type": "generic",
+                  "generic": "itemType2"
+                }
+              }
+            }
+          },
+          "out": {
+            "type": "string"
+          }
+        }
+      },
+      "operators": {},
+      "connections": {},
+      "properties": {}
+    },
+    {
+      "id": "12cfe9ae-2586-4285-bc67-71b19864f1b9",
+      "meta": {
+        "name": "StringToNumberStream"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "string"
+          },
+          "out": {
+            "type": "stream",
+            "stream": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
+    },
+    {
+      "id": "1cbe6fa4-7501-49ca-95c3-a0fa428711ff",
+      "meta": {
+        "name": "TwoIn"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "map",
+            "map": {
+              "a": {
+                "type": "string"
+              },
+              "b": {
+                "type": "string"
+              }
+            }
+          },
+          "out": {
+            "type": "string"
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
+    },
+    {
+      "id": "cd9dabfe-6664-4788-a8d3-0f6d5b2dbe6a",
+      "meta": {
+        "name": "TwoStreamsOut"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "string"
+          },
+          "out": {
+            "type": "map",
+            "map": {
+              "a": {
+                "type": "stream",
+                "stream": {
+                  "type": "string"
+                }
+              },
+              "b": {
+                "type": "stream",
+                "stream": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
+    }
+  ]
+}

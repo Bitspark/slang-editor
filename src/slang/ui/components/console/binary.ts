@@ -1,6 +1,5 @@
 import m, {CVnode} from "mithril";
 
-import {TypeIdentifier} from "../../../definitions/type";
 import {ConsoleValueType, Input} from "../console";
 import {Tk} from "../toolkit";
 
@@ -17,7 +16,7 @@ function post(domValue: string): string {
 
 export const BINARY_VALUE_TYPE: ConsoleValueType<string> = {
 	typeDef: {
-		type: TypeIdentifier.Binary,
+		type: "binary",
 	},
 
 	input: {

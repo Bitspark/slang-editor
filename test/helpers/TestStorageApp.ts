@@ -1,12 +1,12 @@
 import {SlangApp} from "../../src/slang/app";
-import {fillLandscape} from "../../src/slang/core/mapper";
+import {loadBlueprints} from "../../src/slang/core/mapper";
 import {AppModel} from "../../src/slang/core/models/app";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
 
 export class TestStorageApp extends SlangApp {
 
 	constructor(app: AppModel, private objects: any) {
-		super(app, null);
+		super(app, null!);
 		this.subscribe();
 	}
 
@@ -22,7 +22,7 @@ export class TestStorageApp extends SlangApp {
 
 	private async load(): Promise<void> {
 		return new Promise<void>(async (resolve) => {
-			fillLandscape(this.app.getChildNode(LandscapeModel)!, this.objects);
+			loadBlueprints(this.app.getChildNode(LandscapeModel)!, this.objects);
 			resolve();
 		});
 	}

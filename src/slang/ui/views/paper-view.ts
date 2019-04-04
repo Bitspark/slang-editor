@@ -2,13 +2,11 @@ import {dia, g, shapes, util} from "jointjs";
 
 import {SlangSubjectTrigger} from "../../core/abstract/utils/events";
 import {XY} from "../../definitions/api";
-import {ComponentFactory} from "../factory";
 import {ViewFrame} from "../frame";
 
 import {View} from "./view";
 
 export interface PaperViewArgs {
-	factory: ComponentFactory;
 	hscrollable: boolean;
 	vscrollable: boolean;
 	editable: boolean;
@@ -22,20 +20,16 @@ export abstract class PaperView extends View {
 	private positionChanged = new SlangSubjectTrigger("positionChanged");
 	private readonly paper: dia.Paper;
 
-	private userInputMode: "scroll" | "hscroll" | "zoom/pan" = "scroll";
+	private userInputMode: "scroll" | "hscroll" | "zoom/pan" | null = "scroll";
 
 	private scaleSpeed: number = 0.002;
 	private minScale: number = 0.35;
 	private maxScale: number = 2.5;
 
 	protected constructor(frame: ViewFrame, private args: PaperViewArgs) {
-		super(frame, args.factory);
+		super(frame);
 		this.paper = this.createPaper();
 		this.redirectPaperEvents();
-	}
-
-	public getFactory(): ComponentFactory {
-		return this.factory;
 	}
 
 	public resize(width: number, height: number) {
@@ -44,11 +38,11 @@ export abstract class PaperView extends View {
 		this.positionChanged.next();
 	}
 
-	public toClientXY(xy: XY): XY {
-		return this.paper.localToClientPoint(xy);
+	public toBrowserXY(xy: XY): XY {
+		return this.paper.localToPaperPoint(xy);
 	}
 
-	public toLocalXY(xy: XY): XY {
+	public toSVGXY(xy: XY): XY {
 		return this.paper.clientToLocalPoint(xy);
 	}
 
@@ -145,58 +139,60 @@ export abstract class PaperView extends View {
 				this.zoom(x, y, evt.deltaY);
 				return false;
 		}
+
 		return true;
 	}
 
-	protected setUserInputMode(evt: MouseEvent | KeyboardEvent) {
+	protected setUserInputMode(evt: MouseEvent | KeyboardEvent): void {
 		if (evt.ctrlKey || evt.metaKey) {
 			this.userInputMode = "zoom/pan";
-			return false;
+			return;
 		}
 		if (evt.shiftKey) {
 			this.userInputMode = "hscroll";
-			return false;
+			return;
 		}
-		this.userInputMode = "scroll";
-		return true;
+		if (this.args.vscrollable || this.args.hscrollable) {
+			this.userInputMode = "scroll";
+			return;
+		}
+
+		this.userInputMode = null;
 	}
 
 	protected redirectPaperEvents() {
-		const paper = this.paper;
-		const that = this;
-
-		paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, x: number, y: number) => {
-			originalEvent.preventDefault();
-			if (!that.handleMouseWheel(originalEvent as MouseWheelEvent, x, y)) {
+		this.paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, x: number, y: number) => {
+			if (!this.handleMouseWheel(originalEvent as MouseWheelEvent, x, y)) {
+				originalEvent.preventDefault();
 				originalEvent.stopPropagation();
 			}
 		});
 
-		paper.on("cell:mousewheel", (_cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, x: number, y: number) => {
-			originalEvent.preventDefault();
-			if (!that.handleMouseWheel(originalEvent as MouseWheelEvent, x, y)) {
+		this.paper.on("cell:mousewheel", (_cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, x: number, y: number) => {
+			if (!this.handleMouseWheel(originalEvent as MouseWheelEvent, x, y)) {
+				originalEvent.preventDefault();
 				originalEvent.stopPropagation();
 			}
 		});
 
 		["mousewheel"].forEach((eventName) => {
-			paper.on("cell:" + eventName, (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) => {
+			this.paper.on("cell:" + eventName, (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) => {
 				cellView.model.trigger(eventName, cellView, evt, x, y, delta);
 			});
 		});
 		["pointerdblclick", "pointerclick", "contextmenu", "pointerdown", "pointermove", "pointerup"].forEach((eventName) => {
-			paper.on("cell:" + eventName, (cellView: dia.CellView, evt: Event, x: number, y: number) => {
+			this.paper.on("cell:" + eventName, (cellView: dia.CellView, evt: Event, x: number, y: number) => {
 				cellView.model.trigger(eventName, cellView, evt, x, y);
 			});
 		});
 		["mouseover", "mouseout", "mouseenter", "mouseleave"].forEach((eventName) => {
-			paper.on("cell:" + eventName, (cellView: dia.CellView, evt: MouseEvent) => {
+			this.paper.on("cell:" + eventName, (cellView: dia.CellView, evt: MouseEvent) => {
 				const evTarget = (evt.target as Node);
 				if (evTarget && evTarget.parentElement) {
 					const portId = evTarget.parentElement.getAttribute("port");
 					if (portId) {
 						const {clientX, clientY} = evt;
-						const {x, y} = this.toLocalXY({x: clientX, y: clientY});
+						const {x, y} = this.toSVGXY({x: clientX, y: clientY});
 						cellView.model.trigger("port:" + eventName, cellView, evt, x, y, portId);
 						return;
 					}
@@ -236,7 +232,6 @@ export abstract class PaperView extends View {
 	}
 
 	protected addPanning() {
-		const that = this;
 		const paper = this.paper;
 
 		let panning = false;
@@ -255,7 +250,7 @@ export abstract class PaperView extends View {
 		};
 
 		const doPanning = (x: number, y: number) => {
-			if (!panning || that.userInputMode !== "zoom/pan") {
+			if (!panning || this.userInputMode !== "zoom/pan") {
 				return;
 			}
 			const allowed = this.allowedScrollDelta(x - startX, y - startY);
@@ -265,14 +260,14 @@ export abstract class PaperView extends View {
 			const [allowedDeltaX, allowedDeltaY] = allowed;
 			const {tx, ty} = paper.translate();
 			paper.translate(allowedDeltaX ? allowedDeltaX : tx, allowedDeltaY ? allowedDeltaY : ty);
-			that.positionChanged.next();
+			this.positionChanged.next();
 		};
 
 		paper.on("blank:pointerdown", (evt: Event, x: number, y: number) => {
 			evt.preventDefault();
 			this.setUserInputMode(evt as MouseEvent);
 
-			if (that.userInputMode === "zoom/pan") {
+			if (this.userInputMode === "zoom/pan") {
 				startPanning(x, y);
 			}
 		});
@@ -280,7 +275,7 @@ export abstract class PaperView extends View {
 			evt.preventDefault();
 			this.setUserInputMode(evt as MouseEvent);
 
-			if (that.userInputMode === "zoom/pan") {
+			if (this.userInputMode === "zoom/pan") {
 				startPanning(x, y);
 			}
 		});

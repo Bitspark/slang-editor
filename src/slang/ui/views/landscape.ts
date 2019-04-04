@@ -14,13 +14,12 @@ export class LandscapeView extends PaperView {
 
 	private readonly filter: ((blueprint: BlueprintModel) => boolean) | null;
 	private blueprintRects = new Map<string, shapes.standard.Rectangle>();
-	private addBlueprintButton: dia.Element;
-	private slangLogo: dia.Element;
+	private addBlueprintButton!: dia.Element;
+	private importBlueprintButton!: dia.Element;
 	private dimensions: [number, number] = [0, 0];
 
 	constructor(frame: ViewFrame, private landscape: LandscapeModel, filter?: (blueprint: BlueprintModel) => boolean) {
 		super(frame, {
-			factory: frame.getFactory(),
 			editable: false,
 			hscrollable: false,
 			vscrollable: true,
@@ -32,9 +31,6 @@ export class LandscapeView extends PaperView {
 		} else {
 			this.filter = null;
 		}
-
-		this.addBlueprintButton = this.createAddBlueprintButton();
-		this.slangLogo = this.createSlangLogo();
 
 		this.redraw();
 		this.subscribe(landscape);
@@ -53,8 +49,8 @@ export class LandscapeView extends PaperView {
 
 		this.graph.clear();
 
-		this.addBlueprintButton = this.createAddBlueprintButton();
-		this.slangLogo = this.createSlangLogo();
+		this.addBlueprintButton = this.createAddBlueprintButton("CREATE NEW");
+		this.importBlueprintButton = this.createImportBlueprintButton("IMPORT");
 
 		this.reorder();
 	}
@@ -75,11 +71,11 @@ export class LandscapeView extends PaperView {
 	}
 
 	private reorderEqually(blueprintNames: string[], width: number, height: number) {
-		const maxColumns = 5;
+		const maxColumns = 4;
 
-		const yOffset = 100;
-		const rowHeight = 140;
-		const columnWidth = 200;
+		const yOffset = 0;
+		const rowHeight = 105;
+		const columnWidth = 140;
 
 		const columns = Math.min(maxColumns, Math.floor(width / columnWidth - 2));
 		const rows = Math.max((blueprintNames.length + 1) / columns);
@@ -89,14 +85,16 @@ export class LandscapeView extends PaperView {
 			for (let col = 0; col < columns; col++) {
 				let rect: dia.Element | null = null;
 
-				if (i > 0) {
-					const blueprintName = blueprintNames[i - 1];
+				if (i === 0) {
+					rect = this.addBlueprintButton;
+				} else if (i === 1) {
+					rect = this.importBlueprintButton;
+				} else {
+					const blueprintName = blueprintNames[i - 2];
 					if (!blueprintName) {
 						break;
 					}
 					rect = this.blueprintRects.get(blueprintName)!;
-				} else {
-					rect = this.addBlueprintButton;
 				}
 
 				const posX = (col - columns / 2 + 0.5) * columnWidth;
@@ -107,26 +105,14 @@ export class LandscapeView extends PaperView {
 				i++;
 			}
 		}
-
-		// Slang logo
-		const logo = this.slangLogo;
-		const logoPosX = 0;
-		const logoPosY = -height / 2 + yOffset;
-		logo.position(logoPosX - logo.getBBox().width / 2, logoPosY - logo.getBBox().height / 2);
 	}
 
-	private createAddBlueprintButton(): dia.Element {
+	private createAddBlueprintButton(label: string): dia.Element {
 		if (!this.graph) {
 			throw new Error(`no graph`);
 		}
-
-		const rect = BlackBoxShape.placeGhost(this, "＋");
-		rect.attr("draggable", false);
-		rect.attr("label/cursor", "pointer");
-		rect.attr("label/font-size", "28");
-		rect.attr("body/cursor", "pointer");
-
-		rect.on("pointerup", () => {
+		const rect = this.createBlueprintButton(label);
+		rect.on("pointerclick", () => {
 			const newBlueprint = this.landscape.createBlueprint({
 				uuid: uuidv4(),
 				meta: {name: `Unnamed${new Date().getTime()}`},
@@ -148,29 +134,26 @@ export class LandscapeView extends PaperView {
 		return rect;
 	}
 
-	private createSlangLogo(): dia.Element {
+	private createImportBlueprintButton(label: string): dia.Element {
 		if (!this.graph) {
 			throw new Error(`no graph`);
 		}
+		const rect = this.createBlueprintButton(label);
 
-		const image = new shapes.basic.Image({
-			size: {
-				width: 177,
-				height: 203,
-			},
-			attrs: {
-				image: {
-					"xlink:href": "https://files.bitspark.de/slang2.png",
-					"width": 177,
-					"height": 203,
-					"cursor": "default",
-				},
-			},
+		rect.on("pointerclick", () => {
+			this.landscape.upload();
 		});
-		image.attr("draggable", false);
-		this.graph.addCell(image);
 
-		return image;
+		return rect;
+	}
+
+	private createBlueprintButton(label: string): dia.Element {
+		const rect = BlackBoxShape.placeGhost(this, label);
+		rect.attr("draggable", false);
+		rect.attr("label/cursor", "pointer");
+		rect.attr("label/font-size", "12");
+		rect.attr("body/cursor", "pointer");
+		return rect;
 	}
 
 	private addBlueprint(blueprint: BlueprintModel) {

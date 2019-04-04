@@ -1,35 +1,38 @@
-import {AutoTriggerApp} from "../apps/autotrigger/src/app";
-import {DeploymentApp} from "../apps/deployment/src/app";
-import {OperatorDataApp} from "../apps/operators/src/app";
-import {RouterApp} from "../apps/router/src/app";
-import {APIStorageApp} from "../apps/storage/src/app";
-import {AppModel} from "../slang/core/models/app";
-import {Slang} from "../slang/slang";
-import {ComponentFactory} from "../slang/ui/factory";
-import {ViewFrame} from "../slang/ui/frame";
+// tslint:disable-next-line
+import "./common";
+
 // tslint:disable-next-line
 import "../styles/standalone.scss";
 
-// tslint:disable-next-line
-import "./common";
+import {AutoTriggerApp} from "../apps/autotrigger/src/app";
+import {DeploymentApp} from "../apps/deployment/src/app";
+import {OperatorDataApp} from "../apps/operators/app";
+import {BlueprintShareApp} from "../apps/share/src/app";
+import {APIStorageApp} from "../apps/storage/src/app";
+import {SlangAspects} from "../slang/aspects";
+import {AppModel} from "../slang/core/models/app";
+import {LandscapeModel} from "../slang/core/models/landscape";
+import {Slang} from "../slang/slang";
+import {ViewFrame} from "../slang/ui/frame";
+
+declare const APIURL: string;
 
 function slangStudioStandalone(el: HTMLElement): Promise<void> {
 	return new Promise<void>((resolve) => {
 		const appModel = AppModel.create("slang");
-		const factory = new ComponentFactory();
-
-		new APIStorageApp(appModel, factory, "http://localhost:5149/");
-		new DeploymentApp(appModel, factory, "http://localhost:5149/");
-		new OperatorDataApp(appModel, factory);
-		new AutoTriggerApp(appModel, factory);
-
+		const aspects = new SlangAspects();
 		const app = new Slang(appModel);
-		const frame = new ViewFrame(el, factory);
+		const frame = new ViewFrame(el, aspects);
 		app.addFrame(frame, true);
 
+		new APIStorageApp(appModel, aspects, APIURL);
+		new DeploymentApp(appModel, aspects, APIURL);
+		new OperatorDataApp(appModel, aspects);
+		new AutoTriggerApp(appModel, aspects);
+		new BlueprintShareApp(appModel, aspects);
+
 		app.load().then(() => {
-			const router = new RouterApp(appModel, factory);
-			router.checkRoute();
+			appModel.getChildNode(LandscapeModel)!.open();
 			resolve();
 		});
 	});

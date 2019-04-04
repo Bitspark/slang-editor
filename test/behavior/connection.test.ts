@@ -6,7 +6,7 @@ import {AppModel} from "../../src/slang/core/models/app";
 import {BlueprintModel, BlueprintType} from "../../src/slang/core/models/blueprint";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
 import {OperatorModel} from "../../src/slang/core/models/operator";
-import {SlangType} from "../../src/slang/definitions/type";
+import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
 import {TestStorageApp} from "../helpers/TestStorageApp";
 import data from "../resources/definitions.json";
 
@@ -33,20 +33,20 @@ describe("A connection", () => {
 	});
 
 	it("is possible between stream sub and single", () => {
-		const streamType = SlangType.newStream(SlangType.newString());
+		const streamType = SlangType.newStream(TypeIdentifier.String);
 		const bpPortIn = bpNew.createPort({type: streamType, direction: PortDirection.In, name: ""});
 
-		const s2sOp = bpNew.createOperator("s2s", bpS2S, null, null);
+		const s2sOp = bpNew.createBlankOperator(bpS2S);
 
 		bpPortIn.getStreamSub().connect(s2sOp.getPortIn()!, true);
 		expect(bpPortIn.getStreamSub().isConnectedWith(s2sOp.getPortIn()!)).toBeTruthy();
 	});
 
 	it("is not possible between stream and single", () => {
-		const streamType = SlangType.newStream(SlangType.newString());
+		const streamType = SlangType.newStream(TypeIdentifier.String);
 		const bpPortIn = bpNew.createPort({type: streamType, direction: PortDirection.In, name: ""});
 
-		const s2sOp = bpNew.createOperator("s2s", bpS2S, null, null);
+		const s2sOp = bpNew.createBlankOperator(bpS2S);
 
 		expect(() => {
 			bpPortIn.connect(s2sOp.getPortIn()!, false);
@@ -55,9 +55,9 @@ describe("A connection", () => {
 	});
 
 	it("does not allow cycles", () => {
-		const s2sOp1 = bpNew.createOperator("s2s1", bpS2S, null, null);
-		const s2sOp2 = bpNew.createOperator("s2s2", bpS2S, null, null);
-		const s2sOp3 = bpNew.createOperator("s2s3", bpS2S, null, null);
+		const s2sOp1 = bpNew.createBlankOperator(bpS2S);
+		const s2sOp2 = bpNew.createBlankOperator(bpS2S);
+		const s2sOp3 = bpNew.createBlankOperator(bpS2S);
 
 		s2sOp1.getPortOut()!.connect(s2sOp2.getPortIn()!, true);
 		expect(s2sOp1.getPortOut()!.isConnectedWith(s2sOp2.getPortIn()!)).toBeTruthy();
@@ -72,8 +72,8 @@ describe("A connection", () => {
 	});
 
 	it("does not allow delegate cycles aka nested delegates", () => {
-		const s2sDlgOp1 = bpNew.createOperator("s2sDlg1", bpS2SDlg, null, null);
-		const s2sDlgOp2 = bpNew.createOperator("s2sDlg2", bpS2SDlg, null, null);
+		const s2sDlgOp1 = bpNew.createBlankOperator(bpS2SDlg);
+		const s2sDlgOp2 = bpNew.createBlankOperator(bpS2SDlg);
 
 		s2sDlgOp1.findDelegate("dlg1")!.getPortOut()!.connect(s2sDlgOp2.getPortIn()!, true);
 		expect(s2sDlgOp1.findDelegate("dlg1")!.getPortOut()!.isConnectedWith(s2sDlgOp2.getPortIn()!)).toBeTruthy();
@@ -111,9 +111,9 @@ describe("A connections data structure", () => {
 		bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), meta: {name: "test-bp-2"}, type: BlueprintType.Local});
 		const bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
 
-		op1 = bpNew.createOperator("op1", bpS2S, null, null);
-		op2 = bpNew.createOperator("op2", bpS2S, null, null);
-		op3 = bpNew.createOperator("op3", bpS2S, null, null);
+		op1 = bpNew.createBlankOperator(bpS2S);
+		op2 = bpNew.createBlankOperator(bpS2S);
+		op3 = bpNew.createBlankOperator(bpS2S);
 
 		op1.getPortOut()!.connect(op2.getPortIn()!, true);
 		op2.getPortOut()!.connect(op3.getPortIn()!, true);

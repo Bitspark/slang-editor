@@ -94,7 +94,7 @@ export abstract class BlackBoxComponent extends CellComponent {
 	private clicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("clicked");
 	private dblclicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("dblclicked");
 
-	protected constructor(paperView: PaperView, private readonly drawGenerics: boolean) {
+	protected constructor(paperView: PaperView, private readonly createGhostPorts: boolean) {
 		super(paperView, {x: 0, y: 0});
 	}
 
@@ -105,7 +105,7 @@ export abstract class BlackBoxComponent extends CellComponent {
 		}
 		this.shape = this.createShape();
 		this.portGroups.forEach((group) => {
-			group.setParent(this.shape, this.drawGenerics);
+			group.setParent(this.shape, this.createGhostPorts);
 		});
 
 		this.shape.on("pointerclick",
@@ -227,7 +227,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 	private operatorControl?: AttachableComponent;
 
 	constructor(paperView: PaperView, protected readonly operator: OperatorModel) {
-		super(paperView, true);
+		super(paperView, paperView.isEditable);
 
 		operator.getGenerics().subscribeGenericsChanged(() => {
 			this.refresh();

@@ -2,7 +2,6 @@ import m, {CVnode, CVnodeDOM} from "mithril";
 import * as Plotly from "plotly.js";
 import {Config, ScatterData} from "plotly.js";
 
-import {TypeIdentifier} from "../../../definitions/type";
 import {ConsoleValueType, Output} from "../console";
 
 type GraphType = [{ name: string, data: [{ x: string, y: string }] }];
@@ -14,18 +13,18 @@ const PLOTLY_CONFIG: Partial<Config> = {
 
 export const GRAPH_VALUE_TYPE: ConsoleValueType<GraphType> = {
 	typeDef: {
-		type: TypeIdentifier.Stream,
+		type: "stream",
 		stream: {
-			type: TypeIdentifier.Map,
+			type: "map",
 			map: {
-				name: {type: TypeIdentifier.String},
+				name: {type: "string"},
 				data: {
-					type: TypeIdentifier.Stream,
+					type: "stream",
 					stream: {
-						type: TypeIdentifier.Map,
+						type: "map",
 						map: {
-							x: {type: TypeIdentifier.Primitive},
-							y: {type: TypeIdentifier.Primitive},
+							x: {type: "primitive"},
+							y: {type: "primitive"},
 						},
 					},
 				},

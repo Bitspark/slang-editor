@@ -6,12 +6,11 @@ const common = require('./webpack.common.js');
 
 module.exports = env => merge(common(env), {
 	mode: 'production',
-	devtool: 'source-map',
 	stats: 'errors-only',
 	bail: true,
 	output: {
-		filename: 'js/[name].[chunkhash:8].js',
-		chunkFilename: 'js/[name].[chunkhash:8].chunk.js'
+		filename: 'js/[name].js',
+		chunkFilename: 'js/[name].chunk.js'
 	},
 	plugins: [
 		new Webpack.DefinePlugin({
@@ -20,7 +19,7 @@ module.exports = env => merge(common(env), {
 		new Webpack.optimize.ModuleConcatenationPlugin(),
 		new MiniCssExtractPlugin({
 			filename: 'bundle.css'
-		})
+		}),
 	],
 	module: {
 		rules: [

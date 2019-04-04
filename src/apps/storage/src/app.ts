@@ -1,17 +1,17 @@
 import {SlangApp} from "../../../slang/app";
-import {blueprintModelToJSON, fillLandscape} from "../../../slang/core/mapper";
+import {SlangAspects} from "../../../slang/aspects";
+import {blueprintModelToJson, loadBlueprints} from "../../../slang/core/mapper";
 import {AppModel} from "../../../slang/core/models/app";
 import {BlueprintModel} from "../../../slang/core/models/blueprint";
 import {LandscapeModel} from "../../../slang/core/models/landscape";
-import {ApiService, BlueprintApiResponse} from "../../../slang/definitions/api";
-import {ComponentFactory} from "../../../slang/ui/factory";
+import {ApiService, BlueprintsJson} from "../../../slang/definitions/api";
 
 export class APIStorageApp extends SlangApp {
 	private api: ApiService;
 
-	constructor(app: AppModel, componentFactory: ComponentFactory, host: string) {
-		super(app, componentFactory);
-		this.api = new ApiService(host);
+	constructor(app: AppModel, aspect: SlangAspects, url: string) {
+		super(app, aspect);
+		this.api = new ApiService(url);
 		this.subscribe();
 	}
 
@@ -30,20 +30,21 @@ export class APIStorageApp extends SlangApp {
 
 	private async load(): Promise<void> {
 		return new Promise<void>(async (resolve) => {
-			fillLandscape(this.app.getChildNode(LandscapeModel)!, await this.api.getBlueprints());
+			loadBlueprints(this.app.getChildNode(LandscapeModel)!, await this.api.getBlueprints());
 			resolve();
 		});
 	}
 
 	private store(blueprint: BlueprintModel): void {
-		this.api.storeBlueprint(blueprintModelToJSON(blueprint));
+		this.api.storeBlueprint(blueprintModelToJson(blueprint)).then(() => {
+			return;
+		});
 	}
 }
 
 export class StaticStorageApp extends SlangApp {
-
-	constructor(app: AppModel, componentFactory: ComponentFactory, private url: string) {
-		super(app, componentFactory);
+	constructor(app: AppModel, aspect: SlangAspects, private url: string) {
+		super(app, aspect);
 		this.subscribe();
 	}
 
@@ -62,8 +63,8 @@ export class StaticStorageApp extends SlangApp {
 			fetch(this.url)
 				.then((response: Response) => response.json())
 				.then(async (data: any) => {
-					const objects = data.objects as BlueprintApiResponse[];
-					fillLandscape(this.app.getChildNode(LandscapeModel)!, objects);
+					const objects = data.objects as BlueprintsJson;
+					loadBlueprints(this.app.getChildNode(LandscapeModel)!, objects);
 					resolve();
 				});
 		});

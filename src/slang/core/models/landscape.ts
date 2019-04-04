@@ -1,5 +1,5 @@
 import {SlangNode} from "../abstract/nodes";
-import {SlangBehaviorSubject} from "../abstract/utils/events";
+import {SlangBehaviorSubject, SlangSubjectTrigger} from "../abstract/utils/events";
 
 import {AppModel} from "./app";
 import {BlueprintModel, BlueprintModelArgs} from "./blueprint";
@@ -11,6 +11,7 @@ export interface LandscapeModelArgs {
 export class LandscapeModel extends SlangNode {
 
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
+	private uploadRequested = new SlangSubjectTrigger("upload-requested");
 
 	constructor(parent: AppModel, _args: LandscapeModelArgs) {
 		super(parent);
@@ -43,7 +44,15 @@ export class LandscapeModel extends SlangNode {
 		return this.createChildNode(BlueprintModel, args);
 	}
 
+	public upload() {
+		this.uploadRequested.next();
+	}
+
 	// Subscriptions
+
+	public subscribeUploadRequested(cb: () => void) {
+		this.uploadRequested.subscribe(cb);
+	}
 
 	public subscribeOpenedChanged(cb: (opened: boolean) => void) {
 		this.opened.subscribe(cb);

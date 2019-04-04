@@ -54,18 +54,18 @@ export interface OperatorGeometry {
 	position: XY;
 }
 
-export interface OperatorApiResponse {
+export interface OperatorJson {
 	operator: string;
 	geometry?: OperatorGeometry;
 	properties: PropertyAssignmentsApiResponse;
 	generics: GenericSpecificationsApiResponse;
 }
 
-export interface BlueprintDefApiResponse {
+export interface BlueprintJson {
 	id: string;
 	meta: BlueprintMeta;
 	operators?: {
-		[operatorName: string]: OperatorApiResponse,
+		[operatorName: string]: OperatorJson,
 	};
 	properties?: PropertyApiResponse;
 	services?: PortGroupsApiResponse;
@@ -77,45 +77,66 @@ export interface BlueprintDefApiResponse {
 			height: number,
 		},
 	};
+	tests?: any;
+	complete?: boolean;
 }
 
 export interface ConnectionsApiResponse {
 	[sourcePortReference: string]: [string];
 }
 
+export interface BlueprintsJson {
+	local: BlueprintJson[];
+	library: BlueprintJson[];
+	elementary: BlueprintJson[];
+}
+
 export interface BlueprintApiResponse {
 	type: string;
-	def: BlueprintDefApiResponse;
+	def: BlueprintJson;
 }
 
 export class ApiService {
 
-	private static normalizeUrl(host: string): string {
-		let [protocol, url] = (host.startsWith("//")) ? ["", host] : host.split("://");
-		protocol = (protocol) ? protocol + ":" : "";
-		url = url.replace("//", "/");
-		url = (url.endsWith("/")) ? url.slice(0, -1) : url;
-		return `${protocol}//${url}`;
+	private static normalizeUrl(url: string): string {
+		let scheme = null;
+		let schemePath = url;
+
+		if (url.startsWith("//") || url.indexOf("://") > 0) {
+			[scheme, schemePath] = (url.startsWith("//")) ? ["", url] : url.split("://");
+			scheme = (scheme) ? scheme + ":" : "";
+		}
+		schemePath = schemePath.replace("//", "/");
+		schemePath = (schemePath.endsWith("/")) ? schemePath.slice(0, -1) : schemePath;
+
+		return (scheme) ? `${scheme}//${schemePath}` : schemePath;
 	}
 
-	private readonly host: string;
+	private readonly url: string;
 
 	constructor(host: string) {
-		this.host = ApiService.normalizeUrl(host);
+		this.url = ApiService.normalizeUrl(host);
 	}
 
-	public async getBlueprints(): Promise<BlueprintApiResponse[]> {
-		return this.httpGet<{}, BlueprintApiResponse[]>(
+	public async getBlueprints(): Promise<BlueprintsJson> {
+		return this.httpGet<{}, BlueprintsJson>(
 			"/operator/",
 			{},
-			(data: any) => (data as { objects: any }).objects as BlueprintApiResponse[],
+			(data: any) => {
+				const bpdef: BlueprintApiResponse[] = (data as { objects: any }).objects;
+				return {
+					elementary: bpdef.filter((bp) => bp.type === "elementary").map((bp) => bp.def),
+					library: bpdef.filter((bp) => bp.type === "library").map((bp) => bp.def),
+					local: bpdef.filter((bp) => bp.type === "local").map((bp) => bp.def),
+				};
+			},
 			(err: any) => {
 				console.error(err);
 			},
 		);
 	}
 
-	public async storeBlueprint(blueprintDefJSON: BlueprintDefApiResponse): Promise<any> {
+	public async storeBlueprint(blueprintDefJSON: BlueprintJson): Promise<any> {
 		const process = (data: any) => {
 			if (data) {
 				console.error(data);
@@ -129,7 +150,7 @@ export class ApiService {
 
 		return new Promise<boolean>((resolve) => {
 			const reqInit = {method: "post", body: JSON.stringify(blueprintDefJSON)};
-			fetch(`${this.host}/operator/def/`, reqInit)
+			fetch(`${this.url}/operator/def/`, reqInit)
 				.then((response: Response) => response.json())
 				.then((data: any) => {
 					resolve(process(data));
@@ -138,10 +159,10 @@ export class ApiService {
 		});
 	}
 
-	public async deployBlueprint(blueprintName: string): Promise<DeploymentStatusApiResponse> {
-		return this.httpPost<{ fqn: string, props: any, gens: any, stream: boolean }, DeploymentStatusApiResponse>(
+	public async deployBlueprint(blueprintId: string): Promise<DeploymentStatusApiResponse> {
+		return this.httpPost<{ id: string, props: any, gens: any, stream: boolean }, DeploymentStatusApiResponse>(
 			"/run/",
-			{fqn: blueprintName, props: {}, gens: {}, stream: false},
+			{id: blueprintId, props: {}, gens: {}, stream: false},
 			(data: any) => {
 				if (data.status === "success") {
 					return data as DeploymentStatusApiResponse;
@@ -184,7 +205,7 @@ export class ApiService {
 	private fetch<S, T>(method: string, path: string, data: S, process: (responseParsed: any) => T, error: (error: any) => void): Promise<T> {
 		return new Promise<T>((resolve) => {
 			const reqInit = (method !== "get") ? {method, body: JSON.stringify(data)} : {};
-			fetch(this.host + path, reqInit)
+			fetch(this.url + path, reqInit)
 				.then((response: Response) => response.json())
 				.then((responseParsed: any) => {
 					resolve(process(responseParsed));

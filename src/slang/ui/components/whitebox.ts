@@ -403,52 +403,20 @@ export class WhiteBoxComponent extends CellComponent {
 		});
 
 		const view = this.paperView;
+		const aspects = view.aspects;
+
+		this.buttons.mount({
+			view: () => m(".toolbox",
+				aspects.getBlueprintToolboxButtons(this.paperView, this.blueprint, m.redraw)
+					.map((btnAttrs) => m(Button, {onClick: btnAttrs.onclick}, btnAttrs.label))),
+		});
 
 		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
 			if (!instance) {
-
-				this.buttons.mount({
-					view: () => m(".toolbox", [
-						view.isRunnable
-							? m(Button, {
-								onClick: () => {
-									if (view.isEditable) {
-										this.blueprint.save();
-									}
-									this.blueprint.requestDeployment();
-								},
-								class: "sl-blupr-deploy",
-							}, "Deploy")
-							: undefined,
-						view.isEditable
-							? m(Button, {
-								onClick: () => {
-									this.blueprint.save();
-								},
-								class: "sl-blupr-deploy",
-							}, "Save")
-							: undefined,
-					]),
-				});
-
 				this.input.unmount();
 				this.output.unmount();
 
 			} else if (view.isRunnable) {
-
-				this.buttons.mount({
-					view: () => m(".toolbox", [
-						m(Button, {
-							class: "sl-green-pulsing",
-						}, "Running"),
-						m(Button, {
-							onClick: () => {
-								this.blueprint.requestShutdown();
-							},
-							class: "sl-btn-warn",
-						}, "Shutdown"),
-					]),
-				});
 
 				const portIn = this.blueprint.getPortIn();
 
@@ -471,7 +439,7 @@ export class WhiteBoxComponent extends CellComponent {
 					this.blueprint.subscribeOutputPushed((outputData: SlangTypeValue) => {
 						outputValues.unshift(outputData);
 						m.redraw();
-					}, this.blueprint.shutdownRequested);
+					});
 
 					this.output.mount({
 						view: () => m(Box, m(OutputConsole, {
@@ -501,8 +469,7 @@ export class WhiteBoxComponent extends CellComponent {
 			right: "left",
 		};
 
-		const that = this;
-		const portComponent = new IsolatedBlueprintPortComponent(name, id, port, invertedPosition[pos]);
+		const portComponent = new IsolatedBlueprintPortComponent(name, id, port, invertedPosition[pos], this.paperView.isEditable);
 		const portElement = portComponent.getShape();
 		this.paperView.renderCell(portElement);
 
@@ -596,8 +563,8 @@ export class WhiteBoxComponent extends CellComponent {
 		}
 
 		portElement.set("restrictTranslate", (): g.PlainRect => {
-			const outerPosition = that.shape.get("position") as g.PlainPoint;
-			const outerSize = that.shape.get("size") as g.PlainRect;
+			const outerPosition = this.shape.get("position") as g.PlainPoint;
+			const outerSize = this.shape.get("size") as g.PlainRect;
 			return calculateRestrictedRect(outerPosition, outerSize);
 		});
 

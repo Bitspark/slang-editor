@@ -14,13 +14,62 @@ export enum Keypress {
 	Down,
 }
 
+interface FormAttrs {
+	isValid: boolean;
+	submitLabel: string;
+
+	onsubmit?(): void;
+}
+
+export class Form implements ClassComponent<FormAttrs> {
+	public view({attrs, children}: CVnode<FormAttrs>) {
+		return m("form", {
+				class: (attrs.isValid ? "sl-invalid" : ""),
+				onsubmit: (e: Event) => {
+					e.preventDefault();
+					if (attrs.onsubmit) {
+						attrs.onsubmit();
+					}
+				},
+			},
+			children,
+			attrs.onsubmit ?
+				m(Tk.Button, {
+					type: "submit",
+					full: true,
+					notAllowed: !attrs.isValid,
+					onClick: attrs.isValid ? () => {
+						if (attrs.onsubmit) {
+							attrs.onsubmit();
+						}
+					} : undefined,
+				}, attrs.submitLabel) : undefined,
+		);
+	}
+}
+
 export namespace Tk {
 	interface ModalAttrs {
 		title?: string;
+
 		onClose?(): void;
 	}
 
 	export class Modal implements ClassComponent<ModalAttrs> {
+		public oninit({attrs}: CVnode<ModalAttrs>) {
+			document.addEventListener("keyup", (event: Event) => {
+				const e = event as MithrilKeyboardEvent;
+				switch (e.key) {
+					case "Escape":
+						e.redraw = false;
+						if (attrs.onClose) {
+							attrs.onClose();
+						}
+						break;
+				}
+			});
+		}
+
 		public view({children, attrs}: CVnode<ModalAttrs>) {
 			return m(".sl-modal",
 				m(".sl-modal-content",
@@ -55,7 +104,9 @@ export namespace Tk {
 		onKey?: {
 			[keyevent in keyof Keypress]: (e: MithrilKeyboardEvent) => void
 		};
+
 		onMouseEnter?(e: MithrilMouseEvent): void;
+
 		onMouseLeave?(e: MithrilMouseEvent): void;
 	}
 
@@ -73,8 +124,11 @@ export namespace Tk {
 
 	interface ListItemAttrs {
 		class?: string;
+
 		onMouseEnter?(e: MithrilMouseEvent): void;
+
 		onMouseLeave?(e: MithrilMouseEvent): void;
+
 		onClick?(e: MithrilMouseEvent): void;
 	}
 
@@ -114,6 +168,8 @@ export namespace Tk {
 		notAllowed?: boolean;
 		inactive?: boolean;
 		full?: boolean;
+		type?: "button" | "submit" | "reset";
+
 		onClick?(e: MithrilMouseEvent): void;
 	}
 
@@ -142,6 +198,7 @@ export namespace Tk {
 					}, that.bounceInterval);
 				} : undefined,
 				tooltip: attrs.tooltip,
+				type: attrs.type,
 			}, children);
 		}
 
@@ -177,7 +234,9 @@ export namespace Tk {
 		class: string;
 		autofocus?: boolean;
 		initValue?: T;
+
 		onInput(value: T): void;
+
 		onchange?(file: File): void;
 	}
 
@@ -302,6 +361,7 @@ export namespace Tk {
 	}
 
 	export interface SelectInputAttrs extends InputAttrs<string> {
+		selected?: string;
 		options: string[];
 	}
 
@@ -323,6 +383,7 @@ export namespace Tk {
 				attrs.options.map((opt) => {
 					return m("option", {
 						value: opt,
+						selected: attrs.selected === opt,
 					}, opt);
 				}),
 			));

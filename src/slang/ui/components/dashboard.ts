@@ -2,15 +2,16 @@ import m, {ClassComponent, CVnode} from "mithril";
 
 import {BlueprintModel} from "../../core/models/blueprint";
 import {OperatorModel} from "../../core/models/operator";
-import {isUndefined, SlangType, SlangTypeValue} from "../../definitions/type";
+import {SlangType, SlangTypeValue} from "../../definitions/type";
 import {ComponentFactory} from "../factory";
 
 import {Input} from "./console";
-import {Tk} from "./toolkit";
+import {Form} from "./toolkit";
 
 interface DashboardAttrs {
 	factory: ComponentFactory;
 	operator: OperatorModel;
+
 	onSave(): void;
 }
 
@@ -34,6 +35,7 @@ export class DashboardComponent implements ClassComponent<DashboardAttrs> {
 
 export interface DashboardModuleAttrs {
 	operator: OperatorModel;
+
 	onSave(): void;
 }
 
@@ -56,24 +58,20 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 	public view({attrs}: CVnode<DashboardModuleAttrs>): any {
 		const blueprint = this.blueprint!;
 
-		return m("form.sl-property.sl-console-in", {
-				class: (this.isValid(this.formData) ? "sl-invalid" : ""),
+		return m(Form, {
+				isValid: this.isValid(this.formData),
+				submitLabel: "save&close",
+				onsubmit: () => {
+					this.beforeFormSubmit(this.formData).forEach((value, propertyName) => {
+						this.operator.getProperties().get(propertyName).assign(value);
+					});
+					attrs.onSave();
+				},
 			},
 			m("h4", `Properties of "${blueprint.getShortName()}"`),
 			Array.from(this.formBody.entries()).map(([fieldName, fieldAttrs]) => {
 				return this.renderPropertyInput(fieldName, fieldAttrs);
 			}),
-			m(Tk.Button, {
-					full: true,
-					notAllowed: !this.isValid(this.formData),
-					onClick: this.isValid ? () => {
-						this.beforeFormSubmit(this.formData).forEach((value, propertyName) => {
-							this.operator.getProperties().get(propertyName).assign(value);
-						});
-						attrs.onSave();
-					} : undefined,
-				}, "save & close",
-			),
 		);
 	}
 
@@ -90,7 +88,7 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 				return map;
 			}
 			const initValue = propAssign.getValue();
-			return map.set(propAssign.getName(), !isUndefined(initValue) ? {initValue, type} : {type});
+			return map.set(propAssign.getName(), !SlangTypeValue.isUndefined(initValue) ? {initValue, type} : {type});
 		}, new Map<string, { initValue?: SlangTypeValue, type: SlangType }>());
 	}
 
@@ -98,8 +96,7 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 		return formData;
 	}
 
-	private renderPropertyInput(fieldName: string, _fieldAttrs: { type: SlangType, initValue?: SlangTypeValue }): m.Children {
-		const {type, initValue} = this.formBody.get(fieldName)!;
+	private renderPropertyInput(fieldName: string, {type, initValue}: { type: SlangType, initValue?: SlangTypeValue }): m.Children {
 		return m(Input.ConsoleEntry, {
 			type,
 			label: fieldName,
