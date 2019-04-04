@@ -1,4 +1,4 @@
-import {BehaviorSubject, Subject, Subscription} from "rxjs";
+import {BehaviorSubject, Observable, OperatorFunction, Subject, Subscription} from "rxjs";
 
 import {SlangNode} from "../nodes";
 
@@ -20,7 +20,7 @@ export class SlangSubject<T> extends BaseSlangSubject {
 		this.subject.next(value);
 	}
 
-	public subscribe(next: (value: T) => void, until?: SlangSubject<any> | SlangSubjectTrigger): Subscription {
+	public subscribe(next: (value: T) => void, until?: SlangSubject<any> | SlangSubjectTrigger | Observable<any>): Subscription {
 		const subscription = this.subject.subscribe(next);
 		if (until) {
 			(until as SlangSubjectTrigger).subscribe(() => {
@@ -45,6 +45,7 @@ export class SlangSubjectTrigger extends BaseSlangSubject {
 	public subscribe(next: () => void): Subscription {
 		return this.subject.subscribe(next);
 	}
+
 }
 
 export class SlangBehaviorSubject<T> extends BaseSlangSubject {
@@ -65,6 +66,10 @@ export class SlangBehaviorSubject<T> extends BaseSlangSubject {
 
 	public getValue(): T {
 		return this.subject.getValue();
+	}
+
+	public pipe(opr: OperatorFunction<any, any>): Observable<T> {
+		return this.subject.pipe(opr);
 	}
 }
 

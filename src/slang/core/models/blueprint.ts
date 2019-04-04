@@ -1,3 +1,4 @@
+import {filter} from "rxjs/operators";
 import {OperatorGeometry} from "../../definitions/api";
 import {SlangParsing} from "../../definitions/parsing";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
@@ -445,11 +446,11 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 	}
 
 	public subscribeInputPushed(cb: (inputData: SlangTypeValue) => void): void {
-		this.inputPushed.subscribe(cb);
+		this.inputPushed.subscribe(cb, this.instance.pipe(filter((ins) => !ins)));
 	}
 
-	public subscribeOutputPushed(cb: (outputData: SlangTypeValue) => void, until?: SlangSubject<any>): void {
-		this.outputPushed.subscribe(cb, until);
+	public subscribeOutputPushed(cb: (outputData: SlangTypeValue) => void): void {
+		this.outputPushed.subscribe(cb);
 	}
 
 	private getNextOperatorName(blueprint: BlueprintModel): string {
