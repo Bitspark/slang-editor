@@ -1,5 +1,4 @@
-import m from "mithril";
-import {ClassComponent, CVnode} from "mithril";
+import m, {ClassComponent, CVnode} from "mithril";
 
 import {BlueprintModel} from "../../core/models/blueprint";
 import {LandscapeModel} from "../../core/models/landscape";
@@ -8,7 +7,8 @@ import {BlueprintView} from "../views/blueprint";
 
 import {AttachableComponent, CellComponent} from "./base";
 import {BlackBoxShape} from "./blackbox";
-import {MithrilKeyboardEvent, MithrilMouseEvent, Tk} from "./toolkit/toolkit";
+import {MithrilKeyboardEvent, MithrilMouseEvent} from "./toolkit/events";
+import {Tk} from "./toolkit/toolkit";
 
 export interface Attrs {
 	onSelect(bp: BlueprintModel): void;

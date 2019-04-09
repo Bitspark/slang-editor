@@ -1,18 +1,6 @@
 import m, {ClassComponent, CVnode, CVnodeDOM} from "mithril";
 
-export interface MithrilMouseEvent extends MouseEvent {
-	redraw: boolean;
-}
-
-export interface MithrilKeyboardEvent extends KeyboardEvent {
-	redraw: boolean;
-}
-
-export enum Keypress {
-	Enter,
-	Up,
-	Down,
-}
+import {Keypress, MithrilKeyboardEvent, MithrilMouseEvent} from "./events";
 
 interface FormAttrs {
 	isValid: boolean;
