@@ -281,6 +281,7 @@ export namespace Output {
 
 interface InputConsoleAttrs {
 	type: SlangType;
+
 	onSubmit(value: SlangTypeValue): void;
 }
 
@@ -326,6 +327,7 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 
 interface OutputConsoleAttrs {
 	type: SlangType;
+
 	onLoad(): SlangTypeValue[];
 }
 

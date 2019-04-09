@@ -596,9 +596,6 @@ export class WhiteBoxComponent extends CellComponent {
 							m(DashboardComponent, {
 								operator,
 								factory: this.paperView.getFactory(),
-								onSave: () => {
-									comp.destroy();
-								},
 							}),
 						),
 					});

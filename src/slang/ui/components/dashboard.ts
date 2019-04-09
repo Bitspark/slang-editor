@@ -6,13 +6,12 @@ import {SlangType, SlangTypeValue} from "../../definitions/type";
 import {ComponentFactory} from "../factory";
 
 import {Input} from "./console";
-import {Form} from "./toolkit/toolkit";
+import {Block, Form, Title} from "./toolkit/toolkit";
+import {TypeSelect} from "./toolkit/type";
 
 interface DashboardAttrs {
 	factory: ComponentFactory;
 	operator: OperatorModel;
-
-	onSave(): void;
 }
 
 export class DashboardComponent implements ClassComponent<DashboardAttrs> {
@@ -25,9 +24,6 @@ export class DashboardComponent implements ClassComponent<DashboardAttrs> {
 		}, dashboardModules.map((dashboardModule) => {
 			return m(dashboardModule, {
 				operator: attrs.operator,
-				onSave: () => {
-					attrs.onSave();
-				},
 			});
 		}));
 	}
@@ -35,8 +31,6 @@ export class DashboardComponent implements ClassComponent<DashboardAttrs> {
 
 export interface DashboardModuleAttrs {
 	operator: OperatorModel;
-
-	onSave(): void;
 }
 
 export interface DashboardModuleComponent extends ClassComponent<DashboardModuleAttrs> {
@@ -55,7 +49,7 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 		this.formData = new Map<string, { value: SlangTypeValue }>();
 	}
 
-	public view({attrs}: CVnode<DashboardModuleAttrs>): any {
+	public view(_: CVnode<DashboardModuleAttrs>): any {
 		const blueprint = this.blueprint!;
 
 		return m(Form, {
@@ -65,7 +59,6 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 					this.beforeFormSubmit(this.formData).forEach((value, propertyName) => {
 						this.operator.getProperties().get(propertyName).assign(value);
 					});
-					attrs.onSave();
 				},
 			},
 			m("h4", `Properties of "${blueprint.getShortName()}"`),
@@ -104,6 +97,41 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 			initValue: !this.formData.has(fieldName) ? initValue : undefined,
 			onInput: (v: any) => {
 				this.formData.set(fieldName, v);
+			},
+		});
+	}
+}
+
+export class PortTypeDashboardModuleComponent implements DashboardModuleComponent {
+	private genIds!: string[];
+	private operator!: OperatorModel;
+
+	public oninit({attrs}: CVnode<DashboardModuleAttrs>): any {
+		this.operator = attrs.operator;
+		this.genIds = Array.from(this.operator.getBlueprint().getGenericIdentifiers());
+	}
+
+	public view(_: CVnode<DashboardModuleAttrs>): any {
+		return m(Block,
+			m(Title, "Define Generics"),
+			this.genIds.map((i) => this.renderInput(i))
+		);
+	}
+
+	private renderInput(genId: string): m.Children {
+		let genType: SlangType;
+
+		try {
+			genType = this.operator.getGenerics().get(genId);
+		} catch {
+			genType = SlangType.newUnspecified();
+		}
+
+		return m(TypeSelect, {
+			label: genId,
+			type: genType,
+			onInput: (nType: SlangType) => {
+				this.operator.getGenerics().specify(genId, nType);
 			},
 		});
 	}

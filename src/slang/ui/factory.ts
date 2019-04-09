@@ -2,7 +2,11 @@ import {BlueprintModel} from "../core/models/blueprint";
 import {OperatorModel} from "../core/models/operator";
 
 import {BlackBoxShape, OperatorBoxComponent} from "./components/blackbox";
-import {DashboardModuleComponent, PropertyFormDashboardModuleComponent} from "./components/dashboard";
+import {
+	DashboardModuleComponent,
+	PortTypeDashboardModuleComponent,
+	PropertyFormDashboardModuleComponent,
+} from "./components/dashboard";
 import {PaperView} from "./views/paper-view";
 
 export class ComponentFactory {
@@ -21,7 +25,7 @@ export class ComponentFactory {
 	public getDashboardModules(operator: OperatorModel): Array<new() => DashboardModuleComponent> {
 		const dashboardCompClass = this.opDashboardModuleClasses.get(operator.getBlueprint());
 		if (!dashboardCompClass) {
-			return [PropertyFormDashboardModuleComponent];
+			return [PropertyFormDashboardModuleComponent, PortTypeDashboardModuleComponent];
 		}
 		return dashboardCompClass;
 	}

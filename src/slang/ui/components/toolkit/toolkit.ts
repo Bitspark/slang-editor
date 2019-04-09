@@ -6,7 +6,7 @@ interface FormAttrs {
 	isValid: boolean;
 	submitLabel: string;
 
-	onsubmit?(): void;
+	onsubmit(): void;
 }
 
 export class Form implements ClassComponent<FormAttrs> {
@@ -33,6 +33,18 @@ export class Form implements ClassComponent<FormAttrs> {
 					} : undefined,
 				}, attrs.submitLabel) : undefined,
 		);
+	}
+}
+
+export class Block implements ClassComponent<{}> {
+	public view({children}: CVnode<{}>) {
+		return m("", children);
+	}
+}
+
+export class Title implements ClassComponent<{}> {
+	public view({children}: CVnode<{}>) {
+		return m("h2", children);
 	}
 }
 
@@ -219,9 +231,10 @@ export namespace Tk {
 
 	export interface InputAttrs<T> {
 		label: string;
-		class: string;
+		class?: string;
 		autofocus?: boolean;
 		initValue?: T;
+		readonly?: boolean;
 
 		onInput(value: T): void;
 
@@ -238,6 +251,7 @@ export namespace Tk {
 		return m(`.sl-input`,
 			{
 				class: attrs.class,
+				readonly: attrs.readonly,
 			},
 			m(".sl-input-outer",
 				[
