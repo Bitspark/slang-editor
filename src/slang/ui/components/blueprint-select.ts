@@ -8,7 +8,7 @@ import {BlueprintView} from "../views/blueprint";
 
 import {AttachableComponent, CellComponent} from "./base";
 import {BlackBoxShape} from "./blackbox";
-import {MithrilKeyboardEvent, MithrilMouseEvent, Tk} from "./toolkit";
+import {MithrilKeyboardEvent, MithrilMouseEvent, Tk} from "./toolkit/toolkit";
 
 export interface Attrs {
 	onSelect(bp: BlueprintModel): void;

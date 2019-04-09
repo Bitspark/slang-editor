@@ -1,7 +1,7 @@
 import m, {CVnode} from "mithril";
 
 import {ConsoleValueType, Input} from "../console";
-import {Tk} from "../toolkit";
+import {Tk} from "../toolkit/toolkit";
 
 function pre(slangValue: string | undefined): string | undefined {
 	if (!slangValue || slangValue.startsWith("base64:")) {

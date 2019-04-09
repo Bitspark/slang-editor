@@ -19,7 +19,7 @@ import {ConnectionComponent} from "./connection";
 import {InputConsole, OutputConsole} from "./console";
 import {DashboardComponent} from "./dashboard";
 import {PortGroupPosition} from "./port-group";
-import {Tk} from "./toolkit";
+import {Tk} from "./toolkit/toolkit";
 
 import Modal = Tk.Modal;
 import Button = Tk.Button;

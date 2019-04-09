@@ -5,7 +5,7 @@ import {SlangType, SlangTypeJson, SlangTypeValue, TypeIdentifier} from "../../de
 import {BINARY_VALUE_TYPE} from "./console/binary";
 import {FILE_VALUE_TYPE, IMAGE_VALUE_TYPE} from "./console/file";
 import {GRAPH_VALUE_TYPE} from "./console/graph";
-import {Tk} from "./toolkit";
+import {Tk} from "./toolkit/toolkit";
 
 export interface ConsoleValueType<T> {
 	typeDef: SlangTypeJson;

@@ -1,7 +1,7 @@
 import m, {CVnode} from "mithril";
 
 import {ConsoleValueType, Input, Output} from "../console";
-import {Tk} from "../toolkit";
+import {Tk} from "../toolkit/toolkit";
 
 function selectFile(file: File, onInput: (value: { content: string, name: string }) => void) {
 	const reader = new FileReader();

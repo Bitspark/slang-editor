@@ -12,7 +12,7 @@ import {PaperView} from "../views/paper-view";
 
 import {AttachableComponent, CellComponent} from "./base";
 import {PortGroupComponent} from "./port-group";
-import {Tk} from "./toolkit";
+import {Tk} from "./toolkit/toolkit";
 
 import Button = Tk.Button;
 import RectangleSelectors = shapes.standard.RectangleSelectors;

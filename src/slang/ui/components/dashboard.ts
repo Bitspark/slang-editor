@@ -6,7 +6,7 @@ import {SlangType, SlangTypeValue} from "../../definitions/type";
 import {ComponentFactory} from "../factory";
 
 import {Input} from "./console";
-import {Form} from "./toolkit";
+import {Form} from "./toolkit/toolkit";
 
 interface DashboardAttrs {
 	factory: ComponentFactory;
