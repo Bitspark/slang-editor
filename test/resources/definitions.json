@@ -329,6 +329,35 @@
       },
       "operators": {},
       "connections": {}
+    },
+    {
+      "id": "b444f701-59fc-43a8-8cdc-8bcce9dd471d",
+      "meta": {
+        "name": "OutStreamMap"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "trigger"
+          },
+          "out": {
+            "type": "stream",
+            "stream": {
+              "type": "map",
+              "map": {
+                "portA": {
+                  "type": "string"
+                },
+                "portB": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
     }
   ]
 }
