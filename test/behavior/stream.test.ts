@@ -70,42 +70,12 @@ describe("A stream port", () => {
 
 		opG2G.getGenerics().specify("itemType", SlangType.new(TypeIdentifier.Number));
 
-		expect(opG2G.getPortOut()!.canConnect(opGIS.getPortIn()!.getStreamSub())).toEqual(true);
+		const g2gOut = opG2G.getPortOut()!;
+		const gisInSub = opGIS.getPortIn()!.getStreamSub();
 
-		// opG2G.getPortOut()!.connect(opGIS.getPortIn()!.getStreamSub(), true);
-	});
-
-	it("assigns the correct stream type", () => {
-		const bp = landscapeModel.createBlueprint({
-			uuid: uuidv4(),
-			meta: {name: "test-bp-1"},
-			type: BlueprintType.Local,
-		});
-
-		const opTs = bp.createBlankOperator(landscapeModel.findBlueprint("475f9092-8925-4a5c-b279-186f524da4b4")!); // [[a][b]] => []
-		const opNs1 = bp.createBlankOperator(landscapeModel.findBlueprint("12cfe9ae-2586-4285-bc67-71b19864f1b9")!); // [] => [[]]
-		const opNs2 = bp.createBlankOperator(landscapeModel.findBlueprint("12cfe9ae-2586-4285-bc67-71b19864f1b9")!); // [] => [[]]
-
-		const inTsAStr = opTs.getPortIn()!.findMapSub("a").getStreamSub();
-		// const inTsBStr = opTs.getPortIn()!.findMapSub("b").getStreamSub();
-
-		const outNs1 = opNs1.getPortOut()!.getStreamSub();
-		const outNs2 = opNs2.getPortOut()!.getStreamSub();
-
-		outNs1.connect(inTsAStr, true);
-		outNs2.connect(inTsAStr, true);
-
-		// We expect for inTsAStr something like [a1,[a2]]
-		// With outNs1 => [a1]
-		// With outNs2 => [a2]
-
-		expect(Array.from(inTsAStr.getMapSubs()).length).toBe(2);
-		const a1 = outNs1.getConnectedWith().next().value;
-		const a2 = outNs2.getConnectedWith().next().value;
-
-		expect(a1.getStreamDepth()).toBe(2);
-		expect(a2.getStreamDepth()).toBe(3);
-		expect(a2.getStreamPort().getStreamType().getBaseStreamOrNull()).toBe(a1.getStreamPort().getStreamType());
+		expect(g2gOut.canConnect(gisInSub)).toEqual(true);
+		g2gOut.connect(gisInSub, true);
+		expect(g2gOut.isConnectedWith(gisInSub.getMapSubs().next().value)).toEqual(true);
 	});
 
 });
