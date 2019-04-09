@@ -15,7 +15,7 @@ export class DeploymentApp extends SlangApp {
 	}
 
 	protected onReady(): void {
-		this.aspects!.registerBlueprintToolboxButton((view: PaperView, blueprint: BlueprintModel): BlueprintToolBoxType[] => {
+		this.aspects!.registerBlueprintToolboxButton((view: PaperView, blueprint: BlueprintModel, redraw: () => void): BlueprintToolBoxType[] => {
 			const l: BlueprintToolBoxType[] = [];
 
 			if (view.isRunnable) {
@@ -23,6 +23,7 @@ export class DeploymentApp extends SlangApp {
 					l.push({
 						onclick: async () => {
 							await this.shutdown(blueprint);
+							redraw();
 						},
 						class: "sl-btn-warn",
 						label: "Shutdown",
@@ -34,13 +35,14 @@ export class DeploymentApp extends SlangApp {
 								blueprint.save();
 							}
 							await this.deploy(blueprint);
+							redraw();
 						},
 						label: "Deploy",
 					});
 				}
 			}
 
-			// TODO to storage
+			// TODO move this button to storage app
 			if (view.isEditable) {
 				l.push({
 					onclick: () => {

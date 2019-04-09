@@ -13,13 +13,13 @@ export interface BlueprintToolBoxType {
 export class SlangAspects {
 	public readonly factory = new ComponentFactory();
 
-	private aspectBlueprintToolbox = new Array<(view: PaperView, blupr: BlueprintModel) => BlueprintToolBoxType[]>();
+	private aspectBlueprintToolbox = new Array<(view: PaperView, blupr: BlueprintModel, redraw: () => void) => BlueprintToolBoxType[]>();
 
-	public getBlueprintToolboxButtons(view: PaperView, blueprint: BlueprintModel): BlueprintToolBoxType[] {
-		return this.aspectBlueprintToolbox.reduce((accumBtnAttrs: BlueprintToolBoxType[], cBtnAttrs) => accumBtnAttrs.concat(cBtnAttrs(view, blueprint)), []);
+	public getBlueprintToolboxButtons(view: PaperView, blueprint: BlueprintModel, redraw: () => void): BlueprintToolBoxType[] {
+		return this.aspectBlueprintToolbox.reduce((accumBtnAttrs: BlueprintToolBoxType[], cBtnAttrs) => accumBtnAttrs.concat(cBtnAttrs(view, blueprint, redraw)), []);
 	}
 
-	public registerBlueprintToolboxButton(f: (view: PaperView, blupr: BlueprintModel) => BlueprintToolBoxType[]) {
+	public registerBlueprintToolboxButton(f: (view: PaperView, blupr: BlueprintModel, redraw: () => void) => BlueprintToolBoxType[]) {
 		this.aspectBlueprintToolbox.push(f);
 	}
 }
