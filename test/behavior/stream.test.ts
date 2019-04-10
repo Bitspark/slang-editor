@@ -107,7 +107,9 @@ describe("A stream port", () => {
 
 		osOut.getStreamSub().findMapSub("portA").connect(g2gIn, true);
 		osOut.getStreamSub().findMapSub("portB").connect(g2gIn, true);
-		Array.from(g2gOut.getMapSubs()).forEach((port) => port.connect(bpOut, true));
+		Array.from(g2gOut.getMapSubs()).forEach((port) => {
+			port.connect(bpOut, true);
+		});
 
 		expect(Array.from(bpOut.getMapSubs()).length).toEqual(2);
 		expect(Array.from(Array.from(bpOut.getMapSubs()).find((port) => port.getType().isStream())!.getStreamSub().getMapSubs()).length).toEqual(2);

@@ -175,7 +175,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	public isGenericLike(): boolean {
 		return !!this.generics;
 	}
-	
+
 	public isGhostPort(): boolean {
 		return this.isGenericLike() && (this.getType().isUnspecified() || this.getType().isMap());
 	}
