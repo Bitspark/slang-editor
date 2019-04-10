@@ -6,7 +6,7 @@ import {SlangType, SlangTypeValue} from "../../definitions/type";
 import {ComponentFactory} from "../factory";
 
 import {Input} from "./console";
-import {Block, Form, Title} from "./toolkit/toolkit";
+import {Block, Title} from "./toolkit/toolkit";
 import {TypeSelect} from "./toolkit/type";
 
 interface DashboardAttrs {
@@ -49,27 +49,19 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 		this.formData = new Map<string, { value: SlangTypeValue }>();
 	}
 
-	public view(_: CVnode<DashboardModuleAttrs>): any {
+	public view(_: CVnode<DashboardModuleAttrs>): m.Children {
 		const blueprint = this.blueprint!;
 
-		return m(Form, {
-				isValid: this.isValid(this.formData),
-				submitLabel: "save&close",
-				onsubmit: () => {
-					this.beforeFormSubmit(this.formData).forEach((value, propertyName) => {
-						this.operator.getProperties().get(propertyName).assign(value);
-					});
-				},
-			},
-			m("h4", `Properties of "${blueprint.getShortName()}"`),
+		if (!blueprint.hasProperties()) {
+			return;
+		}
+
+		return m(Block,
+			m(Title, `Properties`),
 			Array.from(this.formBody.entries()).map(([fieldName, fieldAttrs]) => {
 				return this.renderPropertyInput(fieldName, fieldAttrs);
 			}),
 		);
-	}
-
-	protected isValid(_formData: Map<string, { value: SlangTypeValue }>): boolean {
-		return true;
 	}
 
 	protected getFormBody(): Map<string, { initValue?: SlangTypeValue, type: SlangType }> {
@@ -97,6 +89,9 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 			initValue: !this.formData.has(fieldName) ? initValue : undefined,
 			onInput: (v: any) => {
 				this.formData.set(fieldName, v);
+				this.beforeFormSubmit(this.formData).forEach((value, propertyName) => {
+					this.operator.getProperties().get(propertyName).assign(value);
+				});
 			},
 		});
 	}
@@ -113,8 +108,8 @@ export class PortTypeDashboardModuleComponent implements DashboardModuleComponen
 
 	public view(_: CVnode<DashboardModuleAttrs>): any {
 		return m(Block,
-			m(Title, "Define Generics"),
-			this.genIds.map((i) => this.renderInput(i))
+			m(Title, "Generics"),
+			this.genIds.map((i) => this.renderInput(i)),
 		);
 	}
 
