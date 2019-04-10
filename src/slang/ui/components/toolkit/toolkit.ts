@@ -245,6 +245,10 @@ export namespace Tk {
 		onInput(value: T, e?: { redraw: boolean }): void;
 
 		onchange?(file: File): void;
+
+		onkeydown?(e: MithrilKeyboardEvent): void;
+
+		onkeyup?(e: MithrilKeyboardEvent): void;
 	}
 
 	export interface Input<T> extends ClassComponent<InputAttrs<T>> {
@@ -290,6 +294,8 @@ export namespace Tk {
 					oninput: (e: MithrilEvent) => {
 						attrs.onInput(e.currentTarget.value, e);
 					},
+					onkeydown: attrs.onkeydown,
+					onkeyup: attrs.onkeyup,
 					autofocus: attrs.autofocus,
 				},
 			));
@@ -311,6 +317,8 @@ export namespace Tk {
 					oninput: (e: MithrilEvent) => {
 						attrs.onInput(Number(e.currentTarget.value), e);
 					},
+					onkeydown: attrs.onkeydown,
+					onkeyup: attrs.onkeyup,
 					autofocus: attrs.autofocus,
 				},
 			));
@@ -332,6 +340,8 @@ export namespace Tk {
 					oninput: m.withAttr("checked", (v: boolean) => {
 						attrs.onInput(v);
 					}),
+					onkeydown: attrs.onkeydown,
+					onkeyup: attrs.onkeyup,
 					autofocus: attrs.autofocus,
 				},
 			));
@@ -355,6 +365,8 @@ export namespace Tk {
 					oninput: m.withAttr("files", (files: File[]) => {
 						attrs.onInput(files[0]);
 					}),
+					onkeydown: attrs.onkeydown,
+					onkeyup: attrs.onkeyup,
 					autofocus: attrs.autofocus,
 				},
 			));
@@ -386,6 +398,8 @@ export namespace Tk {
 					oninput: (e: MithrilEvent) => {
 						attrs.onInput(e.currentTarget.value, e);
 					},
+					onkeydown: attrs.onkeydown,
+					onkeyup: attrs.onkeyup,
 					autofocus: attrs.autofocus,
 				},
 				attrs.options.map((opt) => {

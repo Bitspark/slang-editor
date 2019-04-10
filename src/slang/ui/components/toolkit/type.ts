@@ -3,6 +3,7 @@ import m, {ClassComponent, CVnode} from "mithril";
 import {toTypeIdentifier} from "../../../core/mapper";
 import {SlangType, TYPEID_NAMES_NOGEN, TypeIdentifier} from "../../../definitions/type";
 
+import {MithrilKeyboardEvent} from "./events";
 import {Block, InputGroup, Tk} from "./toolkit";
 import SelectInput = Tk.SelectInput;
 import StringInput = Tk.StringInput;
@@ -37,6 +38,13 @@ class MapEntriesInput implements ClassComponent<MapEntriesInputAttrs> {
 							onInput(ntname: string) {
 								attrs.oneditEntry(index, [ntname, type]);
 							},
+							onkeydown: (e: MithrilKeyboardEvent) => {
+								switch (e.key) {
+									case "Enter":
+										attrs.onappendEntry(["", type]);
+										break;
+								}
+							},
 						}),
 						m(TypeSelect, {
 							type,
@@ -49,7 +57,6 @@ class MapEntriesInput implements ClassComponent<MapEntriesInputAttrs> {
 							onClick: () => {
 								attrs.onremoveEntry(index);
 							},
-							class: "sl-remove-entry sl-red",
 						}, m("i.fas.fa-times")),
 					]);
 				}),
@@ -57,7 +64,6 @@ class MapEntriesInput implements ClassComponent<MapEntriesInputAttrs> {
 					onClick: () => {
 						attrs.onappendEntry(["", SlangType.newUnspecified()]);
 					},
-					class: "sl-add-entry",
 				}, m("i.fas.fa-plus"))),
 			]),
 		);
