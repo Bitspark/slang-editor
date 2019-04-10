@@ -107,6 +107,10 @@ export class PortTypeDashboardModuleComponent implements DashboardModuleComponen
 	}
 
 	public view(_: CVnode<DashboardModuleAttrs>): any {
+		if (this.genIds.length === 0) {
+			return;
+		}
+
 		return m(Block,
 			m(Title, "Generics"),
 			this.genIds.map((i) => this.renderInput(i)),

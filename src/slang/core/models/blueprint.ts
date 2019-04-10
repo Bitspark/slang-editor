@@ -1,4 +1,5 @@
 import {filter} from "rxjs/operators";
+
 import {OperatorGeometry} from "../../definitions/api";
 import {SlangParsing} from "../../definitions/parsing";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
@@ -273,6 +274,10 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 
 	public getPortOut(): BlueprintPortModel | null {
 		return super.getPortOut() as BlueprintPortModel;
+	}
+
+	public hasGenerics(): boolean {
+		return Array.from(this.getGenericIdentifiers()).length !== 0;
 	}
 
 	public getGenericIdentifiers(): IterableIterator<string> {

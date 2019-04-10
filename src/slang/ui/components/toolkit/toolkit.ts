@@ -50,7 +50,7 @@ export class Block implements ClassComponent<{}> {
 
 export class Title implements ClassComponent<{}> {
 	public view({children}: CVnode<{}>) {
-		return m("h4", children);
+		return m("h5", children);
 	}
 }
 
