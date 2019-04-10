@@ -12,7 +12,7 @@ import {PaperView} from "../views/paper-view";
 
 import {AttachableComponent, CellComponent} from "./base";
 import {PortGroupComponent} from "./port-group";
-import {Tk} from "./toolkit/toolkit";
+import {Icon, Tk} from "./toolkit/toolkit";
 
 import Button = Tk.Button;
 import RectangleSelectors = shapes.standard.RectangleSelectors;
@@ -260,22 +260,21 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 				view: () => [
 					view.isEditable ?
 						m("", m(Button, {
+							size: "small",
 							tooltip: "Remove operator",
-							class: "sl-danger sl-btn-icon",
 							onClick: () => {
 								operator.destroy();
 							},
-						}, m("i.fas.fa-times")))
+						}, m(Icon, {fas: "times"})))
 						: undefined,
 
 					view.isDescendable && !blueprint.isElementary() ?
 						m("", m(Button, {
 							tooltip: "Open blueprint",
-							class: "sl-btn-icon",
 							onClick: () => {
 								operator.getBlueprint().open();
 							},
-						}, m("i.fas.fa-project-diagram")))
+						}, m(Icon, {fas: "project-diagram"})))
 						: undefined,
 				],
 			})

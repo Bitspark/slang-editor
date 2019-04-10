@@ -4,7 +4,7 @@ import {toTypeIdentifier} from "../../../core/mapper";
 import {SlangType, TYPEID_NAMES_NOGEN, TypeIdentifier} from "../../../definitions/type";
 
 import {MithrilKeyboardEvent} from "./events";
-import {BaseInputAttrs, Block, InputGroup, SelectInput, StringInput, Tk} from "./toolkit";
+import {BaseInputAttrs, Block, Icon, InputGroup, SelectInput, StringInput, Tk} from "./toolkit";
 
 interface MapEntriesInputAttrs {
 	entries: Array<[string, SlangType]>;
@@ -55,14 +55,14 @@ class MapEntriesInput implements ClassComponent<MapEntriesInputAttrs> {
 							onClick: () => {
 								attrs.onremoveEntry(index);
 							},
-						}, m("i.fas.fa-times")),
+						}, m(Icon, {fas: "times"})),
 					]);
 				}),
 				m("", m(Tk.Button, {
 					onClick: () => {
 						attrs.onappendEntry(["", SlangType.newUnspecified()]);
 					},
-				}, m("i.fas.fa-plus"))),
+				}, m(Icon, {fas: "plus"}))),
 			]),
 		);
 	}

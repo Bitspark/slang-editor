@@ -5,7 +5,7 @@ import {SlangType, SlangTypeJson, SlangTypeValue, TypeIdentifier} from "../../de
 import {BINARY_VALUE_TYPE} from "./console/binary";
 import {FILE_VALUE_TYPE, IMAGE_VALUE_TYPE} from "./console/file";
 import {GRAPH_VALUE_TYPE} from "./console/graph";
-import {BaseInput, BaseInputAttrs, BooleanInput, NumberInput, StringInput, Tk} from "./toolkit/toolkit";
+import {BaseInput, BaseInputAttrs, BooleanInput, Icon, NumberInput, StringInput, Tk} from "./toolkit/toolkit";
 
 export interface ConsoleValueType<T> {
 	typeDef: SlangTypeJson;
@@ -191,8 +191,7 @@ export namespace Input {
 										that.values[index] = undefined;
 										attrs.onInput(that.getValues());
 									},
-									class: "sl-remove-entry sl-red",
-								}, m("i.fas.fa-times")),
+								}, m(Icon, {fas: "times"})),
 								m(ConsoleEntry, {
 									label: "", class: "",
 									type: attrs.type,
@@ -208,8 +207,7 @@ export namespace Input {
 						onClick: () => {
 							that.values.push(null);
 						},
-						class: "sl-add-entry",
-					}, m("i.fas.fa-plus"))),
+					}, m(Icon, {fas: "plus"}))),
 				]),
 			);
 		}

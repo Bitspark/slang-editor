@@ -2,6 +2,16 @@ import m, {ClassComponent, CVnode, CVnodeDOM} from "mithril";
 
 import {Keypress, MithrilEvent, MithrilKeyboardEvent, MithrilMouseEvent} from "./events";
 
+export interface HasSizeAttrs {
+	size?: "small" | "medium" | "large";
+}
+
+export function buildCssClass(attrs: HasSizeAttrs): string {
+	const css: string[] = [];
+	css.push("is-" + (attrs.size ? attrs.size! : "medium"));
+	return css.join(".");
+}
+
 interface FormAttrs {
 	isValid: boolean;
 	submitLabel: string;
@@ -231,6 +241,16 @@ export class SelectInput implements ClassComponent<SelectInputAttrs> {
 	}
 }
 
+interface IconAttrs extends HasSizeAttrs {
+	fas: string;
+}
+
+export class Icon implements ClassComponent<IconAttrs> {
+	public view({attrs}: CVnode<IconAttrs>) {
+		return m(".span.icon", {class: buildCssClass(attrs)}, m(`.fas.fa-${attrs.fas}`));
+	}
+}
+
 export namespace Tk {
 	interface ModalAttrs {
 		title?: string;
@@ -258,7 +278,6 @@ export namespace Tk {
 				m(".sl-modal-content",
 					attrs.title ? m("span", attrs.title) : undefined,
 					m(Button, {
-							class: "sl-modal-close",
 							onClick: attrs.onClose ? (e: MithrilMouseEvent) => {
 								e.redraw = false;
 								attrs.onClose!();
@@ -361,9 +380,8 @@ export namespace Tk {
 		}
 	}
 
-	interface ButtonAttrs {
+	interface ButtonAttrs extends HasSizeAttrs {
 		tooltip?: string;
-		class?: string;
 		notAllowed?: boolean;
 		inactive?: boolean;
 		full?: boolean;
@@ -383,8 +401,8 @@ export namespace Tk {
 		public view({attrs, children}: CVnode<ButtonAttrs>) {
 			const that = this;
 
-			return m("a.sl-btn", {
-				class: that.getClass(attrs),
+			return m("a.button", {
+				class: buildCssClass(attrs),
 				inacitve: that.isInactive(attrs),
 				onclick: (that.isClickable(attrs)) ? (e: MithrilMouseEvent) => {
 					if (that.alreadyClicked) {
@@ -399,24 +417,6 @@ export namespace Tk {
 				tooltip: attrs.tooltip,
 				type: attrs.type,
 			}, children);
-		}
-
-		private getClass(attrs: ButtonAttrs): string {
-			const cls = [];
-
-			if (attrs.full) {
-				cls.push("sl-fullwidth");
-			}
-
-			if (attrs.notAllowed) {
-				cls.push("sl-not-allowed");
-			}
-
-			if (this.isClickable(attrs)) {
-				cls.push("sl-clickable");
-			}
-
-			return attrs.class + " " + cls.join(" ");
 		}
 
 		private isClickable(attrs: ButtonAttrs): boolean {
