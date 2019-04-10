@@ -2,11 +2,12 @@ import m, {ClassComponent, CVnode} from "mithril";
 
 import {toTypeIdentifier} from "../../../core/mapper";
 import {SlangType, TYPEID_NAMES_NOGEN, TypeIdentifier} from "../../../definitions/type";
-import {Button} from "./buttons";
 
+import {Button} from "./buttons";
 import {MithrilKeyboardEvent} from "./events";
 import {Icon} from "./icons";
-import {BaseInputAttrs, Block, InputGroup, SelectInput, StringInput} from "./toolkit";
+import {BaseInputAttrs, SelectInput, StringInput} from "./input";
+import {Block, InputGroup} from "./toolkit";
 
 interface MapEntriesInputAttrs {
 	entries: Array<[string, SlangType]>;
@@ -118,7 +119,6 @@ export class StreamTypeSelectInput implements ClassComponent<TypeSelectAttrs> {
 		const t = attrs.type;
 		return m(TypeSelect, {
 			type: t.getStreamSub(),
-			label: "",
 			onInput: (ntype: SlangType) => {
 				attrs.onInput(that.getStreamSlangType(ntype));
 			},
@@ -144,34 +144,31 @@ export class TypeSelect implements ClassComponent<TypeSelectAttrs> {
 		switch (ti) {
 			case TypeIdentifier.Map:
 				return m(Block,
-					this.renderInput(attrs.label, t, attrs.onInput),
+					this.renderInput(t, attrs.onInput, attrs.label),
 					m(MapTypeSelectInput, {
-						label: "",
 						type: t,
 						onInput: attrs.onInput,
 					}));
 
 			case TypeIdentifier.Stream:
 				return m(Block,
-					this.renderInput(attrs.label, t, attrs.onInput),
+					this.renderInput(t, attrs.onInput, attrs.label),
 					m(StreamTypeSelectInput, {
-						label: "",
 						type: t,
 						onInput: attrs.onInput,
 					}));
 			default:
-				return this.renderInput(attrs.label, t, attrs.onInput);
+				return this.renderInput(t, attrs.onInput, attrs.label);
 		}
 
 	}
 
-	protected renderInput(label: string, type: SlangType, oninput: (t: SlangType) => void): m.Children {
+	protected renderInput(type: SlangType, oninput: (t: SlangType) => void, label?: string): m.Children {
 		const ti = TypeIdentifier[type.getTypeIdentifier()];
 		const fixed = false;
 
 		return m(SelectInput, {
 			label,
-			class: "",
 			selected: ti,
 			options: (fixed) ? [ti] : this.portTypeOptions,
 			onInput: (fixed) ? () => null :

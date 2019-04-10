@@ -7,7 +7,8 @@ import {FILE_VALUE_TYPE, IMAGE_VALUE_TYPE} from "./console/file";
 import {GRAPH_VALUE_TYPE} from "./console/graph";
 import {Button} from "./toolkit/buttons";
 import {Icon} from "./toolkit/icons";
-import {BaseInput, BaseInputAttrs, BooleanInput, NumberInput, StringInput, Tk} from "./toolkit/toolkit";
+import {BaseInput, BaseInputAttrs, BooleanInput, NumberInput, StringInput} from "./toolkit/input";
+import {Tk} from "./toolkit/toolkit";
 
 export interface ConsoleValueType<T> {
 	typeDef: SlangTypeJson;
@@ -123,7 +124,7 @@ export namespace Input {
 			const labelName = attrs.label;
 			const labelText = (labelName) ? `${attrs.label}:` : "";
 			const values = this.values;
-			return m(".sl-inp-grp.map", {class: attrs.class},
+			return m(".sl-inp-grp.map",
 				m("label", {
 					for: labelName,
 				}, [
@@ -133,7 +134,6 @@ export namespace Input {
 								label: subName,
 								type: subType,
 								initValue: this.values.get(subName),
-								class: "",
 								onInput: (v: any) => {
 									values.set(subName, v);
 									attrs.onInput(this.post(values));
@@ -180,7 +180,7 @@ export namespace Input {
 				this.values = attrs.initValue;
 			}
 
-			return m(".sl-inp-grp.stream", {class: attrs.class},
+			return m(".sl-inp-grp.stream",
 				m("label", {
 					for: labelName,
 				}, [
@@ -195,7 +195,6 @@ export namespace Input {
 									},
 								}, m(Icon, {fas: "times"})),
 								m(ConsoleEntry, {
-									label: "", class: "",
 									type: attrs.type,
 									initValue: entry,
 									onInput: (v: any) => {
@@ -316,7 +315,6 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 	private renderInput(type: SlangType, initValue: SlangTypeValue | undefined): m.Children {
 		return m(Input.ConsoleEntry, {
 			initValue,
-			label: "", class: "",
 			type: type!,
 			onInput: (v: any) => {
 				this.value = v;
