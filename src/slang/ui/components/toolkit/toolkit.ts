@@ -276,9 +276,25 @@ export namespace Tk {
 		}
 	}
 
-	export class Box implements ClassComponent<{}> {
-		public view({children}: CVnode<{}>) {
-			return m(".sl-box", children);
+	export class Box implements ClassComponent<ModalAttrs> {
+
+		public oninit({attrs}: CVnode<ModalAttrs>) {
+			document.addEventListener("keyup", (event: Event) => {
+				const e = event as MithrilKeyboardEvent;
+				switch (e.key) {
+					case "Escape":
+						e.redraw = false;
+						if (attrs.onClose) {
+							attrs.onClose();
+						}
+						break;
+				}
+			});
+		}
+
+		public view({children}: CVnode<ModalAttrs>) {
+			return m(".sl-box",
+				children);
 		}
 	}
 
