@@ -81,6 +81,10 @@ export class OperatorModel extends BlackBox {
 		return this.blueprint.hasProperties();
 	}
 
+	public hasGenerics(): boolean {
+		return this.blueprint.hasGenerics();
+	}
+
 	public getGeometry(): OperatorGeometry | undefined {
 		return this.geometry;
 	}

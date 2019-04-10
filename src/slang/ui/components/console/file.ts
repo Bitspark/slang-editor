@@ -1,7 +1,7 @@
 import m, {CVnode} from "mithril";
 
 import {ConsoleValueType, Input, Output} from "../console";
-import {Tk} from "../toolkit";
+import {FileInput, ImageInput} from "../toolkit/toolkit";
 
 function selectFile(file: File, onInput: (value: { content: string, name: string }) => void) {
 	const reader = new FileReader();
@@ -29,7 +29,7 @@ export const FILE_VALUE_TYPE: ConsoleValueType<{ file: string, name: string }> =
 	input: {
 		view({attrs}: CVnode<Input.ValueTypeAttrs<{ file: string, name: string }>>) {
 			const origOnInput = attrs.onInput;
-			return m(Tk.FileInput, Object.assign(attrs, {
+			return m(FileInput, Object.assign(attrs, {
 				initValue: undefined,
 				onInput: (file: File) => {
 					selectFile(file, ({content, name}) => {
@@ -53,7 +53,7 @@ export const IMAGE_VALUE_TYPE: ConsoleValueType<{ image: string, name: string }>
 	input: {
 		view({attrs}: CVnode<Input.ValueTypeAttrs<{ image: string, name: string }>>) {
 			const origOnInput = attrs.onInput;
-			return m(Tk.ImageInput, Object.assign(attrs, {
+			return m(ImageInput, Object.assign(attrs, {
 				initValue: undefined,
 				onInput: (file: File) => {
 					selectFile(file, ({content, name}) => {

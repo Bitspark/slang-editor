@@ -4,7 +4,7 @@ import m from "mithril";
 import {XY} from "../../definitions/api";
 import {PaperView} from "../views/paper-view";
 
-import {Tk} from "./toolkit";
+import {Tk} from "./toolkit/toolkit";
 
 export type Alignment =
 	"tl" | "t" | "tr" |

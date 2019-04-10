@@ -276,6 +276,10 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		return super.getPortOut() as BlueprintPortModel;
 	}
 
+	public hasGenerics(): boolean {
+		return Array.from(this.getGenericIdentifiers()).length !== 0;
+	}
+
 	public getGenericIdentifiers(): IterableIterator<string> {
 		this.genericIdentifiers = new Set<string>();
 		for (const port of this.getPorts()) {

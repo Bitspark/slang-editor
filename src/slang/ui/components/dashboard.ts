@@ -6,13 +6,12 @@ import {SlangType, SlangTypeValue} from "../../definitions/type";
 import {ComponentFactory} from "../factory";
 
 import {Input} from "./console";
-import {Form} from "./toolkit";
+import {Block, Title} from "./toolkit/toolkit";
+import {TypeSelect} from "./toolkit/type";
 
 interface DashboardAttrs {
 	factory: ComponentFactory;
 	operator: OperatorModel;
-
-	onSave(): void;
 }
 
 export class DashboardComponent implements ClassComponent<DashboardAttrs> {
@@ -25,9 +24,6 @@ export class DashboardComponent implements ClassComponent<DashboardAttrs> {
 		}, dashboardModules.map((dashboardModule) => {
 			return m(dashboardModule, {
 				operator: attrs.operator,
-				onSave: () => {
-					attrs.onSave();
-				},
 			});
 		}));
 	}
@@ -35,8 +31,6 @@ export class DashboardComponent implements ClassComponent<DashboardAttrs> {
 
 export interface DashboardModuleAttrs {
 	operator: OperatorModel;
-
-	onSave(): void;
 }
 
 export interface DashboardModuleComponent extends ClassComponent<DashboardModuleAttrs> {
@@ -55,28 +49,19 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 		this.formData = new Map<string, { value: SlangTypeValue }>();
 	}
 
-	public view({attrs}: CVnode<DashboardModuleAttrs>): any {
+	public view(_: CVnode<DashboardModuleAttrs>): m.Children {
 		const blueprint = this.blueprint!;
 
-		return m(Form, {
-				isValid: this.isValid(this.formData),
-				submitLabel: "save&close",
-				onsubmit: () => {
-					this.beforeFormSubmit(this.formData).forEach((value, propertyName) => {
-						this.operator.getProperties().get(propertyName).assign(value);
-					});
-					attrs.onSave();
-				},
-			},
-			m("h4", `Properties of "${blueprint.getShortName()}"`),
+		if (!blueprint.hasProperties()) {
+			return undefined;
+		}
+
+		return m(Block,
+			m(Title, `Properties`),
 			Array.from(this.formBody.entries()).map(([fieldName, fieldAttrs]) => {
 				return this.renderPropertyInput(fieldName, fieldAttrs);
 			}),
 		);
-	}
-
-	protected isValid(_formData: Map<string, { value: SlangTypeValue }>): boolean {
-		return true;
 	}
 
 	protected getFormBody(): Map<string, { initValue?: SlangTypeValue, type: SlangType }> {
@@ -104,6 +89,48 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 			initValue: !this.formData.has(fieldName) ? initValue : undefined,
 			onInput: (v: any) => {
 				this.formData.set(fieldName, v);
+				this.beforeFormSubmit(this.formData).forEach((value, propertyName) => {
+					this.operator.getProperties().get(propertyName).assign(value);
+				});
+			},
+		});
+	}
+}
+
+export class PortTypeDashboardModuleComponent implements DashboardModuleComponent {
+	private genIds!: string[];
+	private operator!: OperatorModel;
+
+	public oninit({attrs}: CVnode<DashboardModuleAttrs>): any {
+		this.operator = attrs.operator;
+		this.genIds = Array.from(this.operator.getBlueprint().getGenericIdentifiers());
+	}
+
+	public view(_: CVnode<DashboardModuleAttrs>): any {
+		if (this.genIds.length === 0) {
+			return;
+		}
+
+		return m(Block,
+			m(Title, "Generics"),
+			this.genIds.map((i) => this.renderInput(i)),
+		);
+	}
+
+	private renderInput(genId: string): m.Children {
+		let genType: SlangType;
+
+		try {
+			genType = this.operator.getGenerics().get(genId);
+		} catch {
+			genType = SlangType.newUnspecified();
+		}
+
+		return m(TypeSelect, {
+			label: genId,
+			type: genType,
+			onInput: (nType: SlangType) => {
+				this.operator.getGenerics().specify(genId, nType);
 			},
 		});
 	}

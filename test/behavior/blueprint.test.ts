@@ -180,21 +180,46 @@ describe("A new blueprint", () => {
 	});
 
 	it("can be mapped to JSON", () => {
-		const bp = landscapeModel.createBlueprint({
+		const outer = landscapeModel.createBlueprint({
 			uuid: uuidv4(),
 			meta: {name: "test-bp-1"},
 			type: BlueprintType.Local,
 		});
 
-		const bpJSON = blueprintModelToJson(bp);
+		const bp = landscapeModel.createBlueprint({
+			uuid: uuidv4(),
+			meta: {name: "test-bp-2"},
+			type: BlueprintType.Local,
+		});
 
-		expect(bpJSON.meta.name).toEqual(bp.name);
-		expect(bpJSON.geometry!.size).toEqual(bp.size);
+		outer.createBlankOperator(bp);
+
+		const outerJSON = blueprintModelToJson(outer);
+
+		expect(outerJSON.meta.name).toEqual(outer.name);
+		expect(outerJSON.geometry!.size).toEqual(outer.size);
+		expect(outerJSON).toBeDefined();
+		expect(Object.keys(outerJSON.operators!)).toHaveLength(1);
 	});
 
 	it("is mapped to JSON correctly", () => {
 		const bpJSON = blueprintModelToJson(landscapeModel.findBlueprint("cbc2cb11-c30a-4194-825c-f042902bd18b")!);
-		expect(bpJSON).toEqual({id: "cbc2cb11-c30a-4194-825c-f042902bd18b", meta: {name: "PropertyPorts"}, geometry: {size: {width: 240, height: 147}, port: {in: {position: 0}, out: {position: 0}}}, operators: {}, services: {main: {in: {type: "map", map: {"sub_{ports}_number": {type: "number"}}}, geometry: {in: {position: 0}, out: {position: 0}}, out: {type: "primitive"}}}, delegates: {}, properties: {ports: {type: "stream", stream: {type: "string"}}}, connections: {}});
+		expect(bpJSON).toEqual({
+			id: "cbc2cb11-c30a-4194-825c-f042902bd18b",
+			meta: {name: "PropertyPorts"},
+			geometry: {size: {width: 240, height: 147}, port: {in: {position: 0}, out: {position: 0}}},
+			operators: {},
+			services: {
+				main: {
+					in: {type: "map", map: {"sub_{ports}_number": {type: "number"}}},
+					geometry: {in: {position: 0}, out: {position: 0}},
+					out: {type: "primitive"}
+				}
+			},
+			delegates: {},
+			properties: {ports: {type: "stream", stream: {type: "string"}}},
+			connections: {}
+		});
 	});
 
 	it("has port positions", () => {

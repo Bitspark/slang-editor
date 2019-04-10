@@ -5,7 +5,7 @@ import {SlangType, SlangTypeJson, SlangTypeValue, TypeIdentifier} from "../../de
 import {BINARY_VALUE_TYPE} from "./console/binary";
 import {FILE_VALUE_TYPE, IMAGE_VALUE_TYPE} from "./console/file";
 import {GRAPH_VALUE_TYPE} from "./console/graph";
-import {Tk} from "./toolkit";
+import {BaseInput, BaseInputAttrs, BooleanInput, NumberInput, StringInput, Tk} from "./toolkit/toolkit";
 
 export interface ConsoleValueType<T> {
 	typeDef: SlangTypeJson;
@@ -45,14 +45,14 @@ export class ConsoleValueTypeManager {
 }
 
 export namespace Input {
-	export interface ValueTypeAttrs<T> extends Tk.InputAttrs<T> {
+	export interface ValueTypeAttrs<T> extends BaseInputAttrs<T> {
 	}
 
-	export abstract class ValueType<T> implements Tk.Input<T> {
+	export abstract class ValueType<T> implements BaseInput<T> {
 		public abstract view(vnode: m.CVnode<ValueTypeAttrs<T>>): m.Children | void | null;
 	}
 
-	interface ConsoleEntryAttrs extends Tk.InputAttrs<any> {
+	interface ConsoleEntryAttrs extends BaseInputAttrs<any> {
 		type: SlangType;
 	}
 
@@ -91,22 +91,22 @@ export namespace Input {
 					}));
 
 				case TypeIdentifier.Number:
-					return m(Tk.NumberInput, attrs);
+					return m(NumberInput, attrs);
 
 				case TypeIdentifier.Boolean:
-					return m(Tk.BooleanInput, attrs);
+					return m(BooleanInput, attrs);
 
 				case TypeIdentifier.Trigger:
 					attrs.onInput(null);
 					return;
 
 				default:
-					return m(Tk.StringInput, attrs);
+					return m(StringInput, attrs);
 			}
 		}
 	}
 
-	interface MapInputAttrs extends Tk.InputAttrs<{ [sub: string]: SlangTypeValue }> {
+	interface MapInputAttrs extends BaseInputAttrs<{ [sub: string]: SlangTypeValue }> {
 		entries: IterableIterator<[string, SlangType]>;
 	}
 
@@ -162,7 +162,7 @@ export namespace Input {
 		}
 	}
 
-	interface StreamInputAttrs extends Tk.InputAttrs<any[]> {
+	interface StreamInputAttrs extends BaseInputAttrs<any[]> {
 		type: SlangType;
 	}
 
@@ -281,6 +281,7 @@ export namespace Output {
 
 interface InputConsoleAttrs {
 	type: SlangType;
+
 	onSubmit(value: SlangTypeValue): void;
 }
 
@@ -326,6 +327,7 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 
 interface OutputConsoleAttrs {
 	type: SlangType;
+
 	onLoad(): SlangTypeValue[];
 }
 

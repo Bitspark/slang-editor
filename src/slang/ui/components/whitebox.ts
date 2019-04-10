@@ -19,9 +19,8 @@ import {ConnectionComponent} from "./connection";
 import {InputConsole, OutputConsole} from "./console";
 import {DashboardComponent} from "./dashboard";
 import {PortGroupPosition} from "./port-group";
-import {Tk} from "./toolkit";
+import {Tk} from "./toolkit/toolkit";
 
-import Modal = Tk.Modal;
 import Button = Tk.Button;
 import Box = Tk.Box;
 
@@ -41,6 +40,7 @@ export class WhiteBoxComponent extends CellComponent {
 	private readonly operators: BlackBoxComponent[] = [];
 	private readonly connections: ConnectionComponent[] = [];
 	private readonly portInfos: AttachableComponent[] = [];
+	private oprDashboard?: AttachableComponent;
 
 	private readonly ports = {
 		top: [] as IsolatedBlueprintPortComponent[],
@@ -585,23 +585,27 @@ export class WhiteBoxComponent extends CellComponent {
 
 		if (!this.paperView.isReadOnly) {
 			operatorComp.onClick(() => {
-				const comp = this
-					.createComponent({x: 0, y: 0, align: "c"})
+				this.destroyOperatorDashboard();
+				const that = this;
+
+				this.oprDashboard = this
+					.createComponent({x: 0, y: 0, align: "tl"})
+					.attachTo(operatorComp.getShape(), "tr")
 					.mount({
-						view: () => m(Modal, {
+						view: () => m(Box, {
 								onClose: () => {
-									comp.destroy();
+									that.destroyOperatorDashboard();
 								},
 							},
 							m(DashboardComponent, {
 								operator,
 								factory: this.paperView.getFactory(),
-								onSave: () => {
-									comp.destroy();
-								},
 							}),
 						),
 					});
+				this.onClick(() => {
+					this.destroyOperatorDashboard();
+				});
 				return true;
 			});
 		}
@@ -653,6 +657,14 @@ export class WhiteBoxComponent extends CellComponent {
 		if (idx !== -1) {
 			this.connections.splice(idx, 1);
 		}
+	}
+
+	private destroyOperatorDashboard() {
+		if (!this.oprDashboard) {
+			return;
+		}
+		this.oprDashboard.destroy();
+		this.oprDashboard = undefined;
 	}
 }
 

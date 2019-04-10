@@ -4,26 +4,21 @@
 		width: 100%;
 
 		label {
-			display: inline-block;
+			display: block;
 			font-size: .7rem;
 			margin-right: 8px;
 		}
 
 		.sl-input-inner {
-			display: inline-block;
-			@extend %bordered;
-			border-radius: 500px;
-			background: $light;
+			display: block;
 
-			.sl-input-wrap {
-				margin: 2px 12px;
+		}
 
-				input {
-					font-size: .7rem;
-					background: transparent;
-					border: none;
-					width: 100%
-				}
+		.sl-input-wrap {
+			margin: 2px 12px;
+
+			input {
+				font-size: .7rem;
 			}
 		}
 	}
@@ -31,6 +26,27 @@
 	&.sl-fullwidth {
 		.sl-input-inner {
 			width: 100%;
+
+			input {
+				width: 100%;
+			}
 		}
 	}
 }
+
+.sl-input-grp {
+	display: block;
+
+	&.sl-error {
+		background-color: transparentize($red, .8);
+	}
+
+	> .sl-input {
+		display: inline-block;
+
+		.sl-input-wrap {
+			margin: 2px 4px;
+		}
+	}
+}
+
