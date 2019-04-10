@@ -4,7 +4,7 @@ import m from "mithril";
 import {XY} from "../../definitions/api";
 import {PaperView} from "../views/paper-view";
 
-import {Tk} from "./toolkit/toolkit";
+import {Container} from "./toolkit/toolkit";
 
 export type Alignment =
 	"tl" | "t" | "tr" |
@@ -108,7 +108,7 @@ abstract class HtmlComponent extends Component {
 				this.draw();
 			},
 			view: () => {
-				return m(Tk.Container, {
+				return m(Container, {
 						onmousewheel: (e: WheelEvent) => {
 							e.preventDefault();
 							e.stopPropagation();

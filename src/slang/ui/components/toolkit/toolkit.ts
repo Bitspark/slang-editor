@@ -6,10 +6,42 @@ export interface HasSizeAttrs {
 	size?: "small" | "medium" | "large";
 }
 
+interface HasEscapeAttrs {
+	onescape?(): void;
+}
+
 export function buildCssClass(attrs: HasSizeAttrs): string {
 	const css: string[] = [];
 	css.push("is-" + (attrs.size ? attrs.size! : "medium"));
 	return css.join(".");
+}
+
+export class Container implements ClassComponent<any> {
+	public view({children, attrs}: CVnode<any>) {
+		return m("", attrs, children);
+	}
+}
+
+export class Box implements ClassComponent<HasEscapeAttrs> {
+
+	public oninit({attrs}: CVnode<HasEscapeAttrs>) {
+		const onescape = attrs.onescape;
+		if (!onescape) {
+			return;
+		}
+
+		document.addEventListener("keyup", (event: Event) => {
+			const e = event as MithrilKeyboardEvent;
+			if (e.key === "Escape") {
+				e.redraw = false;
+				onescape();
+			}
+		});
+	}
+
+	public view({attrs, children}: CVnode<HasEscapeAttrs>) {
+		return m(".box", attrs, children);
+	}
 }
 
 export class InputGroup implements ClassComponent<any> {
@@ -208,39 +240,6 @@ export class SelectInput implements ClassComponent<SelectInputAttrs> {
 }
 
 export namespace Tk {
-	interface ModalAttrs {
-		title?: string;
-
-		onClose?(): void;
-	}
-
-	export class Container implements ClassComponent<{}> {
-		public view({children, attrs}: CVnode<any>) {
-			return m(".sl-container", attrs, children);
-		}
-	}
-
-	export class Box implements ClassComponent<ModalAttrs> {
-
-		public oninit({attrs}: CVnode<ModalAttrs>) {
-			document.addEventListener("keyup", (event: Event) => {
-				const e = event as MithrilKeyboardEvent;
-				switch (e.key) {
-					case "Escape":
-						e.redraw = false;
-						if (attrs.onClose) {
-							attrs.onClose();
-						}
-						break;
-				}
-			});
-		}
-
-		public view({children}: CVnode<ModalAttrs>) {
-			return m(".sl-box",
-				children);
-		}
-	}
 
 	interface ListAttrs {
 		class?: string;

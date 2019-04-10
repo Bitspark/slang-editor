@@ -20,8 +20,7 @@ import {InputConsole, OutputConsole} from "./console";
 import {DashboardComponent} from "./dashboard";
 import {PortGroupPosition} from "./port-group";
 import {Button} from "./toolkit/buttons";
-import {Tk} from "./toolkit/toolkit";
-import Box = Tk.Box;
+import {Box} from "./toolkit/toolkit";
 
 export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 60;
@@ -592,7 +591,7 @@ export class WhiteBoxComponent extends CellComponent {
 					.attachTo(operatorComp.getShape(), "tr")
 					.mount({
 						view: () => m(Box, {
-								onClose: () => {
+								onescape: () => {
 									that.destroyOperatorDashboard();
 								},
 							},
