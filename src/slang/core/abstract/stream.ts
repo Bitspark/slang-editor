@@ -272,13 +272,12 @@ export class StreamType {
 		const refresh = new SlangSubjectTrigger("refresh");
 		this.finishResetStreamType(mark, repropagate, refresh);
 		mark.next();
-		repropagate.next();
 		if (streamPortOwner && streamPortOwner.isStreamSource()) {
 			streamPortOwner.setBaseStream(new StreamType(null, this.source));
-			streamPortOwner.setMarkedForReset(false);
 			streamPortOwner.propagateStreamType();
-			streamPortOwner.refreshStreamType();
+			streamPortOwner.setMarkedForReset(false);
 		}
+		repropagate.next();
 		StreamType.refreshActive = true;
 		if (streamPortOwner && streamPortOwner.isStreamSource()) {
 			streamPortOwner.refreshStreamType();

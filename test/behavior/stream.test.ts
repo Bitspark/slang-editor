@@ -141,8 +141,11 @@ describe("A stream port", () => {
 		expect(Array.from(bpOut.getMapSubs()).length).toEqual(1);
 		expect(Array.from(Array.from(bpOut.getMapSubs()).find((port) => port.getType().isStream())!.getStreamSub().getMapSubs()).length).toEqual(2);
 
-		op2OS.getPortOut()!.getStreamSub().findMapSub("portB").disconnectAll();
-		op2OS.getPortOut()!.getStreamSub().findMapSub("portB").connect(opG2G.getPortIn()!, true);
+		Array.from(opG2G.getPortOut()!.getMapSubs()).find((port) => port.getName().indexOf("portB") !== -1)!.disconnectAll();
+
+		expect(Array.from(bpOut.getMapSubs()).length).toEqual(1);
+		expect(Array.from(Array.from(bpOut.getMapSubs()).find((port) => port.getType().isStream())!.getStreamSub().getMapSubs()).length).toEqual(1);
+
 		Array.from(opG2G.getPortOut()!.getMapSubs()).find((port) => port.getName().indexOf("portB") !== -1)!.connect(bpOut, true);
 
 		expect(Array.from(bpOut.getMapSubs()).length).toEqual(1);
