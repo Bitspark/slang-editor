@@ -12,6 +12,7 @@ export enum TypeIdentifier {
 }
 
 export const TYPEID_NAMES = Object.keys(TypeIdentifier).filter((i) => typeof (TypeIdentifier as any)[i] === "number");
+export const TYPEID_NAMES_NOGEN = TYPEID_NAMES.filter((ti) => ti !== "Generic");
 
 interface SlangTypeStreamJson {
 	type: "stream";

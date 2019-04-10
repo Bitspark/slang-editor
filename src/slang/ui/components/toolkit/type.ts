@@ -1,13 +1,13 @@
 import m, {ClassComponent, CVnode} from "mithril";
 
 import {toTypeIdentifier} from "../../../core/mapper";
-import {SlangType, TYPEID_NAMES, TypeIdentifier} from "../../../definitions/type";
+import {SlangType, TYPEID_NAMES_NOGEN, TypeIdentifier} from "../../../definitions/type";
 
-import {Block, Tk} from "./toolkit";
+import {Block, InputGroup, Tk} from "./toolkit";
 import SelectInput = Tk.SelectInput;
 import StringInput = Tk.StringInput;
 
-interface EditableListAttrs {
+interface MapEntriesInputAttrs {
 	entries: Array<[string, SlangType]>;
 
 	onremoveEntry(idx: number): void;
@@ -17,12 +17,20 @@ interface EditableListAttrs {
 	oneditEntry(idx: number, entry: [string, SlangType]): void;
 }
 
-export class EditableList implements ClassComponent<EditableListAttrs> {
-	public view({attrs}: CVnode<EditableListAttrs>) {
+class MapEntriesInput implements ClassComponent<MapEntriesInputAttrs> {
+	private static hasNameCollision(idx: number, ntname: string, entries: Array<[string, SlangType]>): boolean {
+		return entries.filter((e: [string, SlangType], i) => i !== idx && e[0] === ntname).length > 0;
+	}
+
+	public view({attrs}: CVnode<MapEntriesInputAttrs>) {
+		const entries = attrs.entries;
+
 		return m("",
 			m("", [
-				attrs.entries.map(([tname, type], index: number) => {
-					return m("", [
+				entries.map(([tname, type], index: number) => {
+					return m(InputGroup, {
+						class: (MapEntriesInput.hasNameCollision(index, tname, entries)) ? "sl-error" : "",
+					}, [
 						m(StringInput, {
 							label: "",
 							initValue: tname,
@@ -54,6 +62,7 @@ export class EditableList implements ClassComponent<EditableListAttrs> {
 			]),
 		);
 	}
+
 }
 
 interface TypeSelectAttrs extends Tk.InputAttrs<SlangType> {
@@ -61,25 +70,31 @@ interface TypeSelectAttrs extends Tk.InputAttrs<SlangType> {
 }
 
 export class MapTypeSelectInput implements ClassComponent<TypeSelectAttrs> {
+	private mapEntries: Array<[string, SlangType]> = [];
+
+	public oninit({attrs}: CVnode<TypeSelectAttrs>) {
+		this.mapEntries = Array.from(attrs.type.getMapSubs());
+
+	}
+
 	public view({attrs}: CVnode<TypeSelectAttrs>) {
 		const that = this;
-		const mapEntries = Array.from(attrs.type.getMapSubs());
-		return m(EditableList, {
-			entries: mapEntries,
+		return m(MapEntriesInput, {
+			entries: this.mapEntries,
 
 			onremoveEntry(idx: number) {
-				mapEntries.splice(idx, 1);
-				attrs.onInput(that.getMapSlangType(mapEntries));
+				that.mapEntries.splice(idx, 1);
+				attrs.onInput(that.getMapSlangType(that.mapEntries));
 			},
 
 			onappendEntry(entry: [string, SlangType]) {
-				mapEntries.push(entry);
-				attrs.onInput(that.getMapSlangType(mapEntries));
+				that.mapEntries.push(entry);
+				attrs.onInput(that.getMapSlangType(that.mapEntries));
 			},
 
 			oneditEntry(idx: number, entry: [string, SlangType]) {
-				mapEntries[idx] = entry;
-				attrs.onInput(that.getMapSlangType(mapEntries));
+				that.mapEntries[idx] = entry;
+				attrs.onInput(that.getMapSlangType(that.mapEntries));
 			},
 		});
 	}
@@ -113,7 +128,7 @@ export class TypeSelect implements ClassComponent<TypeSelectAttrs> {
 	private portTypeOptions!: string[];
 
 	public oninit(): any {
-		this.portTypeOptions = TYPEID_NAMES;
+		this.portTypeOptions = TYPEID_NAMES_NOGEN;
 	}
 
 	public view({attrs}: CVnode<TypeSelectAttrs>): m.Children {

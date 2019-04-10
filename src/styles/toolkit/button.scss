@@ -40,7 +40,7 @@ button, .sl-btn {
 		background: $cyan;
 	}
 
-	&.sl-red, &.sl-danger {
+	&.sl-red, &.sl-danger, &.sl-error {
 		color: $white;
 		background: $red;
 	}
