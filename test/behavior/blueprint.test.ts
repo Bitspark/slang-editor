@@ -213,12 +213,12 @@ describe("A new blueprint", () => {
 				main: {
 					in: {type: "map", map: {"sub_{ports}_number": {type: "number"}}},
 					geometry: {in: {position: 0}, out: {position: 0}},
-					out: {type: "primitive"}
-				}
+					out: {type: "primitive"},
+				},
 			},
 			delegates: {},
 			properties: {ports: {type: "stream", stream: {type: "string"}}},
-			connections: {}
+			connections: {},
 		});
 	});
 
