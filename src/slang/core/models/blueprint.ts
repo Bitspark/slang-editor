@@ -1,4 +1,5 @@
 import {filter} from "rxjs/operators";
+
 import {OperatorGeometry} from "../../definitions/api";
 import {SlangParsing} from "../../definitions/parsing";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";

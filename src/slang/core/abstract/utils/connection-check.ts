@@ -192,7 +192,7 @@ export function canConnectTo(source: PortModel, destination: PortModel, createGe
 		return false;
 	}
 
-	if (source.isGenericLike() && destination.isGenericLike() && (source.getType().isUnspecified() || destination.getType().isUnspecified())) {
+	if (source.isGhostPort() && destination.isGhostPort()) {
 		return false;
 	}
 

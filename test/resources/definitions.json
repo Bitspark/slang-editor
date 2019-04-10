@@ -307,6 +307,57 @@
       },
       "operators": {},
       "connections": {}
+    },
+    {
+      "id": "10a6eea5-4d5b-43b6-9106-6820d1009e3b",
+      "meta": {
+        "name": "GenericInStream"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "stream",
+            "stream": {
+              "type": "generic",
+              "generic": "itemType"
+            }
+          },
+          "out": {
+            "type": "trigger"
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
+    },
+    {
+      "id": "b444f701-59fc-43a8-8cdc-8bcce9dd471d",
+      "meta": {
+        "name": "OutStreamMap"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "trigger"
+          },
+          "out": {
+            "type": "stream",
+            "stream": {
+              "type": "map",
+              "map": {
+                "portA": {
+                  "type": "string"
+                },
+                "portB": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
     }
   ]
 }

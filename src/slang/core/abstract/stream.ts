@@ -54,6 +54,7 @@ export class StreamType {
 				last = last.baseStream;
 				distance++;
 			}
+
 			return [last, distance];
 		}
 
@@ -62,23 +63,26 @@ export class StreamType {
 				if (!containsMisplacedStreamTypeTo(this, other) && !containsMisplacedStreamTypeTo(other, this)) {
 					return [null, 0];
 				}
-				return [null, -1];
 
+				return [null, -1];
 			}
+
 			if (this.getStreamDepth() <= other.getStreamDepth()) {
 				return [null, 0];
 			}
+
 			return [null, other.getStreamDepth() - this.getStreamDepth()];
 		}
+
 		if (other.hasPlaceholderRoot()) {
 			if (this.getStreamDepth() >= other.getStreamDepth()) {
 				return [null, 0];
 			}
+
 			return [null, other.getStreamDepth() - this.getStreamDepth()];
-
 		}
-		return [null, -1];
 
+		return [null, -1];
 	}
 
 	public hasPlaceholderAncestor(): boolean {
@@ -265,16 +269,15 @@ export class StreamType {
 		this.startResetStreamType();
 		const mark = new SlangSubjectTrigger("mark");
 		const repropagate = new SlangSubjectTrigger("repropagate");
-		const refresh = new SlangSubjectTrigger("repropagate");
+		const refresh = new SlangSubjectTrigger("refresh");
 		this.finishResetStreamType(mark, repropagate, refresh);
 		mark.next();
-		repropagate.next();
 		if (streamPortOwner && streamPortOwner.isStreamSource()) {
 			streamPortOwner.setBaseStream(new StreamType(null, this.source));
-			streamPortOwner.setMarkedForReset(false);
 			streamPortOwner.propagateStreamType();
-			streamPortOwner.refreshStreamType();
+			streamPortOwner.setMarkedForReset(false);
 		}
+		repropagate.next();
 		StreamType.refreshActive = true;
 		if (streamPortOwner && streamPortOwner.isStreamSource()) {
 			streamPortOwner.refreshStreamType();
@@ -549,11 +552,11 @@ export class StreamPort {
 				}
 				this.setStreamTypeChildToParent(streamType);
 			});
-			this.connectionSubscriptions.set(other as any, subscription);
+			this.connectionSubscriptions.set(other, subscription);
 		});
 
 		this.port.subscribeDisconnected((other) => {
-			const subscription = this.connectionSubscriptions.get(other as any);
+			const subscription = this.connectionSubscriptions.get(other);
 			if (subscription) {
 				subscription.unsubscribe();
 			} else {
