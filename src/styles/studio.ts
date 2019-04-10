@@ -1,3 +1,6 @@
+// tslint:disable-next-line
+import "@fortawesome/fontawesome-free/js/all";
+
 import {TypeIdentifier} from "../slang/definitions/type";
 
 export namespace Styles {
