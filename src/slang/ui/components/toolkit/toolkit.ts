@@ -12,40 +12,6 @@ export function buildCssClass(attrs: HasSizeAttrs): string {
 	return css.join(".");
 }
 
-interface FormAttrs {
-	isValid: boolean;
-	submitLabel: string;
-
-	onsubmit(): void;
-}
-
-export class Form implements ClassComponent<FormAttrs> {
-	public view({attrs, children}: CVnode<FormAttrs>) {
-		return m("form", {
-				class: (attrs.isValid ? "sl-invalid" : ""),
-				onsubmit: (e: Event) => {
-					e.preventDefault();
-					if (attrs.onsubmit) {
-						attrs.onsubmit();
-					}
-				},
-			},
-			children,
-			attrs.onsubmit ?
-				m(Tk.Button, {
-					type: "submit",
-					full: true,
-					notAllowed: !attrs.isValid,
-					onClick: attrs.isValid ? () => {
-						if (attrs.onsubmit) {
-							attrs.onsubmit();
-						}
-					} : undefined,
-				}, attrs.submitLabel) : undefined,
-		);
-	}
-}
-
 export class InputGroup implements ClassComponent<any> {
 	public view({attrs, children}: CVnode<any>) {
 		return m(".sl-input-grp", attrs, children);
@@ -241,52 +207,11 @@ export class SelectInput implements ClassComponent<SelectInputAttrs> {
 	}
 }
 
-interface IconAttrs extends HasSizeAttrs {
-	fas: string;
-}
-
-export class Icon implements ClassComponent<IconAttrs> {
-	public view({attrs}: CVnode<IconAttrs>) {
-		return m(".span.icon", {class: buildCssClass(attrs)}, m(`.fas.fa-${attrs.fas}`));
-	}
-}
-
 export namespace Tk {
 	interface ModalAttrs {
 		title?: string;
 
 		onClose?(): void;
-	}
-
-	export class Modal implements ClassComponent<ModalAttrs> {
-		public oninit({attrs}: CVnode<ModalAttrs>) {
-			document.addEventListener("keyup", (event: Event) => {
-				const e = event as MithrilKeyboardEvent;
-				switch (e.key) {
-					case "Escape":
-						e.redraw = false;
-						if (attrs.onClose) {
-							attrs.onClose();
-						}
-						break;
-				}
-			});
-		}
-
-		public view({children, attrs}: CVnode<ModalAttrs>) {
-			return m(".sl-modal",
-				m(".sl-modal-content",
-					attrs.title ? m("span", attrs.title) : undefined,
-					m(Button, {
-							onClick: attrs.onClose ? (e: MithrilMouseEvent) => {
-								e.redraw = false;
-								attrs.onClose!();
-							} : undefined,
-						},
-						"X",
-					),
-					children));
-		}
 	}
 
 	export class Container implements ClassComponent<{}> {
@@ -377,54 +302,6 @@ export namespace Tk {
 				onmouseleave: attrs.onMouseLeave,
 				onclick: attrs.onClick,
 			}, children);
-		}
-	}
-
-	interface ButtonAttrs extends HasSizeAttrs {
-		tooltip?: string;
-		notAllowed?: boolean;
-		inactive?: boolean;
-		full?: boolean;
-		type?: "button" | "submit" | "reset";
-
-		onClick?(e: MithrilMouseEvent): void;
-	}
-
-	export class Button implements ClassComponent<ButtonAttrs> {
-		private alreadyClicked: boolean = false;
-		private bounceInterval = 500;
-
-		public oninit() {
-			return;
-		}
-
-		public view({attrs, children}: CVnode<ButtonAttrs>) {
-			const that = this;
-
-			return m("a.button", {
-				class: buildCssClass(attrs),
-				inacitve: that.isInactive(attrs),
-				onclick: (that.isClickable(attrs)) ? (e: MithrilMouseEvent) => {
-					if (that.alreadyClicked) {
-						return;
-					}
-					that.alreadyClicked = true;
-					attrs.onClick!(e);
-					setTimeout(() => {
-						that.alreadyClicked = false;
-					}, that.bounceInterval);
-				} : undefined,
-				tooltip: attrs.tooltip,
-				type: attrs.type,
-			}, children);
-		}
-
-		private isClickable(attrs: ButtonAttrs): boolean {
-			return !!attrs.onClick && !attrs.notAllowed;
-		}
-
-		private isInactive(attrs: ButtonAttrs): boolean {
-			return !!attrs.notAllowed && !!attrs.inactive;
 		}
 	}
 

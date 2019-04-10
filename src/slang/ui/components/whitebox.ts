@@ -19,9 +19,8 @@ import {ConnectionComponent} from "./connection";
 import {InputConsole, OutputConsole} from "./console";
 import {DashboardComponent} from "./dashboard";
 import {PortGroupPosition} from "./port-group";
+import {Button} from "./toolkit/buttons";
 import {Tk} from "./toolkit/toolkit";
-
-import Button = Tk.Button;
 import Box = Tk.Box;
 
 export class WhiteBoxComponent extends CellComponent {

@@ -2,9 +2,11 @@ import m, {ClassComponent, CVnode} from "mithril";
 
 import {toTypeIdentifier} from "../../../core/mapper";
 import {SlangType, TYPEID_NAMES_NOGEN, TypeIdentifier} from "../../../definitions/type";
+import {Button} from "./buttons";
 
 import {MithrilKeyboardEvent} from "./events";
-import {BaseInputAttrs, Block, Icon, InputGroup, SelectInput, StringInput, Tk} from "./toolkit";
+import {Icon} from "./icons";
+import {BaseInputAttrs, Block, InputGroup, SelectInput, StringInput} from "./toolkit";
 
 interface MapEntriesInputAttrs {
 	entries: Array<[string, SlangType]>;
@@ -51,14 +53,14 @@ class MapEntriesInput implements ClassComponent<MapEntriesInputAttrs> {
 								attrs.oneditEntry(index, [tname, ntype]);
 							},
 						}),
-						m(Tk.Button, {
+						m(Button, {
 							onClick: () => {
 								attrs.onremoveEntry(index);
 							},
 						}, m(Icon, {fas: "times"})),
 					]);
 				}),
-				m("", m(Tk.Button, {
+				m("", m(Button, {
 					onClick: () => {
 						attrs.onappendEntry(["", SlangType.newUnspecified()]);
 					},

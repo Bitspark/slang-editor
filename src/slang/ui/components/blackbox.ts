@@ -12,9 +12,8 @@ import {PaperView} from "../views/paper-view";
 
 import {AttachableComponent, CellComponent} from "./base";
 import {PortGroupComponent} from "./port-group";
-import {Icon, Tk} from "./toolkit/toolkit";
-
-import Button = Tk.Button;
+import {Button} from "./toolkit/buttons";
+import {Icon} from "./toolkit/icons";
 import RectangleSelectors = shapes.standard.RectangleSelectors;
 
 function createPortGroups(blackBox: BlackBox): PortGroupComponent[] {

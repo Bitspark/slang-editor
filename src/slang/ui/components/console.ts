@@ -5,7 +5,9 @@ import {SlangType, SlangTypeJson, SlangTypeValue, TypeIdentifier} from "../../de
 import {BINARY_VALUE_TYPE} from "./console/binary";
 import {FILE_VALUE_TYPE, IMAGE_VALUE_TYPE} from "./console/file";
 import {GRAPH_VALUE_TYPE} from "./console/graph";
-import {BaseInput, BaseInputAttrs, BooleanInput, Icon, NumberInput, StringInput, Tk} from "./toolkit/toolkit";
+import {Button} from "./toolkit/buttons";
+import {Icon} from "./toolkit/icons";
+import {BaseInput, BaseInputAttrs, BooleanInput, NumberInput, StringInput, Tk} from "./toolkit/toolkit";
 
 export interface ConsoleValueType<T> {
 	typeDef: SlangTypeJson;
@@ -186,7 +188,7 @@ export namespace Input {
 					that.values.map((entry: any, index: number) => {
 						return entry === undefined ? undefined :
 							m(".entry", [
-								m(Tk.Button, {
+								m(Button, {
 									onClick: () => {
 										that.values[index] = undefined;
 										attrs.onInput(that.getValues());
@@ -203,7 +205,7 @@ export namespace Input {
 								}),
 							]);
 					}),
-					m(".entry", m(Tk.Button, {
+					m(".entry", m(Button, {
 						onClick: () => {
 							that.values.push(null);
 						},
@@ -297,7 +299,7 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 				class: (that.isValid() ? "sl-invalid" : ""),
 			},
 			this.renderInput(this.type!, undefined),
-			m(Tk.Button, {
+			m(Button, {
 				full: true,
 				notAllowed: !that.isValid(),
 				onClick: that.isValid ? () => {
