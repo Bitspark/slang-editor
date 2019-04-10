@@ -1,6 +1,7 @@
 import m, {ClassComponent, CVnode, CVnodeDOM} from "mithril";
 
 import {MithrilEvent, MithrilKeyboardEvent} from "./events";
+import {Icon} from "./icons";
 
 export interface BaseInputAttrs<T> {
 	label?: string;
@@ -110,23 +111,32 @@ export class FileInput implements BaseInput<File> {
 	protected accept: string = "";
 
 	public view({attrs}: CVnode<BaseInputAttrs<File>>) {
-		return wrapInput(attrs, m("input",
-			{
-				type: "file",
-				accept: (this.accept) ? this.accept : undefined,
-				oncreate: (v: CVnodeDOM<any>) => {
-					if (v.attrs.autofocus) {
-						(v.dom as HTMLElement).focus();
-					}
-				},
-				oninput: m.withAttr("files", (files: File[]) => {
-					attrs.onInput(files[0]);
-				}),
-				onkeydown: attrs.onkeydown,
-				onkeyup: attrs.onkeyup,
-				autofocus: attrs.autofocus,
-			},
-		));
+		return m(".file",
+			m("file-label",
+				m("input",
+					{
+						class: "file-input",
+						type: "file",
+						accept: (this.accept) ? this.accept : undefined,
+						oncreate: (v: CVnodeDOM<any>) => {
+							if (v.attrs.autofocus) {
+								(v.dom as HTMLElement).focus();
+							}
+						},
+						oninput: m.withAttr("files", (files: File[]) => {
+							attrs.onInput(files[0]);
+						}),
+						onkeydown: attrs.onkeydown,
+						onkeyup: attrs.onkeyup,
+						autofocus: attrs.autofocus,
+					},
+				),
+				m("span.file-cta",
+					m("span.file-icon", m(Icon, "upload")),
+					m("span.file-label", "Choose a file..."),
+				),
+			),
+		);
 	}
 }
 
