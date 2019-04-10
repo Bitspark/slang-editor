@@ -1,3 +1,8 @@
+export interface MithrilEvent {
+	redraw: boolean;
+	currentTarget: any;
+}
+
 export interface MithrilMouseEvent extends MouseEvent {
 	redraw: boolean;
 }

@@ -1,6 +1,6 @@
 import m, {ClassComponent, CVnode, CVnodeDOM} from "mithril";
 
-import {Keypress, MithrilKeyboardEvent, MithrilMouseEvent} from "./events";
+import {Keypress, MithrilEvent, MithrilKeyboardEvent, MithrilMouseEvent} from "./events";
 
 interface FormAttrs {
 	isValid: boolean;
@@ -36,6 +36,12 @@ export class Form implements ClassComponent<FormAttrs> {
 	}
 }
 
+export class InputGroup implements ClassComponent<any> {
+	public view({attrs, children}: CVnode<any>) {
+		return m(".sl-input-grp", attrs, children);
+	}
+}
+
 export class Block implements ClassComponent<{}> {
 	public view({children}: CVnode<{}>) {
 		return m("", children);
@@ -44,7 +50,7 @@ export class Block implements ClassComponent<{}> {
 
 export class Title implements ClassComponent<{}> {
 	public view({children}: CVnode<{}>) {
-		return m("h2", children);
+		return m("h4", children);
 	}
 }
 
@@ -236,7 +242,7 @@ export namespace Tk {
 		initValue?: T;
 		readonly?: boolean;
 
-		onInput(value: T): void;
+		onInput(value: T, e?: { redraw: boolean }): void;
 
 		onchange?(file: File): void;
 	}
@@ -281,9 +287,9 @@ export namespace Tk {
 							(v.dom as HTMLElement).focus();
 						}
 					},
-					oninput: m.withAttr("value", (v: string) => {
-						attrs.onInput(v);
-					}),
+					oninput: (e: MithrilEvent) => {
+						attrs.onInput(e.currentTarget.value, e);
+					},
 					autofocus: attrs.autofocus,
 				},
 			));
@@ -302,9 +308,9 @@ export namespace Tk {
 							(v.dom as HTMLElement).focus();
 						}
 					},
-					oninput: m.withAttr("value", (v: number) => {
-						attrs.onInput(Number(v));
-					}),
+					oninput: (e: MithrilEvent) => {
+						attrs.onInput(Number(e.currentTarget.value), e);
+					},
 					autofocus: attrs.autofocus,
 				},
 			));
@@ -377,9 +383,9 @@ export namespace Tk {
 							(v.dom as HTMLElement).focus();
 						}
 					},
-					oninput: m.withAttr("value", (v: string) => {
-						attrs.onInput(v);
-					}),
+					oninput: (e: MithrilEvent) => {
+						attrs.onInput(e.currentTarget.value, e);
+					},
 					autofocus: attrs.autofocus,
 				},
 				attrs.options.map((opt) => {
