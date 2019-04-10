@@ -170,7 +170,7 @@ export class SlangType {
 	private genericIdentifier?: string;
 	private streamSub: SlangType | undefined;
 
-	public constructor(private parent: SlangType | null, private typeIdentifier: TypeIdentifier) {
+	public constructor(private parent: SlangType | null, private readonly typeIdentifier: TypeIdentifier) {
 		if (this.typeIdentifier === TypeIdentifier.Map) {
 			this.mapSubs = new Map<string, SlangType>();
 		}
