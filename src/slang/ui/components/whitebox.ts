@@ -603,7 +603,9 @@ export class WhiteBoxComponent extends CellComponent {
 							}),
 						),
 					});
-				this.onClick(() => this.destroyOperatorDashboard());
+				this.onClick(() => {
+					this.destroyOperatorDashboard();
+				});
 				return true;
 			});
 		}

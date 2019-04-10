@@ -53,7 +53,7 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 		const blueprint = this.blueprint!;
 
 		if (!blueprint.hasProperties()) {
-			return;
+			return undefined;
 		}
 
 		return m(Block,
