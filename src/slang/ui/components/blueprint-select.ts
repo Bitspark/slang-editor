@@ -8,7 +8,7 @@ import {BlueprintView} from "../views/blueprint";
 import {AttachableComponent, CellComponent} from "./base";
 import {BlackBoxShape} from "./blackbox";
 import {MithrilKeyboardEvent, MithrilMouseEvent} from "./toolkit/events";
-import {Tk} from "./toolkit/toolkit";
+import {StringInput, Tk} from "./toolkit/toolkit";
 
 export interface Attrs {
 	onSelect(bp: BlueprintModel): void;
@@ -89,7 +89,7 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 					},
 				},
 				m(Tk.ListHead, {},
-					m(Tk.StringInput, {
+					m(StringInput, {
 						class: "sl-fullwidth",
 						label: "",
 						onInput: (f: string) => {

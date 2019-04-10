@@ -4,9 +4,7 @@ import {toTypeIdentifier} from "../../../core/mapper";
 import {SlangType, TYPEID_NAMES_NOGEN, TypeIdentifier} from "../../../definitions/type";
 
 import {MithrilKeyboardEvent} from "./events";
-import {Block, InputGroup, Tk} from "./toolkit";
-import SelectInput = Tk.SelectInput;
-import StringInput = Tk.StringInput;
+import {BaseInputAttrs, Block, InputGroup, SelectInput, StringInput, Tk} from "./toolkit";
 
 interface MapEntriesInputAttrs {
 	entries: Array<[string, SlangType]>;
@@ -71,7 +69,7 @@ class MapEntriesInput implements ClassComponent<MapEntriesInputAttrs> {
 
 }
 
-interface TypeSelectAttrs extends Tk.InputAttrs<SlangType> {
+interface TypeSelectAttrs extends BaseInputAttrs<SlangType> {
 	type: SlangType;
 }
 

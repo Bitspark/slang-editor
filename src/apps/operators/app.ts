@@ -8,8 +8,7 @@ import {OperatorModel} from "../../slang/core/models/operator";
 import {SlangType, TypeIdentifier} from "../../slang/definitions/type";
 import {BlackBoxShape, BlackBoxShapeAttrs} from "../../slang/ui/components/blackbox";
 import {DashboardModuleAttrs, DashboardModuleComponent} from "../../slang/ui/components/dashboard";
-import {Block, Tk} from "../../slang/ui/components/toolkit/toolkit";
-import SelectInput = Tk.SelectInput;
+import {Block, SelectInput} from "../../slang/ui/components/toolkit/toolkit";
 
 const ROUND_CORNER = 12;
 const FONT_SIZE = 9;
