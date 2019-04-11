@@ -85,7 +85,6 @@ export class PropertyFormDashboardModuleComponent implements DashboardModuleComp
 		return m(Input.ConsoleEntry, {
 			type,
 			label: fieldName,
-			class: "",
 			initValue: !this.formData.has(fieldName) ? initValue : undefined,
 			onInput: (v: any) => {
 				this.formData.set(fieldName, v);

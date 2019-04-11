@@ -1,9 +1,7 @@
 // tslint:disable-next-line
-import "./common";
-
-// tslint:disable-next-line
 import "../styles/embedded.scss";
 
+// tslint:disable-next-line
 import {OperatorDataApp} from "../apps/operators/app";
 import {BlueprintShareApp} from "../apps/share/src/app";
 import {SlangAspects} from "../slang/aspects";

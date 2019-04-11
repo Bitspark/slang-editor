@@ -8,7 +8,8 @@ import {OperatorModel} from "../../slang/core/models/operator";
 import {SlangType, TypeIdentifier} from "../../slang/definitions/type";
 import {BlackBoxShape, BlackBoxShapeAttrs} from "../../slang/ui/components/blackbox";
 import {DashboardModuleAttrs, DashboardModuleComponent} from "../../slang/ui/components/dashboard";
-import {Block, SelectInput} from "../../slang/ui/components/toolkit/toolkit";
+import {SelectInput} from "../../slang/ui/components/toolkit/input";
+import {Block} from "../../slang/ui/components/toolkit/toolkit";
 
 const ROUND_CORNER = 12;
 const FONT_SIZE = 9;
@@ -178,8 +179,6 @@ class ConvertOperator implements SlangAspectImpl {
 			return m(Block,
 				m(".sl-inp-grp-inline",
 					m(SelectInput, {
-						class: "",
-						label: "",
 						selected: TypeIdentifier[typeIn],
 						options: (fixedIn) ? [TypeIdentifier[typeIn]] : this.portTypeOptions,
 						onInput: (fixedIn) ? () => null :
@@ -189,8 +188,6 @@ class ConvertOperator implements SlangAspectImpl {
 					}),
 					"→",
 					m(SelectInput, {
-						class: "",
-						label: "",
 						selected: TypeIdentifier[typeOut],
 						options: (fixedOut) ? [TypeIdentifier[typeOut]] : this.portTypeOptions,
 						onInput: (fixedOut) ? () => null :

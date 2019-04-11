@@ -1,9 +1,7 @@
 // tslint:disable-next-line
-import "./common";
-
-// tslint:disable-next-line
 import "../styles/embedded.scss";
 
+// tslint:disable-next-line
 import {StaticStorageApp} from "../apps/storage/src/app";
 import {SlangAspects} from "../slang/aspects";
 import {AppModel} from "../slang/core/models/app";

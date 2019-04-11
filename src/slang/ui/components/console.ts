@@ -5,7 +5,10 @@ import {SlangType, SlangTypeJson, SlangTypeValue, TypeIdentifier} from "../../de
 import {BINARY_VALUE_TYPE} from "./console/binary";
 import {FILE_VALUE_TYPE, IMAGE_VALUE_TYPE} from "./console/file";
 import {GRAPH_VALUE_TYPE} from "./console/graph";
-import {BaseInput, BaseInputAttrs, BooleanInput, NumberInput, StringInput, Tk} from "./toolkit/toolkit";
+import {Button} from "./toolkit/buttons";
+import {Icon} from "./toolkit/icons";
+import {BaseInput, BaseInputAttrs, BooleanInput, NumberInput, StringInput} from "./toolkit/input";
+import {Tk} from "./toolkit/toolkit";
 
 export interface ConsoleValueType<T> {
 	typeDef: SlangTypeJson;
@@ -121,7 +124,7 @@ export namespace Input {
 			const labelName = attrs.label;
 			const labelText = (labelName) ? `${attrs.label}:` : "";
 			const values = this.values;
-			return m(".sl-inp-grp.map", {class: attrs.class},
+			return m(".sl-inp-grp.map",
 				m("label", {
 					for: labelName,
 				}, [
@@ -131,7 +134,6 @@ export namespace Input {
 								label: subName,
 								type: subType,
 								initValue: this.values.get(subName),
-								class: "",
 								onInput: (v: any) => {
 									values.set(subName, v);
 									attrs.onInput(this.post(values));
@@ -178,7 +180,7 @@ export namespace Input {
 				this.values = attrs.initValue;
 			}
 
-			return m(".sl-inp-grp.stream", {class: attrs.class},
+			return m(".sl-inp-grp.stream",
 				m("label", {
 					for: labelName,
 				}, [
@@ -186,15 +188,13 @@ export namespace Input {
 					that.values.map((entry: any, index: number) => {
 						return entry === undefined ? undefined :
 							m(".entry", [
-								m(Tk.Button, {
+								m(Button, {
 									onClick: () => {
 										that.values[index] = undefined;
 										attrs.onInput(that.getValues());
 									},
-									class: "sl-remove-entry sl-red",
-								}, m("i.fas.fa-times")),
+								}, m(Icon, {fas: "times"})),
 								m(ConsoleEntry, {
-									label: "", class: "",
 									type: attrs.type,
 									initValue: entry,
 									onInput: (v: any) => {
@@ -204,12 +204,11 @@ export namespace Input {
 								}),
 							]);
 					}),
-					m(".entry", m(Tk.Button, {
+					m(".entry", m(Button, {
 						onClick: () => {
 							that.values.push(null);
 						},
-						class: "sl-add-entry",
-					}, m("i.fas.fa-plus"))),
+					}, m(Icon, {fas: "plus"}))),
 				]),
 			);
 		}
@@ -299,7 +298,7 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 				class: (that.isValid() ? "sl-invalid" : ""),
 			},
 			this.renderInput(this.type!, undefined),
-			m(Tk.Button, {
+			m(Button, {
 				full: true,
 				notAllowed: !that.isValid(),
 				onClick: that.isValid ? () => {
@@ -316,7 +315,6 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 	private renderInput(type: SlangType, initValue: SlangTypeValue | undefined): m.Children {
 		return m(Input.ConsoleEntry, {
 			initValue,
-			label: "", class: "",
 			type: type!,
 			onInput: (v: any) => {
 				this.value = v;

@@ -1,4 +1,6 @@
 // COLORS
+@import "~jointjs/css/layout.css";
+@import "~bulma/bulma";
 @import "variables";
 
 $type-color-number: $blue;
@@ -149,4 +151,3 @@ $blackbox-color-label: $black;
 }
 
 @import "component/base";
-@import "toolkit/base";

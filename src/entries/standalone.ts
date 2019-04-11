@@ -1,9 +1,7 @@
 // tslint:disable-next-line
-import "./common";
-
-// tslint:disable-next-line
 import "../styles/standalone.scss";
 
+// tslint:disable-next-line
 import {AutoTriggerApp} from "../apps/autotrigger/src/app";
 import {DeploymentApp} from "../apps/deployment/src/app";
 import {OperatorDataApp} from "../apps/operators/app";

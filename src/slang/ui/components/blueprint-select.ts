@@ -8,7 +8,8 @@ import {BlueprintView} from "../views/blueprint";
 import {AttachableComponent, CellComponent} from "./base";
 import {BlackBoxShape} from "./blackbox";
 import {MithrilKeyboardEvent, MithrilMouseEvent} from "./toolkit/events";
-import {StringInput, Tk} from "./toolkit/toolkit";
+import {StringInput} from "./toolkit/input";
+import {Box, Tk} from "./toolkit/toolkit";
 
 export interface Attrs {
 	onSelect(bp: BlueprintModel): void;
@@ -90,8 +91,6 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 				},
 				m(Tk.ListHead, {},
 					m(StringInput, {
-						class: "sl-fullwidth",
-						label: "",
 						onInput: (f: string) => {
 							this.activeMenuItemIdx = -1;
 							attrs.onFilter(f.trim());
@@ -140,7 +139,7 @@ export class BlueprintSelectComponent extends CellComponent {
 		this.menu = this.createComponent({x: 0, y: 0, align: "tl"})
 			.attachTo(this.shape, "c")
 			.mount({
-				view: () => m(Tk.Box, m(BlueprintMenuComponent, {
+				view: () => m(Box, m(BlueprintMenuComponent, {
 					onLoad: () => this.getBlueprints(),
 					onFilter: (fltrExpr: string) => {
 						this.filterExpr = fltrExpr;
