@@ -242,13 +242,13 @@ export class WhiteBoxComponent extends CellComponent {
 			}
 		}
 
-		const outerEdge = 1;
+		const outerEdgeSize = 2;
 
 		this.ports.top.map((p) => p.getShape()).forEach((port) => {
 			const currentPortPosition = port.get("position");
 			const targetPosition = {
 				x: currentPortPosition.x,
-				y: newPosition.y - pHeight - outerEdge * 2,
+				y: newPosition.y - pHeight - outerEdgeSize,
 			};
 			if (!animation) {
 				port.set({position: targetPosition});
@@ -262,7 +262,7 @@ export class WhiteBoxComponent extends CellComponent {
 			const currentPortPosition = port.get("position");
 			const targetPosition = {
 				x: currentPortPosition.x,
-				y: newPosition.y + newSize.height - outerEdge,
+				y: newPosition.y + newSize.height - outerEdgeSize,
 			};
 			if (!animation) {
 				port.set({position: targetPosition});
@@ -275,7 +275,7 @@ export class WhiteBoxComponent extends CellComponent {
 		this.ports.right.map((p) => p.getShape()).forEach((port) => {
 			const currentPortPosition = port.get("position");
 			const targetPosition = {
-				x: newPosition.x + newSize.width + outerEdge,
+				x: newPosition.x + newSize.width + outerEdgeSize,
 				y: currentPortPosition.y,
 			};
 			if (!animation) {
@@ -470,6 +470,7 @@ export class WhiteBoxComponent extends CellComponent {
 		const portComponent = new IsolatedBlueprintPortComponent(name, id, port, invertedPosition[pos], this.paperView.isEditable);
 		const portElement = portComponent.getShape();
 		this.paperView.renderCell(portElement);
+		const outerEdgeSize = 2;
 
 		let calculateRestrictedRect: (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => g.PlainRect;
 		const elementSize = portElement.get("size") as g.PlainRect;
@@ -485,7 +486,7 @@ export class WhiteBoxComponent extends CellComponent {
 
 				calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
 					x: outerPosition.x,
-					y: outerPosition.y - elementSize.height,
+					y: outerPosition.y - elementSize.height - outerEdgeSize,
 					width: outerSize.width,
 					height: elementSize.height,
 				});
@@ -494,6 +495,7 @@ export class WhiteBoxComponent extends CellComponent {
 					owner.inPosition = portElement.getBBox().center().x;
 				});
 				break;
+
 			case "bottom":
 
 				portElement.set({
@@ -505,7 +507,7 @@ export class WhiteBoxComponent extends CellComponent {
 
 				calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
 					x: outerPosition.x,
-					y: outerPosition.y + outerSize.height,
+					y: outerPosition.y + outerSize.height - outerEdgeSize,
 					width: outerSize.width,
 					height: elementSize.height,
 				});
@@ -515,6 +517,7 @@ export class WhiteBoxComponent extends CellComponent {
 				});
 				this.ports.bottom.push(portComponent);
 				break;
+
 			case "left":
 				this.ports.left.push(portComponent);
 
@@ -532,6 +535,7 @@ export class WhiteBoxComponent extends CellComponent {
 					height: outerSize.height,
 				});
 				break;
+
 			case "right":
 				portElement.set({
 					position: {
