@@ -1,5 +1,4 @@
 import {dia, g, shapes} from "jointjs";
-import m from "mithril";
 
 import {Styles} from "../../../styles/studio";
 import {BlackBox} from "../../core/abstract/blackbox";
@@ -10,10 +9,8 @@ import {OperatorModel} from "../../core/models/operator";
 import {XY} from "../../definitions/api";
 import {PaperView} from "../views/paper-view";
 
-import {AttachableComponent, CellComponent} from "./base";
+import {CellComponent} from "./base";
 import {PortGroupComponent} from "./port-group";
-import {Button} from "./toolkit/buttons";
-import {Icon} from "./toolkit/icons";
 import RectangleSelectors = shapes.standard.RectangleSelectors;
 
 function createPortGroups(blackBox: BlackBox): PortGroupComponent[] {
@@ -223,8 +220,6 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 }
 
 export class OperatorBoxComponent extends BlackBoxComponent {
-	private operatorControl?: AttachableComponent;
-
 	constructor(paperView: PaperView, protected readonly operator: OperatorModel) {
 		super(paperView, paperView.isEditable);
 
@@ -242,43 +237,11 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 	public refresh(): void {
 		super.refresh();
 		const operator = this.operator;
-		const blueprint = operator.getBlueprint();
 		const view = this.paperView;
 
 		if (operator.xy) {
 			this.updateXY(operator.xy);
 		}
-
-		if (this.operatorControl) {
-			this.operatorControl.destroy();
-		}
-
-		this.operatorControl = this
-			.createComponent({x: 0, y: 0, align: "t"})
-			.mount({
-				view: () => [
-					view.isEditable ?
-						m("", m(Button, {
-							size: "small",
-							tooltip: "Remove operator",
-							onClick: () => {
-								operator.destroy();
-							},
-						}, m(Icon, {fas: "times"})))
-						: undefined,
-
-					view.isDescendable && !blueprint.isElementary() ?
-						m("", m(Button, {
-							size: "small",
-							tooltip: "Open blueprint",
-							onClick: () => {
-								operator.getBlueprint().open();
-							},
-						}, m(Icon, {fas: "project-diagram"})))
-						: undefined,
-				],
-			})
-			.attachTo(this.shape, "tl");
 
 		this.shape.on("change:position change:size", () => {
 			operator.xy = this.shape.getBBox().center();

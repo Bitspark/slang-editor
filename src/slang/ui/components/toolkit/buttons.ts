@@ -1,6 +1,7 @@
 import m, {ClassComponent, CVnode} from "mithril";
 
 import {MithrilMouseEvent} from "./events";
+import {Icon, IconAttrs} from "./icons";
 import {buildCssClass, HasSizeAttrs} from "./toolkit";
 
 interface ButtonAttrs extends HasSizeAttrs {
@@ -37,7 +38,7 @@ export class Button implements ClassComponent<ButtonAttrs> {
 					that.alreadyClicked = false;
 				}, that.bounceInterval);
 			} : undefined,
-			tooltip: attrs.tooltip,
+			title: attrs.tooltip,
 			type: attrs.type,
 		}, children);
 	}
@@ -48,5 +49,11 @@ export class Button implements ClassComponent<ButtonAttrs> {
 
 	private isInactive(attrs: ButtonAttrs): boolean {
 		return !!attrs.notAllowed && !!attrs.inactive;
+	}
+}
+
+export class IconButton implements ClassComponent<ButtonAttrs & IconAttrs> {
+	public view({attrs, children}: CVnode<ButtonAttrs & IconAttrs>) {
+		return m(Button, attrs, m(Icon, attrs), children);
 	}
 }

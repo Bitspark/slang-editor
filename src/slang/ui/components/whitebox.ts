@@ -17,10 +17,10 @@ import {BlackBoxComponent, OperatorBoxComponent} from "./blackbox";
 import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {ConnectionComponent} from "./connection";
 import {InputConsole, OutputConsole} from "./console";
-import {DashboardComponent} from "./dashboard";
+import {OperatorControl} from "./operator-control";
 import {PortGroupPosition} from "./port-group";
 import {Button} from "./toolkit/buttons";
-import {Box} from "./toolkit/toolkit";
+import {Box, Floater} from "./toolkit/toolkit";
 
 export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 60;
@@ -594,20 +594,20 @@ export class WhiteBoxComponent extends CellComponent {
 					.createComponent({x: 0, y: 0, align: "tl"})
 					.attachTo(operatorComp.getShape(), "tr")
 					.mount({
-						view: () => m(Box, {
-								onescape: () => {
+						view: () => m(Floater, {
+								onclose: () => {
 									that.destroyOperatorDashboard();
 								},
 							},
-							m(DashboardComponent, {
+							m(OperatorControl, {
 								operator,
-								factory: this.paperView.getFactory(),
+								view: this.paperView,
+								onclose: () => {
+									that.destroyOperatorDashboard();
+								},
 							}),
 						),
 					});
-				this.onClick(() => {
-					this.destroyOperatorDashboard();
-				});
 				return true;
 			});
 		}
