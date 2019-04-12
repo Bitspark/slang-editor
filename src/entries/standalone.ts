@@ -51,6 +51,12 @@ function slangStudioStandalone(el: HTMLElement): Promise<void> {
 	});
 }
 
+// prevent browser history back
+history.pushState(null, document.title, location.href);
+window.addEventListener("popstate", () => {
+	history.pushState(null, document.title, location.href);
+});
+
 const studioEl = document.getElementById("slang-studio");
 const gotoLandEl = document.getElementById("sl-nav-goto-landscape");
 if (studioEl) {
