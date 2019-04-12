@@ -30,13 +30,35 @@ function slangStudioStandalone(el: HTMLElement): Promise<void> {
 		new BlueprintShareApp(appModel, aspects);
 
 		app.load().then(() => {
-			appModel.getChildNode(LandscapeModel)!.open();
+			const mainLandscape = appModel.getChildNode(LandscapeModel)!;
+			mainLandscape.open();
+
+			if (gotoLandEl) {
+				gotoLandEl.style.display = "none";
+
+				gotoLandEl.onclick = () => {
+					mainLandscape.open();
+				};
+
+				appModel.subscribeOpenedBlueprintChanged((blueprint) => {
+					gotoLandEl.style.display = blueprint ? "" : "none";
+				});
+			}
+
 			resolve();
 		});
+
 	});
 }
 
+// prevent browser history back
+history.pushState(null, document.title, location.href);
+window.addEventListener("popstate", () => {
+	history.pushState(null, document.title, location.href);
+});
+
 const studioEl = document.getElementById("slang-studio");
+const gotoLandEl = document.getElementById("sl-nav-goto-landscape");
 if (studioEl) {
 	slangStudioStandalone(studioEl);
 }

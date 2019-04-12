@@ -8,9 +8,9 @@ export namespace Styles {
 	const typeColors: { [key in TypeIdentifier | "ghost"]: string } = {
 		[TypeIdentifier.Number]: "#2e49b3",
 		[TypeIdentifier.String]: "#a52e2e",
-		[TypeIdentifier.Boolean]: "#cb8000",
+		[TypeIdentifier.Boolean]: "#ff764d",
 		[TypeIdentifier.Binary]: "#83a91d",
-		[TypeIdentifier.Primitive]: "#018b8a",
+		[TypeIdentifier.Primitive]: "#209CEE",
 		[TypeIdentifier.Generic]: "#b25db2",
 		[TypeIdentifier.Unspecified]: "#ffeff2",
 		[TypeIdentifier.Trigger]: "rgba(151, 151, 151, 0.5)",
