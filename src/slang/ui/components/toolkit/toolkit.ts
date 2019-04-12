@@ -1,4 +1,4 @@
-import m, {ClassComponent, CVnode} from "mithril";
+import m, {ClassComponent, CVnode, CVnodeDOM} from "mithril";
 
 import {Keypress, MithrilKeyboardEvent, MithrilMouseEvent} from "./events";
 
@@ -6,8 +6,8 @@ export interface HasSizeAttrs {
 	size?: "small" | "medium" | "large";
 }
 
-interface HasEscapeAttrs {
-	onescape?(): void;
+interface HasCloseAttrs {
+	onclose?(): void;
 }
 
 export function buildCssClass(attrs: HasSizeAttrs): string {
@@ -22,24 +22,55 @@ export class Container implements ClassComponent<any> {
 	}
 }
 
-export class Box implements ClassComponent<HasEscapeAttrs> {
+export class Floater implements ClassComponent<HasCloseAttrs> {
 
-	public oninit({attrs}: CVnode<HasEscapeAttrs>) {
-		const onescape = attrs.onescape;
-		if (!onescape) {
+	public oncreate({attrs, dom}: CVnodeDOM<HasCloseAttrs>) {
+		const onclose = attrs.onclose;
+		if (!onclose) {
 			return;
 		}
 
-		document.addEventListener("keyup", (event: Event) => {
-			const e = event as MithrilKeyboardEvent;
-			if (e.key === "Escape") {
-				e.redraw = false;
-				onescape();
+		const hndlKeyup = (event: KeyboardEvent) => {
+			if (event.key !== "Escape") {
+				return;
 			}
-		});
+			document.removeEventListener("click", hndlClickOutside);
+			document.removeEventListener("keyup", hndlKeyup);
+			onclose();
+		};
+
+		// a click opening a Floater element will also be handled by follwing click handle
+		// even when following click handle should only be executed after Floater element is already displayed.
+		// ==> ignore first click
+		let firstClick = true;
+		const hndlClickOutside = (event: Event) => {
+			if (firstClick) {
+				firstClick = false;
+				return;
+			}
+
+			if (event.composedPath().indexOf(dom as HTMLElement) > 0) {
+				return;
+			}
+
+			// click happend outside Box element
+			document.removeEventListener("click", hndlClickOutside);
+			document.removeEventListener("keyup", hndlKeyup);
+			onclose();
+		};
+
+		document.addEventListener("click", hndlClickOutside);
+		document.addEventListener("keyup", hndlKeyup);
+
 	}
 
-	public view({attrs, children}: CVnode<HasEscapeAttrs>) {
+	public view({children, attrs}: CVnode<any>) {
+		return m("", attrs, children);
+	}
+}
+
+export class Box implements ClassComponent<any> {
+	public view({attrs, children}: CVnode<any>) {
 		return m(".box", attrs, children);
 	}
 }
