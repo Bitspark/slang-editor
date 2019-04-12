@@ -1,16 +1,19 @@
+@import "~bulma/sass/utilities/initial-variables.sass";
+
 $black: #212124;
 $white: #fefefe;
 $blue: #2e49b3;
-$brown: #952e2e;
+$cyan: #209CEE;
 $red: #f5502e;
 $orange: #cb8000;
 $yellow: #cbaa00;
 $green: #83a91d;
-$cyan: #018b8a;
-$gray: #989897;
-$dim: #f1f1f0;
-$light: #fdfdfd;
+$turquoise: #018b8a;
+$grey: #989897;
+$dim: $white-ter;
+$light: $white-bis;
 $purple: #b25db2;
+$brown: #952e2e;
 
 @import url('https://fonts.googleapis.com/css?family=Roboto+Slab:300%7CRoboto');
 $font-family-default: "Roboto", "sans-serif";

@@ -269,6 +269,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 
 					view.isDescendable && !blueprint.isElementary() ?
 						m("", m(Button, {
+							size: "small",
 							tooltip: "Open blueprint",
 							onClick: () => {
 								operator.getBlueprint().open();
