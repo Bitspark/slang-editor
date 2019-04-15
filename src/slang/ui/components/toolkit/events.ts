@@ -5,6 +5,7 @@ export interface MithrilEvent {
 
 export interface MithrilMouseEvent extends MouseEvent {
 	redraw: boolean;
+	path: HTMLElement[];
 }
 
 export interface MithrilKeyboardEvent extends KeyboardEvent {

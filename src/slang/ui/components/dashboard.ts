@@ -3,21 +3,28 @@ import m, {ClassComponent, CVnode} from "mithril";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {OperatorModel} from "../../core/models/operator";
 import {SlangType, SlangTypeValue} from "../../definitions/type";
-import {ComponentFactory} from "../factory";
+import {PaperView} from "../views/paper-view";
 
 import {Input} from "./console";
 import {Block, Title} from "./toolkit/toolkit";
 import {TypeSelect} from "./toolkit/type";
 
 interface DashboardAttrs {
-	factory: ComponentFactory;
+	view: PaperView;
 	operator: OperatorModel;
 }
 
 export class DashboardComponent implements ClassComponent<DashboardAttrs> {
 	public view({attrs}: CVnode<DashboardAttrs>): any {
-		const dashboardModules = attrs.factory.getDashboardModules(attrs.operator);
-		return m("div.sl-operator-dashboard", {
+		const view = attrs.view;
+
+		if (view.isReadOnly) {
+			return undefined;
+		}
+
+		const factory = view.getFactory();
+		const dashboardModules = factory.getDashboardModules(attrs.operator);
+		return m(".sl-opr-dashboard", {
 			onmousewheel: (e: WheelEvent) => {
 				e.stopPropagation();
 			},

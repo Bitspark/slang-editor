@@ -2,7 +2,7 @@ import m, {ClassComponent, CVnode} from "mithril";
 
 import {buildCssClass, HasSizeAttrs} from "./toolkit";
 
-interface IconAttrs extends HasSizeAttrs {
+export interface IconAttrs extends HasSizeAttrs {
 	fas: string;
 }
 
