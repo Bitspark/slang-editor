@@ -358,6 +358,47 @@
       },
       "operators": {},
       "connections": {}
+    },
+    {
+      "id": "605be7c4-b4df-41be-998f-82f7c23e518e",
+      "meta": {
+        "name": "StringStreamToString"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "stream",
+            "stream": {
+              "type": "string"
+            }
+          },
+          "out": {
+            "type": "string"
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
+    },
+    {
+      "id": "384a2731-745b-4a7f-9972-ac2f4c31cf93",
+      "meta": {
+        "name": "GenericToGeneric"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "generic",
+            "generic": "itemTypeIn"
+          },
+          "out": {
+            "type": "generic",
+            "generic": "itemTypeOut"
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
     }
   ]
 }

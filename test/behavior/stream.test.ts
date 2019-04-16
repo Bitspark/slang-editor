@@ -154,4 +154,39 @@ describe("A stream port", () => {
 		expect(Array.from(Array.from(bpOut.getMapSubs()).find((port) => port.getType().isStream())!.getStreamSub().getMapSubs()).length).toEqual(2);
 	});
 
+	it("infers the correct stream depth", () => {
+		const bp = landscapeModel.createBlueprint({
+			uuid: uuidv4(),
+			meta: {name: "test-bp-2"},
+			type: BlueprintType.Local,
+		});
+		const bpIn = bp.createPort({
+			name: "",
+			type: new SlangType(null, TypeIdentifier.Unspecified),
+			direction: PortDirection.In,
+		});
+		const bpOut = bp.createPort({
+			name: "",
+			type: new SlangType(null, TypeIdentifier.Unspecified),
+			direction: PortDirection.Out,
+		});
+
+		const opS2S = bp.createBlankOperator(landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!);
+		const opSS2S = bp.createBlankOperator(landscapeModel.findBlueprint("605be7c4-b4df-41be-998f-82f7c23e518e")!);
+		const opG2G = bp.createBlankOperator(landscapeModel.findBlueprint("384a2731-745b-4a7f-9972-ac2f4c31cf93")!);
+
+		bpIn.connect(opS2S.getPortIn()!, true);
+		opS2S.getPortOut()!.connect(bpOut, true);
+		opSS2S.getPortOut()!.connect(bpOut, true);
+		bpIn.getMapSubs().next().value.connect(opG2G.getPortIn()!, true);
+		opG2G.getPortOut()!.connect(opSS2S.getPortIn()!, true);
+
+		expect(opG2G.getPortOut()!.getTypeIdentifier()).toEqual(TypeIdentifier.Map);
+		expect(Array.from(opG2G.getPortOut()!.getMapSubs()).length).toEqual(1);
+		const mapEntry = opG2G.getPortOut()!.getMapSubs().next().value;
+		expect(mapEntry.getTypeIdentifier()).toEqual(TypeIdentifier.Stream);
+		expect(mapEntry.getStreamSub().getTypeIdentifier()).toEqual(TypeIdentifier.String);
+		expect(mapEntry.getStreamSub().isConnectedWith(opSS2S.getPortIn()!.getStreamSub())).toEqual(true);
+	});
+
 });
