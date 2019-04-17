@@ -160,12 +160,66 @@ describe("SlangTypeValue.copy", () => {
 
 describe("SlangTypeJson.equals", () => {
 
-	it("returns true", () => {
+	it("returns true for strings", () => {
 		expect(equals({type: "string"}, {type: "string"})).toEqual(true);
 	});
 
-	it("returns false", () => {
+	it("returns false for strings", () => {
 		expect(equals({type: "string"}, {type: "number"})).toEqual(false);
+	});
+
+	it("returns true for maps", () => {
+		expect(equals(
+			{type: "map", map: {a: {type: "number"}}},
+			{type: "map", map: {a: {type: "number"}}})).toEqual(true);
+		expect(equals(
+			{type: "map", map: {a: {type: "number"}, b: {type: "boolean"}}},
+			{type: "map", map: {a: {type: "number"}, b: {type: "boolean"}}})).toEqual(true);
+	});
+
+	it("returns false for maps", () => {
+		expect(equals(
+			{type: "map", map: {a: {type: "number"}}},
+			{type: "map", map: {a: {type: "string"}}})).toEqual(false);
+		expect(equals(
+			{type: "map", map: {a: {type: "number"}, b: {type: "boolean"}}},
+			{type: "map", map: {a: {type: "number"}}})).toEqual(false);
+		expect(equals(
+			{type: "map", map: {b: {type: "boolean"}}},
+			{type: "map", map: {a: {type: "number"}, b: {type: "boolean"}}})).toEqual(false);
+		expect(equals(
+			{type: "map", map: {a: {type: "number"}}},
+			{type: "trigger"})).toEqual(false);
+	});
+
+	it("returns true for streams", () => {
+		expect(equals(
+			{type: "stream", stream: {type: "number"}},
+			{type: "stream", stream: {type: "number"}})).toEqual(true);
+	});
+
+	it("returns false for streams", () => {
+		expect(equals(
+			{type: "stream", stream: {type: "number"}},
+			{type: "stream", stream: {type: "boolean"}})).toEqual(false);
+		expect(equals(
+			{type: "stream", stream: {type: "number"}},
+			{type: "number"})).toEqual(false);
+	});
+
+	it("returns true for generics", () => {
+		expect(equals(
+			{type: "generic", generic: "abcd"},
+			{type: "generic", generic: "abcd"})).toEqual(true);
+	});
+
+	it("returns false for generics", () => {
+		expect(equals(
+			{type: "generic", generic: "abcd"},
+			{type: "generic", generic: "bcde"})).toEqual(false);
+		expect(equals(
+			{type: "generic", generic: "abcd"},
+			{type: "trigger"})).toEqual(false);
 	});
 
 });

@@ -4,9 +4,9 @@ import {AppModel} from "../../src/slang/core/models/app";
 import {BlueprintModel, BlueprintType} from "../../src/slang/core/models/blueprint";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
 import {OperatorModel} from "../../src/slang/core/models/operator";
+import {SlangType} from "../../src/slang/definitions/type";
 import {TestStorageApp} from "../helpers/TestStorageApp";
 import data from "../resources/definitions.json";
-import {SlangType} from "../../src/slang/definitions/type";
 
 describe("A port", () => {
 	let appModel: AppModel;
