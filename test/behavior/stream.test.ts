@@ -179,14 +179,43 @@ describe("A stream port", () => {
 		opS2S.getPortOut()!.connect(bpOut, true);
 		opSS2S.getPortOut()!.connect(bpOut, true);
 		bpIn.getMapSubs().next().value.connect(opG2G.getPortIn()!, true);
-		opG2G.getPortOut()!.connect(opSS2S.getPortIn()!, true);
+		opG2G.getPortOut()!.connect(opSS2S.getPortIn()!.getStreamSub(), true);
 
 		expect(opG2G.getPortOut()!.getTypeIdentifier()).toEqual(TypeIdentifier.Map);
 		expect(Array.from(opG2G.getPortOut()!.getMapSubs()).length).toEqual(1);
 		const mapEntry = opG2G.getPortOut()!.getMapSubs().next().value;
 		expect(mapEntry.getTypeIdentifier()).toEqual(TypeIdentifier.Stream);
-		expect(mapEntry.getStreamSub().getTypeIdentifier()).toEqual(TypeIdentifier.String);
-		expect(mapEntry.getStreamSub().isConnectedWith(opSS2S.getPortIn()!.getStreamSub())).toEqual(true);
+		expect(mapEntry.getStreamSub().getTypeIdentifier()).toEqual(TypeIdentifier.Map);
+		expect(Array.from(mapEntry.getStreamSub().getMapSubs()).length).toEqual(1);
+		expect(mapEntry.getStreamSub().getMapSubs().next().value.isConnectedWith(opSS2S.getPortIn()!.getStreamSub())).toEqual(true);
+	});
+
+	it("infers the correct stream depth for converts", () => {
+		const bp = landscapeModel.createBlueprint({
+			uuid: uuidv4(),
+			meta: {name: "test-bp-2"},
+			type: BlueprintType.Local,
+		});
+		const bpIn = bp.createPort({
+			name: "",
+			type: new SlangType(null, TypeIdentifier.Unspecified),
+			direction: PortDirection.In,
+		});
+		const bpOut = bp.createPort({
+			name: "",
+			type: new SlangType(null, TypeIdentifier.Unspecified),
+			direction: PortDirection.Out,
+		});
+
+		const opS2S = bp.createBlankOperator(landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!);
+		const opSS2S = bp.createBlankOperator(landscapeModel.findBlueprint("605be7c4-b4df-41be-998f-82f7c23e518e")!);
+		const opConvert = bp.createBlankOperator(landscapeModel.findBlueprint("d1191456-3583-4eaf-8ec1-e486c3818c60")!);
+
+		bpIn.connect(opS2S.getPortIn()!, true);
+		opS2S.getPortOut()!.connect(bpOut, true);
+		opSS2S.getPortOut()!.connect(bpOut, true);
+		bpIn.getMapSubs().next().value.connect(opConvert.getPortIn()!, true);
+		expect(opConvert.getPortOut()!.canConnect(opSS2S.getPortIn()!.getStreamSub(), true)).toEqual(false);
 	});
 
 });

@@ -399,6 +399,26 @@
       },
       "operators": {},
       "connections": {}
+    },
+    {
+      "id": "d1191456-3583-4eaf-8ec1-e486c3818c60",
+      "meta": {
+        "name": "Convert"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "generic",
+            "generic": "fromType"
+          },
+          "out": {
+            "type": "generic",
+            "generic": "toType"
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
     }
   ]
 }
