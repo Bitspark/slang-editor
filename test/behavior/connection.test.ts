@@ -84,6 +84,15 @@ describe("A connection", () => {
 		expect(s2sDlgOp2.findDelegate("dlg1")!.getPortOut()!.isConnectedWith(s2sDlgOp1.getPortIn()!)).toBeFalsy();
 	});
 
+	it("is parsed correctly", () => {
+		const bp1 = landscapeModel.findBlueprint("8019ef19-94c1-46d4-9a34-6dcd4a5281a8")!;
+		const op1 = bp1.findOperator("a")!;
+		
+		expect(op1).toBeTruthy();
+		expect(bp1.getPortIn()!.isConnectedWith(op1.getPortIn()!)).toEqual(true);
+		expect(op1.getPortOut()!.isConnectedWith(bp1.getPortOut()!)).toEqual(true);
+	});
+
 	it("does not allow direction mismatch", () => {
 		// TODO!
 	});

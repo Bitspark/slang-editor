@@ -419,6 +419,35 @@
       },
       "operators": {},
       "connections": {}
+    },
+    {
+      "id": "8019ef19-94c1-46d4-9a34-6dcd4a5281a8",
+      "meta": {
+        "name": "Connections"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "string"
+          },
+          "out": {
+            "type": "string"
+          }
+        }
+      },
+      "operators": {
+        "a": {
+          "operator": "ba24c37f-2b04-44b4-97ad-fd931c9ab77b"
+        }
+      },
+      "connections": {
+        "(": [
+          "(a"
+        ],
+        "a)": [
+          ")"
+        ]
+      }
     }
   ]
 }
