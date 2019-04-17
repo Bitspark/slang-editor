@@ -215,7 +215,7 @@ describe("Slang type unification", () => {
 
 describe("Slang type equality", () => {
 
-	it("returns true in case of two maps", () => {
+	it("returns true in case of 2 maps", () => {
 		const map1 = SlangType.newMap();
 		const map2 = SlangType.newMap();
 
@@ -225,7 +225,7 @@ describe("Slang type equality", () => {
 		expect(map1.equals(map2)).toEqual(true);
 	});
 
-	it("returns false in case of two maps", () => {
+	it("returns false in case of 2 maps with same type", () => {
 		const map1 = SlangType.newMap();
 		const map2 = SlangType.newMap();
 
@@ -235,7 +235,7 @@ describe("Slang type equality", () => {
 		expect(map1.equals(map2)).toEqual(false);
 	});
 
-	it("returns false in case of two maps", () => {
+	it("returns false in case of 2 maps with same entry name", () => {
 		const map1 = SlangType.newMap();
 		const map2 = SlangType.newMap();
 
@@ -245,7 +245,7 @@ describe("Slang type equality", () => {
 		expect(map1.equals(map2)).toEqual(false);
 	});
 
-	it("returns false in case of two maps", () => {
+	it("returns false in case of 2 maps with 3 entries", () => {
 		const map1 = SlangType.newMap();
 		const map2 = SlangType.newMap();
 
@@ -256,14 +256,14 @@ describe("Slang type equality", () => {
 		expect(map1.equals(map2)).toEqual(false);
 	});
 
-	it("returns true in case of two streams", () => {
+	it("returns true in case of 2 streams", () => {
 		const stream1 = SlangType.newStream(TypeIdentifier.Number);
 		const stream2 = SlangType.newStream(TypeIdentifier.Number);
 
 		expect(stream1.equals(stream2)).toEqual(true);
 	});
 
-	it("returns true in case of two streams", () => {
+	it("returns true in case of 2 stream streams", () => {
 		const stream1 = SlangType.newStream(TypeIdentifier.Stream);
 		const stream2 = SlangType.newStream(TypeIdentifier.Stream);
 
@@ -273,21 +273,21 @@ describe("Slang type equality", () => {
 		expect(stream1.equals(stream2)).toEqual(true);
 	});
 
-	it("returns false in case of two streams", () => {
+	it("returns false in case of 2 streams", () => {
 		const stream1 = SlangType.newStream(TypeIdentifier.Number);
 		const stream2 = SlangType.newStream(TypeIdentifier.Binary);
 
 		expect(stream1.equals(stream2)).toEqual(false);
 	});
 
-	it("returns true in case of two generics", () => {
+	it("returns true in case of 2 generics", () => {
 		const gen1 = SlangType.newGeneric("typeA");
 		const gen2 = SlangType.newGeneric("typeA");
 
 		expect(gen1.equals(gen2)).toEqual(true);
 	});
 
-	it("returns false in case of two generics", () => {
+	it("returns false in case of 2 generics", () => {
 		const gen1 = SlangType.newGeneric("typeA");
 		const gen2 = SlangType.newGeneric("typeB");
 
@@ -319,13 +319,6 @@ describe("Slang type type definition", () => {
 		const def = type.getTypeDef();
 
 		expect(def).toEqual({type: "stream", stream: {type: "number"}});
-	});
-
-	it("can be generated from generic", () => {
-		const type = SlangType.newGeneric("testType");
-		const def = type.getTypeDef();
-
-		expect(def).toEqual({type: "generic", generic: "testType"});
 	});
 
 	it("can be generated from generic", () => {
