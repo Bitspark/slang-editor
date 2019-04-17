@@ -10,6 +10,7 @@ import {canConnectTo} from "./utils/connection-check";
 import {Connections} from "./utils/connections";
 import {SlangSubject} from "./utils/events";
 import {GenericSpecifications} from "./utils/generics";
+import { BlueprintModel } from "../models/blueprint";
 
 export enum PortDirection {
 	In, // 0
@@ -144,7 +145,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		}
 		const mapSub = this.scanChildNode(GenericPortModel, (port) => port.getName() === name);
 		if (!mapSub) {
-			throw new Error(`map sub port '${name}' not found: '${this.getIdentity()}'`);
+			throw new Error(`map sub port '${name}' not found: '${this.getIdentity()}' in '${this.getAncestorNode(BlueprintModel)!.getDisplayName()}'`);
 		}
 		return mapSub;
 	}
