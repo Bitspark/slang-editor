@@ -1,4 +1,4 @@
-import m, {ClassComponent, CVnode, CVnodeDOM} from "mithril";
+import m, {ClassComponent, CVnode} from "mithril";
 
 import {Keypress, MithrilKeyboardEvent, MithrilMouseEvent} from "./events";
 
@@ -24,6 +24,7 @@ export class Container implements ClassComponent<any> {
 
 export class Floater implements ClassComponent<HasCloseAttrs> {
 
+	/*
 	public oncreate({attrs, dom}: CVnodeDOM<HasCloseAttrs>) {
 		const onclose = attrs.onclose;
 		if (!onclose) {
@@ -61,8 +62,8 @@ export class Floater implements ClassComponent<HasCloseAttrs> {
 
 		document.addEventListener("click", hndlClickOutside);
 		document.addEventListener("keyup", hndlKeyup);
-
 	}
+	*/
 
 	public view({children, attrs}: CVnode<any>) {
 		return m("", attrs, children);

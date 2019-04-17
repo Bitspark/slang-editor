@@ -18,6 +18,7 @@ export abstract class PaperView extends View {
 
 	protected readonly graph = new dia.Graph();
 	private positionChanged = new SlangSubjectTrigger("positionChanged");
+	private escapePressed = new SlangSubjectTrigger("keypressed-escape");
 	private readonly paper: dia.Paper;
 
 	private userInputMode: "scroll" | "hscroll" | "zoom/pan" | null = "scroll";
@@ -160,7 +161,17 @@ export abstract class PaperView extends View {
 		this.userInputMode = null;
 	}
 
+	public onEscapePressed(cb: () => void): void {
+		this.escapePressed.subscribe(cb);
+	}
+
 	protected redirectPaperEvents() {
+		document.addEventListener("keyup", (event: KeyboardEvent) => {
+			if (event.key === "Escape") {
+				this.escapePressed.next();
+			}
+		});
+
 		this.paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, x: number, y: number) => {
 			if (!this.handleMouseWheel(originalEvent as MouseWheelEvent, x, y)) {
 				originalEvent.preventDefault();

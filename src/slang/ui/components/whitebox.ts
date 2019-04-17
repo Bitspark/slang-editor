@@ -4,7 +4,7 @@ import m, {ClassComponent, CVnode} from "mithril";
 import {Styles} from "../../../styles/studio";
 import {GenericPortModel, PortModel} from "../../core/abstract/port";
 import {Connection} from "../../core/abstract/utils/connections";
-import {SlangSubject} from "../../core/abstract/utils/events";
+import {SlangBehaviorSubject, SlangSubject} from "../../core/abstract/utils/events";
 import {BlueprintInstance, BlueprintModel} from "../../core/models/blueprint";
 import {BlueprintDelegateModel} from "../../core/models/delegate";
 import {OperatorModel} from "../../core/models/operator";
@@ -17,10 +17,9 @@ import {BlackBoxComponent, OperatorBoxComponent} from "./blackbox";
 import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {ConnectionComponent} from "./connection";
 import {InputConsole, OutputConsole} from "./console";
-import {OperatorControl} from "./operator-control";
 import {PortGroupPosition} from "./port-group";
 import {Button} from "./toolkit/buttons";
-import {Box, Floater} from "./toolkit/toolkit";
+import {Box} from "./toolkit/toolkit";
 
 export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 60;
@@ -31,6 +30,7 @@ export class WhiteBoxComponent extends CellComponent {
 	private dblclicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("dblclicked");
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
+	private oprSelected = new SlangBehaviorSubject<OperatorBoxComponent | null>("operator-selected", null);
 	private readonly buttons: AttachableComponent;
 	private readonly input: AttachableComponent;
 	private readonly output: AttachableComponent;
@@ -38,7 +38,6 @@ export class WhiteBoxComponent extends CellComponent {
 	private readonly operators: BlackBoxComponent[] = [];
 	private readonly connections: ConnectionComponent[] = [];
 	private readonly portInfos: AttachableComponent[] = [];
-	private oprDashboard?: AttachableComponent;
 
 	private readonly ports = {
 		top: [] as IsolatedBlueprintPortComponent[],
@@ -63,6 +62,19 @@ export class WhiteBoxComponent extends CellComponent {
 		this.paperView.getPaper().on("cell:pointerdown", () => {
 			this.clearPortInfos();
 		});
+
+		const hndlUnselect = () => {
+			const oprComp = this.oprSelected.getValue();
+			if (oprComp) {
+				oprComp.unselect();
+			}
+		};
+
+		this.paperView.getPaper().on("blank:pointerclick", hndlUnselect);
+
+		this.onClick(hndlUnselect);
+
+		this.paperView.onEscapePressed(hndlUnselect);
 
 		this.shape.on("pointerclick",
 			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
@@ -287,16 +299,23 @@ export class WhiteBoxComponent extends CellComponent {
 		});
 	}
 
-	public onClick(cb: (event: MouseEvent, x: number, y: number) => void) {
+	public onClick(cb: (event: MouseEvent, x: number, y: number) => void): this {
 		this.clicked.subscribe(({event, x, y}) => {
 			cb(event, x, y);
 		});
+		return this;
 	}
 
-	public onDblClick(cb: (event: MouseEvent, x: number, y: number) => void) {
+	public onDblClick(cb: (event: MouseEvent, x: number, y: number) => void): this {
 		this.dblclicked.subscribe(({event, x, y}) => {
 			cb(event, x, y);
 		});
+		return this;
+	}
+
+	public onSelected(cb: (comp: OperatorBoxComponent | null) => void): this {
+		this.oprSelected.subscribe(cb);
+		return this;
 	}
 
 	public onPortMouseEnter(cb: (port: PortModel, x: number, y: number) => void) {
@@ -312,6 +331,7 @@ export class WhiteBoxComponent extends CellComponent {
 	}
 
 	private subscribe() {
+
 		this.blueprint.subscribeChildCreated(OperatorModel, (operator) => {
 			const opComp = this.addOperator(operator);
 			this.fitOuter(true);
@@ -451,7 +471,6 @@ export class WhiteBoxComponent extends CellComponent {
 
 			}
 		});
-
 	}
 
 	private createPort(port: BlueprintPortModel, owner: BlueprintModel | BlueprintDelegateModel, pos: PortGroupPosition): IsolatedBlueprintPortComponent {
@@ -580,39 +599,21 @@ export class WhiteBoxComponent extends CellComponent {
 		this.connections.push(connectionComponent);
 	}
 
-	private addOperator(operator: OperatorModel): OperatorBoxComponent {
-		const operatorComp = this.paperView.getFactory().createOperatorComponent(this.paperView, operator);
-		this.operators.push(operatorComp);
-		this.attachPortInfo(operatorComp);
+	private addOperator(opr: OperatorModel): OperatorBoxComponent {
+		const oprComp = this.paperView.getFactory().createOperatorComponent(this.paperView, opr);
+		this.operators.push(oprComp);
+		this.attachPortInfo(oprComp);
 
 		if (!this.paperView.isReadOnly) {
-			operatorComp.onClick(() => {
-				this.destroyOperatorDashboard();
-				const that = this;
-
-				this.oprDashboard = this
-					.createComponent({x: 0, y: 0, align: "tl"})
-					.attachTo(operatorComp.getShape(), "tr")
-					.mount({
-						view: () => m(Floater, {
-								onclose: () => {
-									that.destroyOperatorDashboard();
-								},
-							},
-							m(OperatorControl, {
-								operator,
-								view: this.paperView,
-								onclose: () => {
-									that.destroyOperatorDashboard();
-								},
-							}),
-						),
-					});
-				return true;
+			oprComp.onSelect((isSelected: boolean) => {
+				this.oprSelected.next(isSelected ? oprComp : null);
+				oprComp.cssClass({
+					"sl-is-selected": isSelected,
+				});
 			});
 		}
 
-		return operatorComp;
+		return oprComp;
 	}
 
 	private attachPortInfo(portOwnerComp: OperatorBoxComponent | IsolatedBlueprintPortComponent) {
@@ -661,13 +662,6 @@ export class WhiteBoxComponent extends CellComponent {
 		}
 	}
 
-	private destroyOperatorDashboard() {
-		if (!this.oprDashboard) {
-			return;
-		}
-		this.oprDashboard.destroy();
-		this.oprDashboard = undefined;
-	}
 }
 
 export interface Attrs {

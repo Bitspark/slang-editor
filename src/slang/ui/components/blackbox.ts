@@ -3,7 +3,7 @@ import {dia, g, shapes} from "jointjs";
 import {Styles} from "../../../styles/studio";
 import {BlackBox} from "../../core/abstract/blackbox";
 import {PortModel} from "../../core/abstract/port";
-import {SlangSubject} from "../../core/abstract/utils/events";
+import {SlangBehaviorSubject, SlangSubject} from "../../core/abstract/utils/events";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {OperatorModel} from "../../core/models/operator";
 import {XY} from "../../definitions/api";
@@ -89,10 +89,13 @@ export abstract class BlackBoxComponent extends CellComponent {
 
 	private clicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("clicked");
 	private dblclicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("dblclicked");
+	private selected = new SlangBehaviorSubject<boolean>("selected", false);
 
 	protected constructor(paperView: PaperView, private readonly createGhostPorts: boolean) {
 		super(paperView, {x: 0, y: 0});
 	}
+
+	public abstract getModel(): BlackBox;
 
 	public refresh(): void {
 		this.portGroups = this.createPortGroups();
@@ -107,11 +110,14 @@ export abstract class BlackBoxComponent extends CellComponent {
 		this.shape.on("pointerclick",
 			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
 				this.clicked.next({event, x, y});
+				this.select();
 			});
 		this.shape.on("pointerdblclick",
 			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
 				this.dblclicked.next({event, x, y});
+				this.select();
 			});
+
 		this.render();
 	}
 
@@ -119,16 +125,56 @@ export abstract class BlackBoxComponent extends CellComponent {
 		this.shape.translate(tx, ty);
 	}
 
-	public onClick(cb: (event: MouseEvent, x: number, y: number) => void) {
+	public onClick(cb: (e: MouseEvent, x: number, y: number) => void): this {
 		this.clicked.subscribe(({event, x, y}) => {
 			cb(event, x, y);
 		});
+		return this;
 	}
 
-	public onDblClick(cb: (event: MouseEvent, x: number, y: number) => void) {
+	public onDblClick(cb: (e: MouseEvent, x: number, y: number) => void): this {
 		this.dblclicked.subscribe(({event, x, y}) => {
 			cb(event, x, y);
 		});
+		return this;
+	}
+
+	public onSelect(cb: (s: boolean) => void): this {
+		this.selected.subscribe((selected: boolean) => {
+			cb(selected);
+		});
+		return this;
+	}
+
+	public select() {
+		if (!this.selected.getValue()) {
+			this.selected.next(true);
+		}
+	}
+
+	public unselect() {
+		if (this.selected.getValue()) {
+			this.selected.next(false);
+		}
+	}
+
+	public cssClass(css: { [propertyName: string]: boolean }): void {
+		const rootClass = this.shape.attr("root/class");
+		const classList = rootClass ? (rootClass as string).replace("  ", " ").split(" ") : [];
+		const classObj = classList.reduce((result, curr) => {
+			result[curr] = true;
+			return result;
+		}, {} as { [propName: string]: boolean });
+
+		Object.keys(css).forEach((propName) => {
+			classObj[propName] = css[propName];
+		});
+
+		const classAttr = Object.keys(classObj).filter((propName) => classObj[propName]).reduce((result, propName) => {
+			return result + " " + propName;
+		}, "");
+
+		this.shape.attr("root/class", classAttr);
 	}
 
 	public onPortMouseEnter(cb: (port: PortModel, x: number, y: number) => void) {
@@ -199,6 +245,10 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 		this.attachPortEvents(this.blueprint);
 	}
 
+	public getModel(): BlueprintModel {
+		return this.blueprint;
+	}
+
 	public getShape(): BlackBoxShape {
 		return this.shape;
 	}
@@ -264,6 +314,10 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 		this.attachPortEvents(operator);
 	}
 
+	public getModel(): OperatorModel {
+		return this.operator;
+	}
+
 	protected createShape(): BlackBoxShape {
 		const blackBoxShapeType = this.paperView.getFactory().getBlackBoxShape(this.operator.getBlueprint());
 		const shape = new blackBoxShapeType({
@@ -278,6 +332,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 	protected createPortGroups(): PortGroupComponent[] {
 		return createPortGroups(this.operator);
 	}
+
 }
 
 export interface BlackBoxShapeAttrs {

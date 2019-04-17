@@ -23,23 +23,23 @@ $blackbox-color-label: $black;
 
 // BLACKBOX
 
-.sl-blackbox, .sl-blackbox-ghost {
-	&.sl-selected {
-		.sl-rectangle {
-			stroke: $primary;
-			stroke-width: 2px;
-		}
-
-	}
-
+sl-blackbox, .sl-blackbox-ghost {
 	.sl-rectangle {
 		fill: $blackbox-color-fill;
 		stroke: $black;
 		stroke-width: 1.5px;
+		paint-order: stroke;
 	}
 
 	.sl-label {
 		fill: $blackbox-color-label;
+	}
+}
+
+.sl-is-selected {
+	.sl-rectangle {
+		stroke-width: 4px;
+		stroke: $primary;
 	}
 }
 
@@ -155,6 +155,16 @@ $blackbox-color-label: $black;
 		animation-iteration-count: infinite;
 		animation-direction: alternate;
 		animation-timing-function: ease-in;
+	}
+}
+
+.tool-remove {
+	circle {
+		fill: $red;
+	}
+
+	path {
+		fill: $white;
 	}
 }
 

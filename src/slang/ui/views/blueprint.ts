@@ -1,4 +1,5 @@
 import {dia} from "jointjs";
+import m from "mithril";
 
 import {GenericPortModel, PortModel} from "../../core/abstract/port";
 import {GenericSpecifications} from "../../core/abstract/utils/generics";
@@ -7,9 +8,12 @@ import {BlueprintModel} from "../../core/models/blueprint";
 import {LandscapeModel} from "../../core/models/landscape";
 import {XY} from "../../definitions/api";
 import {TypeIdentifier} from "../../definitions/type";
-import {BlackBoxShape} from "../components/blackbox";
+import {AttachableComponent} from "../components/base";
+import {BlackBoxShape, OperatorBoxComponent} from "../components/blackbox";
 import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
+import {OperatorControl} from "../components/operator-control";
+import {Floater} from "../components/toolkit/toolkit";
 import {WhiteBoxComponent} from "../components/whitebox";
 import {ViewFrame} from "../frame";
 
@@ -19,6 +23,7 @@ export class BlueprintView extends PaperView {
 	private readonly whiteBox: WhiteBoxComponent;
 	private readonly landscape: LandscapeModel;
 	private blueprintSelect: BlueprintSelectComponent | null = null;
+	private oprCtrl: AttachableComponent | null = null;
 
 	constructor(frame: ViewFrame, private blueprint: BlueprintModel, args: PaperViewArgs) {
 		super(frame, args);
@@ -119,6 +124,7 @@ export class BlueprintView extends PaperView {
 
 			sourcePort.disconnectTo(destinationPort);
 		});
+
 		return paper;
 	}
 
@@ -143,6 +149,36 @@ export class BlueprintView extends PaperView {
 				this.blueprintSelect.destroy();
 				this.blueprintSelect = null;
 			}
+		});
+
+		this.whiteBox.onSelected((oprComp: OperatorBoxComponent | null) => {
+			this.destroyOperatorDashboard();
+
+			if (!oprComp) {
+				return;
+			}
+
+			const that = this;
+
+			this.oprCtrl = this.whiteBox
+				.createComponent({x: 0, y: 0, align: "tl"})
+				.attachTo(oprComp.getShape(), "tr")
+				.mount({
+					view: () => m(Floater, {
+							onclose: () => {
+								that.destroyOperatorDashboard();
+							},
+						},
+						m(OperatorControl, {
+							operator: oprComp.getModel(),
+							view: this,
+							onclose: () => {
+								that.destroyOperatorDashboard();
+							},
+						}),
+					),
+				});
+			return true;
 		});
 	}
 
@@ -178,6 +214,14 @@ export class BlueprintView extends PaperView {
 
 		const valueOperator = this.blueprint.createOperator(null, valueBlueprint, properties, generics, {position: xy});
 		valueOperator.getPortOut()!.connect(targetPort, false);
+	}
+
+	private destroyOperatorDashboard() {
+		if (!this.oprCtrl) {
+			return;
+		}
+		this.oprCtrl.destroy();
+		this.oprCtrl = null;
 	}
 }
 
