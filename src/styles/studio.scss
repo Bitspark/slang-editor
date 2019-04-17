@@ -24,6 +24,13 @@ $blackbox-color-label: $black;
 // BLACKBOX
 
 sl-blackbox, .sl-blackbox-ghost {
+	&.sl-is-selected {
+		.sl-rectangle {
+			stroke-width: 4px;
+			stroke: $primary;
+		}
+	}
+
 	.sl-rectangle {
 		fill: $blackbox-color-fill;
 		stroke: $black;
@@ -33,13 +40,6 @@ sl-blackbox, .sl-blackbox-ghost {
 
 	.sl-label {
 		fill: $blackbox-color-label;
-	}
-}
-
-.sl-is-selected {
-	.sl-rectangle {
-		stroke-width: 4px;
-		stroke: $primary;
 	}
 }
 
@@ -125,6 +125,45 @@ sl-blackbox, .sl-blackbox-ghost {
 	&.sl-type-ghost {
 		stroke: $type-color-ghost;
 		fill: $type-color-ghost;
+	}
+}
+
+.sl-connection {
+	vector-effect: none;
+	fill: none;
+	stroke-opacity: 1;
+
+	&.sl-type-number {
+		stroke: $type-color-number;
+	}
+
+	&.sl-type-string {
+		stroke: $type-color-string;
+	}
+
+	&.sl-type-boolean {
+		stroke: $type-color-boolean;
+	}
+
+	&.sl-type-binary {
+		stroke: $type-color-binary;
+	}
+
+	&.sl-type-primitive {
+		stroke: $type-color-primitive;
+	}
+
+	&.sl-type-trigger {
+		stroke: $type-color-trigger;
+	}
+
+	&.sl-type-generic {
+		stroke: $type-color-generic;
+	}
+
+	&.sl-type-ghost {
+		stroke: $type-color-ghost;
+		stroke-opacity: 0.3;
 	}
 }
 

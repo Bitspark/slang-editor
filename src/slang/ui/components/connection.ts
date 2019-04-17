@@ -10,6 +10,7 @@ import {BlueprintModel} from "../../core/models/blueprint";
 import {TypeIdentifier} from "../../definitions/type";
 import {slangConnector} from "../link/connector";
 import {slangRouter} from "../link/router";
+import {tid2css} from "../utils";
 import {PaperView} from "../views/paper-view";
 
 import {CellComponent} from "./base";
@@ -93,16 +94,19 @@ export class ConnectionComponent extends CellComponent {
 		const stream = sourcePort.getStreamPort().getStreamType();
 		const lines = stream ? stream.getStreamDepth() : 1;
 
+		const cssClasses = ["sl-connection"];
+
 		link.connector(slangConnector(sourcePort, destinationPort, lines));
 		if (destinationPort && destinationPort.getTypeIdentifier() === TypeIdentifier.Trigger) {
-			link.attr(".connection/stroke", Styles.Connection.OrdinaryConnection.stroke(TypeIdentifier.Trigger));
+			cssClasses.push(tid2css(TypeIdentifier.Trigger));
 		} else if (sourcePort.isGenericLike() && !sourcePort.getType().isElementaryPort()) {
-			link.attr(".connection/stroke", Styles.Connection.OrdinaryConnection.stroke("ghost"));
+			cssClasses.push(tid2css("ghost"));
 		} else {
-			link.attr(".connection/stroke", Styles.Connection.OrdinaryConnection.stroke(sourcePort.getTypeIdentifier()));
+			cssClasses.push(tid2css(sourcePort.getTypeIdentifier()));
 		}
+
+		link.attr(".connection/class", cssClasses.join(" "));
 		link.attr(".connection/stroke-width", lines === 1 ? 2 : 1);
-		link.attr(".connection/vector-effect", Styles.Connection.OrdinaryConnection.vectorEffect);
 
 		if (!stream) {
 			return;
@@ -148,6 +152,7 @@ export class ConnectionComponent extends CellComponent {
 				return Math.sqrt(t);
 			},
 		});
+
 		this.refresh();
 
 		[[connection.source, connection.destination], [connection.destination, connection.source]].forEach(([port, other]) => {
@@ -167,6 +172,7 @@ export class ConnectionComponent extends CellComponent {
 	}
 
 	public refresh(): void {
+
 		if (!this.getShape().graph) {
 			this.render();
 		}

@@ -10,6 +10,7 @@ import {BlueprintDelegateModel} from "../../core/models/delegate";
 import {OperatorModel} from "../../core/models/operator";
 import {BlueprintPortModel} from "../../core/models/port";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
+import {tid2css} from "../utils";
 import {PaperView} from "../views/paper-view";
 
 import {AttachableComponent, CellComponent} from "./base";
@@ -26,8 +27,6 @@ export class WhiteBoxComponent extends CellComponent {
 
 	protected readonly shape: WhiteBoxComponent.Rect;
 
-	private clicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("clicked");
-	private dblclicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("dblclicked");
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
 	private oprSelected = new SlangBehaviorSubject<OperatorBoxComponent | null>("operator-selected", null);
@@ -70,20 +69,12 @@ export class WhiteBoxComponent extends CellComponent {
 			}
 		};
 
-		this.paperView.getPaper().on("blank:pointerclick", hndlUnselect);
+		const paper = this.paperView.getPaper();
+		paper.on("blank:pointerclick", hndlUnselect);
 
 		this.onClick(hndlUnselect);
 
 		this.paperView.onEscapePressed(hndlUnselect);
-
-		this.shape.on("pointerclick",
-			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
-				this.clicked.next({event, x, y});
-			});
-		this.shape.on("pointerdblclick",
-			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
-				this.dblclicked.next({event, x, y});
-			});
 
 		this.render();
 		this.centerizeOuter();
@@ -297,20 +288,6 @@ export class WhiteBoxComponent extends CellComponent {
 				port.transition("position/y", targetPosition.y);
 			}
 		});
-	}
-
-	public onClick(cb: (event: MouseEvent, x: number, y: number) => void): this {
-		this.clicked.subscribe(({event, x, y}) => {
-			cb(event, x, y);
-		});
-		return this;
-	}
-
-	public onDblClick(cb: (event: MouseEvent, x: number, y: number) => void): this {
-		this.dblclicked.subscribe(({event, x, y}) => {
-			cb(event, x, y);
-		});
-		return this;
 	}
 
 	public onSelected(cb: (comp: OperatorBoxComponent | null) => void): this {
@@ -606,6 +583,10 @@ export class WhiteBoxComponent extends CellComponent {
 
 		if (!this.paperView.isReadOnly) {
 			oprComp.onSelect((isSelected: boolean) => {
+				const prev = this.oprSelected.getValue();
+				if (prev) {
+					prev.unselect();
+				}
 				this.oprSelected.next(isSelected ? oprComp : null);
 				oprComp.cssClass({
 					"sl-is-selected": isSelected,
@@ -676,13 +657,13 @@ class PortInfo implements ClassComponent<Attrs> {
 
 	public view({attrs}: CVnode<Attrs>) {
 		const port = attrs.port;
-		const portType = TypeIdentifier[port.getTypeIdentifier()].toLowerCase();
+		const tid = port.getTypeIdentifier();
 
 		return m(".sl-port-info",
 			m(".sl-port-type", {
-					class: `sl-type-${portType}`,
+					class: tid2css(tid),
 				},
-				portType),
+				TypeIdentifier[tid]),
 			m(".sl-port-name", port.getName()),
 		);
 	}

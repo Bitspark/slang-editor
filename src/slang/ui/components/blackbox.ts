@@ -3,7 +3,7 @@ import {dia, g, shapes} from "jointjs";
 import {Styles} from "../../../styles/studio";
 import {BlackBox} from "../../core/abstract/blackbox";
 import {PortModel} from "../../core/abstract/port";
-import {SlangBehaviorSubject, SlangSubject} from "../../core/abstract/utils/events";
+import {SlangSubject} from "../../core/abstract/utils/events";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {OperatorModel} from "../../core/models/operator";
 import {XY} from "../../definitions/api";
@@ -87,10 +87,6 @@ export abstract class BlackBoxComponent extends CellComponent {
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
 
-	private clicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("clicked");
-	private dblclicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("dblclicked");
-	private selected = new SlangBehaviorSubject<boolean>("selected", false);
-
 	protected constructor(paperView: PaperView, private readonly createGhostPorts: boolean) {
 		super(paperView, {x: 0, y: 0});
 	}
@@ -107,55 +103,11 @@ export abstract class BlackBoxComponent extends CellComponent {
 			group.setParent(this.shape, this.createGhostPorts);
 		});
 
-		this.shape.on("pointerclick",
-			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
-				this.clicked.next({event, x, y});
-				this.select();
-			});
-		this.shape.on("pointerdblclick",
-			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
-				this.dblclicked.next({event, x, y});
-				this.select();
-			});
-
 		this.render();
 	}
 
 	public translate(tx: number, ty: number) {
 		this.shape.translate(tx, ty);
-	}
-
-	public onClick(cb: (e: MouseEvent, x: number, y: number) => void): this {
-		this.clicked.subscribe(({event, x, y}) => {
-			cb(event, x, y);
-		});
-		return this;
-	}
-
-	public onDblClick(cb: (e: MouseEvent, x: number, y: number) => void): this {
-		this.dblclicked.subscribe(({event, x, y}) => {
-			cb(event, x, y);
-		});
-		return this;
-	}
-
-	public onSelect(cb: (s: boolean) => void): this {
-		this.selected.subscribe((selected: boolean) => {
-			cb(selected);
-		});
-		return this;
-	}
-
-	public select() {
-		if (!this.selected.getValue()) {
-			this.selected.next(true);
-		}
-	}
-
-	public unselect() {
-		if (this.selected.getValue()) {
-			this.selected.next(false);
-		}
 	}
 
 	public cssClass(css: { [propertyName: string]: boolean }): void {
