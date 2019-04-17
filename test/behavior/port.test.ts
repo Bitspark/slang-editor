@@ -60,6 +60,9 @@ describe("A port", () => {
 
 		const generatedPortOut = opG2G.getPortOut()!.getMapSubs().next().value;
 
+		opS2S1.getPortOut()!.connect(opG2G.getPortIn()!, true);
+		expect(Array.from(opG2G.getPortIn()!.getMapSubs()).length).toEqual(2);
+
 		generatedPortOut.connect(opS2S2.getPortIn()!, true);
 
 		opS2S1.getPortOut()!.disconnectAll();
