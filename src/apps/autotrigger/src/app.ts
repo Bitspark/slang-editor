@@ -34,6 +34,9 @@ export class AutoTriggerApp extends SlangApp {
 				return;
 			}
 			const subscription = port.getStreamPort().subscribeStreamTypeChanged((streamType) => {
+				if (port.isDestroying) {
+					return;
+				}
 				if (!streamType) {
 					return;
 				}
@@ -49,6 +52,9 @@ export class AutoTriggerApp extends SlangApp {
 				} catch (e) {
 					console.error(e);
 				}
+			});
+			port.subscribeDestroyed(() => {
+				subscription.unsubscribe();
 			});
 			port.subscribeDisconnected(() => {
 				subscription.unsubscribe();
