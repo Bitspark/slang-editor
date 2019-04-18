@@ -176,15 +176,15 @@ function cycleCompatibleTo(source: PortModel, destination: PortModel): boolean {
 }
 
 function streamsGenericLikeCompatible(portA: PortModel, portB: PortModel): boolean {
-	if (portA.isGenericLike()) {
-		return streamsGenericLikeCompatibleTo(portB.getStreamPort().getStreamType(), portA.getStreamPort().getStreamType());
+	let [genericPort, otherPort] = [portA, portB];
+	if (!portA.isGenericLike()) {
+		[genericPort, otherPort] = [portB, portA];
 	}
-	return streamsGenericLikeCompatibleTo(portA.getStreamPort().getStreamType(), portB.getStreamPort().getStreamType());
-
+	return streamsGenericLikeCompatibleTo(otherPort.getStreamPort().getStreamType(), genericPort.getStreamPort().getStreamType(), genericPort.getMaxStreamDepth());
 }
 
-function streamsGenericLikeCompatibleTo(streamType: StreamType, genericStreamType: StreamType): boolean {
-	return genericStreamType.compatibleTo(streamType);
+function streamsGenericLikeCompatibleTo(streamType: StreamType, genericStreamType: StreamType, maxDepth: number): boolean {
+	return genericStreamType.compatibleTo(streamType, maxDepth);
 }
 
 export function canConnectTo(source: PortModel, destination: PortModel, createGenerics: boolean = true): boolean {

@@ -239,8 +239,9 @@ export class StreamType {
 		return -1;
 	}
 
-	public compatibleTo(other: StreamType): boolean {
-		return this.getStreamStep(other)[1] !== -1;
+	public compatibleTo(other: StreamType, maxDepth: number): boolean {
+		const depth = this.getStreamStep(other)[1];
+		return depth !== -1 && depth <= maxDepth;
 	}
 
 	private hasAncestor(stream: StreamType): boolean {

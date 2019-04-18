@@ -413,6 +413,14 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		return this.typeIdentifier === TypeIdentifier.Stream;
 	}
 
+	/**
+	 * Returns the maximum allowed stream depth.
+	 * For convert operators, the maximum allowed depth is 0.
+	 */
+	public getMaxStreamDepth(): number {
+		return Number.MAX_VALUE;
+	}
+
 	// Actions
 
 	public abstract isSource(): boolean;
@@ -442,12 +450,11 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		}
 	}
 
-	public canConnect(other: PortModel): boolean {
+	public canConnect(other: PortModel, createGenerics: boolean = true): boolean {
 		if (this.isSource()) {
-			return canConnectTo(this, other);
+			return canConnectTo(this, other, createGenerics);
 		}
-		return canConnectTo(other, this);
-
+		return canConnectTo(other, this, createGenerics);
 	}
 
 	public connect(other: PortModel, createGenerics: boolean) {
