@@ -90,7 +90,8 @@ describe("A connection", () => {
 
 		expect(op1).toBeTruthy();
 		expect(bp1.getPortIn()!.isConnectedWith(op1.getPortIn()!)).toEqual(true);
-		expect(op1.getPortOut()!.isConnectedWith(bp1.getPortOut()!)).toEqual(true);
+		expect(bp1.getPortIn()!.isConnectedWith(bp1.getPortOut()!.findMapSub("y"))).toEqual(true);
+		expect(op1.getPortOut()!.isConnectedWith(bp1.getPortOut()!.findMapSub("x"))).toEqual(true);
 	});
 
 	it("is parsed correctly for delegates", () => {

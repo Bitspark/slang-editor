@@ -13,9 +13,9 @@ module.exports = {
 			statements: 80,
 		},
 		"./src/slang/core/": {
-			functions: 79,
+			functions: 80,
 			branches: 82,
-			statements: 77,
+			statements: 79,
 		},
 	},
 	coveragePathIgnorePatterns: [

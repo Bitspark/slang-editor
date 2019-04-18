@@ -431,7 +431,15 @@
             "type": "string"
           },
           "out": {
-            "type": "string"
+            "type": "map",
+            "map": {
+              "x": {
+                "type": "string"
+              },
+              "y": {
+                "type": "string"
+              }
+            }
           }
         }
       },
@@ -442,10 +450,11 @@
       },
       "connections": {
         "(": [
-          "(a"
+          "(a",
+          ")y"
         ],
         "a)": [
-          ")"
+          ")x"
         ]
       }
     },
