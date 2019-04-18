@@ -388,15 +388,19 @@ export class SlangType {
 		return this.typeIdentifier;
 	}
 
-	public anyFixedSubStream(): boolean {
+	/**
+	 * Returns <code>true</code> iff this type contains at least one element that is fixed (i.e. that has not been
+	 * inferred).
+	 */
+	public hasAnyFixedSub(): boolean {
 		if (this.typeIdentifier === TypeIdentifier.Map) {
 			for (const sub of this.getMapSubs()) {
-				if (sub[1].anyFixedSubStream()) {
+				if (sub[1].hasAnyFixedSub()) {
 					return true;
 				}
 			}
 		} else if (this.typeIdentifier === TypeIdentifier.Stream) {
-			return this.getStreamSub().anyFixedSubStream();
+			return this.getStreamSub().hasAnyFixedSub();
 		} else if (!this.inferred) {
 			return true;
 		}
@@ -404,28 +408,32 @@ export class SlangType {
 		return false;
 	}
 
-	public getFixedParts(): SlangType {
+	/**
+	 * Returns a type which is part of this type but contains only fixed elements (i.e. elements that have not been
+	 * inferred).
+	 */
+	public getOnlyFixedSubs(): SlangType {
 		const type = new SlangType(null, this.typeIdentifier);
 		switch (this.typeIdentifier) {
 			case TypeIdentifier.Map:
 				for (const sub of this.getMapSubs()) {
-					if (!sub[1].anyFixedSubStream()) {
+					if (!sub[1].hasAnyFixedSub()) {
 						continue;
 					}
-					const subType = sub[1].getFixedParts();
+					const subType = sub[1].getOnlyFixedSubs();
 					if (!subType.isVoid()) {
 						type.addMapSub(sub[0], subType);
 					}
 				}
 				break;
 			case TypeIdentifier.Stream:
-				type.setStreamSub(this.getStreamSub().getFixedParts());
+				type.setStreamSub(this.getStreamSub().getOnlyFixedSubs());
 				break;
 			case TypeIdentifier.Generic:
 				type.setGenericIdentifier(this.getGenericIdentifier());
 				break;
 			default:
-				if (!this.anyFixedSubStream()) {
+				if (!this.hasAnyFixedSub()) {
 					return SlangType.newUnspecified();
 				}
 		}
