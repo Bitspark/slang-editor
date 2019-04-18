@@ -448,6 +448,46 @@
           ")"
         ]
       }
+    },
+    {
+      "id": "0e2cd15e-e471-4780-800f-2f27de018417",
+      "meta": {
+        "name": "Connections delegate"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "string"
+          },
+          "out": {
+            "type": "boolean"
+          }
+        }
+      },
+      "operators": {},
+      "delegates": {
+        "dlg1": {
+          "out": {
+            "type": "map",
+            "map": {
+              "a": {
+                "type": "string"
+              }
+            }
+          },
+          "in": {
+            "type": "boolean"
+          }
+        }
+      },
+      "connections": {
+        "(": [
+          ".dlg1)a"
+        ],
+        "(.dlg1": [
+          ")"
+        ]
+      }
     }
   ]
 }
