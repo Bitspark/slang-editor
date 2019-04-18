@@ -78,7 +78,7 @@ export class GenericSpecifications {
 		if (!portSet) {
 			return null;
 		}
-		let unifiedType = this.get(identifier).getManualParts();
+		let unifiedType = this.get(identifier).getFixedParts();
 		for (const registeredPort of portSet) {
 			unifiedType = unifiedType.union(registeredPort.getConnectedType());
 		}
