@@ -12,10 +12,10 @@ module.exports = {
 			branches: 81,
 			statements: 80,
 		},
-		"./src/slang/core/models": {
-			functions: 63,
-			branches: 73,
-			statements: 67,
+		"./src/slang/core/": {
+			functions: 80,
+			branches: 82,
+			statements: 79,
 		},
 	},
 	coveragePathIgnorePatterns: [

@@ -419,6 +419,84 @@
       },
       "operators": {},
       "connections": {}
+    },
+    {
+      "id": "8019ef19-94c1-46d4-9a34-6dcd4a5281a8",
+      "meta": {
+        "name": "Connections"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "string"
+          },
+          "out": {
+            "type": "map",
+            "map": {
+              "x": {
+                "type": "string"
+              },
+              "y": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "operators": {
+        "a": {
+          "operator": "ba24c37f-2b04-44b4-97ad-fd931c9ab77b"
+        }
+      },
+      "connections": {
+        "(": [
+          "(a",
+          ")y"
+        ],
+        "a)": [
+          ")x"
+        ]
+      }
+    },
+    {
+      "id": "0e2cd15e-e471-4780-800f-2f27de018417",
+      "meta": {
+        "name": "Connections delegate"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "string"
+          },
+          "out": {
+            "type": "boolean"
+          }
+        }
+      },
+      "operators": {},
+      "delegates": {
+        "dlg1": {
+          "out": {
+            "type": "map",
+            "map": {
+              "a": {
+                "type": "string"
+              }
+            }
+          },
+          "in": {
+            "type": "boolean"
+          }
+        }
+      },
+      "connections": {
+        "(": [
+          ".dlg1)a"
+        ],
+        "(.dlg1": [
+          ")"
+        ]
+      }
     }
   ]
 }
