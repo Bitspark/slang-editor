@@ -22,7 +22,7 @@ import {ViewFrame} from "../slang/ui/frame";
 
 let tutorialLoaded = false;
 let balance = 0;
-const totalBalance = 12;
+const totalBalance = 20;
 const magicOperator = "Magic box";
 
 function checkComplete() {
@@ -141,6 +141,86 @@ function registerTask6(appModel: AppModel, done: (subscription: Subscription) =>
 	});
 }
 
+function registerTask7(appModel: AppModel, done: (subscription: Subscription) => void) {
+	const subscription = new Subscription();
+	subscription.add(appModel.subscribeDescendantCreated(OperatorPortModel, (port) => {
+		if (!tutorialLoaded) {
+			return;
+		}
+		subscription.add(port.subscribeConnected(() => {
+			const owner = port.getOwner();
+			if (!(owner instanceof OperatorModel)) {
+				return;
+			}
+			if (owner.getBlueprint().name !== magicOperator) {
+				return;
+			}
+			const ports = owner.getDescendantNodes(OperatorPortModel);
+			let connected = 0;
+			let unconnected = 0;
+			for (const p of ports) {
+				if (!p.getType().isPrimitive()) {
+					continue;
+				}
+				if (p.isConnected()) {
+					connected++;
+				} else {
+					unconnected++;
+				}
+			}
+			const currentEl = document.getElementById("task-7-currently")!;
+			currentEl.innerHTML = connected.toString();
+			if (unconnected === 0 && connected > 0) {
+				done(subscription);
+			}
+		}));
+	}));
+}
+
+function findDepth(op: OperatorModel, direction: PortDirection): number {
+	const ports = op.getDescendantNodes(OperatorPortModel);
+	let max = 0;
+	for (const port of ports) {
+		if (port.getDirection() !== direction || !port.isConnected()) {
+			continue;
+		}
+		for (const other of port.getConnectedWith()) {
+			const owner = other.getOwner();
+			if (!(owner instanceof OperatorModel)) {
+				continue;
+			}
+			const depth = findDepth(owner, direction) + 1;
+			if (depth > max) {
+				max = depth;
+			}
+		}
+	}
+	return max;
+}
+
+function registerTask8(appModel: AppModel, done: (subscription: Subscription) => void) {
+	const subscription = new Subscription();
+	subscription.add(appModel.subscribeDescendantCreated(OperatorPortModel, (port) => {
+		if (!tutorialLoaded) {
+			return;
+		}
+		const owner = port.getOwner();
+		if (!(owner instanceof OperatorModel)) {
+			return;
+		}
+		const check = () => {
+			const pipelineLength = findDepth(owner, PortDirection.In) + findDepth(owner, PortDirection.Out) + 1;
+			const currentEl = document.getElementById("task-8-currently")!;
+			currentEl.innerHTML = pipelineLength.toString();
+			if (pipelineLength >= 5) {
+				done(subscription);
+			}
+		};
+		subscription.add(port.subscribeConnected(check));
+		subscription.add(port.subscribeDisconnected(check));
+	}));
+}
+
 function slangStudioTutorial(elStudio: HTMLElement): Promise<void> {
 	return new Promise<void>((resolve) => {
 		const appModel = AppModel.create("slang");
@@ -216,7 +296,7 @@ function slangStudioTutorial(elStudio: HTMLElement): Promise<void> {
 
 				const prefixes = ["Task ", "Simple task ", "Complex task ", "Pipeline ", "AI model ", "Function "];
 				const opNumber = 5;
-				const portNumber = 5;
+				const portNumber = 2;
 
 				prefixes.forEach((prefixe) => {
 					for (let i = 1; i <= opNumber; i++) {
@@ -238,8 +318,8 @@ function slangStudioTutorial(elStudio: HTMLElement): Promise<void> {
 					let numOutPorts = Math.ceil(Math.random() * portNumber);
 
 					if (name === magicOperator) {
-						numInPorts += 2;
-						numOutPorts += 2;
+						numInPorts = 2;
+						numOutPorts = 1;
 					}
 
 					for (let i = 0; i < numInPorts; i++) {
@@ -256,14 +336,22 @@ function slangStudioTutorial(elStudio: HTMLElement): Promise<void> {
 			});
 			registerTask6(appModel, (subscription) => {
 				subscription.unsubscribe();
-				checkDone("6", []);
+				checkDone("6", ["7", "8"]);
+			});
+			registerTask7(appModel, (subscription) => {
+				subscription.unsubscribe();
+				checkDone("7", []);
+			});
+			registerTask8(appModel, (subscription) => {
+				subscription.unsubscribe();
+				checkDone("8", []);
 			});
 
 			const mainLandscape = appModel.getChildNode(LandscapeModel)!;
 			const tutorialBlueprint = mainLandscape.createBlueprint({
 				uuid: uuidv4(),
 				type: BlueprintType.Local,
-				geometry: {size: {width: 400, height: 200}, port: {in: {position: 0}, out: {position: 0}}},
+				geometry: {size: {width: 800, height: 600}, port: {in: {position: 0}, out: {position: 0}}},
 				meta: {name: "Tutorial operator"},
 			});
 			tutorialBlueprint.open();
