@@ -164,6 +164,11 @@ export class SlangType {
 		}
 		return SlangType.new(TypeIdentifier.Stream).setStreamSub(SlangType.new(subTid));
 	}
+	
+	public static newRandomPrimitive(): SlangType {
+		const identifiers = [TypeIdentifier.Boolean, TypeIdentifier.Number, TypeIdentifier.String, TypeIdentifier.Binary, TypeIdentifier.Primitive];
+		return SlangType.new(identifiers[Math.floor(Math.random() * identifiers.length)]);
+	}
 
 	private readonly mapSubs: Map<string, SlangType> | undefined;
 	private genericIdentifier?: string;

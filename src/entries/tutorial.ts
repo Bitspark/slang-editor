@@ -1,14 +1,14 @@
-import uuidv4 from "uuid/v4";
-
-// tslint:disable-next-line
-import "../styles/tutorial.scss";
 // tslint:disable-next-line
 import "animate.css/animate.min.css";
-
 // tslint:disable-next-line
+import "../styles/tutorial.scss";
+
 import {Subscription} from "rxjs";
+import uuidv4 from "uuid/v4";
+
 import {OperatorDataApp} from "../apps/operators/app";
 import {SlangAspects} from "../slang/aspects";
+import {PortDirection} from "../slang/core/abstract/port";
 import {loadBlueprints} from "../slang/core/mapper";
 import {AppModel} from "../slang/core/models/app";
 import {BlueprintType} from "../slang/core/models/blueprint";
@@ -16,12 +16,14 @@ import {LandscapeModel} from "../slang/core/models/landscape";
 import {OperatorModel} from "../slang/core/models/operator";
 import {OperatorPortModel} from "../slang/core/models/port";
 import {BlueprintJson, BlueprintsJson} from "../slang/definitions/api";
+import {SlangType} from "../slang/definitions/type";
 import {Slang} from "../slang/slang";
 import {ViewFrame} from "../slang/ui/frame";
 
 let tutorialLoaded = false;
 let balance = 0;
-const totalBalance = 9;
+const totalBalance = 12;
+const magicOperator = "Magic box";
 
 function checkComplete() {
 	const completeEl = document.getElementById("sl-complete")!;
@@ -35,7 +37,7 @@ function setBalance(newBalance: number) {
 
 	const progressEl = document.getElementById("sl-balance-progress")!;
 	// tslint:disable-next-line
-	progressEl.setAttribute("value", (newBalance * 100 / 9).toString());
+	progressEl.setAttribute("value", (newBalance * 100 / totalBalance).toString());
 
 	if (newBalance === totalBalance) {
 		checkComplete();
@@ -128,6 +130,17 @@ function registerTask5(appModel: AppModel, done: (subscription: Subscription) =>
 	}));
 }
 
+function registerTask6(appModel: AppModel, done: (subscription: Subscription) => void) {
+	const subscription = appModel.subscribeDescendantCreated(OperatorModel, (op) => {
+		if (!tutorialLoaded) {
+			return;
+		}
+		if (op.getBlueprint().name === magicOperator) {
+			done(subscription);
+		}
+	});
+}
+
 function slangStudioTutorial(elStudio: HTMLElement): Promise<void> {
 	return new Promise<void>((resolve) => {
 		const appModel = AppModel.create("slang");
@@ -187,7 +200,63 @@ function slangStudioTutorial(elStudio: HTMLElement): Promise<void> {
 			});
 			registerTask5(appModel, (subscription) => {
 				subscription.unsubscribe();
-				checkDone("5", []);
+				checkDone("5", ["6"]);
+
+				const names = [
+					"Bitspark office",
+					magicOperator,
+					"Magic forest",
+					"Magician's suitcase",
+					"Small neural net",
+					"Email sender",
+					"Kai's operator",
+					"Taleh's operator",
+					"Julian's operator",
+				];
+
+				const prefixes = ["Task ", "Simple task ", "Complex task ", "Pipeline ", "AI model ", "Function "];
+				const opNumber = 5;
+				const portNumber = 5;
+
+				prefixes.forEach((prefixe) => {
+					for (let i = 1; i <= opNumber; i++) {
+						names.push(prefixe + i);
+					}
+				});
+
+				const landscapeModel = appModel.getChildNode(LandscapeModel)!;
+				names.forEach((name) => {
+					const bp = landscapeModel.createBlueprint({
+						uuid: uuidv4(),
+						type: BlueprintType.Library,
+						meta: {name},
+					});
+
+					const inType = SlangType.newMap();
+					const outType = SlangType.newMap();
+					let numInPorts = Math.ceil(Math.random() * portNumber);
+					let numOutPorts = Math.ceil(Math.random() * portNumber);
+
+					if (name === magicOperator) {
+						numInPorts += 2;
+						numOutPorts += 2;
+					}
+
+					for (let i = 0; i < numInPorts; i++) {
+						inType.addMapSub(i.toString(), SlangType.newRandomPrimitive());
+					}
+
+					for (let i = 0; i < numOutPorts; i++) {
+						outType.addMapSub(i.toString(), SlangType.newRandomPrimitive());
+					}
+
+					bp.createPort({direction: PortDirection.In, type: inType, name: "in"});
+					bp.createPort({direction: PortDirection.Out, type: outType, name: "out"});
+				});
+			});
+			registerTask6(appModel, (subscription) => {
+				subscription.unsubscribe();
+				checkDone("6", []);
 			});
 
 			const mainLandscape = appModel.getChildNode(LandscapeModel)!;
