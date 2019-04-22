@@ -63,4 +63,10 @@ input {
 	}
 }
 
-	@import "./studio";
+.title {
+	img {
+		height: 30px;
+	}
+}
+
+@import "./studio";

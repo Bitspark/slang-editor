@@ -10,7 +10,7 @@
     "start-documentation": "npm start -- --env.slangMode documentation --env.apiUrl http://localhost:5149",
     "build-documentation": "webpack --config webpack/webpack.config.prod.js --colors --env.slangMode documentation",
     "start-tutorial": "npm start -- --env.slangMode tutorial --env.apiUrl http://localhost:5149",
-    "build-tutorial": "webpack --config webpack/webpack.config.prod.js --colors --env.slangMode tutorial",
+    "build-tutorial": "webpack --config webpack/webpack.config.prod.js --colors --env.slangMode tutorial --env.baseHref ./",
     "lint-fix": "tslint --fix -p tsconfig.json -c tslint.json -t verbose",
     "lint": "tslint -p tsconfig.json -c tslint.json",
     "deps": "dependency-cruise --exclude \"^node_modules\" --validate .dependency-cruiser.json ./src/slang",

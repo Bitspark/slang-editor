@@ -95,7 +95,7 @@ module.exports = env => {
 							name: "[path][name].[ext]"
 						}
 					}
-				},
+				}
 			]
 		}
 	};
