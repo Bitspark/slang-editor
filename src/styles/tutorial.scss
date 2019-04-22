@@ -1,0 +1,66 @@
+@import "variables";
+
+html, body {
+	font-family: $font-family-default;
+	font-size: $font-size;
+	color: $black;
+	background: $white;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+}
+
+input {
+	&:focus {
+		outline: none;
+	}
+}
+
+#slang-studio {
+	width: 100%;
+	height: 600px;
+}
+
+#sl-balance-container {
+	display: inline-block;
+}
+
+.icon-container {
+	position: relative;
+}
+
+.icon-sub {
+	position: absolute;
+	bottom: -14px;
+	right: -14px;
+}
+
+.notification.sl-hidden {
+	display: none;
+}
+
+.sl-task {
+	&.sl-hidden {
+		display: none;
+	}
+	
+	&.sl-todo {
+		.sl-unchecked {
+		}
+
+		.sl-checked {
+			display: none;
+		}
+	}
+
+	&:not(.sl-todo) {
+		.sl-unchecked {
+			display: none;
+		}
+
+		.sl-checked {
+		}
+	}
+}
+
+	@import "./studio";

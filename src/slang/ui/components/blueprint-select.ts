@@ -134,6 +134,7 @@ export class BlueprintSelectComponent extends CellComponent {
 		this.blueprint = blueprintView.getBlueprint();
 		this.landscape = this.blueprint.getAncestorNode(LandscapeModel)!;
 		this.blueprints = Array.from(this.landscape.getChildNodes(BlueprintModel))
+			.filter((bp) => bp !== this.blueprint)
 			.sort((a: BlueprintModel, b: BlueprintModel) => a.name.localeCompare(b.name));
 		this.shape = this.placeGhostRect({x, y});
 		this.menu = this.createComponent({x: 0, y: 0, align: "tl"})

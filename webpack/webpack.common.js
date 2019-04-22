@@ -19,6 +19,11 @@ const configurations = [
 		"name": "documentation",
 		"html": "html/documentation.html",
 		"ts": "entries/documentation.ts"
+	},
+	{
+		"name": "tutorial",
+		"html": "html/tutorial.html",
+		"ts": "entries/tutorial.ts"
 	}
 ];
 

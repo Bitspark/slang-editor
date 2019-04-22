@@ -1,4 +1,5 @@
 import {SlangNodeSetBehaviorSubject, SlangSubjectTrigger} from "./utils/events";
+import {Subscription} from "rxjs";
 
 // tslint:disable-next-line
 type Type<T> = Function & { prototype: T };
@@ -169,19 +170,21 @@ export abstract class SlangNode {
 		});
 	}
 
-	public subscribeDescendantCreated<T extends SlangNode>(types: Types<T>, cb: (child: T) => void) {
-		this.children.subscribeAdded((child) => {
+	public subscribeDescendantCreated<T extends SlangNode>(types: Types<T>, cb: (child: T) => void): Subscription {
+		const subscription = new Subscription();
+		subscription.add(this.children.subscribeAdded((child) => {
 			for (const type of getTypes(types)) {
 				if (child instanceof type) {
 					cb(child as T);
 				}
 			}
-			child.subscribeDescendantCreated(types, cb);
-		});
+			subscription.add(child.subscribeDescendantCreated(types, cb));
+		}));
+		return subscription;
 	}
 
-	public subscribeDestroyed(cb: () => void): void {
-		this.destroyed.subscribe(cb);
+	public subscribeDestroyed(cb: () => void): Subscription {
+		return this.destroyed.subscribe(cb);
 	}
 
 	protected createChildNode<T extends SlangNode, A>(ctor: new(parent: this, args: A) => T, args: A, cb?: (child: T) => void): T {

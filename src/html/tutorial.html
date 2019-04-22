@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Slang</title>
+	<base href="<%= BASEHREF %>"/>
+</head>
+<body>
+
+<section class="section">
+	<div class="container">
+		<h1 class="title">SLANG Tutorial</h1>
+		<h2 class="subtitle">
+			Interactive tutorial to learn SLANG. Complete the objectives appearing below to finish it.
+		</h2>
+
+		<div id="sl-complete" class="notification is-success sl-hidden">
+			<i class="fa fa-award"></i>
+			Congratulations, you <strong>successfully completed</strong> the first tutorial!
+		</div>
+
+		<div class="box has-background-white-ter">
+			<progress id="sl-balance-progress" class="progress is-success" value="0" max="100"></progress>
+			Progress: <span id="sl-balance-container"><strong id="sl-balance">0</strong>/<strong>9</strong>&nbsp;<i class="fa fa-coins"></i></span>
+		</div>
+
+		<div class="box has-background-white-ter">
+			<div id="slang-studio"></div>
+		</div>
+
+		<div class="sl-task-list">
+			<h2 class="title">Objectives</h2>
+			
+			<div class="box has-background-white-ter sl-task sl-hidden sl-todo" data-task="5">
+				<article class="media">
+					<div class="media-left icon-container">
+					<span class="icon">
+						<i class="fas fa-trash fa-2x"></i>
+						<i class="icon-sub far fa-square fa-2x has-text-warning sl-unchecked"></i>
+						<i class="icon-sub fas fa-check-square fa-2x has-text-success sl-checked"></i>
+					</span>
+					</div>
+					<div class="media-content">
+						<div class="content">
+							<p>
+								<strong>Delete an operator</strong> <span class="tag is-primary is-normal">easy</span>
+								<br>
+								Click on an operator to open its properties dialog.
+								Then, click the trash bin to delete it.
+							</p>
+						</div>
+						<nav class="level">
+							<div class="level-left">
+								<div class="level-item" aria-label="reply">
+									+<strong class="sl-credits">2</strong>&nbsp;<i class="fa fa-coins"></i>
+								</div>
+							</div>
+						</nav>
+					</div>
+				</article>
+			</div>
+			
+			<div class="box has-background-white-ter sl-task sl-hidden sl-todo" data-task="4">
+				<article class="media">
+					<div class="media-left icon-container">
+					<span class="icon">
+						<i class="fas fa-unlink fa-2x"></i>
+						<i class="icon-sub far fa-square fa-2x has-text-warning sl-unchecked"></i>
+						<i class="icon-sub fas fa-check-square fa-2x has-text-success sl-checked"></i>
+					</span>
+					</div>
+					<div class="media-content">
+						<div class="content">
+							<p>
+								<strong>Disconnect two ports from each other</strong> <span class="tag is-primary is-normal">easy</span>
+								<br>
+								Hover over a connection and click the red button.
+							</p>
+						</div>
+						<nav class="level">
+							<div class="level-left">
+								<div class="level-item" aria-label="reply">
+									+<strong class="sl-credits">2</strong>&nbsp;<i class="fa fa-coins"></i>
+								</div>
+							</div>
+						</nav>
+					</div>
+				</article>
+			</div>
+			
+			<div class="box has-background-white-ter sl-task sl-hidden sl-todo" data-task="3">
+				<article class="media">
+					<div class="media-left icon-container">
+					<span class="icon">
+						<i class="fas fa-link fa-2x"></i>
+						<i class="icon-sub far fa-square fa-2x has-text-warning sl-unchecked"></i>
+						<i class="icon-sub fas fa-check-square fa-2x has-text-success sl-checked"></i>
+					</span>
+					</div>
+					<div class="media-content">
+						<div class="content">
+							<p>
+								<strong>Connect two ports</strong> <span class="tag is-primary is-normal">easy</span>
+								<br>
+								Drag a connection from the out-port of an operator to the in-port of another operator.
+							</p>
+						</div>
+						<nav class="level">
+							<div class="level-left">
+								<div class="level-item" aria-label="reply">
+									+<strong class="sl-credits">2</strong>&nbsp;<i class="fa fa-coins"></i>
+								</div>
+							</div>
+						</nav>
+					</div>
+				</article>
+			</div>
+
+			<div class="box has-background-white-ter sl-task sl-hidden sl-todo" data-task="2">
+				<article class="media">
+					<div class="media-left icon-container">
+					<span class="icon">
+						<i class="fas fa-box fa-2x"></i>
+						<i class="icon-sub far fa-square fa-2x has-text-warning sl-unchecked"></i>
+						<i class="icon-sub fas fa-check-square fa-2x has-text-success sl-checked"></i>
+					</span>
+					</div>
+					<div class="media-content">
+						<div class="content">
+							<p>
+								<strong>Add another operator</strong> <span class="tag is-light is-normal">trivial</span>
+								<br>
+								Add a second operator just as you did before, but choose a different one!
+							</p>
+						</div>
+						<nav class="level">
+							<div class="level-left">
+								<div class="level-item" aria-label="reply">
+									+<strong class="sl-credits">1</strong>&nbsp;<i class="fa fa-coins"></i>
+								</div>
+							</div>
+						</nav>
+					</div>
+				</article>
+			</div>
+
+			<div class="box has-background-white-ter sl-task sl-hidden sl-todo" data-task="1">
+				<article class="media">
+					<div class="media-left icon-container">
+					<span class="icon">
+						<i class="fas fa-box fa-2x"></i>
+						<i class="icon-sub far fa-square fa-2x has-text-warning sl-unchecked"></i>
+						<i class="icon-sub fas fa-check-square fa-2x has-text-success sl-checked"></i>
+					</span>
+					</div>
+					<div class="media-content">
+						<div class="content">
+							<p>
+								<strong>Add an operator</strong> <span class="tag is-primary is-normal">easy</span>
+								<br>
+								Too add an operator, double-click on the canvas above inside the black rectangular.
+								Then, select an item from the menu that opens to add it to where you clicked before.
+							</p>
+						</div>
+						<nav class="level">
+							<div class="level-left">
+								<div class="level-item" aria-label="reply">
+									+<strong class="sl-credits">2</strong>&nbsp;<i class="fa fa-coins"></i>
+								</div>
+							</div>
+						</nav>
+					</div>
+				</article>
+			</div>
+		</div>
+		
+	</div>
+</section>
+
+<footer class="footer">
+	<div class="content has-text-centered">
+		<p>
+			SLANG tutorial by Bitspark GmbH. All rights reserved.
+		</p>
+	</div>
+</footer>
+
+<script type="text/slang" data-operator="8b62495a-e482-4a3e-8020-0ab8a350ad2e" data-type="library">{"id":"8b62495a-e482-4a3e-8020-0ab8a350ad2e","services":{"main":{"in":{"type":"string"},"out":{"type":"number"}},"properties":{},"operators":{},"connections":{}},"meta":{"name":"Task A","icon":"","shortDescription":"","description":"","docUrl":"","tags":null}}</script>
+<script type="text/slang" data-operator="5df619e7-f8ab-44d9-b315-05fdcd52ee44" data-type="library">{"id":"5df619e7-f8ab-44d9-b315-05fdcd52ee44","services":{"main":{"in":{"type":"number"},"out":{"type":"string"}},"properties":{},"operators":{},"connections":{}},"meta":{"name":"Task B","icon":"","shortDescription":"","description":"","docUrl":"","tags":null}}</script>
+
+</body>
+</html>

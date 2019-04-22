@@ -485,8 +485,8 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		return this.connected.subscribe(cb);
 	}
 
-	public subscribeDisconnected(cb: (other: PortModel) => void): void {
-		this.disconnected.subscribe(cb);
+	public subscribeDisconnected(cb: (other: PortModel) => void): Subscription {
+		return this.disconnected.subscribe(cb);
 	}
 
 	public specifyGenericPort(generics: PortGenerics, other: PortModel): PortModel {
