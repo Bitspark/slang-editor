@@ -61,7 +61,11 @@ export class BlueprintView extends PaperView {
 					!portS.isConnected() &&
 					portS.getType().isPrimitive() &&
 					portS.getTypeIdentifier() !== TypeIdentifier.Trigger) {
-					that.createValueOperator(linkView.getEndAnchor("target"), portS);
+					try {
+						that.createValueOperator(linkView.getEndAnchor("target"), portS);
+					} catch (e) {
+						console.error(e);
+					}
 				}
 
 				return false;
@@ -170,7 +174,11 @@ export class BlueprintView extends PaperView {
 
 	private createValueOperator(xy: XY, targetPort: PortModel) {
 		// slang.data.Value
-		const valueBlueprint = this.landscape.findBlueprint("8b62495a-e482-4a3e-8020-0ab8a350ad2d")!;
+		const valueBlueprint = this.landscape.findBlueprint("8b62495a-e482-4a3e-8020-0ab8a350ad2d");
+
+		if (!valueBlueprint) {
+			throw new Error("value operator could not be found");
+		}
 
 		const generics = new GenericSpecifications(Array.from(valueBlueprint.getGenericIdentifiers()));
 		generics.specify("valueType", targetPort.getType());
