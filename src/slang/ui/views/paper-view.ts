@@ -71,6 +71,10 @@ export abstract class PaperView extends View {
 		return this.getFrame().getHTMLElement();
 	}
 
+	public onEscapePressed(cb: () => void): void {
+		this.escapePressed.subscribe(cb);
+	}
+
 	protected reset() {
 		this.paper.scale(1);
 		this.center();
@@ -159,10 +163,6 @@ export abstract class PaperView extends View {
 		}
 
 		this.userInputMode = null;
-	}
-
-	public onEscapePressed(cb: () => void): void {
-		this.escapePressed.subscribe(cb);
 	}
 
 	protected redirectPaperEvents() {

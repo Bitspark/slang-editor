@@ -90,7 +90,6 @@ export abstract class CellComponent extends Component {
 		const newcss = cssupdate(origCSS, css);
 		this.shape.removeAttr(this.cssAttr);
 		this.shape.attr(this.cssAttr, cssattr(newcss));
-		console.log(this.shape, this.shape.attr(".connection/class"));
 	}
 
 	public onClick(cb: (e: MouseEvent, x: number, y: number) => void): this {
