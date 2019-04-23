@@ -151,33 +151,35 @@ export class BlueprintView extends PaperView {
 			}
 		});
 
-		this.whiteBox.onSelected((oprComp: OperatorBoxComponent | null) => {
+		this.whiteBox.onElementSelected((selectedOne: OperatorBoxComponent | ConnectionComponent | null) => {
 			this.destroyOperatorDashboard();
 
-			if (!oprComp) {
+			if (!selectedOne) {
 				return;
 			}
 
 			const that = this;
 
-			this.oprCtrl = this.whiteBox
-				.createComponent({x: 0, y: 0, align: "tl"})
-				.attachTo(oprComp.getShape(), "tr")
-				.mount({
-					view: () => m(Floater, {
-							onclose: () => {
-								that.destroyOperatorDashboard();
+			if (selectedOne instanceof OperatorBoxComponent) {
+				this.oprCtrl = this.whiteBox
+					.createComponent({x: 0, y: 0, align: "tl"})
+					.attachTo(selectedOne.getShape(), "tr")
+					.mount({
+						view: () => m(Floater, {
+								onclose: () => {
+									that.destroyOperatorDashboard();
+								},
 							},
-						},
-						m(OperatorControl, {
-							operator: oprComp.getModel(),
-							view: this,
-							onclose: () => {
-								that.destroyOperatorDashboard();
-							},
-						}),
-					),
-				});
+							m(OperatorControl, {
+								operator: selectedOne.getModel(),
+								view: this,
+								onclose: () => {
+									that.destroyOperatorDashboard();
+								},
+							}),
+						),
+					});
+			}
 			return true;
 		});
 	}

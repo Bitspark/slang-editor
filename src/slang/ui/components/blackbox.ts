@@ -76,6 +76,7 @@ function createPortGroups(blackBox: BlackBox): PortGroupComponent[] {
 }
 
 export abstract class BlackBoxComponent extends CellComponent {
+	protected readonly cssAttr = "root/class";
 
 	public get bbox(): g.Rect {
 		return this.shape.getBBox();
@@ -108,25 +109,6 @@ export abstract class BlackBoxComponent extends CellComponent {
 
 	public translate(tx: number, ty: number) {
 		this.shape.translate(tx, ty);
-	}
-
-	public cssClass(css: { [propertyName: string]: boolean }): void {
-		const rootClass = this.shape.attr("root/class");
-		const classList = rootClass ? (rootClass as string).replace("  ", " ").split(" ") : [];
-		const classObj = classList.reduce((result, curr) => {
-			result[curr] = true;
-			return result;
-		}, {} as { [propName: string]: boolean });
-
-		Object.keys(css).forEach((propName) => {
-			classObj[propName] = css[propName];
-		});
-
-		const classAttr = Object.keys(classObj).filter((propName) => classObj[propName]).reduce((result, propName) => {
-			return result + " " + propName;
-		}, "");
-
-		this.shape.attr("root/class", classAttr);
 	}
 
 	public onPortMouseEnter(cb: (port: PortModel, x: number, y: number) => void) {

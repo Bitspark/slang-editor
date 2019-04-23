@@ -25,11 +25,12 @@ import {Box} from "./toolkit/toolkit";
 export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 60;
 
+	protected readonly cssAttr = "root/class";
 	protected readonly shape: WhiteBoxComponent.Rect;
 
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
-	private oprSelected = new SlangBehaviorSubject<OperatorBoxComponent | null>("operator-selected", null);
+	private elementSelected = new SlangBehaviorSubject<OperatorBoxComponent | ConnectionComponent | null>("whitebox-element-selected", null);
 	private readonly buttons: AttachableComponent;
 	private readonly input: AttachableComponent;
 	private readonly output: AttachableComponent;
@@ -62,22 +63,29 @@ export class WhiteBoxComponent extends CellComponent {
 			this.clearPortInfos();
 		});
 
-		const hndlUnselect = () => {
-			const oprComp = this.oprSelected.getValue();
-			if (oprComp) {
-				oprComp.unselect();
-			}
-		};
-
 		const paper = this.paperView.getPaper();
-		paper.on("blank:pointerclick", hndlUnselect);
+		const that = this;
+		paper.on("blank:pointerclick", () => {
+			that.unselect();
+		});
 
-		this.onClick(hndlUnselect);
+		this.onClick(() => {
+			that.unselect();
+		});
 
-		this.paperView.onEscapePressed(hndlUnselect);
+		this.paperView.onEscapePressed(() => {
+			that.unselect();
+		});
 
 		this.render();
 		this.centerizeOuter();
+	}
+
+	public unselect() {
+		const selectedOne = this.elementSelected.getValue();
+		if (selectedOne) {
+			selectedOne.unselect();
+		}
 	}
 
 	public autoLayout() {
@@ -290,8 +298,8 @@ export class WhiteBoxComponent extends CellComponent {
 		});
 	}
 
-	public onSelected(cb: (comp: OperatorBoxComponent | null) => void): this {
-		this.oprSelected.subscribe(cb);
+	public onElementSelected(cb: (comp: OperatorBoxComponent | ConnectionComponent | null) => void): this {
+		this.elementSelected.subscribe(cb);
 		return this;
 	}
 
@@ -572,8 +580,21 @@ export class WhiteBoxComponent extends CellComponent {
 	}
 
 	private addConnection(connection: Connection) {
-		const connectionComponent = new ConnectionComponent(this.paperView, connection);
-		this.connections.push(connectionComponent);
+		const connComp = new ConnectionComponent(this.paperView, connection);
+
+		if (!this.paperView.isReadOnly) {
+			connComp.onSelect((isSelected: boolean) => {
+				const prev = this.elementSelected.getValue();
+				if (prev) {
+					prev.unselect();
+				}
+				this.elementSelected.next(isSelected ? connComp : null);
+				connComp.css({
+					"sl-is-selected": isSelected,
+				});
+			});
+		}
+		this.connections.push(connComp);
 	}
 
 	private addOperator(opr: OperatorModel): OperatorBoxComponent {
@@ -583,12 +604,12 @@ export class WhiteBoxComponent extends CellComponent {
 
 		if (!this.paperView.isReadOnly) {
 			oprComp.onSelect((isSelected: boolean) => {
-				const prev = this.oprSelected.getValue();
+				const prev = this.elementSelected.getValue();
 				if (prev) {
 					prev.unselect();
 				}
-				this.oprSelected.next(isSelected ? oprComp : null);
-				oprComp.cssClass({
+				this.elementSelected.next(isSelected ? oprComp : null);
+				oprComp.css({
 					"sl-is-selected": isSelected,
 				});
 			});

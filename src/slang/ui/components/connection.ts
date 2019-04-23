@@ -23,7 +23,7 @@ const connectionLink = dia.Link.define("Connection", {
 		"</g>"].join(""),
 });
 
-const ghostConnectionLink = dia.Link.define("Connection", {
+const ghostConnectionLink = dia.Link.define("GhostConnection", {
 	router: slangRouter,
 }, {
 	toolMarkup: [
@@ -107,6 +107,7 @@ export class ConnectionComponent extends CellComponent {
 
 		link.attr(".connection/class", cssClasses.join(" "));
 		link.attr(".connection/stroke-width", lines === 1 ? 2 : 1);
+		link.attr(".connection-wrap/class", "sl-connection-wrap");
 
 		if (!stream) {
 			return;
@@ -119,6 +120,7 @@ export class ConnectionComponent extends CellComponent {
 		}
 	}
 
+	protected readonly cssAttr = ".connection-wrap/class";
 	protected shape: dia.Link;
 	private readonly id: string;
 
@@ -140,10 +142,14 @@ export class ConnectionComponent extends CellComponent {
 			attrs: {
 				".connection": {
 					strokeOpacity: Styles.Connection.GhostConnection.strokeOpacity,
+					cursor: "pointer",
 				},
-				".tool-remove": paperView.isReadOnly ? {
+				".connection-wrap": {
+					cursor: "pointer",
+				},
+				".link-tools": {
 					display: "none",
-				} : undefined,
+				},
 			},
 		} as any);
 		this.shape.transition("attrs/.connection/stroke-opacity", Styles.Connection.OrdinaryConnection.strokeOpacity, {
@@ -186,5 +192,4 @@ export class ConnectionComponent extends CellComponent {
 	public getConnection(): Connection {
 		return this.connection;
 	}
-
 }

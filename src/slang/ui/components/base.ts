@@ -3,6 +3,7 @@ import m from "mithril";
 
 import {SlangBehaviorSubject, SlangSubject} from "../../core/abstract/utils/events";
 import {XY} from "../../definitions/api";
+import {cssattr, cssobj, CSSType, cssupdate} from "../utils";
 import {PaperView} from "../views/paper-view";
 
 import {Container} from "./toolkit/toolkit";
@@ -35,6 +36,7 @@ abstract class Component {
 
 export abstract class CellComponent extends Component {
 	protected abstract readonly shape: dia.Cell;
+	protected abstract readonly cssAttr: string;
 	private components: Component[] = [];
 
 	private clicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("clicked");
@@ -81,6 +83,14 @@ export abstract class CellComponent extends Component {
 
 	public getShape(): dia.Cell {
 		return this.shape;
+	}
+
+	public css(css: CSSType): void {
+		const origCSS = cssobj(this.shape.attr(this.cssAttr));
+		const newcss = cssupdate(origCSS, css);
+		this.shape.removeAttr(this.cssAttr);
+		this.shape.attr(this.cssAttr, cssattr(newcss));
+		console.log(this.shape, this.shape.attr(".connection/class"));
 	}
 
 	public onClick(cb: (e: MouseEvent, x: number, y: number) => void): this {

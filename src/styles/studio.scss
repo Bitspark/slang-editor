@@ -23,7 +23,7 @@ $blackbox-color-label: $black;
 
 // BLACKBOX
 
-sl-blackbox, .sl-blackbox-ghost {
+.sl-blackbox, .sl-blackbox-ghost {
 	&.sl-is-selected {
 		.sl-rectangle {
 			stroke-width: 4px;
@@ -126,6 +126,28 @@ sl-blackbox, .sl-blackbox-ghost {
 		stroke: $type-color-ghost;
 		fill: $type-color-ghost;
 	}
+}
+
+.sl-connection-wrap {
+	fill: none;
+	stroke: $grey;
+	stroke-width: 10px;
+	stroke-opacity: .0;
+	stroke-linecap: round;
+
+	&:hover {
+		stroke-opacity: .3;
+	}
+
+	&.sl-is-selected {
+		stroke: $primary;
+		stroke-opacity: .2;
+
+		~ .link-tools {
+			display: initial;
+		}
+	}
+
 }
 
 .sl-connection {
