@@ -222,6 +222,55 @@ describe("A new blueprint", () => {
 		});
 	});
 
+	it("is mapped to JSON correctly for delegates", () => {
+		const bpJSON = blueprintModelToJson(landscapeModel.findBlueprint("0e2cd15e-e471-4780-800f-2f27de018417")!);
+		expect(bpJSON).toEqual({
+			id: "0e2cd15e-e471-4780-800f-2f27de018417",
+			meta: {name: "Connections delegate"},
+			geometry: {
+				size: {width: 240, height: 147},
+				port: {in: {position: 0}, out: {position: 0}},
+			},
+			operators: {},
+			services: {
+				main: {
+					in: {type: "string"},
+					geometry: {in: {position: 0}, out: {position: 0}},
+					out: {type: "boolean"},
+				},
+			},
+			delegates: {
+				dlg1: {
+					in: {type: "boolean"},
+					out: {type: "map", map: {a: {type: "string"}}},
+					geometry: {in: {position: 0}, out: {position: 0}},
+				},
+			},
+			properties: {},
+			connections: {"(": [".dlg1)a"], "(.dlg1": [")"]},
+		});
+	});
+
+	it("is mapped to JSON correctly for multiple connections", () => {
+		const bpJSON = blueprintModelToJson(landscapeModel.findBlueprint("8019ef19-94c1-46d4-9a34-6dcd4a5281a8")!);
+		expect(bpJSON).toEqual({
+			id: "8019ef19-94c1-46d4-9a34-6dcd4a5281a8",
+			meta: {name: "Connections"},
+			geometry: {size: {width: 240, height: 147}, port: {in: {position: 0}, out: {position: 0}}},
+			operators: {a: {operator: "ba24c37f-2b04-44b4-97ad-fd931c9ab77b", properties: {}, generics: {}}},
+			services: {
+				main: {
+					in: {type: "string"},
+					geometry: {in: {position: 0}, out: {position: 0}},
+					out: {type: "map", map: {x: {type: "string"}, y: {type: "string"}}},
+				},
+			},
+			delegates: {},
+			properties: {},
+			connections: {"(": ["(a", ")y"], "a)": [")x"]},
+		});
+	});
+
 	it("has port positions", () => {
 		const bp = landscapeModel.createBlueprint({
 			uuid: uuidv4(),

@@ -97,13 +97,7 @@ export namespace SlangTypeJson {
 		switch (a.type) {
 			case "map":
 				const aMap = a.map;
-
-				if (b.type !== "map") {
-					return false;
-				}
-
-				const bMap = b.map;
-
+				const bMap = (b as SlangTypeMapJson).map;
 				for (const propKey in aMap) {
 					if (!aMap.hasOwnProperty(propKey)) {
 						continue;
@@ -115,23 +109,25 @@ export namespace SlangTypeJson {
 						return false;
 					}
 				}
-				break;
+				for (const propKey in bMap) {
+					if (!bMap.hasOwnProperty(propKey)) {
+						continue;
+					}
+					if (!aMap.hasOwnProperty(propKey)) {
+						return false;
+					}
+				}
+				return true;
 
 			case "stream":
-				if (b.type !== "stream") {
-					return false;
-				}
-
-				if (!equals(a.stream, b.stream)) {
-					return false;
-				}
-				break;
+				return equals(a.stream, (b as SlangTypeStreamJson).stream);
 
 			case "generic":
-				return false;
-		}
+				return a.generic === (b as SlangTypeGenericJson).generic;
 
-		return true;
+			default:
+				return true;
+		}
 	}
 }
 
@@ -173,7 +169,7 @@ export class SlangType {
 	private genericIdentifier?: string;
 	private streamSub: SlangType | undefined;
 
-	public constructor(private parent: SlangType | null, private readonly typeIdentifier: TypeIdentifier) {
+	public constructor(private parent: SlangType | null, private readonly typeIdentifier: TypeIdentifier, private readonly inferred = false) {
 		if (this.typeIdentifier === TypeIdentifier.Map) {
 			this.mapSubs = new Map<string, SlangType>();
 		}
@@ -231,7 +227,7 @@ export class SlangType {
 		}
 
 		if (this.typeIdentifier === TypeIdentifier.Map) {
-			const newMap = new SlangType(this.parent, TypeIdentifier.Map);
+			const newMap = new SlangType(this.parent, TypeIdentifier.Map, this.inferred);
 			for (const [subName, sub1] of this.getMapSubs()) {
 				const sub2 = other.findMapSub(subName);
 				let newSub: SlangType;
@@ -252,8 +248,9 @@ export class SlangType {
 			}
 			return newMap;
 		}
+
 		if (this.typeIdentifier === TypeIdentifier.Stream) {
-			const newStream = new SlangType(this.parent, TypeIdentifier.Stream);
+			const newStream = new SlangType(this.parent, TypeIdentifier.Stream, this.inferred);
 			newStream.setStreamSub(this.getStreamSub().union(other.getStreamSub()));
 			return newStream;
 		}
@@ -298,7 +295,7 @@ export class SlangType {
 	}
 
 	public copy(): SlangType {
-		const typeCopy = new SlangType(this.parent, this.typeIdentifier);
+		const typeCopy = new SlangType(this.parent, this.typeIdentifier, this.inferred);
 		switch (this.typeIdentifier) {
 			case TypeIdentifier.Map:
 				for (const [subName, subType] of this.getMapSubs()) {
@@ -389,6 +386,58 @@ export class SlangType {
 
 	public getTypeIdentifier(): TypeIdentifier {
 		return this.typeIdentifier;
+	}
+
+	/**
+	 * Returns <code>true</code> iff this type contains at least one element that is fixed (i.e. that has not been
+	 * inferred).
+	 */
+	public hasAnyFixedSub(): boolean {
+		if (this.typeIdentifier === TypeIdentifier.Map) {
+			for (const sub of this.getMapSubs()) {
+				if (sub[1].hasAnyFixedSub()) {
+					return true;
+				}
+			}
+		} else if (this.typeIdentifier === TypeIdentifier.Stream) {
+			return this.getStreamSub().hasAnyFixedSub();
+		} else if (!this.inferred) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns a type which is part of this type but contains only fixed elements (i.e. elements that have not been
+	 * inferred).
+	 */
+	public getOnlyFixedSubs(): SlangType {
+		const type = new SlangType(null, this.typeIdentifier);
+		switch (this.typeIdentifier) {
+			case TypeIdentifier.Map:
+				for (const sub of this.getMapSubs()) {
+					if (!sub[1].hasAnyFixedSub()) {
+						continue;
+					}
+					const subType = sub[1].getOnlyFixedSubs();
+					if (!subType.isVoid()) {
+						type.addMapSub(sub[0], subType);
+					}
+				}
+				break;
+			case TypeIdentifier.Stream:
+				type.setStreamSub(this.getStreamSub().getOnlyFixedSubs());
+				break;
+			case TypeIdentifier.Generic:
+				type.setGenericIdentifier(this.getGenericIdentifier());
+				break;
+			default:
+				if (!this.hasAnyFixedSub()) {
+					return SlangType.newUnspecified();
+				}
+		}
+		return type;
 	}
 
 	public isElementaryPort(): boolean {

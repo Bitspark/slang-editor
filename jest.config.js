@@ -4,18 +4,18 @@ module.exports = {
 	coverageThreshold: {
 		"./src/slang/definitions/": {
 			functions: 100,
-			branches: 83,
-			statements: 83,
+			branches: 90,
+			statements: 86,
 		},
 		"./src/slang/core/abstract": {
 			functions: 85,
 			branches: 81,
 			statements: 80,
 		},
-		"./src/slang/core/models": {
-			functions: 63,
-			branches: 73,
-			statements: 67,
+		"./src/slang/core/": {
+			functions: 80,
+			branches: 82,
+			statements: 79,
 		},
 	},
 	coveragePathIgnorePatterns: [

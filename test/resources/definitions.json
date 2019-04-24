@@ -358,6 +358,145 @@
       },
       "operators": {},
       "connections": {}
+    },
+    {
+      "id": "605be7c4-b4df-41be-998f-82f7c23e518e",
+      "meta": {
+        "name": "StringStreamToString"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "stream",
+            "stream": {
+              "type": "string"
+            }
+          },
+          "out": {
+            "type": "string"
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
+    },
+    {
+      "id": "384a2731-745b-4a7f-9972-ac2f4c31cf93",
+      "meta": {
+        "name": "GenericToGeneric"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "generic",
+            "generic": "itemTypeIn"
+          },
+          "out": {
+            "type": "generic",
+            "generic": "itemTypeOut"
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
+    },
+    {
+      "id": "d1191456-3583-4eaf-8ec1-e486c3818c60",
+      "meta": {
+        "name": "Convert"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "generic",
+            "generic": "fromType"
+          },
+          "out": {
+            "type": "generic",
+            "generic": "toType"
+          }
+        }
+      },
+      "operators": {},
+      "connections": {}
+    },
+    {
+      "id": "8019ef19-94c1-46d4-9a34-6dcd4a5281a8",
+      "meta": {
+        "name": "Connections"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "string"
+          },
+          "out": {
+            "type": "map",
+            "map": {
+              "x": {
+                "type": "string"
+              },
+              "y": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "operators": {
+        "a": {
+          "operator": "ba24c37f-2b04-44b4-97ad-fd931c9ab77b"
+        }
+      },
+      "connections": {
+        "(": [
+          "(a",
+          ")y"
+        ],
+        "a)": [
+          ")x"
+        ]
+      }
+    },
+    {
+      "id": "0e2cd15e-e471-4780-800f-2f27de018417",
+      "meta": {
+        "name": "Connections delegate"
+      },
+      "services": {
+        "main": {
+          "in": {
+            "type": "string"
+          },
+          "out": {
+            "type": "boolean"
+          }
+        }
+      },
+      "operators": {},
+      "delegates": {
+        "dlg1": {
+          "out": {
+            "type": "map",
+            "map": {
+              "a": {
+                "type": "string"
+              }
+            }
+          },
+          "in": {
+            "type": "boolean"
+          }
+        }
+      },
+      "connections": {
+        "(": [
+          ".dlg1)a"
+        ],
+        "(.dlg1": [
+          ")"
+        ]
+      }
     }
   ]
 }

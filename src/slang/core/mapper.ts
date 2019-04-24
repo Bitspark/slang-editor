@@ -235,8 +235,7 @@ function createUnfinishedBlueprintModel(landscape: LandscapeModel, bpDef: Bluepr
 }
 
 function finishBlueprintModelsInstantiation(landscape: LandscapeModel, blueprintsJson: BlueprintsJson) {
-	const onlyBpWithOps = (bpjsonlist: BlueprintJson[]) => bpjsonlist.filter((bpjson) => bpjson.operators && Object.keys(bpjson.operators).length > 0);
-	const blueprintJsonList = onlyBpWithOps(blueprintsJson.library).concat(onlyBpWithOps(blueprintsJson.local));
+	const blueprintJsonList = blueprintsJson.library.concat(blueprintsJson.local);
 
 	// 2) Add Operators. Use previously defined Blueprints for assigning Operator.blueprint
 	blueprintJsonList.forEach((bpJson: BlueprintJson) => {
@@ -244,7 +243,7 @@ function finishBlueprintModelsInstantiation(landscape: LandscapeModel, blueprint
 		if (!outerBlueprint) {
 			return;
 		}
-		instantiateBlueprintOperators(landscape, outerBlueprint, bpJson.operators!);
+		instantiateBlueprintOperators(landscape, outerBlueprint, bpJson.operators || {});
 	});
 
 	// 3) Connect operator and blueprint ports

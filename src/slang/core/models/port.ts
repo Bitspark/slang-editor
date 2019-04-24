@@ -5,6 +5,8 @@ import {BlueprintFakeGeneric, BlueprintModel} from "./blueprint";
 import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
 import {OperatorModel} from "./operator";
 
+const CONVERT_UUID = "d1191456-3583-4eaf-8ec1-e486c3818c60";
+
 export class BlueprintPortModel extends GenericPortModel<BlueprintModel | BlueprintDelegateModel> {
 	public constructor(parent: BlueprintModel | BlueprintDelegateModel | BlueprintPortModel, args: PortModelArgs) {
 		let generics: PortGenerics | null = null;
@@ -21,6 +23,7 @@ export class BlueprintPortModel extends GenericPortModel<BlueprintModel | Bluepr
 	public isSource(): boolean {
 		return this.isDirectionIn();
 	}
+
 }
 
 export class OperatorPortModel extends GenericPortModel<OperatorModel | OperatorDelegateModel> {
@@ -52,7 +55,7 @@ export class OperatorPortModel extends GenericPortModel<OperatorModel | Operator
 
 		// TODO see #192
 		const owner = this.getAncestorNode(OperatorModel);
-		if (owner && owner.getBlueprint().uuid === "d1191456-3583-4eaf-8ec1-e486c3818c60") {
+		if (owner && owner.getBlueprint().uuid === CONVERT_UUID) {
 			if (this.typeIdentifier === TypeIdentifier.Unspecified) {
 				specifications.specify(identifier, other.getType());
 			}
@@ -60,4 +63,13 @@ export class OperatorPortModel extends GenericPortModel<OperatorModel | Operator
 		}
 		return super.specifyGenericPort(generics, other);
 	}
+
+	public getMaxStreamDepth(): number {
+		const owner = this.getAncestorNode(OperatorModel);
+		if (owner && owner.getBlueprint().uuid === CONVERT_UUID) {
+			return 0;
+		}
+		return Number.MAX_VALUE;
+	}
+
 }

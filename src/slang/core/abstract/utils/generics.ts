@@ -78,13 +78,9 @@ export class GenericSpecifications {
 		if (!portSet) {
 			return null;
 		}
-		let unifiedType: SlangType | null = null;
+		let unifiedType = this.get(identifier).getOnlyFixedSubs();
 		for (const registeredPort of portSet) {
-			if (!unifiedType) {
-				unifiedType = registeredPort.getConnectedType();
-			} else {
-				unifiedType = unifiedType.union(registeredPort.getConnectedType());
-			}
+			unifiedType = unifiedType.union(registeredPort.getConnectedType());
 		}
 		return unifiedType;
 	}

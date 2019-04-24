@@ -25,6 +25,11 @@ export abstract class SlangNode {
 	private children = new SlangNodeSetBehaviorSubject<SlangNode>("children", []);
 	private destroyed = new SlangSubjectTrigger("destroyed");
 
+	/**
+	 * True, if this node is being destroyed and is currently cleaning up stuff.
+	 */
+	private destroying = false;
+
 	protected constructor(private readonly parent: SlangNode | null) {
 	}
 
@@ -141,10 +146,15 @@ export abstract class SlangNode {
 	}
 
 	public destroy() {
+		this.destroying = true;
 		for (const child of this.getChildNodes(SlangNode)) {
 			child.destroy();
 		}
 		this.destroyed.next();
+	}
+
+	public get isDestroying(): boolean {
+		return this.destroying;
 	}
 
 	// Events

@@ -228,7 +228,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	}
 
 	public getType(): SlangType {
-		const type = new SlangType(null, this.typeIdentifier);
+		const type = new SlangType(null, this.typeIdentifier, true);
 		switch (this.typeIdentifier) {
 			case TypeIdentifier.Map:
 				for (const subPort of this.getMapSubs()) {
@@ -245,30 +245,30 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		return type;
 	}
 
-	public anySubstreamConnected(): boolean {
+	public anySubStreamConnected(): boolean {
 		if (this.connectedWith.length !== 0) {
 			return true;
 		}
 
 		if (this.typeIdentifier === TypeIdentifier.Map) {
 			for (const sub of this.getMapSubs()) {
-				if (sub.anySubstreamConnected()) {
+				if (sub.anySubStreamConnected()) {
 					return true;
 				}
 			}
 		} else if (this.typeIdentifier === TypeIdentifier.Stream) {
-			return this.getStreamSub().anySubstreamConnected();
+			return this.getStreamSub().anySubStreamConnected();
 		}
 
 		return false;
 	}
 
 	public getConnectedType(): SlangType {
-		const type = new SlangType(null, this.typeIdentifier);
+		const type = new SlangType(null, this.typeIdentifier, true);
 		switch (this.typeIdentifier) {
 			case TypeIdentifier.Map:
 				for (const subPort of this.getMapSubs()) {
-					if (!subPort.anySubstreamConnected()) {
+					if (!subPort.anySubStreamConnected()) {
 						continue;
 					}
 					const subType = subPort.getConnectedType();
@@ -284,8 +284,8 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				type.setGenericIdentifier(this.getGenericIdentifier());
 				break;
 			default:
-				if (!this.anySubstreamConnected()) {
-					return SlangType.newUnspecified();
+				if (!this.anySubStreamConnected()) {
+					return new SlangType(null, TypeIdentifier.Unspecified, true);
 				}
 		}
 		return type;
@@ -414,6 +414,14 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		return this.typeIdentifier === TypeIdentifier.Stream;
 	}
 
+	/**
+	 * Returns the maximum allowed stream depth.
+	 * For convert operators, the maximum allowed depth is 0.
+	 */
+	public getMaxStreamDepth(): number {
+		return Number.MAX_VALUE;
+	}
+
 	// Actions
 
 	public abstract isSource(): boolean;
@@ -431,24 +439,26 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		destination.disconnected.next(this);
 	}
 
-	public disconnectAll() {
+	public disconnectAll(): void {
+		// We need to make a copy of the array because we are manipulating this array in the process
+		const connectedWithCopy = Array.from(this.getConnectedWith());
+
 		if (this.isSource()) {
-			for (const destination of this.connectedWith) {
+			for (const destination of connectedWithCopy) {
 				this.disconnectTo(destination);
 			}
 		} else {
-			for (const source of this.connectedWith) {
+			for (const source of connectedWithCopy) {
 				source.disconnectTo(this);
 			}
 		}
 	}
 
-	public canConnect(other: PortModel): boolean {
+	public canConnect(other: PortModel, createGenerics: boolean = true): boolean {
 		if (this.isSource()) {
-			return canConnectTo(this, other);
+			return canConnectTo(this, other, createGenerics);
 		}
-		return canConnectTo(other, this);
-
+		return canConnectTo(other, this, createGenerics);
 	}
 
 	public connect(other: PortModel, createGenerics: boolean) {

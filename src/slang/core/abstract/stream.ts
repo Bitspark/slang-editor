@@ -239,8 +239,9 @@ export class StreamType {
 		return -1;
 	}
 
-	public compatibleTo(other: StreamType): boolean {
-		return this.getStreamStep(other)[1] !== -1;
+	public compatibleTo(other: StreamType, maxDepth: number): boolean {
+		const depth = this.getStreamStep(other)[1];
+		return depth !== -1 && depth <= maxDepth;
 	}
 
 	private hasAncestor(stream: StreamType): boolean {
@@ -439,18 +440,18 @@ export class StreamPort {
 			throw new Error(`cannot find suitable stream stack`);
 		}
 
-		let mapType: SlangType;
+		let type: SlangType;
 		if (this.port.getTypeIdentifier() !== TypeIdentifier.Map) {
-			mapType = new SlangType(null, TypeIdentifier.Map);
+			type = new SlangType(null, TypeIdentifier.Map);
 		} else {
-			mapType = this.port.getType();
+			type = this.port.getType();
 		}
 
 		const subName = `gen_${other.getName()}_${(new Date().getTime()) % maxRandomNumber}`;
 
 		if (nextStreamDepth === 0) {
-			mapType.addMapSub(subName, new SlangType(mapType, other.getTypeIdentifier()));
-			return {type: mapType, portId: [subName]};
+			type.addMapSub(subName, new SlangType(type, other.getTypeIdentifier(), true));
+			return {type, portId: [subName]};
 		}
 
 		if (this.port.getTypeIdentifier() !== TypeIdentifier.Map) {
@@ -474,18 +475,18 @@ export class StreamPort {
 			}
 
 			const {type: createdType, portId: createdPortId} = streamSub.createGenericType(other);
-			const streamType = new SlangType(mapType, TypeIdentifier.Stream);
+			const streamType = new SlangType(type, TypeIdentifier.Stream);
 
 			streamType.setStreamSub(createdType);
-			mapType.addMapSub(sub.getName(), streamType);
+			type.addMapSub(sub.getName(), streamType);
 			createdPortId.unshift("~");
 			createdPortId.unshift(sub.getName());
 
-			return {type: mapType, portId: createdPortId};
+			return {type, portId: createdPortId};
 		}
 
 		const portId: string[] = [];
-		let newMapType = mapType;
+		let newMapType = type;
 
 		for (let i = 0; i < nextStreamDepth; i++) {
 			const newStreamType = new SlangType(newMapType, TypeIdentifier.Stream);
@@ -498,9 +499,9 @@ export class StreamPort {
 			portId.push("~");
 		}
 
-		newMapType.addMapSub(subName, new SlangType(newMapType, other.getTypeIdentifier()));
+		newMapType.addMapSub(subName, new SlangType(newMapType, other.getTypeIdentifier(), true));
 		portId.push(subName);
-		return {portId, type: mapType};
+		return {portId, type};
 	}
 
 	private buildStreamType(): SlangBehaviorSubject<StreamType> {
