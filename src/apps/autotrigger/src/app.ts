@@ -24,7 +24,7 @@ export class AutoTriggerApp extends SlangApp {
 				}
 			}
 		} else {
-			console.error(`source port is of type ${sourcePort.getTypeIdentifier()} ${sourcePort.getType()} ${sourcePort.getType().isPrimitive()}`);
+			sourcePort.connect(triggerPort, false);
 		}
 	}
 
