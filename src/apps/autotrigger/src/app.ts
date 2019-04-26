@@ -6,25 +6,24 @@ import {TypeIdentifier} from "../../../slang/definitions/type";
 export class AutoTriggerApp extends SlangApp {
 
 	private static connectPorts(sourcePort: PortModel, triggerPort: PortModel) {
-		if (sourcePort.getType().isElementaryPort()) {
+		if (sourcePort.getTypeIdentifier() !== TypeIdentifier.Map) {
 			sourcePort.connect(triggerPort, false);
-		} else if (sourcePort.getTypeIdentifier() === TypeIdentifier.Map) {
-			for (const sub of sourcePort.getMapSubs()) {
-				if (sub.getTypeIdentifier() === TypeIdentifier.Trigger) {
-					sub.connect(triggerPort, false);
-					return;
-				}
+			return;
+		}
+
+		for (const sub of sourcePort.getMapSubs()) {
+			if (sub.getTypeIdentifier() === TypeIdentifier.Trigger) {
+				sub.connect(triggerPort, false);
+				return;
 			}
-			for (const sub of sourcePort.getMapSubs()) {
-				try {
-					AutoTriggerApp.connectPorts(sub, triggerPort);
-					return;
-				} catch (e) {
-					console.error(e);
-				}
+		}
+		for (const sub of sourcePort.getMapSubs()) {
+			try {
+				AutoTriggerApp.connectPorts(sub, triggerPort);
+				return;
+			} catch (e) {
+				console.error(e);
 			}
-		} else {
-			sourcePort.connect(triggerPort, false);
 		}
 	}
 
