@@ -13,9 +13,13 @@ import {Box, Tk} from "./toolkit/toolkit";
 
 export interface Attrs {
 	onSelect(bp: BlueprintModel): void;
+
 	onHover(bp?: BlueprintModel): void;
+
 	onFilter(filter: string): void;
+
 	onExit(): void;
+
 	onLoad(): BlueprintModel[];
 }
 
@@ -122,6 +126,7 @@ class BlueprintMenuComponent implements ClassComponent<Attrs> {
 }
 
 export class BlueprintSelectComponent extends CellComponent {
+	protected readonly cssAttr = "";
 	protected shape: BlackBoxShape;
 	private readonly blueprint: BlueprintModel;
 	private readonly landscape: LandscapeModel;

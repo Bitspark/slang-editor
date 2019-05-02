@@ -24,18 +24,18 @@ $blackbox-color-label: $black;
 // BLACKBOX
 
 .sl-blackbox, .sl-blackbox-ghost {
-	&.sl-selected {
+	&.sl-is-selected {
 		.sl-rectangle {
+			stroke-width: 4px;
 			stroke: $primary;
-			stroke-width: 2px;
 		}
-
 	}
 
 	.sl-rectangle {
 		fill: $blackbox-color-fill;
 		stroke: $black;
 		stroke-width: 1.5px;
+		paint-order: stroke;
 	}
 
 	.sl-label {
@@ -128,6 +128,67 @@ $blackbox-color-label: $black;
 	}
 }
 
+.sl-connection-wrap {
+	fill: none;
+	stroke: $grey;
+	stroke-width: 10px;
+	stroke-opacity: .0;
+	stroke-linecap: round;
+
+	&:hover {
+		stroke-opacity: .3;
+	}
+
+	&.sl-is-selected {
+		stroke: $primary;
+		stroke-opacity: .2;
+
+		~ .link-tools {
+			display: initial;
+		}
+	}
+
+}
+
+.sl-connection {
+	vector-effect: none;
+	fill: none;
+	stroke-opacity: 1;
+
+	&.sl-type-number {
+		stroke: $type-color-number;
+	}
+
+	&.sl-type-string {
+		stroke: $type-color-string;
+	}
+
+	&.sl-type-boolean {
+		stroke: $type-color-boolean;
+	}
+
+	&.sl-type-binary {
+		stroke: $type-color-binary;
+	}
+
+	&.sl-type-primitive {
+		stroke: $type-color-primitive;
+	}
+
+	&.sl-type-trigger {
+		stroke: $type-color-trigger;
+	}
+
+	&.sl-type-generic {
+		stroke: $type-color-generic;
+	}
+
+	&.sl-type-ghost {
+		stroke: $type-color-ghost;
+		stroke-opacity: 0.3;
+	}
+}
+
 // JOINT
 
 @keyframes port-pulse {
@@ -155,6 +216,16 @@ $blackbox-color-label: $black;
 		animation-iteration-count: infinite;
 		animation-direction: alternate;
 		animation-timing-function: ease-in;
+	}
+}
+
+.tool-remove {
+	circle {
+		fill: $red;
+	}
+
+	path {
+		fill: $white;
 	}
 }
 
