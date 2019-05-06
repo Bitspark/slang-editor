@@ -98,24 +98,10 @@ export interface BlueprintApiResponse {
 
 export class ApiService {
 
-	private static normalizeUrl(url: string): string {
-		let scheme = null;
-		let schemePath = url;
-
-		if (url.startsWith("//") || url.indexOf("://") > 0) {
-			[scheme, schemePath] = (url.startsWith("//")) ? ["", url] : url.split("://");
-			scheme = (scheme) ? scheme + ":" : "";
-		}
-		schemePath = schemePath.replace("//", "/");
-		schemePath = (schemePath.endsWith("/")) ? schemePath.slice(0, -1) : schemePath;
-
-		return (scheme) ? `${scheme}//${schemePath}` : schemePath;
-	}
-
 	private readonly url: string;
 
 	constructor(host: string) {
-		this.url = ApiService.normalizeUrl(host);
+		this.url = host;
 	}
 
 	public async getBlueprints(): Promise<BlueprintsJson> {
