@@ -1,4 +1,9 @@
 {
+	"include": [
+		"src/**/*",
+		"test/**/*",
+		"./jest.setup.ts"
+	],
 	"compilerOptions": {
 		"outDir": "./build/",
 		"strict": true,
@@ -14,6 +19,6 @@
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,
 		"diagnostics": true,
-		"resolveJsonModule": true
+		"resolveJsonModule": true,
 	}
 }

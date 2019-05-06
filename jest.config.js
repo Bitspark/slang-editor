@@ -1,5 +1,9 @@
 module.exports = {
 	preset: "ts-jest",
+	automock: false,
+	setupFiles: [
+		"./jest.setup.ts"
+	],
 	testEnvironment: "node",
 	coverageThreshold: {
 		"./src/slang/definitions/": {
