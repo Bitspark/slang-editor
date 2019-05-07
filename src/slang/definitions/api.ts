@@ -277,8 +277,6 @@ export class ApiService {
 		wsUrl.pathname = "/ws";
 		wsUrl.protocol = "ws://";
 
-		// This can actually take some time to
-		// determine if a connection can be made
 		const ws = new SocketService(wsUrl.href);
 
 		// If the instance does not yet have a websocket
@@ -292,10 +290,20 @@ export class ApiService {
 			this.conncected.next();
 		});
 
-		// When the wesocket gets disconnected
-		// we can signal it to reconnect and since
-		// the reconnect `subject` is `pipe`d with
-		// a delay we prevent flooding on disconnect.
+		// When the wesocket gets disconnected we signal it to reconnect and since the reconnect `subject` is `pipe`d with
+		// a delay, we prevent flooding on disconnect.
+		//
+		// *IMPORTANT*
+		// When we signal a reconnect the websocket tries connecting to the specified
+		// location if it does not succeed it triggers a WSEvent.CLOSE again which in turn
+		// triggers the next deplayed reconnect.
+		// Which is why we will see events occuring in the following order:
+		// - disconnected
+		// - reconnecting
+		// ...
+		// - disconnected
+		// - reconnecting
+		// Until it finally connects.
 		ws.onDisconnect().subscribe((_v) => {
 			this.disconncected.next();
 			this.reconnect.next();
