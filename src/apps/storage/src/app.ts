@@ -11,7 +11,7 @@ export class APIStorageApp extends SlangApp {
 
 	constructor(app: AppModel, aspect: SlangAspects, api: ApiService) {
 		super(app, aspect);
-		this.api = api
+		this.api = api;
 		this.subscribe();
 	}
 

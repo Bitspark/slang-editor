@@ -1,6 +1,7 @@
-import {BlueprintMeta} from "../core/models/blueprint";
 import {Observable, Subject} from "rxjs";
-import {delay} from "rxjs/operators"
+import {delay} from "rxjs/operators";
+
+import {BlueprintMeta} from "../core/models/blueprint";
 
 import {SlangTypeValue} from "./type";
 
@@ -98,50 +99,54 @@ export interface BlueprintApiResponse {
 	def: BlueprintJson;
 }
 export interface Message {
-    data?: any;
+		data?: any;
 }
 
-enum WSEvent {
-	CLOSE = 'close',
-	ERROR = 'error',
-	MESSAGE = 'message',
-	OPEN = 'open'
+const enum WSEvent {
+	CLOSE = "close",
+	ERROR = "error",
+	MESSAGE = "message",
+	OPEN = "open",
 }
 class SocketService {
-    private socket: WebSocket;
+		private socket: WebSocket;
 
 	constructor(url: string) {
 		this.socket = new WebSocket(url);
-	}	
-
-    public send(message: Message): void {
-		this.socket.send(message.data)
 	}
 
-    public onDisconnect(): Observable<WSEvent> {
-        return new Observable<WSEvent>(observer => {
-			this.onEvent(WSEvent.CLOSE)
-			.subscribe(() => { 
+	public send(message: Message): void {
+		this.socket.send(message.data);
+	}
+
+	public onDisconnect(): Observable<WSEvent> {
+		return new Observable<WSEvent>((observer) => {
+			this.onEvent(WSEvent.CLOSE).subscribe(() => {
+				observer.next();
+			});
+		});
+	}
+
+	public onConnect(): Observable<any> {
+		return this.onEvent(WSEvent.OPEN);
+	}
+
+	public onMessage(): Observable<Message> {
+		return new Observable<Message>((observer) => {
+				this.socket.addEventListener("message", (ev: MessageEvent) => {
+					observer.next(ev);
+				});
+		});
+	}
+
+	public onEvent(event: WSEvent): Observable<any> {
+		return new Observable<WSEvent>((observer) => {
+			this.socket.addEventListener(event, () => {
 				observer.next()
 			});
 		});
-    }
-	public onConnect(): Observable<any>{
-		return this.onEvent(WSEvent.OPEN)
 	}
-    public onMessage(): Observable<Message> {
-        return new Observable<Message>(observer => {
-            this.socket.addEventListener("message", (ev: MessageEvent) => { observer.next(ev)})
-        });
-    }
-
-    public onEvent(event: WSEvent): Observable<any> {
-        return new Observable<WSEvent>(observer => {
-            this.socket.addEventListener(event, () => observer.next());
-        });
-    }
 }
-
 
 export class ApiService {
 
@@ -155,45 +160,31 @@ export class ApiService {
 
 	constructor(host: string) {
 		this.url = host;
-		this.ws = this.createSocketService()
+		this.ws = this.createSocketService();
 		
+		//tslint: no-magic-numbers
 		this.reconnect.pipe(delay(1000)).subscribe(() => {
-			this.reconnecting.next()
-			this.ws = this.createSocketService()
-		})
-	}
-	private createSocketService(): SocketService {
-		var ws_url = new URL(this.url)
-
-		ws_url.pathname = "/ws"
-		ws_url.protocol = "ws://"
-
-		var ws = new SocketService(ws_url.href)
-		var intitialConnection = this.ws === undefined
-		ws.onConnect().subscribe(() =>{
-			if(!intitialConnection) {
-				this.reconnected.next()
-			}
-			this.conncected.next()
-		})
-		ws.onDisconnect().subscribe((_v) => {
-			this.disconncected.next()
-			this.reconnect.next()
+			this.reconnecting.next();
+			this.ws = this.createSocketService();
 		});
-		return ws
 	}
+
 	public subscribeDisconnected(cb: () => void) {
-		this.disconncected.subscribe(cb)
+		this.disconncected.subscribe(cb);
 	}
+
 	public subscribeReconnected(cb: () => void) {
-		this.reconnected.subscribe(cb)
+		this.reconnected.subscribe(cb);
 	}
+
 	public subscribeReconnecting(cb: () => void) {
-		this.reconnecting.subscribe(cb)
+		this.reconnecting.subscribe(cb);
 	}
+
 	public subscribeConnected(cb: () => void) {
-		this.conncected.subscribe(cb)
+		this.conncected.subscribe(cb);
 	}
+
 	public async getBlueprints(): Promise<BlueprintsJson> {
 		return this.httpGet<{}, BlueprintsJson>(
 			"/operator/",
@@ -276,6 +267,26 @@ export class ApiService {
 				console.error(err);
 			},
 		);
+	}
+	private createSocketService(): SocketService {
+		const wsUrl = new URL(this.url);
+
+		wsUrl.pathname = "/ws";
+		wsUrl.protocol = "ws://";
+
+		const ws = new SocketService(wsUrl.href);
+		const intitialConnection = this.ws === undefined;
+		ws.onConnect().subscribe(() => {
+			if (!intitialConnection) {
+				this.reconnected.next();
+			}
+			this.conncected.next();
+		});
+		ws.onDisconnect().subscribe((_v) => {
+			this.disconncected.next();
+			this.reconnect.next();
+		});
+		return ws;
 	}
 
 	private fetch<S, T>(method: string, path: string, data: S, process: (responseParsed: any) => T, error: (error: any) => void): Promise<T> {
