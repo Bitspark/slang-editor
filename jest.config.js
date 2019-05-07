@@ -6,10 +6,15 @@ module.exports = {
 	],
 	testEnvironment: "node",
 	coverageThreshold: {
-		"./src/slang/definitions/": {
+		"./src/slang/definitions/parsing.ts": {
 			functions: 100,
 			branches: 90,
 			statements: 86,
+		},
+		"./src/slang/definitions/type.ts": {
+			functions: 100,
+			branches: 90,
+			statements: 84,
 		},
 		"./src/slang/core/abstract": {
 			functions: 85,
