@@ -5,13 +5,14 @@ import {BlueprintModel} from "../../../slang/core/models/blueprint";
 import {ApiService} from "../../../slang/definitions/api";
 import {SlangTypeValue} from "../../../slang/definitions/type";
 import {PaperView} from "../../../slang/ui/views/paper-view";
+import m from "mithril";
 
 export class DeploymentApp extends SlangApp {
 	private api: ApiService;
 
-	constructor(app: AppModel, aspect: SlangAspects, host: string) {
+	constructor(app: AppModel, aspect: SlangAspects, api: ApiService) {
 		super(app, aspect);
-		this.api = new ApiService(host);
+		this.api = api;
 	}
 
 	protected onReady(): void {

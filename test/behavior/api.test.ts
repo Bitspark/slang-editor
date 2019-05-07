@@ -23,6 +23,13 @@ describe("ApiService", () => {
                 expect(fetchMock.mock.calls.length).toEqual(1)
         });
 
+        it("it notifies subscribes when the services connects", (done) => {
+                api = new ApiService("http://localhost:1234")
+                api.subscribeConnected(()=>{
+                        done()
+                })
+        });
+
         it("it notifies subscribes when the services disconnects on close", (done) => {
                 api = new ApiService("http://localhost:1234")
                 api.subscribeDisconnected(()=>{

@@ -118,12 +118,10 @@ class SocketService {
 		this.socket.send(message.data)
 	}
 
-    public onDisconnect(): Observable<Message> {
-        return new Observable<Message>(observer => {
-			this.onEvent(WSEvent.CLOSE).subscribe(() => {
-				observer.next()
-			});
-			this.onEvent(WSEvent.ERROR).subscribe(() => { 
+    public onDisconnect(): Observable<WSEvent> {
+        return new Observable<WSEvent>(observer => {
+			this.onEvent(WSEvent.CLOSE)
+			.subscribe(() => { 
 				observer.next()
 			});
 		});
@@ -150,6 +148,7 @@ export class ApiService {
 	private readonly url: string;
 	private ws: SocketService;
 	private disconncected = new Subject<any>();
+	private conncected = new Subject<any>();
 	private reconnect = new Subject<any>();
 	private reconnected = new Subject<any>();
 	private reconnecting = new Subject<any>();
@@ -157,8 +156,9 @@ export class ApiService {
 	constructor(host: string) {
 		this.url = host;
 		this.ws = this.createSocketService()
-		this.reconnect.pipe(delay(1000))
-		this.reconnect.subscribe(() => {
+		
+		this.reconnect.pipe(delay(1000)).subscribe(() => {
+			this.reconnecting.next()
 			this.ws = this.createSocketService()
 		})
 	}
@@ -169,16 +169,15 @@ export class ApiService {
 		ws_url.protocol = "ws://"
 
 		var ws = new SocketService(ws_url.href)
-		this.ws
 		var intitialConnection = this.ws === undefined
 		ws.onConnect().subscribe(() =>{
 			if(!intitialConnection) {
 				this.reconnected.next()
 			}
+			this.conncected.next()
 		})
-		ws.onDisconnect().subscribe(() => {
+		ws.onDisconnect().subscribe((_v) => {
 			this.disconncected.next()
-			this.reconnecting.next()
 			this.reconnect.next()
 		});
 		return ws
@@ -191,6 +190,9 @@ export class ApiService {
 	}
 	public subscribeReconnecting(cb: () => void) {
 		this.reconnecting.subscribe(cb)
+	}
+	public subscribeConnected(cb: () => void) {
+		this.conncected.subscribe(cb)
 	}
 	public async getBlueprints(): Promise<BlueprintsJson> {
 		return this.httpGet<{}, BlueprintsJson>(

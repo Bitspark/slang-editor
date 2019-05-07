@@ -9,6 +9,7 @@ import {BlueprintShareApp} from "../apps/share/src/app";
 import {APIStorageApp} from "../apps/storage/src/app";
 import {SlangAspects} from "../slang/aspects";
 import {AppModel} from "../slang/core/models/app";
+import {ApiService} from "../slang/definitions/api";
 import {LandscapeModel} from "../slang/core/models/landscape";
 import {Slang} from "../slang/slang";
 import {ViewFrame} from "../slang/ui/frame";
@@ -23,8 +24,15 @@ function slangStudioStandalone(el: HTMLElement): Promise<void> {
 		const frame = new ViewFrame(el, aspects);
 		app.addFrame(frame, true);
 
-		new APIStorageApp(appModel, aspects, APIURL);
-		new DeploymentApp(appModel, aspects, APIURL);
+		const api = new ApiService(APIURL);
+		api.subscribeConnected(() => {console.log("connected")})
+		api.subscribeReconnecting(() => {console.log("reconnecting")})
+		api.subscribeDisconnected(() => {console.log("disconnected")})
+		api.subscribeReconnected(() => {console.log("reconnected")})
+
+
+		new APIStorageApp(appModel, aspects, api);
+		new DeploymentApp(appModel, aspects, api);
 		new OperatorDataApp(appModel, aspects);
 		new AutoTriggerApp(appModel, aspects);
 		new BlueprintShareApp(appModel, aspects);
