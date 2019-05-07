@@ -119,6 +119,9 @@ class SocketService {
 		this.socket.send(message.data);
 	}
 
+	// `WSEvent.CLOSE` happens when the client or the server
+	// disconnects in a clean fashion and also when the there is an
+	// `WSEvent.ERROR`
 	public onDisconnect(): Observable<WSEvent> {
 		return new Observable<WSEvent>((observer) => {
 			this.onEvent(WSEvent.CLOSE).subscribe(() => {
@@ -133,9 +136,9 @@ class SocketService {
 
 	public onMessage(): Observable<Message> {
 		return new Observable<Message>((observer) => {
-				this.socket.addEventListener("message", (ev: MessageEvent) => {
-					observer.next(ev);
-				});
+			this.socket.addEventListener("message", (ev: MessageEvent) => {
+				observer.next(ev);
+			});
 		});
 	}
 
@@ -274,7 +277,13 @@ export class ApiService {
 		wsUrl.pathname = "/ws";
 		wsUrl.protocol = "ws://";
 
+		// This can actually take some time to
+		// determine if a connection can be made
 		const ws = new SocketService(wsUrl.href);
+
+		// If the instance does not yet have a websocket
+		// it is the first time it tries to connect
+		// thus it makes no sense to signal `reconnected`
 		const intitialConnection = this.ws === undefined;
 		ws.onConnect().subscribe(() => {
 			if (!intitialConnection) {
@@ -282,6 +291,11 @@ export class ApiService {
 			}
 			this.conncected.next();
 		});
+
+		// When the wesocket gets disconnected
+		// we can signal it to reconnect and since
+		// the reconnect `subject` is `pipe`d with
+		// a delay we prevent flooding on disconnect.
 		ws.onDisconnect().subscribe((_v) => {
 			this.disconncected.next();
 			this.reconnect.next();
