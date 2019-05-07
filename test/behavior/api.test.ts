@@ -1,4 +1,6 @@
+// tslint:disable:no-implicit-dependencies
 import {WS} from "jest-websocket-mock";
+
 import {ApiService} from "../../src/slang/definitions/api";
 
 // tslint:disable:no-magic-numbers

@@ -142,7 +142,7 @@ class SocketService {
 	public onEvent(event: WSEvent): Observable<any> {
 		return new Observable<WSEvent>((observer) => {
 			this.socket.addEventListener(event, () => {
-				observer.next()
+				observer.next();
 			});
 		});
 	}
@@ -161,8 +161,8 @@ export class ApiService {
 	constructor(host: string) {
 		this.url = host;
 		this.ws = this.createSocketService();
-		
-		//tslint: no-magic-numbers
+
+		// tslint:disable:no-magic-numbers
 		this.reconnect.pipe(delay(1000)).subscribe(() => {
 			this.reconnecting.next();
 			this.ws = this.createSocketService();
