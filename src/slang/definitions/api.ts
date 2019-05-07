@@ -160,6 +160,7 @@ export class ApiService {
 	private reconnect = new Subject<any>();
 	private reconnected = new Subject<any>();
 	private reconnecting = new Subject<any>();
+	private message = new Subject<Message>();
 
 	constructor(host: string) {
 		this.url = host;
@@ -186,6 +187,10 @@ export class ApiService {
 
 	public subscribeConnected(cb: () => void) {
 		this.conncected.subscribe(cb);
+	}
+
+	public subscribeMessage(cb: (m: Message) => void) {
+		this.message.subscribe(cb);
 	}
 
 	public async getBlueprints(): Promise<BlueprintsJson> {
@@ -307,6 +312,10 @@ export class ApiService {
 		ws.onDisconnect().subscribe((_v) => {
 			this.disconncected.next();
 			this.reconnect.next();
+		});
+
+		ws.onMessage().subscribe((m) => {
+			this.message.next(m)
 		});
 		return ws;
 	}

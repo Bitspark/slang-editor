@@ -82,4 +82,14 @@ describe("ApiService", () => {
 			expect(mockFn).toBeCalledTimes(0);
 		});
 	});
+
+	it("it can recieve messages", (done) => {
+		api = new ApiService("http://localhost:1234");
+		const msg = "test"
+		api.subscribeMessage((m) => {
+			expect(m.data).toBe(msg)
+			done()
+		});
+		server.send(msg)
+	});
 });
