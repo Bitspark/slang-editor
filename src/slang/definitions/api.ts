@@ -1,4 +1,6 @@
 import {BlueprintMeta} from "../core/models/blueprint";
+import {Observable, Subject} from "rxjs";
+import {delay} from "rxjs/operators"
 
 import {SlangTypeValue} from "./type";
 
@@ -95,15 +97,101 @@ export interface BlueprintApiResponse {
 	type: string;
 	def: BlueprintJson;
 }
+export interface Message {
+    data?: any;
+}
+
+enum WSEvent {
+	CLOSE = 'close',
+	ERROR = 'error',
+	MESSAGE = 'message',
+	OPEN = 'open'
+}
+class SocketService {
+    private socket: WebSocket;
+
+	constructor(url: string) {
+		this.socket = new WebSocket(url);
+	}	
+
+    public send(message: Message): void {
+		this.socket.send(message.data)
+	}
+
+    public onDisconnect(): Observable<Message> {
+        return new Observable<Message>(observer => {
+			this.onEvent(WSEvent.CLOSE).subscribe(() => {
+				observer.next()
+			});
+			this.onEvent(WSEvent.ERROR).subscribe(() => { 
+				observer.next()
+			});
+		});
+    }
+	public onConnect(): Observable<any>{
+		return this.onEvent(WSEvent.OPEN)
+	}
+    public onMessage(): Observable<Message> {
+        return new Observable<Message>(observer => {
+            this.socket.addEventListener("message", (ev: MessageEvent) => { observer.next(ev)})
+        });
+    }
+
+    public onEvent(event: WSEvent): Observable<any> {
+        return new Observable<WSEvent>(observer => {
+            this.socket.addEventListener(event, () => observer.next());
+        });
+    }
+}
+
 
 export class ApiService {
 
 	private readonly url: string;
+	private ws: SocketService;
+	private disconncected = new Subject<any>();
+	private reconnect = new Subject<any>();
+	private reconnected = new Subject<any>();
+	private reconnecting = new Subject<any>();
 
 	constructor(host: string) {
 		this.url = host;
+		this.ws = this.createSocketService()
+		this.reconnect.pipe(delay(1000))
+		this.reconnect.subscribe(() => {
+			this.ws = this.createSocketService()
+		})
 	}
+	private createSocketService(): SocketService {
+		var ws_url = new URL(this.url)
 
+		ws_url.pathname = "/ws"
+		ws_url.protocol = "ws://"
+
+		var ws = new SocketService(ws_url.href)
+		this.ws
+		var intitialConnection = this.ws === undefined
+		ws.onConnect().subscribe(() =>{
+			if(!intitialConnection) {
+				this.reconnected.next()
+			}
+		})
+		ws.onDisconnect().subscribe(() => {
+			this.disconncected.next()
+			this.reconnecting.next()
+			this.reconnect.next()
+		});
+		return ws
+	}
+	public subscribeDisconnected(cb: () => void) {
+		this.disconncected.subscribe(cb)
+	}
+	public subscribeReconnected(cb: () => void) {
+		this.reconnected.subscribe(cb)
+	}
+	public subscribeReconnecting(cb: () => void) {
+		this.reconnecting.subscribe(cb)
+	}
 	public async getBlueprints(): Promise<BlueprintsJson> {
 		return this.httpGet<{}, BlueprintsJson>(
 			"/operator/",
