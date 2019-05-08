@@ -109,7 +109,7 @@ const enum WSEvent {
 	OPEN = "open",
 }
 class SocketService {
-		private socket: WebSocket;
+	private socket: WebSocket;
 
 	constructor(url: string) {
 		this.socket = new WebSocket(url);
@@ -142,7 +142,7 @@ class SocketService {
 		});
 	}
 
-	public onEvent(event: WSEvent): Observable<any> {
+	private onEvent(event: WSEvent): Observable<any> {
 		return new Observable<WSEvent>((observer) => {
 			this.socket.addEventListener(event, () => {
 				observer.next();
