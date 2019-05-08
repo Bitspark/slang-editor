@@ -315,7 +315,7 @@ export class ApiService {
 		});
 
 		ws.onMessage().subscribe((m) => {
-			this.message.next(m)
+			this.message.next(m);
 		});
 		return ws;
 	}

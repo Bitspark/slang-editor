@@ -85,11 +85,11 @@ describe("ApiService", () => {
 
 	it("it can recieve messages", (done) => {
 		api = new ApiService("http://localhost:1234");
-		const msg = "test"
+		const msg = "test";
 		api.subscribeMessage((m) => {
-			expect(m.data).toBe(msg)
-			done()
+			expect(m.data).toBe(msg);
+			done();
 		});
-		server.send(msg)
+		server.send(msg);
 	});
 });
