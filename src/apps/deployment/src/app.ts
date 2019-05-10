@@ -1,3 +1,5 @@
+import m from "mithril";
+
 import {SlangApp} from "../../../slang/app";
 import {BlueprintToolBoxType, SlangAspects} from "../../../slang/aspects";
 import {AppModel} from "../../../slang/core/models/app";
@@ -9,9 +11,9 @@ import {PaperView} from "../../../slang/ui/views/paper-view";
 export class DeploymentApp extends SlangApp {
 	private api: ApiService;
 
-	constructor(app: AppModel, aspect: SlangAspects, host: string) {
+	constructor(app: AppModel, aspect: SlangAspects, api: ApiService) {
 		super(app, aspect);
-		this.api = new ApiService(host);
+		this.api = api;
 	}
 
 	protected onReady(): void {
@@ -61,6 +63,10 @@ export class DeploymentApp extends SlangApp {
 		if (blueprint.isDeployed()) {
 			return;
 		}
+		this.api.subscribeDisconnected(() => {
+			blueprint.shutdown();
+			m.redraw();
+		});
 		blueprint.deploy(await this.api.deployBlueprint(blueprint.uuid));
 		blueprint.subscribeInputPushed((inputData: SlangTypeValue) => {
 			this.pushInput(blueprint, inputData);
