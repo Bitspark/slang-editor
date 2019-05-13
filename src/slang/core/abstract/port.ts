@@ -1,6 +1,7 @@
 import {Subscription} from "rxjs";
 
 import {SlangType, TypeIdentifier} from "../../definitions/type";
+import {BlueprintModel} from "../models/blueprint";
 
 import {BlackBox} from "./blackbox";
 import {SlangNode} from "./nodes";
@@ -10,7 +11,6 @@ import {canConnectTo} from "./utils/connection-check";
 import {Connections} from "./utils/connections";
 import {SlangSubject} from "./utils/events";
 import {GenericSpecifications} from "./utils/generics";
-import { BlueprintModel } from "../models/blueprint";
 
 export enum PortDirection {
 	In, // 0
