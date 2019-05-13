@@ -2,7 +2,7 @@ import {attributes, dia, g} from "jointjs";
 
 import {Styles} from "../../../styles/studio";
 import {PortModel} from "../../core/abstract/port";
-import {TypeIdentifier} from "../../definitions/type";
+import {tid2css} from "../utils";
 
 import {PortGroupComponent, PortGroupPosition} from "./port-group";
 
@@ -32,9 +32,9 @@ export class PortComponent {
 			const classes = ["sl-port"];
 			if (i % 2 === 0) {
 				if (ghost) {
-					classes.push(`sl-type-ghost`);
+					classes.push(tid2css("ghost"));
 				} else {
-					classes.push(`sl-type-${TypeIdentifier[port.getTypeIdentifier()].toLowerCase()}`);
+					classes.push(tid2css(port.getTypeIdentifier()));
 				}
 			} else {
 				classes.push(`sl-stripe`);

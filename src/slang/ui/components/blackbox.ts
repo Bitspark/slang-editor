@@ -76,6 +76,7 @@ function createPortGroups(blackBox: BlackBox): PortGroupComponent[] {
 }
 
 export abstract class BlackBoxComponent extends CellComponent {
+	protected readonly cssAttr = "root/class";
 
 	public get bbox(): g.Rect {
 		return this.shape.getBBox();
@@ -87,12 +88,11 @@ export abstract class BlackBoxComponent extends CellComponent {
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
 
-	private clicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("clicked");
-	private dblclicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("dblclicked");
-
 	protected constructor(paperView: PaperView, private readonly createGhostPorts: boolean) {
 		super(paperView, {x: 0, y: 0});
 	}
+
+	public abstract getModel(): BlackBox;
 
 	public refresh(): void {
 		this.portGroups = this.createPortGroups();
@@ -104,31 +104,11 @@ export abstract class BlackBoxComponent extends CellComponent {
 			group.setParent(this.shape, this.createGhostPorts);
 		});
 
-		this.shape.on("pointerclick",
-			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
-				this.clicked.next({event, x, y});
-			});
-		this.shape.on("pointerdblclick",
-			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
-				this.dblclicked.next({event, x, y});
-			});
 		this.render();
 	}
 
 	public translate(tx: number, ty: number) {
 		this.shape.translate(tx, ty);
-	}
-
-	public onClick(cb: (event: MouseEvent, x: number, y: number) => void) {
-		this.clicked.subscribe(({event, x, y}) => {
-			cb(event, x, y);
-		});
-	}
-
-	public onDblClick(cb: (event: MouseEvent, x: number, y: number) => void) {
-		this.dblclicked.subscribe(({event, x, y}) => {
-			cb(event, x, y);
-		});
 	}
 
 	public onPortMouseEnter(cb: (port: PortModel, x: number, y: number) => void) {
@@ -199,6 +179,10 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 		this.attachPortEvents(this.blueprint);
 	}
 
+	public getModel(): BlueprintModel {
+		return this.blueprint;
+	}
+
 	public getShape(): BlackBoxShape {
 		return this.shape;
 	}
@@ -264,6 +248,10 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 		this.attachPortEvents(operator);
 	}
 
+	public getModel(): OperatorModel {
+		return this.operator;
+	}
+
 	protected createShape(): BlackBoxShape {
 		const blackBoxShapeType = this.paperView.getFactory().getBlackBoxShape(this.operator.getBlueprint());
 		const shape = new blackBoxShapeType({
@@ -278,6 +266,7 @@ export class OperatorBoxComponent extends BlackBoxComponent {
 	protected createPortGroups(): PortGroupComponent[] {
 		return createPortGroups(this.operator);
 	}
+
 }
 
 export interface BlackBoxShapeAttrs {

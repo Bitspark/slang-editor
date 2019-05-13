@@ -1,7 +1,9 @@
 import {dia} from "jointjs";
 import m from "mithril";
 
+import {SlangBehaviorSubject, SlangSubject} from "../../core/abstract/utils/events";
 import {XY} from "../../definitions/api";
+import {cssattr, cssobj, CSSType, cssupdate} from "../utils";
 import {PaperView} from "../views/paper-view";
 
 import {Container} from "./toolkit/toolkit";
@@ -34,7 +36,12 @@ abstract class Component {
 
 export abstract class CellComponent extends Component {
 	protected abstract readonly shape: dia.Cell;
+	protected abstract readonly cssAttr: string;
 	private components: Component[] = [];
+
+	private clicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("clicked");
+	private dblclicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("dblclicked");
+	private selected = new SlangBehaviorSubject<boolean>("selected", false);
 
 	protected constructor(protected readonly paperView: PaperView, xy: XY) {
 		super(xy);
@@ -60,11 +67,62 @@ export abstract class CellComponent extends Component {
 	}
 
 	public render() {
+		this.shape.on("pointerclick",
+			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
+				this.clicked.next({event, x, y});
+				this.select();
+			});
+		this.shape.on("pointerdblclick",
+			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
+				this.dblclicked.next({event, x, y});
+				this.select();
+			});
+
 		this.paperView.renderCell(this.shape);
 	}
 
 	public getShape(): dia.Cell {
 		return this.shape;
+	}
+
+	public css(css: CSSType): void {
+		const origCSS = cssobj(this.shape.attr(this.cssAttr));
+		const newcss = cssupdate(origCSS, css);
+		this.shape.removeAttr(this.cssAttr);
+		this.shape.attr(this.cssAttr, cssattr(newcss));
+	}
+
+	public onClick(cb: (e: MouseEvent, x: number, y: number) => void): this {
+		this.clicked.subscribe(({event, x, y}) => {
+			cb(event, x, y);
+		});
+		return this;
+	}
+
+	public onDblClick(cb: (e: MouseEvent, x: number, y: number) => void): this {
+		this.dblclicked.subscribe(({event, x, y}) => {
+			cb(event, x, y);
+		});
+		return this;
+	}
+
+	public onSelect(cb: (s: boolean) => void): this {
+		this.selected.subscribe((selected: boolean) => {
+			cb(selected);
+		});
+		return this;
+	}
+
+	public select() {
+		if (!this.selected.getValue()) {
+			this.selected.next(true);
+		}
+	}
+
+	public unselect() {
+		if (this.selected.getValue()) {
+			this.selected.next(false);
+		}
 	}
 }
 
