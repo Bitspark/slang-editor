@@ -236,7 +236,7 @@ export class ApiService {
 
 	public async deployBlueprint(blueprintId: string): Promise<DeploymentStatusApiResponse> {
 		return this.httpPost<{ id: string, props: any, gens: any, stream: boolean }, DeploymentStatusApiResponse>(
-			"/run/",
+			"/run/ws/",
 			{id: blueprintId, props: {}, gens: {}, stream: false},
 			(data: any) => {
 				if (data.status === "success") {

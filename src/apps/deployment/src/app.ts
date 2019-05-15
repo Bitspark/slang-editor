@@ -88,7 +88,8 @@ export class DeploymentApp extends SlangApp {
 			return;
 		}
 		this.api.pushInput(access.url, inputData).then((outputData: SlangTypeValue) => {
-			blueprint.pushOutput(outputData);
+			//blueprint.pushOutput(outputData);
+			console.log("-->", outputData);
 		});
 	}
 }
