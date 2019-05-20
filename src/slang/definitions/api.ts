@@ -49,7 +49,7 @@ export interface GenericSpecificationsApiResponse {
 }
 
 export interface RunningOperatorJson {
-	op: string;
+	operator: string;
 	url: string;
 	handle: string;
 }
@@ -58,6 +58,8 @@ export interface PortMessageJson {
 	handle: string;
 	port: string;
 	data: SlangTypeValue;
+	isBOS: boolean;
+	isEOS: boolean;
 }
 
 export interface OperatorGeometry {

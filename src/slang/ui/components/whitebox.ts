@@ -438,19 +438,18 @@ export class WhiteBoxComponent extends CellComponent {
 				const portOut = this.blueprint.getPortOut();
 
 				if (portOut) {
-					const outputValues: PortMessageJson[] = [];
+					const portMsgs = new Map<string, SlangTypeValue[]>();
 
 					this.blueprint.subscribeOutputPushed((outputData) => {
-						outputValues.unshift(outputData);
+						const alreadyCollectedPortMsgs = portMsgs.get(outputData.port) || [];
+						alreadyCollectedPortMsgs.push(outputData.data);
+						portMsgs.set(outputData.port, alreadyCollectedPortMsgs);
 						m.redraw();
 					});
 
 					this.output.mount({
-						view: () => m(Box, m(OutputConsole, {
-							onLoad: () => {
-								return outputValues;
-							},
-							type: portOut.getType(),
+						view: () => m(Box, Array.from(portMsgs.entries()).map(([portName, portData]) => {
+							return m("", portName, portData.map((i) => m("", JSON.stringify(i))));
 						})),
 					});
 				}
