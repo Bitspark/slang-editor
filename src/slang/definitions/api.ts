@@ -1,5 +1,5 @@
 import {Observable, Subject} from "rxjs";
-import {delay} from "rxjs/operators";
+import {delay, filter, map} from "rxjs/operators";
 
 import {BlueprintMeta} from "../core/models/blueprint";
 
@@ -48,9 +48,16 @@ export interface GenericSpecificationsApiResponse {
 	[genericIdentifier: string]: TypeDefApiResponse;
 }
 
-export interface DeploymentStatusApiResponse {
+export interface RunningOperatorJson {
+	op: string;
 	url: string;
 	handle: string;
+}
+
+export interface PortMessageJson {
+	handle: string;
+	port: string;
+	data: SlangTypeValue;
 }
 
 export interface OperatorGeometry {
@@ -98,9 +105,17 @@ export interface BlueprintApiResponse {
 	type: string;
 	def: BlueprintJson;
 }
+
 export interface Message {
-		data?: any;
+	topic: MessageTopic;
+	payload: MessagePayload;
 }
+
+export enum MessageTopic {
+	Port = "Port",
+}
+
+export type MessagePayload = any;
 
 const enum WSEvent {
 	CLOSE = "close",
@@ -108,15 +123,12 @@ const enum WSEvent {
 	MESSAGE = "message",
 	OPEN = "open",
 }
+
 class SocketService {
 	private socket: WebSocket;
 
 	constructor(url: string) {
 		this.socket = new WebSocket(url);
-	}
-
-	public send(message: Message): void {
-		this.socket.send(message.data);
 	}
 
 	// `WSEvent.CLOSE` happens when the client or the server
@@ -137,7 +149,15 @@ class SocketService {
 	public onMessage(): Observable<Message> {
 		return new Observable<Message>((observer) => {
 			this.socket.addEventListener("message", (ev: MessageEvent) => {
-				observer.next(ev);
+				try {
+					const msg = JSON.parse(ev.data) as Message;
+					if (typeof msg.topic === "undefined") {
+						return;
+					}
+					observer.next(msg);
+				} catch {
+					return;
+				}
 			});
 		});
 	}
@@ -193,6 +213,19 @@ export class ApiService {
 		this.message.subscribe(cb);
 	}
 
+	public getTopicObserver(topic: MessageTopic): Observable<MessagePayload> {
+		return this.message.pipe(
+			filter((obj) => obj.topic === topic),
+			map((obj) => obj.payload),
+		);
+	}
+
+	public subscribePortMessage(ro: RunningOperatorJson, cb: (m: PortMessageJson) => void) {
+		this.getTopicObserver(MessageTopic.Port).pipe(
+			filter((pmsg: PortMessageJson) => pmsg.handle === ro.handle),
+		).subscribe(cb);
+	}
+
 	public async getBlueprints(): Promise<BlueprintsJson> {
 		return this.httpGet<{}, BlueprintsJson>(
 			"/operator/",
@@ -234,13 +267,13 @@ export class ApiService {
 		});
 	}
 
-	public async deployBlueprint(blueprintId: string): Promise<DeploymentStatusApiResponse> {
-		return this.httpPost<{ id: string, props: any, gens: any, stream: boolean }, DeploymentStatusApiResponse>(
-			"/run/ws/",
+	public async deployBlueprint(blueprintId: string): Promise<RunningOperatorJson> {
+		return this.httpPost<{ id: string, props: any, gens: any, stream: boolean }, RunningOperatorJson>(
+			"/run/",
 			{id: blueprintId, props: {}, gens: {}, stream: false},
 			(data: any) => {
 				if (data.status === "success") {
-					return data as DeploymentStatusApiResponse;
+					return data as RunningOperatorJson;
 				}
 				throw(data);
 			},
@@ -276,6 +309,7 @@ export class ApiService {
 			},
 		);
 	}
+
 	private createSocketService(): SocketService {
 		const wsUrl = new URL(this.url);
 

@@ -9,6 +9,7 @@ import {BlueprintInstance, BlueprintModel} from "../../core/models/blueprint";
 import {BlueprintDelegateModel} from "../../core/models/delegate";
 import {OperatorModel} from "../../core/models/operator";
 import {BlueprintPortModel} from "../../core/models/port";
+import {PortMessageJson} from "../../definitions/api";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 import {tid2css} from "../utils";
 import {PaperView} from "../views/paper-view";
@@ -437,9 +438,9 @@ export class WhiteBoxComponent extends CellComponent {
 				const portOut = this.blueprint.getPortOut();
 
 				if (portOut) {
-					const outputValues: SlangTypeValue[] = [];
+					const outputValues: PortMessageJson[] = [];
 
-					this.blueprint.subscribeOutputPushed((outputData: SlangTypeValue) => {
+					this.blueprint.subscribeOutputPushed((outputData) => {
 						outputValues.unshift(outputData);
 						m.redraw();
 					});

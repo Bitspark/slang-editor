@@ -1,4 +1,5 @@
 import m, {ClassComponent, CVnode} from "mithril";
+import {PortMessageJson} from "../../definitions/api";
 
 import {SlangType, SlangTypeJson, SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 
@@ -326,7 +327,7 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 interface OutputConsoleAttrs {
 	type: SlangType;
 
-	onLoad(): SlangTypeValue[];
+	onLoad(): PortMessageJson[];
 }
 
 export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {
@@ -341,7 +342,8 @@ export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {
 		const len = values.length;
 		return m(Tk.List, {class: "sl-console-out"},
 			values.map((outputData, i) => {
-				return m(Tk.ListItem, {key: len - i}, this.renderOutput(outputData, this.type!));
+				console.log(outputData);
+				return m(Tk.ListItem, {key: len - i}, this.renderOutput(null, this.type!));
 			}),
 		);
 	}

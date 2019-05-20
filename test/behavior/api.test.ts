@@ -83,13 +83,16 @@ describe("ApiService", () => {
 		});
 	});
 
-	it("it can recieve messages", (done) => {
+	it("it ignores received but invalid messages", () => {
 		api = new ApiService("http://localhost:1234");
 		const msg = "test";
-		api.subscribeMessage((m) => {
-			expect(m.data).toBe(msg);
-			done();
+		const mockFn = jest.fn();
+		api.subscribeMessage((_) => {
+			mockFn();
 		});
 		server.send(msg);
+		return server.nextMessage.then(() => {
+			expect(mockFn).toBeCalledTimes(0);
+		});
 	});
 });
