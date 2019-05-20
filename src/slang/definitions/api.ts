@@ -155,7 +155,7 @@ class SocketService {
 						return;
 					}
 					observer.next(msg);
-				} catch {
+				} catch (err) {
 					return;
 				}
 			});

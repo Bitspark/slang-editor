@@ -1,7 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 import {WS} from "jest-websocket-mock";
 
-import {ApiService} from "../../src/slang/definitions/api";
+import {ApiService, MessageTopic} from "../../src/slang/definitions/api";
 
 // tslint:disable:no-magic-numbers
 
@@ -83,16 +83,49 @@ describe("ApiService", () => {
 		});
 	});
 
-	it("it ignores received but invalid messages", () => {
+	it("it ignores received but invalid messages", (done) => {
 		api = new ApiService("http://localhost:1234");
-		const msg = "test";
 		const mockFn = jest.fn();
 		api.subscribeMessage((_) => {
 			mockFn();
 		});
-		server.send(msg);
-		return server.nextMessage.then(() => {
+		server.send("test");
+		server.closed.then(() => {
 			expect(mockFn).toBeCalledTimes(0);
+			done();
 		});
+		server.close();
+	});
+
+	it("it receives messages with topic", (done) => {
+		api = new ApiService("http://localhost:1234");
+		api.subscribeMessage((msg) => {
+			expect(msg).toMatchObject({topic: "Port", payload: "..."});
+			done();
+		});
+		server.send(JSON.stringify({topic: "Port", payload: "..."}));
+	});
+
+	it("it receives messages of specific topic", (done) => {
+		api = new ApiService("http://localhost:1234");
+		api.getTopicObserver(MessageTopic.Port).subscribe((payload) => {
+			expect(payload).toBe("...");
+			done();
+		});
+		server.send(JSON.stringify({topic: "Port", payload: "..."}));
+	});
+
+	it("it ignores messages of unknown topic", (done) => {
+		api = new ApiService("http://localhost:1234");
+		const mockFn = jest.fn();
+		api.getTopicObserver(MessageTopic.Port).subscribe((_) => {
+			mockFn();
+		});
+		server.send(JSON.stringify({topic: "XXXX", payload: "..."}));
+		server.closed.then(() => {
+			expect(mockFn).toBeCalledTimes(0);
+			done();
+		});
+		server.close();
 	});
 });
