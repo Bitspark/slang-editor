@@ -150,13 +150,15 @@ class SocketService {
 
 	public onMessage(): Observable<Message> {
 		return new Observable<Message>((observer) => {
-			this.socket.addEventListener("message", (ev: MessageEvent) => {
+			this.socket.addEventListener(WSEvent.MESSAGE, (ev: MessageEvent) => {
 				try {
-					const msg = JSON.parse(ev.data) as Message;
-					if (typeof msg.topic === "undefined") {
-						return;
-					}
-					observer.next(msg);
+					const msg = JSON.parse(ev.data) as Message[];
+					msg.forEach((v: Message) => {
+						if (typeof v.topic === "undefined") {
+							return;
+						}
+						observer.next(v);
+					})
 				} catch (err) {
 					return;
 				}
