@@ -54,7 +54,6 @@ export class AppModel extends SlangNode {
 	}
 
 	// Subscriptions
-
 	public subscribeOpenedBlueprintChanged(cb: (blueprint: BlueprintModel | null) => void) {
 		this.openedBlueprint.subscribe(cb);
 	}

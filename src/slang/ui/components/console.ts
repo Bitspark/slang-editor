@@ -1,6 +1,7 @@
 import m, {ClassComponent, CVnode} from "mithril";
+import {PortModel} from "../../core/abstract/port";
+import {BlueprintModel} from "../../core/models/blueprint";
 
-import {PortMessageJson} from "../../definitions/api";
 import {SlangType, SlangTypeJson, SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 
 import {BINARY_VALUE_TYPE} from "./console/binary";
@@ -10,6 +11,7 @@ import {Button} from "./toolkit/buttons";
 import {Icon} from "./toolkit/icons";
 import {BaseInput, BaseInputAttrs, BooleanInput, NumberInput, StringInput} from "./toolkit/input";
 import {Tk} from "./toolkit/toolkit";
+import List = Tk.List;
 
 export interface ConsoleValueType<T> {
 	typeDef: SlangTypeJson;
@@ -325,30 +327,38 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 }
 
 interface OutputConsoleAttrs {
-	type: SlangType;
+	model: OutputConsoleModel;
+}
 
-	onLoad(): PortMessageJson[];
+export class OutputConsoleModel {
+	constructor(private readonly blueprint: BlueprintModel) {
+		this.blueprint.getPortOut()!.getDescendantPorts().forEach((port) => {
+			port.dataReceived.subscribe(() => {
+				m.redraw();
+			});
+		});
+	}
+
+	public list(): IterableIterator<PortModel> {
+		return this.blueprint.getPortOut()!.getDescendantPorts().values();
+	}
 }
 
 export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {
-	private type: SlangType | undefined;
+	private model!: OutputConsoleModel;
 
 	public oninit({attrs}: CVnode<OutputConsoleAttrs>) {
-		this.type = attrs.type;
+		this.model = attrs.model;
 	}
 
-	public view({attrs}: CVnode<OutputConsoleAttrs>): any {
-		const values = attrs.onLoad();
-		const len = values.length;
-		return m(Tk.List, {class: "sl-console-out"},
-			values.map((outputData, i) => {
-				return m(Tk.ListItem, {key: len - i}, this.renderOutput(outputData));
-			}),
-		);
+	public view(): m.Children {
+		return m(List, Array.from(this.model.list()).map((port) => {
+			return this.renderPort(port);
+		}));
 	}
 
-	private renderOutput(portMsg: PortMessageJson): m.Children {
-		return JSON.stringify(portMsg);
+	private renderPort(port: PortModel): m.Children {
+		return [m("h4", port.getName()), JSON.stringify(port.readData())];
 	}
 }
 

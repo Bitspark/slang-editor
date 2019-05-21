@@ -9,7 +9,6 @@ import {BlueprintInstance, BlueprintModel} from "../../core/models/blueprint";
 import {BlueprintDelegateModel} from "../../core/models/delegate";
 import {OperatorModel} from "../../core/models/operator";
 import {BlueprintPortModel} from "../../core/models/port";
-import {PortMessageJson} from "../../definitions/api";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 import {tid2css} from "../utils";
 import {PaperView} from "../views/paper-view";
@@ -18,7 +17,7 @@ import {AttachableComponent, CellComponent} from "./base";
 import {BlackBoxComponent, OperatorBoxComponent} from "./blackbox";
 import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {ConnectionComponent} from "./connection";
-import {InputConsole, OutputConsole} from "./console";
+import {InputConsole, OutputConsole, OutputConsoleModel} from "./console";
 import {PortGroupPosition} from "./port-group";
 import {Button} from "./toolkit/buttons";
 import {Box} from "./toolkit/toolkit";
@@ -437,22 +436,15 @@ export class WhiteBoxComponent extends CellComponent {
 
 				const portOut = this.blueprint.getPortOut();
 
-				if (portOut) {
-					const portMsgs = new Map<string, SlangTypeValue[]>();
-
-					this.blueprint.subscribeOutputPushed((outputData) => {
-						const alreadyCollectedPortMsgs = portMsgs.get(outputData.port) || [];
-						alreadyCollectedPortMsgs.push(outputData.data);
-						portMsgs.set(outputData.port, alreadyCollectedPortMsgs);
-						m.redraw();
-					});
-
-					this.output.mount({
-						view: () => m(Box, Array.from(portMsgs.entries()).map(([portName, portData]) => {
-							return m("", portName, portData.map((i) => m("", JSON.stringify(i))));
-						})),
-					});
+				if (!portOut) {
+					return;
 				}
+				const outputConsoleModel = new OutputConsoleModel(this.blueprint);
+				this.output.mount({
+					view: () => m(Box, m(OutputConsole, {
+						model: outputConsoleModel,
+					})),
+				});
 
 			}
 		});
