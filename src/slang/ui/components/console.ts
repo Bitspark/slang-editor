@@ -1,8 +1,8 @@
 import m, {ClassComponent, CVnode} from "mithril";
-import {PortModel} from "../../core/abstract/port";
-import {BlueprintModel} from "../../core/models/blueprint";
-import { debounceTime } from 'rxjs/operators';
+import {debounceTime} from "rxjs/operators";
 
+import {PortModel, BOS} from "../../core/abstract/port";
+import {BlueprintModel} from "../../core/models/blueprint";
 import {SlangType, SlangTypeJson, SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 
 import {BINARY_VALUE_TYPE} from "./console/binary";
@@ -333,11 +333,16 @@ interface OutputConsoleAttrs {
 
 export class OutputConsoleModel {
 	constructor(private readonly blueprint: BlueprintModel) {
+		const dueTime = 500;
 		this.blueprint.getPortOut()!.getDescendantPorts().forEach((port) => {
-			port.dataReceived.pipe(debounceTime(500)).subscribe(() => {
+			port.dataReceived.pipe(debounceTime(dueTime)).subscribe(() => {
 				m.redraw();
 			});
 		});
+	}
+
+	public get port(): PortModel {
+		return this.blueprint.getPortOut()!;
 	}
 
 	public list(): IterableIterator<PortModel> {
@@ -345,7 +350,53 @@ export class OutputConsoleModel {
 	}
 }
 
+class JsonMap implements ClassComponent<any> {
+	public view({children}: CVnode<any>): m.Children {
+		return [
+			m("", "{"),
+			children,
+			m("", "}"),
+		];
+	}
+}
+
+class JsonMapEntry implements ClassComponent<any> {
+	public view({attrs, children}: CVnode<{ prop: string }>): m.Children {
+		return [
+			m("span", attrs.prop),
+			m("span", ":"),
+			m("span", children),
+		];
+	}
+}
+
 export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {
+	private static render(port: PortModel): m.Children {
+		switch (port.getTypeIdentifier()) {
+			case TypeIdentifier.Map: {
+				return m(JsonMap, Array.from(port.getMapSubs())
+					.map((subPort) => [
+						m(JsonMapEntry, {prop: subPort.getName()}, OutputConsole.render(subPort)),
+					]));
+			}
+			case TypeIdentifier.Stream: {
+				const subPort = port.getStreamSub();
+				return OutputConsole.render(subPort);
+			}
+			default: {
+				return m("span", [
+					port.readData().map((d) => {
+						if (d.isMarker()) {
+							return d === BOS ? "[" : "]";
+						}
+						return d.value;
+					}),
+					port.isOpenStream() ? m(".is-loading") : undefined,
+				]);
+			}
+		}
+	}
+
 	private model!: OutputConsoleModel;
 
 	public oninit({attrs}: CVnode<OutputConsoleAttrs>) {
@@ -353,13 +404,7 @@ export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {
 	}
 
 	public view(): m.Children {
-		return m(List, Array.from(this.model.list()).map((port) => {
-			return this.renderPort(port);
-		}));
-	}
-
-	private renderPort(port: PortModel): m.Children {
-		return [m("h4", port.getName()), JSON.stringify(port.readData())];
+		return m(List, OutputConsole.render(this.model.port));
 	}
 }
 
