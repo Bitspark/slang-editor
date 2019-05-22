@@ -1,4 +1,4 @@
-import {Subscription} from "rxjs";
+import {Subscription, Subject} from "rxjs";
 
 import {PortMessageJson} from "../../definitions/api";
 import {SlangType, SlangTypeValue, TypeIdentifier} from "../../definitions/type";
@@ -42,7 +42,7 @@ export interface PortGenerics {
 
 export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
-	public readonly dataReceived = new SlangSubjectTrigger("data-received");
+	public readonly dataReceived = new Subject<any>();
 
 	protected connectedWith: PortModel[] = [];
 	protected typeIdentifier = TypeIdentifier.Unspecified;

@@ -1,6 +1,7 @@
 import m, {ClassComponent, CVnode} from "mithril";
 import {PortModel} from "../../core/abstract/port";
 import {BlueprintModel} from "../../core/models/blueprint";
+import { debounceTime } from 'rxjs/operators';
 
 import {SlangType, SlangTypeJson, SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 
@@ -333,7 +334,7 @@ interface OutputConsoleAttrs {
 export class OutputConsoleModel {
 	constructor(private readonly blueprint: BlueprintModel) {
 		this.blueprint.getPortOut()!.getDescendantPorts().forEach((port) => {
-			port.dataReceived.subscribe(() => {
+			port.dataReceived.pipe(debounceTime(500)).subscribe(() => {
 				m.redraw();
 			});
 		});
