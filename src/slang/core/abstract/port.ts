@@ -1,4 +1,4 @@
-import {Subscription, Subject} from "rxjs";
+import {Subject, Subscription} from "rxjs";
 
 import {PortMessageJson} from "../../definitions/api";
 import {SlangType, SlangTypeValue, TypeIdentifier} from "../../definitions/type";
@@ -9,10 +9,10 @@ import {PortOwner} from "./port-owner";
 import {StreamPort} from "./stream";
 import {canConnectTo} from "./utils/connection-check";
 import {Connections} from "./utils/connections";
-import {SlangSubject, SlangSubjectTrigger} from "./utils/events";
+import {SlangSubject} from "./utils/events";
 import {GenericSpecifications} from "./utils/generics";
 
-export class PortData {
+export class PortDataBuffer {
 	constructor(private readonly msglist: PortMessageJson[] = []) {
 	}
 
@@ -24,10 +24,35 @@ export class PortData {
 		return this.msglist.filter((each) => each.isBOS).length > this.msglist.filter((each) => each.isEOS).length;
 	}
 
-	public get data(): SlangTypeValue[] {
-		return this.msglist.map((each) => each.data);
+	public get data(): PortData[] {
+		return this.msglist.map((each) => each.isBOS ? BOS : each.isEOS ? EOS : new PortDataValue(each.data));
 	}
 }
+
+export interface PortData {
+	value: SlangTypeValue;
+
+	isMarker(): boolean;
+}
+
+class PortDataValue {
+	constructor(public readonly value: SlangTypeValue) {
+	}
+
+	public isMarker(): boolean {
+		return false;
+	}
+}
+
+class Marker implements PortData {
+	public readonly value = null;
+
+	public isMarker(): boolean {
+		return true;
+	}
+}
+
+export const [BOS, EOS] = [new Marker(), new Marker()];
 
 export enum PortDirection {
 	In, // 0
@@ -55,7 +80,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	// Properties
 	private readonly name: string;
 	private readonly direction: PortDirection;
-	private readonly portData: PortData = new PortData();
+	private readonly portData: PortDataBuffer = new PortDataBuffer();
 
 	private genericIdentifier?: string;
 
@@ -498,7 +523,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		return this.connectedWith.indexOf(other) !== -1;
 	}
 
-	public readData(): SlangTypeValue[] {
+	public readData(): PortData[] {
 		return this.portData.data;
 	}
 
@@ -507,6 +532,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	}
 
 	public writeData(msg: PortMessageJson) {
+		// todo writeData should also expect PortData
 		this.portData.append(msg);
 		this.dataReceived.next();
 	}
