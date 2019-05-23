@@ -350,23 +350,22 @@ export class OutputConsoleModel {
 	}
 }
 
-class JsonMap implements ClassComponent<any> {
+class Json implements ClassComponent<any> {
 	public view({children}: CVnode<any>): m.Children {
-		return [
+		return m(".json", [
 			m("", "{"),
-			children,
+			m(".json-wrapped", children),
 			m("", "}"),
-		];
+		]);
 	}
 }
 
-class JsonMapEntry implements ClassComponent<any> {
+class JsonProp implements ClassComponent<any> {
 	public view({attrs, children}: CVnode<{ prop: string }>): m.Children {
-		return [
-			m("span", attrs.prop),
-			m("span", ":"),
-			m("span", children),
-		];
+		return m(".json-prop", [
+			m(".json-prop-key", attrs.prop + ":"),
+			m(".json-prop-val", children),
+		]);
 	}
 }
 
@@ -374,9 +373,9 @@ export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {
 	private static render(port: PortModel): m.Children {
 		switch (port.getTypeIdentifier()) {
 			case TypeIdentifier.Map: {
-				return m(JsonMap, Array.from(port.getMapSubs())
+				return m(Json, Array.from(port.getMapSubs())
 					.map((subPort) => [
-						m(JsonMapEntry, {prop: subPort.getName()}, OutputConsole.render(subPort)),
+						m(JsonProp, {prop: subPort.getName()}, OutputConsole.render(subPort)),
 					]));
 			}
 			case TypeIdentifier.Stream: {
@@ -389,9 +388,9 @@ export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {
 						if (d.isMarker()) {
 							return d === BOS ? "[" : "]";
 						}
-						return d.value;
+						return JSON.stringify(d.value) + " ";
 					}),
-					port.isOpenStream() ? m(".is-loading") : undefined,
+					port.isOpenStream() ? m("button.is-loading") : undefined,
 				]);
 			}
 		}
@@ -404,7 +403,7 @@ export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {
 	}
 
 	public view(): m.Children {
-		return m(List, OutputConsole.render(this.model.port));
+		return m(List, m(Json, OutputConsole.render(this.model.port)));
 	}
 }
 
