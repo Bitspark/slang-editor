@@ -1,7 +1,7 @@
 import m, {ClassComponent, CVnode} from "mithril";
 import {debounceTime} from "rxjs/operators";
 
-import {PortModel, BOS} from "../../core/abstract/port";
+import {BOS, PortModel} from "../../core/abstract/port";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {SlangType, SlangTypeJson, SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 
