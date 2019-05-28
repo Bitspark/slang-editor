@@ -1,5 +1,6 @@
 import uuidv4 from "uuid/v4";
 
+import {BOS, EOS} from "../../src/slang/core/abstract/port";
 import {AppModel} from "../../src/slang/core/models/app";
 import {BlueprintModel, BlueprintType} from "../../src/slang/core/models/blueprint";
 import {LandscapeModel} from "../../src/slang/core/models/landscape";
@@ -96,6 +97,32 @@ describe("A port", () => {
 		opS2S.getPortOut()!.connect(specifiedPortIn, true);
 		specifiedPortIn.disconnectAll();
 		expect(Array.from(opG2G.getPortIn()!.getMapSubs()).length).toEqual(1);
+	});
+
+	it("has I/O mechanics and can be read from and written to", () => {
+		const portOut = op.getPortOut()!;
+		const portPrimitive = portOut.getStreamSub().getStreamSub().findMapSub("a");
+		portPrimitive.writeData({handle: "test", isBOS: false, isEOS: false, data: "asd", port: "asd"});
+
+		expect(portPrimitive.isOpenStream()).toEqual(false);
+		const portData = portPrimitive.readData();
+
+		expect(portData).toEqual([{value: "asd"}]);
+		expect(portData[0].isMarker()).toEqual(false);
+	});
+
+	it("has I/O mechanics including markers that tell whether we have yet reach the end of the data", () => {
+		const portOut = op.getPortOut()!;
+		const portPrimitive = portOut.getStreamSub().getStreamSub().findMapSub("a");
+
+		portPrimitive.writeData({handle: "test", isBOS: true, isEOS: false, data: null, port: "asd"});
+		expect(portPrimitive.isOpenStream()).toEqual(true);
+		portPrimitive.writeData({handle: "test", isBOS: false, isEOS: true, data: null, port: "asd"});
+
+		expect(portPrimitive.isOpenStream()).toEqual(false);
+		expect(BOS.isMarker()).toEqual(true);
+		expect(EOS.isMarker()).toEqual(true);
+		expect(portPrimitive.readData()).toEqual([EOS, BOS]);
 	});
 
 });

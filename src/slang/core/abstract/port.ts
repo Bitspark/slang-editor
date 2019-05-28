@@ -1,6 +1,7 @@
-import {Subscription} from "rxjs";
+import {Subject, Subscription} from "rxjs";
 
-import {SlangType, TypeIdentifier} from "../../definitions/type";
+import {PortMessageJson} from "../../definitions/api";
+import {SlangType, SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 
 import {BlackBox} from "./blackbox";
 import {SlangNode} from "./nodes";
@@ -10,6 +11,48 @@ import {canConnectTo} from "./utils/connection-check";
 import {Connections} from "./utils/connections";
 import {SlangSubject} from "./utils/events";
 import {GenericSpecifications} from "./utils/generics";
+
+export class PortDataBuffer {
+	constructor(private readonly msglist: PortMessageJson[] = []) {
+	}
+
+	public append(msg: PortMessageJson) {
+		this.msglist.push(msg);
+	}
+
+	public isOpenStream(): boolean {
+		return this.msglist.filter((each) => each.isBOS).length > this.msglist.filter((each) => each.isEOS).length;
+	}
+
+	public get data(): PortData[] {
+		return this.msglist.map((each) => each.isBOS ? BOS : each.isEOS ? EOS : new PortDataValue(each.data));
+	}
+}
+
+export interface PortData {
+	value: SlangTypeValue;
+
+	isMarker(): boolean;
+}
+
+class PortDataValue {
+	constructor(public readonly value: SlangTypeValue) {
+	}
+
+	public isMarker(): boolean {
+		return false;
+	}
+}
+
+class Marker implements PortData {
+	public readonly value = null;
+
+	public isMarker(): boolean {
+		return true;
+	}
+}
+
+export const [BOS, EOS] = [new Marker(), new Marker()];
 
 export enum PortDirection {
 	In, // 0
@@ -24,6 +67,8 @@ export interface PortGenerics {
 
 export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
+	public readonly dataReceived = new Subject<any>();
+
 	protected connectedWith: PortModel[] = [];
 	protected typeIdentifier = TypeIdentifier.Unspecified;
 
@@ -35,6 +80,8 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	// Properties
 	private readonly name: string;
 	private readonly direction: PortDirection;
+	private readonly portData: PortDataBuffer = new PortDataBuffer();
+
 	private genericIdentifier?: string;
 
 	// Mixins
@@ -476,6 +523,20 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		return this.connectedWith.indexOf(other) !== -1;
 	}
 
+	public readData(): PortData[] {
+		return this.portData.data;
+	}
+
+	public isOpenStream(): boolean {
+		return this.portData.isOpenStream();
+	}
+
+	public writeData(msg: PortMessageJson) {
+		// todo writeData should also expect PortData
+		this.portData.append(msg);
+		this.dataReceived.next();
+	}
+
 	// Subscriptions
 
 	public subscribeConnected(cb: (other: PortModel) => void): Subscription {
@@ -651,6 +712,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				break;
 		}
 	}
+
 }
 
 export type PortModel = GenericPortModel<PortOwner>;

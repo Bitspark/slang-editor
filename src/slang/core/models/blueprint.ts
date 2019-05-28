@@ -1,6 +1,6 @@
 import {filter} from "rxjs/operators";
 
-import {OperatorGeometry} from "../../definitions/api";
+import {OperatorGeometry, PortMessageJson} from "../../definitions/api";
 import {SlangParsing} from "../../definitions/parsing";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 import {BlackBox} from "../abstract/blackbox";
@@ -142,7 +142,7 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 	// Topics::Deployment
 	private instance = new SlangBehaviorSubject<BlueprintInstance | null>("instance", null);
 	private inputPushed = new SlangSubject<SlangTypeValue>("input-pushed");
-	private outputPushed = new SlangSubject<SlangTypeValue>("output-pushed");
+	private outputPushed = new SlangSubject<PortMessageJson>("output-pushed");
 	private readonly fakeGenerics = new GenericSpecifications(FAKE_GENERIC_VALUES);
 	private readonly geometry: BlueprintGeometry;
 
@@ -418,7 +418,7 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		}
 	}
 
-	public pushOutput(outputData: SlangTypeValue) {
+	public pushOutput(outputData: PortMessageJson) {
 		if (this.isDeployed()) {
 			this.outputPushed.next(outputData);
 		}
@@ -454,7 +454,7 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		this.inputPushed.subscribe(cb, this.instance.pipe(filter((ins) => !ins)));
 	}
 
-	public subscribeOutputPushed(cb: (outputData: SlangTypeValue) => void): void {
+	public subscribeOutputPushed(cb: (outputData: PortMessageJson) => void): void {
 		this.outputPushed.subscribe(cb);
 	}
 

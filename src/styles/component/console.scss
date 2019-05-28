@@ -170,3 +170,31 @@
 	}
 
 }
+
+.json {
+
+	&:hover {
+		> :first-child, > :last-child {
+			color: $primary;
+			font-weight: bolder;
+		}
+	}
+
+	.json-wrapped {
+		margin-left: 1rem;
+	}
+
+	.json-prop {
+		border-radius: 8px;
+		padding: 0 2px;
+		display: flex;
+
+		&:hover {
+			background: transparentize($grey, .85);
+		}
+	}
+
+	.json-prop-key {
+		margin-right: 4px;
+	}
+}

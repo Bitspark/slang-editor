@@ -4,12 +4,13 @@ import {SlangApp} from "../../../slang/app";
 import {BlueprintToolBoxType, SlangAspects} from "../../../slang/aspects";
 import {AppModel} from "../../../slang/core/models/app";
 import {BlueprintModel} from "../../../slang/core/models/blueprint";
-import {ApiService} from "../../../slang/definitions/api";
+import {ApiService, PortMessageJson, RunningOperatorJson} from "../../../slang/definitions/api";
 import {SlangTypeValue} from "../../../slang/definitions/type";
 import {PaperView} from "../../../slang/ui/views/paper-view";
 
 export class DeploymentApp extends SlangApp {
 	private api: ApiService;
+	private runningOperators = new Map<BlueprintModel, RunningOperatorJson>();
 
 	constructor(app: AppModel, aspect: SlangAspects, api: ApiService) {
 		super(app, aspect);
@@ -67,9 +68,15 @@ export class DeploymentApp extends SlangApp {
 			blueprint.shutdown();
 			m.redraw();
 		});
-		blueprint.deploy(await this.api.deployBlueprint(blueprint.uuid));
+
+		const runningOp = await this.api.deployBlueprint(blueprint.uuid);
+		this.runningOperators.set(blueprint, runningOp);
+		blueprint.deploy(runningOp);
 		blueprint.subscribeInputPushed((inputData: SlangTypeValue) => {
 			this.pushInput(blueprint, inputData);
+		});
+		this.api.subscribePortMessage(runningOp, (outputData: PortMessageJson) => {
+			this.pushOutput(blueprint, outputData);
 		});
 	}
 
@@ -87,8 +94,21 @@ export class DeploymentApp extends SlangApp {
 		if (!access) {
 			return;
 		}
-		this.api.pushInput(access.url, inputData).then((outputData: SlangTypeValue) => {
-			blueprint.pushOutput(outputData);
-		});
+		this.api.pushInput(access.url, inputData);
+	}
+
+	private pushOutput(blueprint: BlueprintModel, portMsg: PortMessageJson): void {
+		const access = blueprint.getInstanceAccess();
+		if (!access) {
+			return;
+		}
+
+		const port = blueprint.resolvePortReference(portMsg.port);
+
+		if (!port) {
+			return;
+		}
+
+		port.writeData(portMsg);
 	}
 }

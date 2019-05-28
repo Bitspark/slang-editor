@@ -188,10 +188,12 @@ function streamsGenericLikeCompatibleTo(streamType: StreamType, genericStreamTyp
 }
 
 export function canConnectTo(source: PortModel, destination: PortModel, createGenerics: boolean = true): boolean {
+	// most obvious: source port must be out port and destination must be in port
 	if (!source.isSource() || !destination.isDestination()) {
 		return false;
 	}
 
+	// prevent connecting ghost ports
 	if (source.isGhostPort() && destination.isGhostPort()) {
 		return false;
 	}
@@ -199,9 +201,11 @@ export function canConnectTo(source: PortModel, destination: PortModel, createGe
 	const sourceConnectedWith = Array.from(source.getConnectedWith());
 	const destinationConnectedWith = Array.from(destination.getConnectedWith());
 
+	// check: destination port may have only 1 source port connected to it
 	if (destinationConnectedWith.length !== 0) {
 		return false;
 	}
+	// todo: any idea how next to checks make sense @jm9e?
 	if (destinationConnectedWith.indexOf(destination) !== -1) {
 		return false;
 	}
@@ -209,6 +213,7 @@ export function canConnectTo(source: PortModel, destination: PortModel, createGe
 		throw new Error(`${source.getIdentity()}: asymmetric connection found`);
 	}
 
+	// todo: prevents cycle?
 	if (!cycleCompatibleTo(source, destination)) {
 		return false;
 	}

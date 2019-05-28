@@ -17,7 +17,7 @@ import {AttachableComponent, CellComponent} from "./base";
 import {BlackBoxComponent, OperatorBoxComponent} from "./blackbox";
 import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {ConnectionComponent} from "./connection";
-import {InputConsole, OutputConsole} from "./console";
+import {InputConsole, OutputConsole, OutputConsoleModel} from "./console";
 import {PortGroupPosition} from "./port-group";
 import {Button} from "./toolkit/buttons";
 import {Box} from "./toolkit/toolkit";
@@ -436,23 +436,15 @@ export class WhiteBoxComponent extends CellComponent {
 
 				const portOut = this.blueprint.getPortOut();
 
-				if (portOut) {
-					const outputValues: SlangTypeValue[] = [];
-
-					this.blueprint.subscribeOutputPushed((outputData: SlangTypeValue) => {
-						outputValues.unshift(outputData);
-						m.redraw();
-					});
-
-					this.output.mount({
-						view: () => m(Box, m(OutputConsole, {
-							onLoad: () => {
-								return outputValues;
-							},
-							type: portOut.getType(),
-						})),
-					});
+				if (!portOut) {
+					return;
 				}
+				const outputConsoleModel = new OutputConsoleModel(this.blueprint);
+				this.output.mount({
+					view: () => m(Box, m(OutputConsole, {
+						model: outputConsoleModel,
+					})),
+				});
 
 			}
 		});

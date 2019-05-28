@@ -1,5 +1,8 @@
 import m, {ClassComponent, CVnode} from "mithril";
+import {debounceTime} from "rxjs/operators";
 
+import {BOS, PortModel} from "../../core/abstract/port";
+import {BlueprintModel} from "../../core/models/blueprint";
 import {SlangType, SlangTypeJson, SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 
 import {BINARY_VALUE_TYPE} from "./console/binary";
@@ -9,6 +12,7 @@ import {Button} from "./toolkit/buttons";
 import {Icon} from "./toolkit/icons";
 import {BaseInput, BaseInputAttrs, BooleanInput, NumberInput, StringInput} from "./toolkit/input";
 import {Tk} from "./toolkit/toolkit";
+import List = Tk.List;
 
 export interface ConsoleValueType<T> {
 	typeDef: SlangTypeJson;
@@ -324,30 +328,82 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 }
 
 interface OutputConsoleAttrs {
-	type: SlangType;
+	model: OutputConsoleModel;
+}
 
-	onLoad(): SlangTypeValue[];
+export class OutputConsoleModel {
+	constructor(private readonly blueprint: BlueprintModel) {
+		const dueTime = 500;
+		this.blueprint.getPortOut()!.getDescendantPorts().forEach((port) => {
+			port.dataReceived.pipe(debounceTime(dueTime)).subscribe(() => {
+				m.redraw();
+			});
+		});
+	}
+
+	public get port(): PortModel {
+		return this.blueprint.getPortOut()!;
+	}
+
+	public list(): IterableIterator<PortModel> {
+		return this.blueprint.getPortOut()!.getDescendantPorts().values();
+	}
+}
+
+class Json implements ClassComponent<any> {
+	public view({children}: CVnode<any>): m.Children {
+		return m(".json", [
+			m("", "{"),
+			m(".json-wrapped", children),
+			m("", "}"),
+		]);
+	}
+}
+
+class JsonProp implements ClassComponent<any> {
+	public view({attrs, children}: CVnode<{ prop: string }>): m.Children {
+		return m(".json-prop", [
+			m(".json-prop-key", attrs.prop + ":"),
+			m(".json-prop-val", children),
+		]);
+	}
 }
 
 export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {
-	private type: SlangType | undefined;
+	private static render(port: PortModel): m.Children {
+		switch (port.getTypeIdentifier()) {
+			case TypeIdentifier.Map: {
+				return m(Json, Array.from(port.getMapSubs())
+					.map((subPort) => [
+						m(JsonProp, {prop: subPort.getName()}, OutputConsole.render(subPort)),
+					]));
+			}
+			case TypeIdentifier.Stream: {
+				const subPort = port.getStreamSub();
+				return OutputConsole.render(subPort);
+			}
+			default: {
+				return m("span", [
+					port.readData().map((d) => {
+						if (d.isMarker()) {
+							return d === BOS ? "[" : "]";
+						}
+						return JSON.stringify(d.value) + " ";
+					}),
+					port.isOpenStream() ? m("button.is-loading") : undefined,
+				]);
+			}
+		}
+	}
+
+	private model!: OutputConsoleModel;
 
 	public oninit({attrs}: CVnode<OutputConsoleAttrs>) {
-		this.type = attrs.type;
+		this.model = attrs.model;
 	}
 
-	public view({attrs}: CVnode<OutputConsoleAttrs>): any {
-		const values = attrs.onLoad();
-		const len = values.length;
-		return m(Tk.List, {class: "sl-console-out"},
-			values.map((outputData, i) => {
-				return m(Tk.ListItem, {key: len - i}, this.renderOutput(outputData, this.type!));
-			}),
-		);
-	}
-
-	private renderOutput(value: SlangTypeValue, type: SlangType): m.Children {
-		return m(Output.ConsoleEntry, {type, value});
+	public view(): m.Children {
+		return m(List, m(Json, OutputConsole.render(this.model.port)));
 	}
 }
 

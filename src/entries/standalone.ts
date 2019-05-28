@@ -37,9 +37,6 @@ function slangStudioStandalone(el: HTMLElement): Promise<void> {
 		api.subscribeReconnected(() => {
 			console.info("reconnected");
 		});
-		api.subscribeMessage((m) => {
-			console.info("Message:", m.data);
-		});
 
 		new APIStorageApp(appModel, aspects, api);
 		new DeploymentApp(appModel, aspects, api);
