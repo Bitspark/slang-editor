@@ -1,6 +1,10 @@
 module.exports = {
 	preset: "ts-jest",
 	automock: false,
+	collectCoverage: true,
+	coverageReporters: [
+		"text", "text-summary", "html"
+	],
 	setupFiles: [
 		"./jest.setup.ts"
 	],
