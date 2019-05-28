@@ -11,7 +11,7 @@ describe("ApiService", () => {
 	let server: WS;
 
 	beforeEach(async () => {
-		apiUrl = "http://localhost:1234"
+		apiUrl = "http://localhost:1234";
 		server = new WS("ws://localhost:1234/ws");
 		fetchMock.resetMocks();
 	});
@@ -134,7 +134,7 @@ describe("ApiService", () => {
 		});
 		server.send(JSON.stringify([
 			{topic: MessageTopic.Port, payload: "..."},
-			{topic: MessageTopic.Port, payload: "..."}
+			{topic: MessageTopic.Port, payload: "..."},
 		]));
 		server.closed.then(() => {
 			expect(mockFn).toBeCalledTimes(2);
