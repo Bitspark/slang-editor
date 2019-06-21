@@ -19,6 +19,11 @@ const configurations = [
 		"name": "documentation",
 		"html": "html/documentation.html",
 		"ts": "entries/documentation.ts"
+	},
+	{
+		"name": "webcomponent",
+		"html": "html/webcomponent.html",
+		"ts": "entries/webcomponent.ts"
 	}
 ];
 

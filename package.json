@@ -9,6 +9,8 @@
     "build-embedded": "webpack --config webpack/webpack.config.prod.js --colors --env.slangMode embedded",
     "start-documentation": "npm start -- --env.slangMode documentation --env.apiUrl http://localhost:5149",
     "build-documentation": "webpack --config webpack/webpack.config.prod.js --colors --env.slangMode documentation",
+    "start-webcomponent": "npm start -- --env.slangMode webcomponent --env.apiUrl http://localhost:5149",
+    "build-webcomponent": "webpack --config webpack/webpack.config.prod.js --colors --env.slangMode webcomponent",
     "lint-fix": "tslint --fix -p tsconfig.json -c tslint.json -t verbose",
     "lint": "tslint -p tsconfig.json -c tslint.json",
     "deps": "dependency-cruise --exclude \"^node_modules\" --validate .dependency-cruiser.json ./src/slang",
