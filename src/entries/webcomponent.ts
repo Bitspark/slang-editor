@@ -11,14 +11,14 @@ import {ViewFrame} from "../slang/ui/frame";
 
 class SlangStudio extends HTMLElement {
 	private frame: HTMLDivElement;
+	private apiurl: string | null;
 
 	constructor() {
-		// Always call super first in constructor
 		super();
 
-		// Element functionality written in here
 		const shadow = this.attachShadow({mode: "open"});
 
+		this.apiurl = this.getAttribute("apiurl");
 		this.frame = document.createElement("div");
 		this.setup();
 
@@ -26,14 +26,18 @@ class SlangStudio extends HTMLElement {
 	}
 
 	private setup() {
+		if (!this.apiurl) {
+			throw new Error("need apiurl as attribute");
+		}
+
 		const appModel = AppModel.create("slang");
 		const aspects = new SlangAspects();
 		const app = new Slang(appModel);
 		const frame = new ViewFrame(this.frame, aspects);
 		app.addFrame(frame, true);
 
-		new APIStorageApp(appModel, aspects, "http://localhost:5149");
-		new DeploymentApp(appModel, aspects, "http://localhost:5149");
+		new APIStorageApp(appModel, aspects, this.apiurl);
+		new DeploymentApp(appModel, aspects, this.apiurl);
 		new OperatorDataApp(appModel, aspects);
 		new AutoTriggerApp(appModel, aspects);
 		new BlueprintShareApp(appModel, aspects);
