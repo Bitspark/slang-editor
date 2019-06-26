@@ -5,10 +5,13 @@
 		"./jest.setup.ts"
 	],
 	"compilerOptions": {
-		"outDir": "./build/",
+		"outDir": "./dist/",
+		"rootDir": "./src/",
+		"sourceMap": true,
+		"declaration": true,
 		"strict": true,
-		"module": "commonjs",
-		"target": "es6",
+		"module": "esnext",
+		"target": "esnext",
 		"jsx": "preserve",
 		"allowJs": false,
 		"esModuleInterop": true,
@@ -19,6 +22,12 @@
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,
 		"diagnostics": true,
-		"resolveJsonModule": true,
+        "resolveJsonModule": true
+		"lib": [
+			"dom",
+			"es2015",
+			"es5",
+			"es6"
+		]
 	}
 }

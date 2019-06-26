@@ -6,7 +6,20 @@
 </head>
 <body>
 
-<slang-studio apiurl="http://localhost:5149"></slang-studio>
+<slang-studio id="studio"></slang-studio>
+
+<script>
+	setTimeout(() => {
+		const am = document.getElementById("studio").appModel;
+		const lm = am.createLandscape();
+		const bp = lm.createBlueprint({
+			uuid: "dsgfd",
+			type: 2,
+			meta: {name: "hello"}
+		});
+		bp.open();
+	}, 1000);
+</script>
 
 </body>
 </html>

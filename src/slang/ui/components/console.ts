@@ -7,7 +7,6 @@ import {SlangType, SlangTypeJson, SlangTypeValue, TypeIdentifier} from "../../de
 
 import {BINARY_VALUE_TYPE} from "./console/binary";
 import {FILE_VALUE_TYPE, IMAGE_VALUE_TYPE} from "./console/file";
-import {GRAPH_VALUE_TYPE} from "./console/graph";
 import {Button} from "./toolkit/buttons";
 import {Icon} from "./toolkit/icons";
 import {BaseInput, BaseInputAttrs, BooleanInput, NumberInput, StringInput} from "./toolkit/input";
@@ -410,4 +409,3 @@ export class OutputConsole implements ClassComponent<OutputConsoleAttrs> {
 ConsoleValueTypeManager.register(BINARY_VALUE_TYPE);
 ConsoleValueTypeManager.register(FILE_VALUE_TYPE);
 ConsoleValueTypeManager.register(IMAGE_VALUE_TYPE);
-ConsoleValueTypeManager.register(GRAPH_VALUE_TYPE);

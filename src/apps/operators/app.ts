@@ -33,7 +33,7 @@ export class OperatorDataApp extends SlangApp {
 		let bp: BlueprintModel;
 		try {
 			bp = this.getBlueprint(uuid);
-		} catch (e) {
+		} catch {
 			return;
 		}
 
@@ -161,7 +161,7 @@ class ConvertOperator implements SlangAspectImpl {
 			const genSpec = opr.getGenerics();
 			try {
 				genSpec.specify(genName, SlangType.new(toTypeIdentifier(opt)));
-			} catch (e) {
+			} catch {
 				genSpec.specify(genName, SlangType.newUnspecified());
 			}
 		}
