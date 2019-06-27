@@ -10,6 +10,7 @@ import {ViewFrame} from "./slang/ui/frame";
 
 class SlangStudio extends HTMLElement {
 	private readonly frame: HTMLDivElement;
+	private app!: Slang;
 	private appModel!: AppModel;
 
 	constructor() {
@@ -31,17 +32,15 @@ class SlangStudio extends HTMLElement {
 		this.appModel = AppModel.create("slang");
 
 		const aspects = new SlangAspects();
-		const app = new Slang(this.appModel);
+		this.app = new Slang(this.appModel);
 		const frame = new ViewFrame(this.frame, aspects);
-		app.addFrame(frame, true);
+		this.app.addFrame(frame, true);
 
-		app.load().then(() => {
+		this.app.load().then(() => {
 			const mainLandscape = this.appModel.getChildNode(LandscapeModel)!;
 			mainLandscape.open();
 		});
 	}
 }
 
-export function init() {
-	customElements.define("slang-studio", SlangStudio);
-}
+customElements.define("slang-studio", SlangStudio);

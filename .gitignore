@@ -3,6 +3,7 @@ node_modules
 
 # production
 build
+dist
 bundle.zip
 
 # misc
