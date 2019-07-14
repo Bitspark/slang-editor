@@ -1,17 +1,24 @@
-// tslint:disable-next-line
-import "./styles/index.scss";
-
-// tslint:disable-next-line
 import {SlangAspects} from "./slang/aspects";
 import {AppModel} from "./slang/core/models/app";
-import {LandscapeModel} from "./slang/core/models/landscape";
 import {Slang} from "./slang/slang";
 import {ViewFrame} from "./slang/ui/frame";
+import {INDEX} from "./styles";
 
-class SlangStudio extends HTMLElement {
+export * from "./slang/definitions/api";
+export * from "./slang/definitions/type";
+export * from "./slang/core/mapper";
+export * from "./slang/core/models/app";
+export * from "./slang/core/models/blueprint";
+export * from "./slang/core/models/delegate";
+export * from "./slang/core/models/landscape";
+export * from "./slang/core/models/operator";
+export * from "./slang/core/models/port";
+
+export class SlangStudioElement extends HTMLElement {
+	public readonly app: Slang;
+	public readonly appModel: AppModel;
+
 	private readonly frame: HTMLDivElement;
-	private app!: Slang;
-	private appModel!: AppModel;
 
 	constructor() {
 		super();
@@ -19,28 +26,21 @@ class SlangStudio extends HTMLElement {
 		const shadow = this.attachShadow({mode: "open"});
 
 		this.frame = document.createElement("div");
-		this.setup();
-
+		const style = document.createElement("style");
+		style.innerText = INDEX;
+		shadow.appendChild(style);
 		shadow.appendChild(this.frame);
+
+		this.appModel = AppModel.create("slang");
+
+		this.app = new Slang(this.appModel);
+		this.app.addFrame(new ViewFrame(this.frame, new SlangAspects()), true);
+		this.app.load();
 	}
 
 	public get model(): AppModel {
 		return this.appModel;
 	}
-
-	private setup() {
-		this.appModel = AppModel.create("slang");
-
-		const aspects = new SlangAspects();
-		this.app = new Slang(this.appModel);
-		const frame = new ViewFrame(this.frame, aspects);
-		this.app.addFrame(frame, true);
-
-		this.app.load().then(() => {
-			const mainLandscape = this.appModel.getChildNode(LandscapeModel)!;
-			mainLandscape.open();
-		});
-	}
 }
 
-customElements.define("slang-studio", SlangStudio);
+customElements.define("slang-studio", SlangStudioElement);

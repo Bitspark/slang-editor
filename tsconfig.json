@@ -5,12 +5,13 @@
 		"./jest.setup.ts"
 	],
 	"compilerOptions": {
-		"outDir": "./dist/",
-		"rootDir": "./src/",
+		"outDir": "dist",
+		"rootDir": "src",
 		"sourceMap": true,
 		"declaration": true,
 		"strict": true,
-		"module": "es2015",
+		"declarationMap": true,
+		"module": "esnext",
 		"target": "es2015",
 		"jsx": "preserve",
 		"allowJs": false,
@@ -22,6 +23,7 @@
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,
 		"diagnostics": true,
+		"skipLibCheck": true,
         "resolveJsonModule": true
 		"lib": [
 			"dom",

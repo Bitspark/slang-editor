@@ -21,6 +21,11 @@ $blackbox-color-fill: $white;
 $blackbox-color-stroke: $black;
 $blackbox-color-label: $black;
 
+.sl-view {
+	width: 100%;
+	height: 100%;
+}
+
 // BLACKBOX
 
 .sl-blackbox, .sl-blackbox-ghost {

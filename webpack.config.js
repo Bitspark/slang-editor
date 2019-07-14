@@ -1,18 +1,20 @@
 const path = require("path");
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const {CleanWebpackPlugin} = require("clean-webpack-plugin");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 
 module.exports = () => {
 	return {
 		node: {
-			fs: 'empty',
+			fs: "empty",
 		},
 		entry: {
-			'index': path.resolve(__dirname, `./src/index.ts`),
+			"index": path.resolve(__dirname, `./src/index.ts`),
 		},
 		output: {
 			path: path.resolve(__dirname, "dist"),
-			filename: '[name].js',
+			filename: "[name].js",
+			library: "SlangStudio",
+			libraryTarget: "umd",
 		},
 		plugins: [
 			new CleanWebpackPlugin(),
@@ -42,6 +44,7 @@ module.exports = () => {
 				},
 				{
 					test: /\.tsx?$/,
+					exclude: /node_modules/,
 					use: {
 						loader: "ts-loader",
 						query: {
@@ -50,7 +53,6 @@ module.exports = () => {
 							},
 						},
 					},
-					exclude: /node_modules/
 				},
 				{
 					test: /\.mjs$/,
@@ -69,14 +71,14 @@ module.exports = () => {
 			]
 		},
 		optimization: {
-			minimizer: [
-				new UglifyJsPlugin({
-					uglifyOptions: {
-						compress: true,
-					},
-					sourceMap: true,
-				})
-			]
-		}
+			// minimizer: [
+			// 	new UglifyJsPlugin({
+			// 		uglifyOptions: {
+			// 			compress: true,
+			// 		},
+			// 		sourceMap: true,
+			// 	})
+			// ]
+		},
 	};
 };

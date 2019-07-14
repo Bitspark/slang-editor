@@ -31,6 +31,10 @@ export class AppModel extends SlangNode {
 		this.landscape = this.createLandscape();
 	}
 
+	public get mainLandscape(): LandscapeModel | null {
+		return this.getChildNode(LandscapeModel);
+	}
+
 	// Actions
 
 	public load(): Promise<void> {

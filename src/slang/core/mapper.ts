@@ -1,16 +1,11 @@
+import {SlangType, TypeIdentifier} from "../definitions/type";
 import {
-	BlueprintJson,
-	BlueprintsJson,
-	ConnectionsApiResponse,
-	GenericSpecificationsApiResponse,
+	BlueprintJson, BlueprintsJson,
+	ConnectionsApiResponse, GenericSpecificationsApiResponse,
 	OperatorJson,
-	PortGroupApiResponse,
-	PortGroupsApiResponse,
-	PropertyApiResponse,
-	PropertyAssignmentsApiResponse,
+	PortGroupApiResponse, PortGroupsApiResponse, PropertyApiResponse, PropertyAssignmentsApiResponse,
 	TypeDefApiResponse,
 } from "../definitions/api";
-import {SlangType, TypeIdentifier} from "../definitions/type";
 
 import {PortDirection, PortModel} from "./abstract/port";
 import {Connection} from "./abstract/utils/connections";
@@ -200,7 +195,7 @@ function fromTypeIdentifier(t: TypeIdentifier): "string" | "number" | "boolean" 
  */
 
 export function loadBlueprints(landscape: LandscapeModel, blueprintsJson: BlueprintsJson) {
-	// 1) Create unfinsihed blueprints (only with some basic information)
+	// 1) Create unfinished blueprints (only with some basic information)
 
 	blueprintsJson.elementary.forEach((blueprintJson) => {
 		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Elementary);
@@ -212,6 +207,10 @@ export function loadBlueprints(landscape: LandscapeModel, blueprintsJson: Bluepr
 		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Local);
 	});
 	finishBlueprintModelsInstantiation(landscape, blueprintsJson);
+}
+
+export function addBlueprint(landscape: LandscapeModel, bpDef: BlueprintJson, bpType: BlueprintType): BlueprintModel {
+	return createUnfinishedBlueprintModel(landscape, bpDef, bpType);
 }
 
 function createUnfinishedBlueprintModel(landscape: LandscapeModel, bpDef: BlueprintJson, bpType: BlueprintType): BlueprintModel {
