@@ -1,7 +1,7 @@
 {
   "name": "slang-studio",
   "version": "1.0.0",
-  "description": "Web application for Slang, a visual programming language.",
+  "description": "Web component for Slang, a visual programming language.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "source": "src/index.ts",
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wbkd/webpack-starter.git"
+    "url": "git+https://github.com/Bitspark/slang-studio.git"
   },
   "keywords": [
     "slang",
