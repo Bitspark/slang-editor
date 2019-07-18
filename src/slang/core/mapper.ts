@@ -1,4 +1,3 @@
-import {SlangType, TypeIdentifier} from "../definitions/type";
 import {
 	BlueprintJson, BlueprintsJson,
 	ConnectionsApiResponse, GenericSpecificationsApiResponse,
@@ -6,6 +5,7 @@ import {
 	PortGroupApiResponse, PortGroupsApiResponse, PropertyApiResponse, PropertyAssignmentsApiResponse,
 	TypeDefApiResponse,
 } from "../definitions/api";
+import {SlangType, TypeIdentifier} from "../definitions/type";
 
 import {PortDirection, PortModel} from "./abstract/port";
 import {Connection} from "./abstract/utils/connections";

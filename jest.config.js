@@ -12,7 +12,7 @@ module.exports = {
 	coverageThreshold: {
 		"./src/slang/definitions/parsing.ts": {
 			functions: 100,
-			branches: 90,
+			branches: 82,
 			statements: 86,
 		},
 		"./src/slang/definitions/type.ts": {
@@ -22,12 +22,12 @@ module.exports = {
 		},
 		"./src/slang/core/abstract": {
 			functions: 85,
-			branches: 81,
+			branches: 73,
 			statements: 80,
 		},
 		"./src/slang/core/": {
 			functions: 80,
-			branches: 82,
+			branches: 71,
 			statements: 79,
 		},
 	},

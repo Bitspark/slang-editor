@@ -24,7 +24,7 @@
 		"noFallthroughCasesInSwitch": true,
 		"diagnostics": true,
 		"skipLibCheck": true,
-        "resolveJsonModule": true
+		"resolveJsonModule": true,
 		"lib": [
 			"dom",
 			"es2015",

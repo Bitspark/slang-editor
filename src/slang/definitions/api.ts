@@ -3,8 +3,6 @@ import {delay, filter, map} from "rxjs/operators";
 
 import {BlueprintMeta} from "../core/models/blueprint";
 
-import {SlangTypeValue} from "./type";
-
 export interface XY {
 	x: number;
 	y: number;
@@ -400,4 +398,13 @@ export class ApiService {
 		);
 	}
 
+export interface SlangBundle {
+	main: string;
+	args?: {
+		properties: PropertyAssignmentsApiResponse;
+		generics: GenericSpecificationsApiResponse;
+	};
+	blueprints: {
+		[id: string]: BlueprintJson,
+	};
 }

@@ -16,11 +16,7 @@ describe("A blueprint delegate", () => {
 	beforeEach(async () => {
 		appModel = AppModel.create("test-app");
 		new TestStorageApp(appModel, data);
-		const ls = appModel.getChildNode(LandscapeModel);
-		if (!ls) {
-			throw new Error("landscape not found");
-		}
-		landscapeModel = ls;
+		landscapeModel = appModel.createLandscape();
 		await appModel.load();
 	});
 
@@ -46,11 +42,7 @@ describe("An operator delegate", () => {
 	beforeEach(async () => {
 		appModel = AppModel.create("test-app");
 		new TestStorageApp(appModel, data);
-		const ls = appModel.getChildNode(LandscapeModel);
-		if (!ls) {
-			throw new Error("landscape not found");
-		}
-		landscapeModel = ls;
+		landscapeModel = appModel.createLandscape();
 		await appModel.load();
 
 		bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), meta: {name: "test-bp-2"}, type: BlueprintType.Local});
