@@ -1,6 +1,6 @@
 import {filter} from "rxjs/operators";
 
-import {OperatorGeometry, PortMessageJson} from "../../definitions/api";
+import {BlueprintJson, OperatorGeometry, SlangBundle, PortMessageJson} from "../../definitions/api";
 import {SlangParsing} from "../../definitions/parsing";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 import {BlackBox} from "../abstract/blackbox";
@@ -9,6 +9,7 @@ import {Connections} from "../abstract/utils/connections";
 import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../abstract/utils/events";
 import {GenericSpecifications} from "../abstract/utils/generics";
 import {PropertyAssignments, PropertyModel} from "../abstract/utils/properties";
+import {blueprintModelToJson} from "../mapper";
 
 import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
 import {LandscapeModel} from "./landscape";
@@ -181,6 +182,29 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		});
 	}
 
+	public assembleBundle(): SlangBundle {
+		const blueprints: {[uuid: string]: BlueprintJson} = {};
+		const remainingBlueprints: BlueprintModel[] = [this];
+
+		while (remainingBlueprints.length > 0) {
+			const currBp = remainingBlueprints.pop();
+			if (!currBp || blueprints.hasOwnProperty(currBp.uuid)) {
+				continue;
+			}
+
+			blueprints[currBp.uuid] = blueprintModelToJson(currBp);
+
+			for (const op of currBp.getOperators()) {
+				remainingBlueprints.push(op.getBlueprint());
+			}
+		}
+
+		return {
+			blueprints,
+			main: this.uuid,
+		};
+	}
+
 	public getFakeGenerics(): GenericSpecifications {
 		return this.fakeGenerics;
 	}
@@ -350,8 +374,7 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 				return null;
 			}
 
-			const mapSubName = pathPart;
-			port = port.findMapSub(mapSubName);
+			port = port.findMapSub(pathPart);
 			if (!port) {
 				return undefined;
 			}
