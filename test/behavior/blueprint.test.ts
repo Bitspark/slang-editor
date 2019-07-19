@@ -283,4 +283,13 @@ describe("A new blueprint", () => {
 		bp.outPosition = 20;
 		expect(bp.outPosition).toEqual(20);
 	});
+
+	it("can be exported", () => {
+		const bp = landscapeModel.findBlueprint("8019ef19-94c1-46d4-9a34-6dcd4a5281a8")!;
+		const bundle = bp.assembleBundle();
+
+		expect(bundle.main).toBe("8019ef19-94c1-46d4-9a34-6dcd4a5281a8");
+		expect(bundle.blueprints["8019ef19-94c1-46d4-9a34-6dcd4a5281a8"]).toBeTruthy();
+		expect(bundle.blueprints["ba24c37f-2b04-44b4-97ad-fd931c9ab77b"]).toBeTruthy();
+	});
 });
