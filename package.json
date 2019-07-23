@@ -1,6 +1,6 @@
 {
   "name": "slang-studio",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Web component for Slang, a visual programming language.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -104,7 +104,7 @@
     "tslint-consistent-codestyle": "^1.15.1",
     "tslint-eslint-rules": "^5.4.0",
     "typescript": "^3.5.3",
-    "webpack": "^4.36.1",
+    "webpack": "^4.37.0",
     "webpack-cli": "^3.3.6",
     "webpack-dev-server": "^3.7.2",
     "webpack-merge": "^4.2.1"

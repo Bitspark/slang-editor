@@ -61,7 +61,7 @@ export class AppModel extends SlangNode {
 			local: [],
 		};
 
-		const uuids = Object.keys(bundle);
+		const uuids = Object.keys(bundle.blueprints);
 		for (const uuid of uuids) {
 			const bpDef = bundle.blueprints[uuid];
 			blueprintsJson.local.push(bpDef);
