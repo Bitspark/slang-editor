@@ -1,7 +1,5 @@
-import {BlueprintsJson, SlangBundle} from "../../definitions/api";
 import {SlangNode} from "../abstract/nodes";
 import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../abstract/utils/events";
-import {loadBlueprints} from "../mapper";
 
 import {BlueprintModel} from "./blueprint";
 import {LandscapeModel} from "./landscape";
@@ -50,32 +48,6 @@ export class AppModel extends SlangNode {
 
 	public createLandscape(): LandscapeModel {
 		return this.createChildNode(LandscapeModel, {});
-	}
-
-	public loadBundle(bundle: SlangBundle): { blueprint: BlueprintModel, landscape: LandscapeModel } {
-		const landscape = this.createLandscape();
-
-		const blueprintsJson: BlueprintsJson = {
-			elementary: [],
-			library: [],
-			local: [],
-		};
-
-		const uuids = Object.keys(bundle.blueprints);
-		for (const uuid of uuids) {
-			const bpDef = bundle.blueprints[uuid];
-			blueprintsJson.local.push(bpDef);
-		}
-
-		loadBlueprints(landscape, blueprintsJson);
-
-		const blueprint = landscape.scanChildNode(BlueprintModel, (bp) => bp.uuid === bundle.main);
-
-		if (!blueprint) {
-			throw new Error(`Corrupt bundle detected, main blueprint ${bundle.main} not contained in bundle`);
-		}
-
-		return {blueprint, landscape};
 	}
 
 	// Subscriptions

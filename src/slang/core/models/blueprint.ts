@@ -9,7 +9,6 @@ import {Connections} from "../abstract/utils/connections";
 import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../abstract/utils/events";
 import {GenericSpecifications} from "../abstract/utils/generics";
 import {PropertyAssignments, PropertyModel} from "../abstract/utils/properties";
-import {blueprintModelToJson} from "../mapper";
 
 import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
 import {LandscapeModel} from "./landscape";
@@ -180,29 +179,6 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 				operator.reconstruct();
 			});
 		});
-	}
-
-	public assembleBundle(): SlangBundle {
-		const blueprints: {[uuid: string]: BlueprintJson} = {};
-		const remainingBlueprints: BlueprintModel[] = [this];
-
-		while (remainingBlueprints.length > 0) {
-			const currBp = remainingBlueprints.pop();
-			if (!currBp || blueprints.hasOwnProperty(currBp.uuid)) {
-				continue;
-			}
-
-			blueprints[currBp.uuid] = blueprintModelToJson(currBp);
-
-			for (const op of currBp.getOperators()) {
-				remainingBlueprints.push(op.getBlueprint());
-			}
-		}
-
-		return {
-			blueprints,
-			main: this.uuid,
-		};
 	}
 
 	public getFakeGenerics(): GenericSpecifications {

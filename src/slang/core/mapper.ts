@@ -206,6 +206,7 @@ export function loadBlueprints(landscape: LandscapeModel, blueprintsJson: Bluepr
 	blueprintsJson.local.forEach((blueprintJson) => {
 		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Local);
 	});
+
 	finishBlueprintModelsInstantiation(landscape, blueprintsJson);
 }
 
@@ -214,6 +215,10 @@ export function addBlueprint(landscape: LandscapeModel, bpDef: BlueprintJson, bp
 }
 
 function createUnfinishedBlueprintModel(landscape: LandscapeModel, bpDef: BlueprintJson, bpType: BlueprintType): BlueprintModel {
+	if (!!landscape.findBlueprint(bpDef.id)) {
+		throw new BlueprintExistsError(bpDef.id);
+	}
+
 	const services = bpDef.services;
 	const bpGeo = bpDef.geometry;
 	const geometry = (services && bpGeo) ? Object.assign(bpGeo, {port: services.main.geometry!}) : undefined;
@@ -392,4 +397,15 @@ function createGenericSpecifications(blueprint: BlueprintModel, genericsData: Ge
 		});
 	}
 	return generics;
+}
+
+/**
+ * Error to indicate a blueprint already exists.
+ */
+export class BlueprintExistsError extends Error {
+
+	constructor(id: string) {
+		super(`Blueprint with ID ${id} already exists`);
+	}
+
 }

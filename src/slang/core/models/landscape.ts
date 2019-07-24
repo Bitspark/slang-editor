@@ -1,5 +1,7 @@
+import {BlueprintJson, BlueprintsJson, SlangBundle} from "../../definitions/api";
 import {SlangNode} from "../abstract/nodes";
 import {SlangBehaviorSubject, SlangSubjectTrigger} from "../abstract/utils/events";
+import {BlueprintExistsError, blueprintModelToJson, loadBlueprints} from "../mapper";
 
 import {AppModel} from "./app";
 import {BlueprintModel, BlueprintModelArgs} from "./blueprint";
@@ -24,6 +26,67 @@ export class LandscapeModel extends SlangNode {
 			throw Error(`given blueprint uuid is not valid: ${uuid}`);
 		}
 		return this.scanChildNode(BlueprintModel, (blueprint) => uuid === blueprint.uuid);
+	}
+
+	// Import and export
+
+	public exportBundle(mainId: string): SlangBundle {
+		const mainBp = this.findBlueprint(mainId);
+		if (!mainBp) {
+			throw new BundleError(mainId);
+		}
+
+		const blueprints: { [id: string]: BlueprintJson } = {};
+		const remainingBlueprints: BlueprintModel[] = [mainBp];
+
+		while (remainingBlueprints.length > 0) {
+			const currBp = remainingBlueprints.pop();
+			if (!currBp || blueprints.hasOwnProperty(currBp.uuid)) {
+				continue;
+			}
+
+			blueprints[currBp.uuid] = blueprintModelToJson(currBp);
+
+			for (const op of currBp.getOperators()) {
+				remainingBlueprints.push(op.getBlueprint());
+			}
+		}
+
+		return {
+			blueprints,
+			main: mainId,
+		};
+	}
+
+	public loadBundle(bundle: SlangBundle): BlueprintModel {
+		const blueprintsJson: BlueprintsJson = {
+			elementary: [],
+			library: [],
+			local: [],
+		};
+
+		const uuids = Object.keys(bundle.blueprints);
+		for (const uuid of uuids) {
+			const bpDef = bundle.blueprints[uuid];
+			blueprintsJson.local.push(bpDef);
+		}
+
+		try {
+			loadBlueprints(this, blueprintsJson);
+		} catch (e) {
+			if (e instanceof BlueprintExistsError) {
+				// Just ignore this for now
+			} else {
+				throw e;
+			}
+		}
+
+		const blueprint = this.scanChildNode(BlueprintModel, (bp) => bp.uuid === bundle.main);
+		if (!blueprint) {
+			throw new BundleError(bundle.main);
+		}
+
+		return blueprint;
 	}
 
 	// Actions
@@ -56,6 +119,16 @@ export class LandscapeModel extends SlangNode {
 
 	public subscribeOpenedChanged(cb: (opened: boolean) => void) {
 		this.opened.subscribe(cb);
+	}
+
+}
+
+// Exceptions
+
+export class BundleError extends Error {
+
+	constructor(id: string) {
+		super(`Corrupt blueprint detected, blueprint ${id} does not exist`);
 	}
 
 }
