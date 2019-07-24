@@ -26,6 +26,10 @@ export class ViewFrame {
 		});
 	}
 
+	public getView(): View | null {
+		return this.view;
+	}
+
 	public getAspects(): SlangAspects {
 		return this.aspects;
 	}

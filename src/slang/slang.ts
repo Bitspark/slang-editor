@@ -31,6 +31,14 @@ export class Slang {
 		this.outlet = frame;
 	}
 
+	public getOutlet(): ViewFrame | null {
+		return this.outlet;
+	}
+
+	public getFrames(): Iterable<ViewFrame> {
+		return this.frames.values();
+	}
+
 	public async load(): Promise<void> {
 		this.subscribe();
 		return this.app.load();

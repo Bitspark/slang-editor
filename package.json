@@ -1,6 +1,6 @@
 {
   "name": "slang-studio",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "Web component for Slang, a visual programming language.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
