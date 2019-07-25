@@ -52,7 +52,7 @@ describe("The landscape", () => {
 
 		const bp = landscapeModel.loadBundle(bundle);
 		expect(landscapeModel.findBlueprint("a4df2ce5-bf32-4be3-b0a3-85411ec699d4")).toBeTruthy();
-		expect(bp.name).toEqual("Test Bluprint");
+		expect(bp.name).toEqual("Test Blueprint");
 		expect(bp.getPortIn()!.getTypeIdentifier()).toEqual(TypeIdentifier.String);
 		expect(bp.getPortOut()!.getTypeIdentifier()).toEqual(TypeIdentifier.Number);
 
