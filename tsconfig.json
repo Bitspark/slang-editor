@@ -5,8 +5,13 @@
 		"./jest.setup.ts"
 	],
 	"compilerOptions": {
+        "experimentalDecorators": true,
 		"outDir": "dist",
 		"rootDir": "src",
+		"baseUrl": "./",
+		"paths": {
+			"slang/*": ["src/slang/*"]
+		},
 		"sourceMap": true,
 		"declaration": true,
 		"strict": true,
