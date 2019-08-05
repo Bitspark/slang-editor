@@ -1,7 +1,7 @@
 // tslint:disable-next-line:no-unused
 import {customElement, LitElement} from "lit-element";
 import {SlangAspects} from "slang/aspects";
-import {AppModel} from "slang/core/models/app";
+import {AppModel} from "slang/core/models";
 import {Slang} from "slang/slang";
 import {ViewFrame} from "slang/ui/frame";
 
