@@ -1,7 +1,7 @@
 import {BlueprintJson, BlueprintsJson, SlangBundle} from "../../definitions/api";
 import {SlangNode} from "../abstract/nodes";
 import {SlangBehaviorSubject, SlangSubjectTrigger} from "../abstract/utils/events";
-import {BlueprintExistsError, blueprintModelToJson, loadBlueprints} from "../mapper";
+import {blueprintModelToJson, loadBlueprints} from "../mapper";
 
 import {AppModel} from "./app";
 import {BlueprintModel, BlueprintModelArgs} from "./blueprint";
@@ -67,19 +67,14 @@ export class LandscapeModel extends SlangNode {
 
 		const uuids = Object.keys(bundle.blueprints);
 		for (const uuid of uuids) {
+			if (this.findBlueprint(uuid)) {
+				continue;
+			}
 			const bpDef = bundle.blueprints[uuid];
 			blueprintsJson.local.push(bpDef);
 		}
 
-		try {
-			loadBlueprints(this, blueprintsJson);
-		} catch (e) {
-			if (e instanceof BlueprintExistsError) {
-				// Just ignore this for now
-			} else {
-				throw e;
-			}
-		}
+		loadBlueprints(this, blueprintsJson);
 
 		const blueprint = this.scanChildNode(BlueprintModel, (bp) => bp.uuid === bundle.main);
 		if (!blueprint) {
