@@ -9,10 +9,6 @@ module.exports = env => merge(common(env), {
 	mode: "production",
 	stats: "errors-only",
 	bail: true,
-	output: {
-		filename: "[name].js",
-		chunkFilename: "[name].chunk.js",
-	},
 	plugins: [
 		new Webpack.DefinePlugin({
 			"process.env.NODE_ENV": JSON.stringify("production"),

@@ -1,12 +1,7 @@
 const Path = require("path");
-const Webpack = require("webpack");
 const {CleanWebpackPlugin} = require("clean-webpack-plugin");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const {BaseHrefWebpackPlugin} = require("base-href-webpack-plugin");
 
-module.exports = env => {
-	return {
+module.exports = env => ({
 		entry: {
 			index: Path.resolve(__dirname, `../src/index.ts`),
 		},
@@ -52,5 +47,4 @@ module.exports = env => {
 				},
 			],
 		},
-	};
-};
+	});
