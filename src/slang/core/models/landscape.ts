@@ -1,7 +1,7 @@
-import {BlueprintJson, BlueprintsJson, SlangBundle} from "../../definitions/api";
-import {SlangNode} from "../abstract/nodes";
-import {SlangBehaviorSubject, SlangSubjectTrigger} from "../abstract/utils/events";
-import {blueprintModelToJson, loadBlueprints} from "../mapper";
+import {SlangNode} from "#slang/core/abstract/nodes";
+import {SlangBehaviorSubject, SlangSubjectTrigger} from "#slang/core/abstract/utils/events";
+import {blueprintModelToJson, loadBlueprints} from "#slang/core/mapper";
+import {BlueprintJson, SlangBundle} from "#slang/definitions/api";
 
 import {AppModel} from "./app";
 import {BlueprintModel, BlueprintModelArgs} from "./blueprint";
@@ -20,6 +20,7 @@ export class LandscapeModel extends SlangNode {
 	}
 
 	public findBlueprint(uuid: string): BlueprintModel | undefined {
+		// TODO use type *uuid* for blueprint IDs
 		const uuidDashCount = 5;
 		if (uuid.indexOf(" ") >= 0 || uuid.split("-").length !== uuidDashCount) {
 			// Valid uuid e.g.: "dc1aa556-d62e-4e07-adbb-53dc317481b0"
@@ -59,24 +60,10 @@ export class LandscapeModel extends SlangNode {
 	}
 
 	public loadBundle(bundle: SlangBundle): BlueprintModel {
-		const blueprintsJson: BlueprintsJson = {
-			elementary: [],
-			library: [],
-			local: [],
-		};
+		const blueprintJsonList = Object.keys(bundle.blueprints).filter((bpId) => !this.findBlueprint(bpId)).map((bpId) => bundle.blueprints[bpId]);
+		loadBlueprints(this, blueprintJsonList);
 
-		const uuids = Object.keys(bundle.blueprints);
-		for (const uuid of uuids) {
-			if (this.findBlueprint(uuid)) {
-				continue;
-			}
-			const bpDef = bundle.blueprints[uuid];
-			blueprintsJson.local.push(bpDef);
-		}
-
-		loadBlueprints(this, blueprintsJson);
-
-		const blueprint = this.scanChildNode(BlueprintModel, (bp) => bp.uuid === bundle.main);
+		const blueprint = this.findBlueprint(bundle.main);
 		if (!blueprint) {
 			throw new BundleError(bundle.main);
 		}

@@ -1,5 +1,5 @@
 import {
-	BlueprintJson, BlueprintsJson,
+	BlueprintJson,
 	ConnectionsApiResponse, GenericSpecificationsApiResponse,
 	OperatorJson,
 	PortGroupApiResponse, PortGroupsApiResponse, PropertyApiResponse, PropertyAssignmentsApiResponse,
@@ -194,20 +194,34 @@ function fromTypeIdentifier(t: TypeIdentifier): "string" | "number" | "boolean" 
   \
  */
 
-export function loadBlueprints(landscape: LandscapeModel, blueprintsJson: BlueprintsJson) {
+export function loadBlueprints(landscape: LandscapeModel, blueprintJsonList: BlueprintJson[]) {
 	// 1) Create unfinished blueprints (only with some basic information)
-
-	blueprintsJson.elementary.forEach((blueprintJson) => {
-		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Elementary);
-	});
-	blueprintsJson.library.forEach((blueprintJson) => {
-		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Library);
-	});
-	blueprintsJson.local.forEach((blueprintJson) => {
+	blueprintJsonList.forEach((blueprintJson) => {
 		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Local);
 	});
 
-	finishBlueprintModelsInstantiation(landscape, blueprintsJson);
+	// 2) Add Operators. Use previously defined Blueprints for assigning Operator.blueprint
+	blueprintJsonList.forEach((bpJson: BlueprintJson) => {
+		const outerBlueprint = landscape.findBlueprint(bpJson.id);
+		if (!outerBlueprint) {
+			return;
+		}
+		instantiateBlueprintOperators(landscape, outerBlueprint, bpJson.operators || {});
+	});
+
+	// 3) Connect operator and blueprint ports
+	blueprintJsonList.forEach((bpDef: BlueprintJson) => {
+		const outerBlueprint = landscape.findBlueprint(bpDef.id);
+		if (!outerBlueprint) {
+			return;
+		}
+
+		const connections = bpDef.connections;
+		if (!connections) {
+			return;
+		}
+		connectBlueprintOperators(outerBlueprint, connections);
+	});
 }
 
 export function addBlueprint(landscape: LandscapeModel, bpDef: BlueprintJson, bpType: BlueprintType): BlueprintModel {
@@ -236,33 +250,6 @@ function createUnfinishedBlueprintModel(landscape: LandscapeModel, bpDef: Bluepr
 	}
 
 	return blueprint;
-}
-
-function finishBlueprintModelsInstantiation(landscape: LandscapeModel, blueprintsJson: BlueprintsJson) {
-	const blueprintJsonList = blueprintsJson.library.concat(blueprintsJson.local);
-
-	// 2) Add Operators. Use previously defined Blueprints for assigning Operator.blueprint
-	blueprintJsonList.forEach((bpJson: BlueprintJson) => {
-		const outerBlueprint = landscape.findBlueprint(bpJson.id);
-		if (!outerBlueprint) {
-			return;
-		}
-		instantiateBlueprintOperators(landscape, outerBlueprint, bpJson.operators || {});
-	});
-
-	// 3) Connect operator and blueprint ports
-	blueprintJsonList.forEach((bpDef: BlueprintJson) => {
-		const outerBlueprint = landscape.findBlueprint(bpDef.id);
-		if (!outerBlueprint) {
-			return;
-		}
-
-		const connections = bpDef.connections;
-		if (!connections) {
-			return;
-		}
-		connectBlueprintOperators(outerBlueprint, connections);
-	});
 }
 
 function instantiateBlueprintOperators(landscape: LandscapeModel, blueprint: BlueprintModel, operatorJsonByName: { [k: string]: OperatorJson }) {
