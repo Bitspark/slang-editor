@@ -92,18 +92,7 @@ export interface BlueprintJson {
 }
 
 export interface ConnectionsApiResponse {
-	[sourcePortReference: string]: [string];
-}
-
-export interface BlueprintsJson {
-	local: BlueprintJson[];
-	library: BlueprintJson[];
-	elementary: BlueprintJson[];
-}
-
-export interface BlueprintApiResponse {
-	type: string;
-	def: BlueprintJson;
+	[sourcePortReference: string]: string[];
 }
 
 export interface Message {
