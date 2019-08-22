@@ -6,13 +6,7 @@ const Html = require("html-webpack-plugin");
 
 const dest = Path.join(__dirname, "../dist");
 
-module.exports = env => merge(common(env), {
-	entry: {
-		index: Path.resolve(__dirname, `../src/html/index.ts`),
-	},
-	output: {
-		chunkFilename: "[name].chunk.js",
-	},
+module.exports = env => (merge(common(env), {
 	mode: "development",
 	devtool: "cheap-eval-source-map",
 	devServer: {
@@ -27,7 +21,7 @@ module.exports = env => merge(common(env), {
 			"process.env.NODE_ENV": JSON.stringify("development"),
 		}),
 		new Html({
-			template: Path.resolve(__dirname, `../src/html/index.html`),
+			template: Path.resolve(__dirname, `../src/example/index.html`),
 		}),
 	],
 	module: {
@@ -50,12 +44,6 @@ module.exports = env => merge(common(env), {
 				test: /\.s?css$/i,
 				use: ["style-loader", "css-loader?sourceMap=true", "sass-loader"],
 			},
-			{
-				test: /\.(html)$/,
-				use: {
-					loader: "html-loader",
-				},
-			},
 		],
 	},
-});
+}));

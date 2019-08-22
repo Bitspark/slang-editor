@@ -1,23 +1,26 @@
 const Path = require("path");
 const Webpack = require("webpack");
 const merge = require("webpack-merge");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const CopyPkgJsonPlugin = require("copy-pkg-json-webpack-plugin");
+const MinifyCss = require("mini-css-extract-plugin");
+const CopyPkgJson = require("copy-pkg-json-webpack-plugin");
 const common = require("./webpack.common.js");
 
 module.exports = env => merge(common(env), {
 	mode: "production",
 	stats: "errors-only",
 	bail: true,
+	entry: {
+		index: Path.resolve(__dirname, `../src/index.ts`),
+	},
 	plugins: [
 		new Webpack.DefinePlugin({
 			"process.env.NODE_ENV": JSON.stringify("production"),
 		}),
 		new Webpack.optimize.ModuleConcatenationPlugin(),
-		new MiniCssExtractPlugin({
+		new MinifyCss({
 			filename: "bundle.css",
 		}),
-		new CopyPkgJsonPlugin({
+		new CopyPkgJson({
 			remove: ["devDependencies"],
 			replace: {scripts: {start: "node index.js"}},
 		}),
@@ -37,7 +40,7 @@ module.exports = env => merge(common(env), {
 			{
 				test: /\.s?css/i,
 				use: [
-					MiniCssExtractPlugin.loader,
+					MinifyCss.loader,
 					"css-loader",
 					"sass-loader",
 				],

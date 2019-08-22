@@ -1,5 +1,5 @@
+import {BlueprintModel} from "./core/models";
 import {AppModel} from "./core/models/app";
-import {BlueprintModel} from "./core/models/blueprint";
 import {ViewFrame} from "./ui/frame";
 import {BlueprintView} from "./ui/views/blueprint";
 import {LandscapeView} from "./ui/views/landscape";

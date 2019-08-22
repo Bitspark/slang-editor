@@ -10,7 +10,8 @@
 		"rootDir": "src",
 		"baseUrl": "./",
 		"paths": {
-			"slang/*": ["src/slang/*"]
+			"#slang/*": ["src/slang/*"],
+			"#apps/*": ["src/apps/*"]
 		},
 		"sourceMap": true,
 		"declaration": true,
@@ -36,5 +37,12 @@
 			"es5",
 			"es6"
 		]
-	}
+	},
+	"exclude": [
+		"node_modules/**",
+		"test/**",
+		"dist/**",
+		"*.js",
+		"*.ts"
+	]
 }

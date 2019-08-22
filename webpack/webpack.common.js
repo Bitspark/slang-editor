@@ -1,13 +1,15 @@
 const Path = require("path");
-const {CleanWebpackPlugin} = require("clean-webpack-plugin");
+const Clean = require("clean-webpack-plugin");
 
-module.exports = env => ({
+module.exports = env => {
+	return {
 		entry: {
-			index: Path.resolve(__dirname, `../src/index.ts`),
+			index: Path.resolve(__dirname, `../src/example/index.ts`),
 		},
 		output: {
 			path: Path.join(__dirname, `../dist`),
 			filename: "[name].js",
+			chunkFilename: "[name].chunk.js",
 		},
 		optimization: {
 			splitChunks: {
@@ -16,11 +18,12 @@ module.exports = env => ({
 			},
 		},
 		plugins: [
-			new CleanWebpackPlugin({root: Path.resolve(__dirname, "..")}),
+			new Clean(["dist"], {root: Path.resolve(__dirname, "..", "..")}),
 		],
 		resolve: {
 			alias: {
-				"slang": Path.resolve(__dirname, "../src/slang"),
+				"#slang": Path.resolve(__dirname, "../src/slang"),
+				"#apps": Path.resolve(__dirname, "../src/apps"),
 			},
 			extensions: [".tsx", ".ts", ".js"],
 		},
@@ -47,4 +50,5 @@ module.exports = env => ({
 				},
 			],
 		},
-	});
+	};
+};
