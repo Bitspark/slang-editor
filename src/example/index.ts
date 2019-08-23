@@ -462,8 +462,6 @@ const bundle: SlangBundle = {
 
 const slangEditor = document.getElementById("main") as SlangEditor;
 if (slangEditor) {
-	const am = slangEditor.appModel;
-	const lm = am.createLandscape();
-	const bp = lm.loadBundle(bundle);
+	const bp = slangEditor.loadBundle(bundle);
 	bp.open();
 }
