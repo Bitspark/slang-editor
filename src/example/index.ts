@@ -465,3 +465,18 @@ if (slangEditor) {
 	const bp = slangEditor.loadBundle(bundle);
 	bp.open();
 }
+
+/*
+function displayBluerpint() {
+	const viewArgs = this.defaultViewArgs || {
+		editable: blueprint.isLocal(),
+		hscrollable: true,
+		vscrollable: true,
+		descendable: true,
+		runnable: true,
+	};
+
+	const view = new BlueprintView(this.outlet, blueprint, viewArgs);
+	this.outlet.setView(view);
+}
+*/
