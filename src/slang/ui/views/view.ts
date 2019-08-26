@@ -13,8 +13,8 @@ export abstract class View {
 		return this.aspects.factory;
 	}
 
-	public getFrame(): ViewFrame {
-		return this.frame;
+	public get rootEl(): HTMLElement {
+		return this.frame.getHTMLElement();
 	}
 
 }

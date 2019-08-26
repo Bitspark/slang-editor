@@ -68,10 +68,6 @@ export abstract class PaperView extends View {
 		this.positionChanged.subscribe(cb);
 	}
 
-	public getViewElement(): HTMLElement {
-		return this.getFrame().getHTMLElement();
-	}
-
 	public onEscapePressed(cb: () => void): void {
 		this.escapePressed.subscribe(cb);
 	}
@@ -92,7 +88,7 @@ export abstract class PaperView extends View {
 	}
 
 	protected createPaper(opt: dia.Paper.Options = {}): dia.Paper {
-		const container = this.getViewElement();
+		const container = this.rootEl;
 		container.innerHTML = "";
 		const inner = document.createElement("div");
 		container.appendChild(inner);
