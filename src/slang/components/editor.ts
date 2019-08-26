@@ -2,7 +2,9 @@
 import {BlueprintModel, LandscapeModel} from "#slang/core/models";
 import {SlangBundle} from "#slang/definitions/api";
 import {BlueprintView} from "#slang/ui/views/blueprint";
-import {customElement, html, LitElement, TemplateResult} from "lit-element";
+// @ts-ignore
+import SlangEditorStyling from "#styles/index.scss";
+import {css, CSSResult, customElement, html, LitElement, TemplateResult} from "lit-element";
 
 import {SlangAspects} from "../aspects";
 import {AppModel} from "../core/models/app";
@@ -17,6 +19,10 @@ export class SlangEditor extends LitElement {
 	constructor() {
 		super();
 		this.landscape = AppModel.create("slang").createLandscape();
+	}
+
+	public static get styles(): CSSResult {
+		return css``;
 	}
 	public loadBundle(bundle: SlangBundle): BlueprintModel {
 		const blueprint = this.landscape.loadBundle(bundle);
@@ -36,7 +42,7 @@ export class SlangEditor extends LitElement {
 	}
 
 	public render(): TemplateResult {
-		return html`<div></div>`;
+		return html`<div></div><style>${SlangEditorStyling.toString()}</style>`;
 	}
 
 	public firstUpdated(_changedProperties: Map<PropertyKey, unknown>): void {

@@ -24,6 +24,7 @@ module.exports = env => {
 			alias: {
 				"#slang": Path.resolve(__dirname, "../src/slang"),
 				"#apps": Path.resolve(__dirname, "../src/apps"),
+				"#styles": Path.resolve(__dirname, "../src/styles"),
 			},
 			extensions: [".tsx", ".ts", ".js"],
 		},

@@ -42,7 +42,7 @@ module.exports = env => (merge(common(env), {
 			},
 			{
 				test: /\.s?css$/i,
-				use: ["style-loader", "css-loader?sourceMap=true", "sass-loader"],
+				use: ["to-string-loader", "css-loader?sourceMap=true", "sass-loader"],
 			},
 		],
 	},
