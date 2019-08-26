@@ -1,5 +1,3 @@
-import {SlangAspects} from "../aspects";
-
 import {View} from "./views/view";
 
 export class ViewFrame {
@@ -7,7 +5,7 @@ export class ViewFrame {
 	private view: View | null = null;
 	private readonly viewEl: HTMLElement;
 
-	public constructor(private readonly container: HTMLElement, protected readonly aspects: SlangAspects) {
+	public constructor(private readonly container: HTMLElement) {
 		this.viewEl = document.createElement("div");
 		this.viewEl.classList.add("sl-view");
 		container.appendChild(this.viewEl);
@@ -28,10 +26,6 @@ export class ViewFrame {
 
 	public getView(): View | null {
 		return this.view;
-	}
-
-	public getAspects(): SlangAspects {
-		return this.aspects;
 	}
 
 	public setView(view: View) {

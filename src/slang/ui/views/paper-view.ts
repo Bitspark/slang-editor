@@ -1,3 +1,4 @@
+import {SlangAspects} from "#slang/aspects";
 import {dia, g, shapes, util} from "jointjs";
 
 import {SlangSubjectTrigger} from "../../core/abstract/utils/events";
@@ -27,8 +28,8 @@ export abstract class PaperView extends View {
 	private minScale: number = 0.35;
 	private maxScale: number = 2.5;
 
-	protected constructor(frame: ViewFrame, private args: PaperViewArgs) {
-		super(frame);
+	protected constructor(frame: ViewFrame, aspects: SlangAspects, private args: PaperViewArgs) {
+		super(frame, aspects);
 		this.paper = this.createPaper();
 		this.redirectPaperEvents();
 	}

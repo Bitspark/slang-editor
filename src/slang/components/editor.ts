@@ -50,7 +50,7 @@ export class SlangEditor extends LitElement {
 			return;
 		}
 		const frame = this.shadowRoot.firstElementChild as HTMLElement;
-		this.viewFrame = new ViewFrame(frame, new SlangAspects());
+		this.viewFrame = new ViewFrame(frame);
 
 		if (this.blueprint) {
 			this.showBlueprint(this.blueprint);
@@ -69,6 +69,6 @@ export class SlangEditor extends LitElement {
 			descendable: true,
 			runnable: true,
 		};
-		this.viewFrame.setView(new BlueprintView(this.viewFrame, blueprint, viewArgs));
+		this.viewFrame.setView(new BlueprintView(this.viewFrame, new SlangAspects(), blueprint, viewArgs));
 	}
 }

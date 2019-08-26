@@ -1,3 +1,4 @@
+import {SlangAspects} from "#slang/aspects";
 import {dia} from "jointjs";
 import m from "mithril";
 
@@ -25,8 +26,8 @@ export class BlueprintView extends PaperView {
 	private blueprintSelect: BlueprintSelectComponent | null = null;
 	private oprCtrl: AttachableComponent | null = null;
 
-	constructor(frame: ViewFrame, private blueprint: BlueprintModel, args: PaperViewArgs) {
-		super(frame, args);
+	constructor(frame: ViewFrame, aspects: SlangAspects, private blueprint: BlueprintModel, args: PaperViewArgs) {
+		super(frame, aspects, args);
 		this.addPanning();
 		this.landscape = this.blueprint.getAncestorNode(LandscapeModel)!;
 		this.whiteBox = new WhiteBoxComponent(this, blueprint);
