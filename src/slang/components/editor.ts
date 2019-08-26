@@ -22,7 +22,9 @@ export class SlangEditor extends LitElement {
 	}
 
 	public static get styles(): CSSResult {
-		return css``;
+		return css`:host {
+			display:block
+		}`;
 	}
 	public loadBundle(bundle: SlangBundle): BlueprintModel {
 		const blueprint = this.landscape.loadBundle(bundle);
@@ -42,7 +44,7 @@ export class SlangEditor extends LitElement {
 	}
 
 	public render(): TemplateResult {
-		return html`<div></div><style>${SlangEditorStyling.toString()}</style>`;
+		return html`<div class="ViewFrame"></div><style>${SlangEditorStyling.toString()}</style>`;
 	}
 
 	public firstUpdated(_changedProperties: Map<PropertyKey, unknown>): void {
