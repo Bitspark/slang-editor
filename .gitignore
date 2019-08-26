@@ -1,6 +1,11 @@
 # dependencies
 node_modules
 
+npm-debug.log
+yarn-error.log
+yarn.lock
+.yarnclean
+
 # production
 build
 dist
@@ -9,8 +14,6 @@ bundle.zip
 # misc
 .DS_Store
 
-npm-debug.log
-yarn-error.log
-yarn.lock
-.yarnclean
+# IDEs
 .vscode
+.idea
