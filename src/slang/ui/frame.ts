@@ -6,11 +6,12 @@ export class ViewFrame {
 	private readonly viewEl: HTMLElement;
 
 	public constructor(private readonly container: HTMLElement) {
-		this.viewEl = document.createElement("div");
-		this.viewEl.classList.add("sl-view");
-		container.appendChild(this.viewEl);
-		container.style.overflow = "hidden";
-		container.style.position = "relative";
+		const viewEl = document.createElement("div");
+		viewEl.className = "View";
+		viewEl.style.overflow = "hidden";
+		viewEl.style.position = "relative";
+		container.appendChild(viewEl);
+		this.viewEl = viewEl;
 
 		window.addEventListener("resize", () => {
 			if (this.view) {
@@ -22,10 +23,6 @@ export class ViewFrame {
 				this.view.resize(this.container.clientWidth, this.container.clientHeight);
 			}
 		});
-	}
-
-	public getView(): View | null {
-		return this.view;
 	}
 
 	public setView(view: View) {
