@@ -43,6 +43,10 @@ export class SlangEditor extends LitElement {
 		return null;
 	}
 
+	public findBlueprint(id: string): BlueprintModel | undefined {
+		return this.landscape.findBlueprint(id);
+	}
+
 	public render(): TemplateResult {
 		return html`<div class="ViewFrame"></div><style>${SlangEditorStyling.toString()}</style>`;
 	}
