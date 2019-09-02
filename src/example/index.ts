@@ -1,7 +1,7 @@
 import {SlangEditor} from "..";
 import {SlangBundle} from "..";
-// NEVER REMOVE NEXT LINE. This export is required for corresponding html file to load the custom element SlangEditor
-export {SlangEditor} from "..";
+
+customElements.define("slang-editor", SlangEditor);
 
 // tslint:disable-next-line
 //import "../styles/standalone.scss";

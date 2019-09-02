@@ -1,14 +1,14 @@
-import {css, CSSResult, html, LitElement, TemplateResult} from "lit-element";
+// import {css, CSSResult, html, LitElement, TemplateResult} from "lit-element";
 
 // @ts-ignore
-import SlangEditorStyling from "../../styles/index.scss";
+// import SlangEditorStyling from "../../styles/index.scss";
 import {SlangAspects} from "../aspects";
 import {AppModel, BlueprintModel, LandscapeModel} from "../core/models";
 import {SlangBundle} from "../definitions/api";
 import {ViewFrame} from "../ui/frame";
 import {BlueprintView} from "../ui/views/blueprint";
 
-export class SlangEditor extends LitElement {
+export class SlangEditor extends HTMLElement {
 	private blueprint?: BlueprintModel;
 	private viewFrame?: ViewFrame;
 	private readonly landscape: LandscapeModel;
@@ -16,13 +16,19 @@ export class SlangEditor extends LitElement {
 	constructor() {
 		super();
 		this.landscape = AppModel.create("slang").createLandscape();
+
+		const shadow = this.attachShadow({mode: "open"});
+		shadow.appendChild(document.createElement("div"));
+		this.firstUpdated();
 	}
 
+	/*
 	public static get styles(): CSSResult {
 		return css`:host {
 			display:block
 		}`;
 	}
+	 */
 	public loadBundle(bundle: SlangBundle): BlueprintModel {
 		const blueprint = this.landscape.loadBundle(bundle);
 
@@ -44,11 +50,13 @@ export class SlangEditor extends LitElement {
 		return this.landscape.findBlueprint(id);
 	}
 
+	/*
 	public render(): TemplateResult {
 		return html`<div class="ViewFrame"></div><style>${SlangEditorStyling.toString()}</style>`;
 	}
+	 */
 
-	public firstUpdated(_changedProperties: Map<PropertyKey, unknown>): void {
+	public firstUpdated(): void {
 		if (!this.shadowRoot) {
 			return;
 		}
@@ -75,5 +83,3 @@ export class SlangEditor extends LitElement {
 		this.viewFrame.setView(new BlueprintView(this.viewFrame, new SlangAspects(), blueprint, viewArgs));
 	}
 }
-
-customElements.define("slang-editor", SlangEditor);
