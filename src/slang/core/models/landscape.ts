@@ -1,7 +1,7 @@
-import {SlangNode} from "#slang/core/abstract/nodes";
-import {SlangBehaviorSubject, SlangSubjectTrigger} from "#slang/core/abstract/utils/events";
-import {blueprintModelToJson, loadBlueprints} from "#slang/core/mapper";
-import {BlueprintJson, SlangBundle} from "#slang/definitions/api";
+import {BlueprintJson, SlangBundle} from "../../definitions/api";
+import {SlangNode} from "../abstract";
+import {SlangBehaviorSubject, SlangSubjectTrigger} from "../abstract/utils/events";
+import {blueprintModelToJson, loadBlueprints} from "../mapper";
 
 import {AppModel} from "./app";
 import {BlueprintModel, BlueprintModelArgs} from "./blueprint";

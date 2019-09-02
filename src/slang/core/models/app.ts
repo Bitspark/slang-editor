@@ -1,6 +1,5 @@
-import {SlangBehaviorSubject} from "#slang/core/abstract/utils/events";
-
-import {SlangNode} from "../abstract/nodes";
+import {SlangNode} from "../abstract";
+import {SlangBehaviorSubject} from "../abstract/utils/events";
 
 import {LandscapeModel} from "./landscape";
 

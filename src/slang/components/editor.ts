@@ -1,16 +1,13 @@
-// tslint:disable-next-line:no-unused
-import {BlueprintModel, LandscapeModel} from "#slang/core/models";
-import {SlangBundle} from "#slang/definitions/api";
-import {BlueprintView} from "#slang/ui/views/blueprint";
+import {css, CSSResult, html, LitElement, TemplateResult} from "lit-element";
+
 // @ts-ignore
-import SlangEditorStyling from "#styles/index.scss";
-import {css, CSSResult, customElement, html, LitElement, TemplateResult} from "lit-element";
-
+import SlangEditorStyling from "../../styles/index.scss";
 import {SlangAspects} from "../aspects";
-import {AppModel} from "../core/models/app";
+import {AppModel, BlueprintModel, LandscapeModel} from "../core/models";
+import {SlangBundle} from "../definitions/api";
 import {ViewFrame} from "../ui/frame";
+import {BlueprintView} from "../ui/views/blueprint";
 
-@customElement("slang-editor")
 export class SlangEditor extends LitElement {
 	private blueprint?: BlueprintModel;
 	private viewFrame?: ViewFrame;
@@ -78,3 +75,5 @@ export class SlangEditor extends LitElement {
 		this.viewFrame.setView(new BlueprintView(this.viewFrame, new SlangAspects(), blueprint, viewArgs));
 	}
 }
+
+customElements.define("slang-editor", SlangEditor);

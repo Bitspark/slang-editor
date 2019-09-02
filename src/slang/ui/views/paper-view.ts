@@ -1,6 +1,6 @@
-import {SlangAspects} from "#slang/aspects";
 import {dia, g, shapes, util} from "jointjs";
 
+import {SlangAspects} from "../../aspects";
 import {SlangSubjectTrigger} from "../../core/abstract/utils/events";
 import {XY} from "../../definitions/api";
 import {ViewFrame} from "../frame";

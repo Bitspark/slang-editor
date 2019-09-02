@@ -32,18 +32,15 @@ module.exports = env => merge(common(env), {
 				exclude: /node_modules/,
 				use: {
 					loader: "babel-loader",
-					options: {
-						presets: ["es2015"],
-					},
 				},
 			},
 			{
-				test: /\.s?css/i,
+				test: /\.s?css$/i,
 				use: [
+					"to-string-loader",
 					MinifyCss.loader,
 					"css-loader",
-					"sass-loader",
-				],
+					"sass-loader"],
 			},
 		],
 	},

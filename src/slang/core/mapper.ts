@@ -11,11 +11,14 @@ import {PortDirection, PortModel} from "./abstract/port";
 import {Connection} from "./abstract/utils/connections";
 import {GenericSpecifications} from "./abstract/utils/generics";
 import {PropertyAssignment, PropertyAssignments, PropertyModel} from "./abstract/utils/properties";
+import {LandscapeModel} from "./models";
+import {OperatorModel} from "./models";
+import {BlueprintPortModel, OperatorPortModel} from "./models";
 import {BlueprintModel, BlueprintType} from "./models/blueprint";
 import {BlueprintDelegateModel, OperatorDelegateModel} from "./models/delegate";
-import {LandscapeModel} from "./models/landscape";
-import {OperatorModel} from "./models/operator";
-import {BlueprintPortModel, OperatorPortModel} from "./models/port";
+
+export class HALLO {
+}
 
 /*
 \

@@ -1,4 +1,4 @@
-import {TypeIdentifier} from "#slang/definitions/type";
+import {TypeIdentifier} from "../slang/definitions/type";
 // tslint:disable-next-line
 import "@fortawesome/fontawesome-free/js/all";
 

@@ -1,7 +1,7 @@
-import {SlangAspects} from "#slang/aspects";
 import {dia} from "jointjs";
 import m from "mithril";
 
+import {SlangAspects} from "../../aspects";
 import {GenericPortModel, PortModel} from "../../core/abstract/port";
 import {GenericSpecifications} from "../../core/abstract/utils/generics";
 import {PropertyAssignments} from "../../core/abstract/utils/properties";

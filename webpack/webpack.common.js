@@ -21,11 +21,6 @@ module.exports = env => {
 			new Clean(["dist"], {root: Path.resolve(__dirname, "..", "..")}),
 		],
 		resolve: {
-			alias: {
-				"#slang": Path.resolve(__dirname, "../src/slang"),
-				"#apps": Path.resolve(__dirname, "../src/apps"),
-				"#styles": Path.resolve(__dirname, "../src/styles"),
-			},
 			extensions: [".tsx", ".ts", ".js"],
 		},
 		module: {

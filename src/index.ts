@@ -1,2 +1,2 @@
-export {SlangEditor} from "#slang/components/editor";
-export {SlangBundle} from "#slang/definitions/api";
+export {SlangEditor} from "./slang/components";
+export {SlangBundle} from "./slang/definitions/api";

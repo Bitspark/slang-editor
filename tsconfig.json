@@ -9,11 +9,6 @@
 		"outDir": "dist",
 		"rootDir": "src",
 		"baseUrl": "./",
-		"paths": {
-			"#slang/*": ["src/slang/*"],
-			"#apps/*": ["src/apps/*"],
-			"#styles/*": ["src/styles/*"]
-		},
 		"sourceMap": true,
 		"declaration": true,
 		"strict": true,
