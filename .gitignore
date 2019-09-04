@@ -10,6 +10,7 @@ yarn.lock
 build
 dist
 bundle.zip
+.tscache
 
 # misc
 .DS_Store

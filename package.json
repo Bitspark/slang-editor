@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Bitspark/slang-studio.git"
+    "url": "git+https://github.com/Bitspark/slang-editor.git"
   },
   "keywords": [
     "slang",
@@ -32,7 +32,7 @@
     "Kai König"
   ],
   "bugs": {
-    "url": "https://github.com/Bitspark/slang-studio/issues"
+    "url": "https://github.com/Bitspark/slang-editor/issues"
   },
   "browserslist": [
     "last 2 version",
