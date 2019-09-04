@@ -1,0 +1,11 @@
+.*
+**/tsconfig.json
+**/tslint.json
+**/webpack.config.js
+**/jest.config.js
+**/postcss.config.js
+**/Gruntfile.js
+node_modules
+coverage
+test
+src

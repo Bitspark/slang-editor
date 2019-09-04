@@ -1,14 +1,19 @@
 {
 	"include": [
 		"src/**/*",
-		"test/**/*",
 		"./jest.setup.ts"
 	],
 	"compilerOptions": {
-		"outDir": "./build/",
+        "experimentalDecorators": true,
+		"outDir": "dist",
+		"rootDir": "src",
+		"baseUrl": "./",
+		"sourceMap": true,
+		"declaration": true,
 		"strict": true,
-		"module": "commonjs",
-		"target": "es6",
+		"declarationMap": true,
+		"module": "esnext",
+		"target": "es2015",
 		"jsx": "preserve",
 		"allowJs": false,
 		"esModuleInterop": true,
@@ -19,6 +24,21 @@
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,
 		"diagnostics": true,
+		"skipLibCheck": true,
 		"resolveJsonModule": true,
-	}
+		"lib": [
+			"dom",
+			"es2015",
+			"es5",
+			"es6"
+		]
+	},
+	"exclude": [
+		"node_modules/**",
+		"test/**",
+		"dist/**",
+		"*.js",
+		"*.ts",
+		"src/example/**"
+	]
 }

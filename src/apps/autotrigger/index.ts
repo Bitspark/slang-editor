@@ -1,7 +1,7 @@
-import {SlangApp} from "../../../slang/app";
-import {PortModel} from "../../../slang/core/abstract/port";
-import {OperatorPortModel} from "../../../slang/core/models/port";
-import {TypeIdentifier} from "../../../slang/definitions/type";
+import {SlangApp} from "../../slang/app";
+import {PortModel} from "../../slang/core/abstract/port";
+import {OperatorPortModel} from "../../slang/core/models/port";
+import {TypeIdentifier} from "../../slang/definitions/type";
 
 export class AutoTriggerApp extends SlangApp {
 

@@ -1,5 +1,6 @@
 import {dia, g, shapes, util} from "jointjs";
 
+import {SlangAspects} from "../../aspects";
 import {SlangSubjectTrigger} from "../../core/abstract/utils/events";
 import {XY} from "../../definitions/api";
 import {ViewFrame} from "../frame";
@@ -27,8 +28,8 @@ export abstract class PaperView extends View {
 	private minScale: number = 0.35;
 	private maxScale: number = 2.5;
 
-	protected constructor(frame: ViewFrame, private args: PaperViewArgs) {
-		super(frame);
+	protected constructor(frame: ViewFrame, aspects: SlangAspects, private args: PaperViewArgs) {
+		super(frame, aspects);
 		this.paper = this.createPaper();
 		this.redirectPaperEvents();
 	}
@@ -67,10 +68,6 @@ export abstract class PaperView extends View {
 		this.positionChanged.subscribe(cb);
 	}
 
-	public getViewElement(): HTMLElement {
-		return this.getFrame().getHTMLElement();
-	}
-
 	public onEscapePressed(cb: () => void): void {
 		this.escapePressed.subscribe(cb);
 	}
@@ -91,7 +88,7 @@ export abstract class PaperView extends View {
 	}
 
 	protected createPaper(opt: dia.Paper.Options = {}): dia.Paper {
-		const container = this.getViewElement();
+		const container = this.rootEl;
 		container.innerHTML = "";
 		const inner = document.createElement("div");
 		container.appendChild(inner);

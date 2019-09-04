@@ -1,4 +1,4 @@
-import {BlueprintModel} from "./core/models/blueprint";
+import {BlueprintModel} from "./core/models";
 import {ComponentFactory} from "./ui/factory";
 import {PaperView} from "./ui/views/paper-view";
 

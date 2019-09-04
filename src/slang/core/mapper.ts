@@ -1,13 +1,8 @@
 import {
 	BlueprintJson,
-	BlueprintsJson,
-	ConnectionsApiResponse,
-	GenericSpecificationsApiResponse,
+	ConnectionsApiResponse, GenericSpecificationsApiResponse,
 	OperatorJson,
-	PortGroupApiResponse,
-	PortGroupsApiResponse,
-	PropertyApiResponse,
-	PropertyAssignmentsApiResponse,
+	PortGroupApiResponse, PortGroupsApiResponse, PropertyApiResponse, PropertyAssignmentsApiResponse,
 	TypeDefApiResponse,
 } from "../definitions/api";
 import {SlangType, TypeIdentifier} from "../definitions/type";
@@ -16,11 +11,14 @@ import {PortDirection, PortModel} from "./abstract/port";
 import {Connection} from "./abstract/utils/connections";
 import {GenericSpecifications} from "./abstract/utils/generics";
 import {PropertyAssignment, PropertyAssignments, PropertyModel} from "./abstract/utils/properties";
+import {LandscapeModel} from "./models";
+import {OperatorModel} from "./models";
+import {BlueprintPortModel, OperatorPortModel} from "./models";
 import {BlueprintModel, BlueprintType} from "./models/blueprint";
 import {BlueprintDelegateModel, OperatorDelegateModel} from "./models/delegate";
-import {LandscapeModel} from "./models/landscape";
-import {OperatorModel} from "./models/operator";
-import {BlueprintPortModel, OperatorPortModel} from "./models/port";
+
+export class HALLO {
+}
 
 /*
 \
@@ -199,43 +197,11 @@ function fromTypeIdentifier(t: TypeIdentifier): "string" | "number" | "boolean" 
   \
  */
 
-export function loadBlueprints(landscape: LandscapeModel, blueprintsJson: BlueprintsJson) {
-	// 1) Create unfinsihed blueprints (only with some basic information)
-
-	blueprintsJson.elementary.forEach((blueprintJson) => {
-		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Elementary);
-	});
-	blueprintsJson.library.forEach((blueprintJson) => {
-		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Library);
-	});
-	blueprintsJson.local.forEach((blueprintJson) => {
+export function loadBlueprints(landscape: LandscapeModel, blueprintJsonList: BlueprintJson[]) {
+	// 1) Create unfinished blueprints (only with some basic information)
+	blueprintJsonList.forEach((blueprintJson) => {
 		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Local);
 	});
-	finishBlueprintModelsInstantiation(landscape, blueprintsJson);
-}
-
-function createUnfinishedBlueprintModel(landscape: LandscapeModel, bpDef: BlueprintJson, bpType: BlueprintType): BlueprintModel {
-	const services = bpDef.services;
-	const bpGeo = bpDef.geometry;
-	const geometry = (services && bpGeo) ? Object.assign(bpGeo, {port: services.main.geometry!}) : undefined;
-	const tests = bpDef.tests;
-
-	const blueprint = landscape.createBlueprint({geometry, tests, uuid: bpDef.id, meta: bpDef.meta, type: bpType});
-	if (services) {
-		setBlueprintServices(blueprint, services);
-	}
-	if (bpDef.delegates) {
-		setBlueprintDelegates(blueprint, bpDef.delegates);
-	}
-	if (bpDef.properties) {
-		setBlueprintProperties(blueprint, bpDef.properties);
-	}
-
-	return blueprint;
-}
-
-function finishBlueprintModelsInstantiation(landscape: LandscapeModel, blueprintsJson: BlueprintsJson) {
-	const blueprintJsonList = blueprintsJson.library.concat(blueprintsJson.local);
 
 	// 2) Add Operators. Use previously defined Blueprints for assigning Operator.blueprint
 	blueprintJsonList.forEach((bpJson: BlueprintJson) => {
@@ -259,6 +225,34 @@ function finishBlueprintModelsInstantiation(landscape: LandscapeModel, blueprint
 		}
 		connectBlueprintOperators(outerBlueprint, connections);
 	});
+}
+
+export function addBlueprint(landscape: LandscapeModel, bpDef: BlueprintJson, bpType: BlueprintType): BlueprintModel {
+	return createUnfinishedBlueprintModel(landscape, bpDef, bpType);
+}
+
+function createUnfinishedBlueprintModel(landscape: LandscapeModel, bpDef: BlueprintJson, bpType: BlueprintType): BlueprintModel {
+	if (!!landscape.findBlueprint(bpDef.id)) {
+		throw new BlueprintExistsError(bpDef.id);
+	}
+
+	const services = bpDef.services;
+	const bpGeo = bpDef.geometry;
+	const geometry = (services && bpGeo) ? Object.assign(bpGeo, {port: services.main.geometry!}) : undefined;
+	const tests = bpDef.tests;
+
+	const blueprint = landscape.createBlueprint({geometry, tests, uuid: bpDef.id, meta: bpDef.meta, type: bpType});
+	if (services) {
+		setBlueprintServices(blueprint, services);
+	}
+	if (bpDef.delegates) {
+		setBlueprintDelegates(blueprint, bpDef.delegates);
+	}
+	if (bpDef.properties) {
+		setBlueprintProperties(blueprint, bpDef.properties);
+	}
+
+	return blueprint;
 }
 
 function instantiateBlueprintOperators(landscape: LandscapeModel, blueprint: BlueprintModel, operatorJsonByName: { [k: string]: OperatorJson }) {
@@ -393,4 +387,15 @@ function createGenericSpecifications(blueprint: BlueprintModel, genericsData: Ge
 		});
 	}
 	return generics;
+}
+
+/**
+ * Error to indicate a blueprint already exists.
+ */
+export class BlueprintExistsError extends Error {
+
+	constructor(id: string) {
+		super(`Blueprint with ID ${id} already exists`);
+	}
+
 }

@@ -1,15 +1,20 @@
 # dependencies
 node_modules
 
-# production
-build
-bundle.zip
-
-# misc
-.DS_Store
-
 npm-debug.log
 yarn-error.log
 yarn.lock
 .yarnclean
+
+# production
+build
+dist
+bundle.zip
+.tscache
+
+# misc
+.DS_Store
+
+# IDEs
 .vscode
+.idea

@@ -26,6 +26,7 @@ export enum BlueprintFakeGeneric {
 	Out = "outType",
 }
 
+// @ts-ignore
 export const FAKE_GENERIC_VALUES = Object.keys(BlueprintFakeGeneric).map((key) => BlueprintFakeGeneric[key as any]);
 
 export interface Size {
@@ -350,8 +351,7 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 				return null;
 			}
 
-			const mapSubName = pathPart;
-			port = port.findMapSub(mapSubName);
+			port = port.findMapSub(pathPart);
 			if (!port) {
 				return undefined;
 			}

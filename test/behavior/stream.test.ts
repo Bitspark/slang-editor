@@ -34,11 +34,7 @@ describe("A stream port", () => {
 	beforeEach(async () => {
 		appModel = AppModel.create("test-app");
 		new TestStorageApp(appModel, data);
-		const ls = appModel.getChildNode(LandscapeModel);
-		if (!ls) {
-			throw new Error("landscape not found");
-		}
-		landscapeModel = ls;
+		landscapeModel = appModel.createLandscape();
 		await appModel.load();
 	});
 

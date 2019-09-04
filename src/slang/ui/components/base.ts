@@ -141,7 +141,7 @@ abstract class HtmlComponent extends Component {
 		super(position);
 		this.align = position.align;
 		this.htmlRoot = HtmlComponent.createRoot();
-		this.paperView.getFrame().getHTMLElement().appendChild(this.htmlRoot);
+		this.paperView.rootEl.appendChild(this.htmlRoot);
 		this.paperView.subscribePositionChanged(() => {
 			this.draw();
 		});

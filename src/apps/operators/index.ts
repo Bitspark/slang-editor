@@ -2,9 +2,7 @@ import m, {CVnode} from "mithril";
 
 import {SlangApp} from "../../slang/app";
 import {toTypeIdentifier} from "../../slang/core/mapper";
-import {BlueprintModel} from "../../slang/core/models/blueprint";
-import {LandscapeModel} from "../../slang/core/models/landscape";
-import {OperatorModel} from "../../slang/core/models/operator";
+import {BlueprintModel, LandscapeModel, OperatorModel} from "../../slang/core/models";
 import {SlangType, TypeIdentifier} from "../../slang/definitions/type";
 import {BlackBoxShape, BlackBoxShapeAttrs} from "../../slang/ui/components/blackbox";
 import {DashboardModuleAttrs, DashboardModuleComponent} from "../../slang/ui/components/dashboard";
@@ -33,7 +31,7 @@ export class OperatorDataApp extends SlangApp {
 		let bp: BlueprintModel;
 		try {
 			bp = this.getBlueprint(uuid);
-		} catch (e) {
+		} catch {
 			return;
 		}
 
@@ -161,7 +159,7 @@ class ConvertOperator implements SlangAspectImpl {
 			const genSpec = opr.getGenerics();
 			try {
 				genSpec.specify(genName, SlangType.new(toTypeIdentifier(opt)));
-			} catch (e) {
+			} catch {
 				genSpec.specify(genName, SlangType.newUnspecified());
 			}
 		}
