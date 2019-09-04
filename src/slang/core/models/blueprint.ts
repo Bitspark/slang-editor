@@ -1,6 +1,6 @@
 import {filter} from "rxjs/operators";
 
-import {BlueprintJson, OperatorGeometry, SlangBundle, PortMessageJson} from "../../definitions/api";
+import {OperatorGeometry, PortMessageJson} from "../../definitions/api";
 import {SlangParsing} from "../../definitions/parsing";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 import {BlackBox} from "../abstract/blackbox";
