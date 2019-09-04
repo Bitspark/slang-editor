@@ -26,6 +26,7 @@ export enum BlueprintFakeGeneric {
 	Out = "outType",
 }
 
+// @ts-ignore
 export const FAKE_GENERIC_VALUES = Object.keys(BlueprintFakeGeneric).map((key) => BlueprintFakeGeneric[key as any]);
 
 export interface Size {
