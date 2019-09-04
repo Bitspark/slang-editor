@@ -39,6 +39,7 @@
 		"test/**",
 		"dist/**",
 		"*.js",
-		"*.ts"
+		"*.ts",
+		"src/example/**"
 	]
 }

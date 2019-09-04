@@ -1,12 +1,20 @@
-// import {css, CSSResult, html, LitElement, TemplateResult} from "lit-element";
-
-// @ts-ignore
-// import SlangEditorStyling from "../../styles/index.scss";
+import {STYLING} from "../../styles";
 import {SlangAspects} from "../aspects";
 import {AppModel, BlueprintModel, LandscapeModel} from "../core/models";
 import {SlangBundle} from "../definitions/api";
 import {ViewFrame} from "../ui/frame";
 import {BlueprintView} from "../ui/views/blueprint";
+
+const template = document.createElement("template");
+template.innerHTML = `
+<div class="ViewFrame"></div>
+<style>
+:host {
+	display: block;
+}
+${STYLING}
+</style>
+`;
 
 export class SlangEditor extends HTMLElement {
 	private blueprint?: BlueprintModel;
@@ -16,9 +24,10 @@ export class SlangEditor extends HTMLElement {
 	constructor() {
 		super();
 		this.landscape = AppModel.create("slang").createLandscape();
+		this.attachShadow({mode: "open"}).appendChild(template.content.cloneNode(true));
+	}
 
-		const shadow = this.attachShadow({mode: "open"});
-		shadow.appendChild(document.createElement("div"));
+	public connectedCallback() {
 		this.firstUpdated();
 	}
 
