@@ -42,7 +42,7 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
           name: Check dependencies
-          command: npm run deps
+          command: npm run validate:deps
 
   test:
     working_directory: ~/slang-studio
