@@ -27,7 +27,6 @@ export class AppModel extends SlangNode {
 
 	// Subscriptions
 	public subscribeReady(cb: (readyState: boolean) => void) {
-
 		this.ready.subscribe(cb);
 	}
 }

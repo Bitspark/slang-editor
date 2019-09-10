@@ -10,11 +10,10 @@ describe("The landscape", () => {
 	let appModel: AppModel;
 	let landscapeModel: LandscapeModel;
 
-	beforeEach(async () => {
+	beforeEach(() => {
 		appModel = AppModel.create("test-app");
-		new TestStorageApp(appModel, data);
 		landscapeModel = appModel.createLandscape();
-		await appModel.load();
+		new TestStorageApp(appModel, data);
 	});
 
 	it("has blueprints", () => {

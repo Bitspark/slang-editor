@@ -127,7 +127,7 @@
 			"comment": "only these directories are valid: definitions, core, ui, styles",
 			"severity": "error",
 			"from": {
-				"pathNot": "^src/(slang/(app.ts|slang.ts|aspects.ts|core|definitions|ui)|styles)"
+				"pathNot": "^src/(slang/(app.ts|slang.ts|aspects.ts|core|definitions|ui|component)|styles)"
 			},
 			"to": {}
 		},
@@ -137,7 +137,7 @@
 			"severity": "error",
 			"from": {},
 			"to": {
-				"pathNot": "^src/(slang/(app.ts|slang.ts|aspects.ts|core|definitions|ui)|styles)"
+				"pathNot": "^src/(slang/(app.ts|slang.ts|aspects.ts|core|definitions|ui|component)|styles)"
 			}
 		},
 		

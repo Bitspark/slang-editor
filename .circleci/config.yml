@@ -15,7 +15,10 @@ jobs:
             - ./node_modules
       - run:
           name: build
-          command: npm run-script build -- --env.apiUrl / --env.baseHref /app/
+          environment:
+            apiUrl: /
+            baseHref: /app/
+          command: npm run-script package
 
   lint:
     working_directory: ~/slang-studio
@@ -39,7 +42,7 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
           name: Check dependencies
-          command: npm run deps
+          command: npm run validate:deps
 
   test:
     working_directory: ~/slang-studio

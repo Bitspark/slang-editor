@@ -5,9 +5,6 @@ module.exports = {
 	coverageReporters: [
 		"text", "text-summary", "html"
 	],
-	setupFiles: [
-		"./jest.setup.ts"
-	],
 	testEnvironment: "node",
 	coverageThreshold: {
 		"./src/slang/definitions/parsing.ts": {
@@ -17,7 +14,7 @@ module.exports = {
 		},
 		"./src/slang/definitions/type.ts": {
 			functions: 100,
-			branches: 90,
+			branches: 80,
 			statements: 84,
 		},
 		"./src/slang/core/abstract": {

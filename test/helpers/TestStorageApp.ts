@@ -7,23 +7,14 @@ export class TestStorageApp extends SlangApp {
 
 	constructor(app: AppModel, private objects: any) {
 		super(app, null!);
-		this.subscribe();
+		this.load();
 	}
 
 	protected onReady(): void {
 		return;
 	}
 
-	private subscribe() {
-		this.app.subscribeLoadRequested(() => {
-			return this.load();
-		});
-	}
-
-	private async load(): Promise<void> {
-		return new Promise<void>(async (resolve) => {
-			loadBlueprints(this.app.getChildNode(LandscapeModel)!, this.objects);
-			resolve();
-		});
+	private load(): void {
+		loadBlueprints(this.app.getChildNode(LandscapeModel)!, this.objects.local);
 	}
 }
