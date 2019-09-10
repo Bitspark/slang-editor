@@ -19,9 +19,8 @@ describe("A connection", () => {
 
 	beforeEach(async () => {
 		appModel = AppModel.create("test-app");
-		new TestStorageApp(appModel, data);
 		landscapeModel = appModel.createLandscape();
-		await appModel.load();
+		new TestStorageApp(appModel, data);
 
 		bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), meta: {name: "test-bp-2"}, type: BlueprintType.Local});
 		bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
@@ -116,9 +115,8 @@ describe("A connections data structure", () => {
 
 	beforeEach(async () => {
 		appModel = AppModel.create("test-app");
-		new TestStorageApp(appModel, data);
 		landscapeModel = appModel.createLandscape();
-		await appModel.load();
+		new TestStorageApp(appModel, data);
 
 		bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), meta: {name: "test-bp-2"}, type: BlueprintType.Local});
 		const bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;

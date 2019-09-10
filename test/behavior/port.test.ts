@@ -19,9 +19,8 @@ describe("A port", () => {
 
 	beforeEach(async () => {
 		appModel = AppModel.create("test-app");
-		new TestStorageApp(appModel, data);
 		landscapeModel = appModel.createLandscape();
-		await appModel.load();
+		new TestStorageApp(appModel, data);
 
 		bpNew = landscapeModel.createBlueprint({uuid: uuidv4(), meta: {name: "test-bp-2"}, type: BlueprintType.Local});
 
