@@ -5,9 +5,6 @@ module.exports = {
 	coverageReporters: [
 		"text", "text-summary", "html"
 	],
-	setupFiles: [
-		"./jest.setup.ts"
-	],
 	testEnvironment: "node",
 	coverageThreshold: {
 		"./src/slang/definitions/parsing.ts": {
