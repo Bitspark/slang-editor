@@ -5,11 +5,11 @@ import {Styles} from "../../../styles/studio";
 import {GenericPortModel, PortModel} from "../../core/abstract/port";
 import {Connection} from "../../core/abstract/utils/connections";
 import {SlangBehaviorSubject, SlangSubject} from "../../core/abstract/utils/events";
-import {BlueprintInstance, BlueprintModel} from "../../core/models/blueprint";
+import {BlueprintModel} from "../../core/models/blueprint";
 import {BlueprintDelegateModel} from "../../core/models/delegate";
 import {OperatorModel} from "../../core/models/operator";
 import {BlueprintPortModel} from "../../core/models/port";
-import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
+import {TypeIdentifier} from "../../definitions/type";
 import {tid2css} from "../utils";
 import {PaperView} from "../views/paper-view";
 
@@ -17,10 +17,8 @@ import {AttachableComponent, CellComponent} from "./base";
 import {BlackBoxComponent, OperatorBoxComponent} from "./blackbox";
 import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {ConnectionComponent} from "./connection";
-import {InputConsole, OutputConsole, OutputConsoleModel} from "./console";
 import {PortGroupPosition} from "./port-group";
 import {Button} from "./toolkit/buttons";
-import {Box} from "./toolkit/toolkit";
 
 export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 60;
@@ -32,8 +30,6 @@ export class WhiteBoxComponent extends CellComponent {
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
 	private elementSelected = new SlangBehaviorSubject<OperatorBoxComponent | ConnectionComponent | null>("whitebox-element-selected", null);
 	private readonly buttons: AttachableComponent;
-	private readonly input: AttachableComponent;
-	private readonly output: AttachableComponent;
 
 	private readonly operators: BlackBoxComponent[] = [];
 	private readonly connections: ConnectionComponent[] = [];
@@ -49,8 +45,6 @@ export class WhiteBoxComponent extends CellComponent {
 	constructor(paperView: PaperView, private readonly blueprint: BlueprintModel) {
 		super(paperView, {x: 0, y: 0});
 		this.buttons = this.createComponent({x: 0, y: 0, align: "l"});
-		this.input = this.createComponent({x: 0, y: 0, align: "b"});
-		this.output = this.createComponent({x: 0, y: 0, align: "t"});
 		this.subscribe();
 
 		this.shape = new WhiteBoxComponent.Rect(this.blueprint);
@@ -355,10 +349,8 @@ export class WhiteBoxComponent extends CellComponent {
 			if (port.isDirectionIn()) {
 				const p = this.createPort(port, this.blueprint, "top");
 				this.buttons.attachTo(p.getShape(), "br");
-				this.input.attachTo(p.getShape(), "c");
 			} else {
-				const p = this.createPort(port, this.blueprint, "bottom");
-				this.output.attachTo(p.getShape(), "c");
+				this.createPort(port, this.blueprint, "bottom");
 			}
 		});
 
@@ -412,41 +404,6 @@ export class WhiteBoxComponent extends CellComponent {
 			view: () => m(".toolbox",
 				aspects.getBlueprintToolboxButtons(this.paperView, this.blueprint, m.redraw)
 					.map((btnAttrs) => m(Button, {onClick: btnAttrs.onclick}, btnAttrs.label))),
-		});
-
-		this.blueprint.subscribeDeployed((instance: BlueprintInstance | null) => {
-			if (!instance) {
-				this.input.unmount();
-				this.output.unmount();
-
-			} else if (view.isRunnable) {
-
-				const portIn = this.blueprint.getPortIn();
-
-				if (portIn) {
-					this.input.mount({
-						view: () => m(Box, m(InputConsole, {
-							onSubmit: (values: SlangTypeValue) => {
-								this.blueprint.pushInput(values);
-							},
-							type: portIn.getType(),
-						})),
-					});
-				}
-
-				const portOut = this.blueprint.getPortOut();
-
-				if (!portOut) {
-					return;
-				}
-				const outputConsoleModel = new OutputConsoleModel(this.blueprint);
-				this.output.mount({
-					view: () => m(Box, m(OutputConsole, {
-						model: outputConsoleModel,
-					})),
-				});
-
-			}
 		});
 	}
 
