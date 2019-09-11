@@ -454,7 +454,6 @@ export class WhiteBoxComponent extends CellComponent {
 		const portDir = port.isDirectionIn() ? "in" : "out";
 		const offset = port.isDirectionIn() ? owner.inPosition : owner.outPosition;
 		const id = `${owner.getIdentity()}_${portDir}`;
-		const name = `${owner.name} ${portDir}-port`;
 
 		const invertedPosition: { [key in PortGroupPosition]: PortGroupPosition } = {
 			top: "bottom",
@@ -463,7 +462,7 @@ export class WhiteBoxComponent extends CellComponent {
 			right: "left",
 		};
 
-		const portComponent = new IsolatedBlueprintPortComponent(name, id, port, invertedPosition[pos], this.paperView.isEditable);
+		const portComponent = new IsolatedBlueprintPortComponent(id, port, invertedPosition[pos], this.paperView.isEditable);
 		const portElement = portComponent.getShape();
 		this.paperView.renderCell(portElement);
 		const outerEdgeSize = 2;
