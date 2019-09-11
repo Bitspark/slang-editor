@@ -18,7 +18,6 @@ import {BlackBoxComponent, OperatorBoxComponent} from "./blackbox";
 import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {ConnectionComponent} from "./connection";
 import {PortGroupPosition} from "./port-group";
-import {Button} from "./toolkit/buttons";
 
 export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 60;
@@ -29,7 +28,6 @@ export class WhiteBoxComponent extends CellComponent {
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
 	private elementSelected = new SlangBehaviorSubject<OperatorBoxComponent | ConnectionComponent | null>("whitebox-element-selected", null);
-	private readonly buttons: AttachableComponent;
 
 	private readonly operators: BlackBoxComponent[] = [];
 	private readonly connections: ConnectionComponent[] = [];
@@ -44,7 +42,6 @@ export class WhiteBoxComponent extends CellComponent {
 
 	constructor(paperView: PaperView, private readonly blueprint: BlueprintModel) {
 		super(paperView, {x: 0, y: 0});
-		this.buttons = this.createComponent({x: 0, y: 0, align: "l"});
 		this.subscribe();
 
 		this.shape = new WhiteBoxComponent.Rect(this.blueprint);
@@ -346,12 +343,7 @@ export class WhiteBoxComponent extends CellComponent {
 		});
 
 		this.blueprint.subscribeChildCreated(BlueprintPortModel, (port) => {
-			if (port.isDirectionIn()) {
-				const p = this.createPort(port, this.blueprint, "top");
-				this.buttons.attachTo(p.getShape(), "br");
-			} else {
-				this.createPort(port, this.blueprint, "bottom");
-			}
+			this.createPort(port, this.blueprint, port.isDirectionIn() ? "top" : "bottom");
 		});
 
 		this.blueprint.subscribeChildCreated(BlueprintDelegateModel, (delegate) => {
@@ -395,15 +387,6 @@ export class WhiteBoxComponent extends CellComponent {
 			operator.getProperties().subscribeAssignmentChanged(() => {
 				refreshOperatorConnections(operator);
 			});
-		});
-
-		const view = this.paperView;
-		const aspects = view.aspects;
-
-		this.buttons.mount({
-			view: () => m(".toolbox",
-				aspects.getBlueprintToolboxButtons(this.paperView, this.blueprint, m.redraw)
-					.map((btnAttrs) => m(Button, {onClick: btnAttrs.onclick}, btnAttrs.label))),
 		});
 	}
 
