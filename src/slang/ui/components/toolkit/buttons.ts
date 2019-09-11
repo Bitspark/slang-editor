@@ -25,6 +25,8 @@ export class Button implements ClassComponent<ButtonAttrs> {
 	public view({attrs, children}: CVnode<ButtonAttrs>) {
 		const that = this;
 
+		attrs.size = "small";
+
 		return m("a.button", {
 			class: buildCssClass(attrs),
 			inacitve: that.isInactive(attrs),
