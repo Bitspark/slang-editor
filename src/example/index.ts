@@ -462,5 +462,6 @@ const bundle: SlangBundle = {
 
 const slangEditor = document.getElementById("main") as SlangEditor;
 if (slangEditor) {
-	slangEditor.loadBundle(bundle);
+	const blueprint = slangEditor.loadBundle(bundle);
+	slangEditor.displayBlueprint(blueprint);
 }

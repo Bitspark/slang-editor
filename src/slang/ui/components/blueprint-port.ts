@@ -18,14 +18,14 @@ export class IsolatedBlueprintPortComponent {
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("mouseleft");
 
-	constructor(name: string, identity: string, port: PortModel, position: PortGroupPosition, private createGhostPorts: boolean) {
+	constructor(id: string, port: PortModel, position: PortGroupPosition, private createGhostPorts: boolean) {
 		this.portGroup = new PortGroupComponent("PortGroup", port, position, 0, 1, false);
 		const portGroups = {PortGroup: this.portGroup.getPortGroupElement()};
 
 		const transform = Styles.BlueprintPort.transformations[position];
 
 		this.rectangle = new shapes.standard.Rectangle({
-			id: identity,
+			id,
 			size: IsolatedBlueprintPortComponent.size,
 			attrs: {
 				root: {
@@ -38,7 +38,6 @@ export class IsolatedBlueprintPortComponent {
 				label: {
 					transform,
 					class: "sl-label",
-					text: name,
 				},
 			},
 			ports: {

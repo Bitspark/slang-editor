@@ -39,13 +39,7 @@ export class SlangEditor extends HTMLElement {
 	}
 	 */
 	public loadBundle(bundle: SlangBundle): BlueprintModel {
-		const blueprint = this.landscape.loadBundle(bundle);
-
-		if (blueprint !== this.blueprint) {
-			this.showBlueprint(blueprint);
-		}
-
-		return this.blueprint = blueprint;
+		return this.landscape.loadBundle(bundle);
 	}
 
 	public exportBundle(): SlangBundle|null {
@@ -73,11 +67,13 @@ export class SlangEditor extends HTMLElement {
 		this.viewFrame = new ViewFrame(frame);
 
 		if (this.blueprint) {
-			this.showBlueprint(this.blueprint);
+			this.displayBlueprint(this.blueprint);
 		}
 	}
 
-	private showBlueprint(blueprint: BlueprintModel) {
+	public displayBlueprint(blueprint: BlueprintModel) {
+		this.blueprint = blueprint;
+
 		if (!this.viewFrame) {
 			return;
 		}

@@ -11,7 +11,6 @@ import {XY} from "../../definitions/api";
 import {TypeIdentifier} from "../../definitions/type";
 import {AttachableComponent} from "../components/base";
 import {BlackBoxShape, OperatorBoxComponent} from "../components/blackbox";
-import {BlueprintSelectComponent} from "../components/blueprint-select";
 import {ConnectionComponent} from "../components/connection";
 import {OperatorControl} from "../components/operator-control";
 import {Floater} from "../components/toolkit/toolkit";
@@ -23,7 +22,6 @@ import {PaperView, PaperViewArgs} from "./paper-view";
 export class BlueprintView extends PaperView {
 	private readonly whiteBox: WhiteBoxComponent;
 	private readonly landscape: LandscapeModel;
-	private blueprintSelect: BlueprintSelectComponent | null = null;
 	private oprCtrl: AttachableComponent | null = null;
 
 	constructor(frame: ViewFrame, aspects: SlangAspects, private blueprint: BlueprintModel, args: PaperViewArgs) {
@@ -134,22 +132,12 @@ export class BlueprintView extends PaperView {
 			return;
 		}
 
-		this.whiteBox.onDblClick((_event: Event, x: number, y: number) => {
-			this.blueprintSelect = new BlueprintSelectComponent(this, {x, y});
-		});
 		this.graph.on("change:position change:size", (cell: dia.Cell) => {
 			// Moving around inner operators
 			if (!(cell instanceof BlackBoxShape)) {
 				return;
 			}
 			this.fitOuter(false);
-		});
-
-		this.getPaper().on("blank:pointerclick cell:pointerclick", () => {
-			if (this.blueprintSelect) {
-				this.blueprintSelect.destroy();
-				this.blueprintSelect = null;
-			}
 		});
 
 		this.whiteBox.onElementSelected((selectedOne: OperatorBoxComponent | ConnectionComponent | null) => {
