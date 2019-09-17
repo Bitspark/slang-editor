@@ -1,20 +1,13 @@
-import m, {CVnode} from "mithril";
-
 import {SlangApp} from "../../slang/app";
-import {toTypeIdentifier} from "../../slang/core/mapper";
 import {BlueprintModel, LandscapeModel, OperatorModel} from "../../slang/core/models";
-import {SlangType, TypeIdentifier} from "../../slang/definitions/type";
+import {TypeIdentifier} from "../../slang/definitions/type";
 import {BlackBoxShape, BlackBoxShapeAttrs} from "../../slang/ui/components/blackbox";
-import {DashboardModuleAttrs, DashboardModuleComponent} from "../../slang/ui/components/dashboard";
-import {SelectInput} from "../../slang/ui/components/toolkit/input";
-import {Block} from "../../slang/ui/components/toolkit/toolkit";
 
 const ROUND_CORNER = 12;
 const FONT_SIZE = 9;
 
 export interface SlangAspectImpl {
 	shape?: typeof BlackBoxShape;
-	dashboardModules?: Array<new() => DashboardModuleComponent>;
 }
 
 export class OperatorDataApp extends SlangApp {
@@ -38,9 +31,6 @@ export class OperatorDataApp extends SlangApp {
 		const factory = this.aspects.factory;
 		if (aspectImpl.shape) {
 			factory.registerBlackBoxShape(bp, aspectImpl.shape);
-		}
-		if (aspectImpl.dashboardModules && aspectImpl.dashboardModules.length > 0) {
-			factory.registerOperatorDashboardModules(bp, aspectImpl.dashboardModules);
 		}
 	}
 
@@ -135,66 +125,4 @@ class ConvertOperator implements SlangAspectImpl {
 			this.attr("label/text", `${fromType} → ${toType}`);
 		}
 	};
-
-	public static dashboardModules = [class implements DashboardModuleComponent {
-		private operator!: OperatorModel;
-		private readonly portTypeOptions = [
-			TypeIdentifier[TypeIdentifier.Unspecified],
-			TypeIdentifier[TypeIdentifier.Binary],
-			TypeIdentifier[TypeIdentifier.Number],
-			TypeIdentifier[TypeIdentifier.String],
-			TypeIdentifier[TypeIdentifier.Boolean],
-		];
-
-		public oninit({attrs}: CVnode<DashboardModuleAttrs>): any {
-			this.operator = attrs.operator;
-		}
-
-		public setPortType(genName: string, opt: string) {
-			if (this.portTypeOptions.indexOf(opt) < 0) {
-				return;
-			}
-
-			const opr = this.operator;
-			const genSpec = opr.getGenerics();
-			try {
-				genSpec.specify(genName, SlangType.new(toTypeIdentifier(opt)));
-			} catch {
-				genSpec.specify(genName, SlangType.newUnspecified());
-			}
-		}
-
-		public view({}: CVnode<DashboardModuleAttrs>): any {
-			const opr = this.operator;
-
-			const portIn = opr.getPortIn()!;
-			const typeIn = portIn.getTypeIdentifier();
-			const fixedIn = portIn.isConnected();
-			const portOut = opr.getPortOut()!;
-			const typeOut = portOut.getTypeIdentifier();
-			const fixedOut = portOut.isConnected();
-
-			return m(Block,
-				m(".sl-inp-grp-inline",
-					m(SelectInput, {
-						selected: TypeIdentifier[typeIn],
-						options: (fixedIn) ? [TypeIdentifier[typeIn]] : this.portTypeOptions,
-						onInput: (fixedIn) ? () => null :
-							(opt: string) => {
-								this.setPortType("fromType", opt);
-							},
-					}),
-					"→",
-					m(SelectInput, {
-						selected: TypeIdentifier[typeOut],
-						options: (fixedOut) ? [TypeIdentifier[typeOut]] : this.portTypeOptions,
-						onInput: (fixedOut) ? () => null :
-							(opt: string) => {
-								this.setPortType("toType", opt);
-							},
-					}),
-				),
-			);
-		}
-	}];
 }
