@@ -20,7 +20,7 @@ import {ViewFrame} from "../frame";
 import {PaperView, PaperViewArgs} from "./paper-view";
 
 export class BlueprintView extends PaperView {
-	private readonly whiteBox: WhiteBoxComponent;
+	public readonly whiteBox: WhiteBoxComponent;
 	private readonly landscape: LandscapeModel;
 	private oprCtrl: AttachableComponent | null = null;
 
@@ -148,7 +148,6 @@ export class BlueprintView extends PaperView {
 			}
 
 			const that = this;
-
 			if (selectedOne instanceof OperatorBoxComponent) {
 				this.oprCtrl = this.whiteBox
 					.createComponent({x: 0, y: 0, align: "tl"})

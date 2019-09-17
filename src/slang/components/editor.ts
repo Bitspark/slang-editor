@@ -17,6 +17,8 @@ ${STYLING}
 `;
 
 export class SlangEditor extends HTMLElement {
+	public blueprintView?: BlueprintView;
+
 	private blueprint?: BlueprintModel;
 	private viewFrame?: ViewFrame;
 	private readonly landscape: LandscapeModel;
@@ -85,6 +87,7 @@ export class SlangEditor extends HTMLElement {
 			descendable: true,
 			runnable: true,
 		};
-		this.viewFrame.setView(new BlueprintView(this.viewFrame, new SlangAspects(), blueprint, viewArgs));
+		this.blueprintView = new BlueprintView(this.viewFrame, new SlangAspects(), blueprint, viewArgs);
+		this.viewFrame.setView(this.blueprintView);
 	}
 }
