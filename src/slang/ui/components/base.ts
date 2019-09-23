@@ -6,7 +6,7 @@ import {XY} from "../../definitions/api";
 import {cssattr, cssobj, CSSType, cssupdate} from "../utils";
 import {PaperView} from "../views/paper-view";
 
-import {Container} from "./toolkit/toolkit";
+import {Container} from "./toolkit";
 
 export type Alignment =
 	"tl" | "t" | "tr" |
