@@ -1,5 +1,4 @@
 import {dia} from "jointjs";
-import m from "mithril";
 
 import {SlangAspects} from "../../aspects";
 import {GenericPortModel, PortModel} from "../../core/abstract/port";
@@ -9,11 +8,8 @@ import {BlueprintModel} from "../../core/models/blueprint";
 import {LandscapeModel} from "../../core/models/landscape";
 import {XY} from "../../definitions/api";
 import {TypeIdentifier} from "../../definitions/type";
-import {AttachableComponent} from "../components/base";
-import {BlackBoxShape, OperatorBoxComponent} from "../components/blackbox";
+import {BlackBoxShape} from "../components/blackbox";
 import {ConnectionComponent} from "../components/connection";
-import {OperatorControl} from "../components/operator-control";
-import {Floater} from "../components/toolkit/toolkit";
 import {WhiteBoxComponent} from "../components/whitebox";
 import {ViewFrame} from "../frame";
 
@@ -22,7 +18,6 @@ import {PaperView, PaperViewArgs} from "./paper-view";
 export class BlueprintView extends PaperView {
 	public readonly whiteBox: WhiteBoxComponent;
 	private readonly landscape: LandscapeModel;
-	private oprCtrl: AttachableComponent | null = null;
 
 	constructor(frame: ViewFrame, aspects: SlangAspects, private blueprint: BlueprintModel, args: PaperViewArgs) {
 		super(frame, aspects, args);
@@ -139,37 +134,6 @@ export class BlueprintView extends PaperView {
 			}
 			this.fitOuter(false);
 		});
-
-		this.whiteBox.onElementSelected((selectedOne: OperatorBoxComponent | ConnectionComponent | null) => {
-			this.destroyOperatorDashboard();
-
-			if (!selectedOne) {
-				return;
-			}
-
-			const that = this;
-			if (selectedOne instanceof OperatorBoxComponent) {
-				this.oprCtrl = this.whiteBox
-					.createComponent({x: 0, y: 0, align: "tl"})
-					.attachTo(selectedOne.getShape(), "tr")
-					.mount({
-						view: () => m(Floater, {
-								onclose: () => {
-									that.destroyOperatorDashboard();
-								},
-							},
-							m(OperatorControl, {
-								operator: selectedOne.getModel(),
-								view: this,
-								onclose: () => {
-									that.destroyOperatorDashboard();
-								},
-							}),
-						),
-					});
-			}
-			return true;
-		});
 	}
 
 	private fitOuter(animation: boolean) {
@@ -204,14 +168,6 @@ export class BlueprintView extends PaperView {
 
 		const valueOperator = this.blueprint.createOperator(null, valueBlueprint, properties, generics, {position: xy});
 		valueOperator.getPortOut()!.connect(targetPort, false);
-	}
-
-	private destroyOperatorDashboard() {
-		if (!this.oprCtrl) {
-			return;
-		}
-		this.oprCtrl.destroy();
-		this.oprCtrl = null;
 	}
 }
 
