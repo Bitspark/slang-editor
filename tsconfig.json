@@ -39,7 +39,7 @@
 		"dist/**",
 		"*.js",
 		"*.ts",
-		"src/example/**"
+		"src/example/**",
 		"src/bundle/**"
 	]
 }
