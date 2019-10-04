@@ -6,6 +6,7 @@ module.exports = function(grunt) {
 				tsconfig: "./tsconfig.json",
 				exclude: [
 					"src/example/**",
+					"src/bundle/**",
 				],
 			},
 		},
