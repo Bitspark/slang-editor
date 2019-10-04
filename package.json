@@ -1,6 +1,6 @@
 {
   "name": "@b6k/slang-editor",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Web component for Slang, a visual programming language.",
   "main": "index.js",
   "types": "index.d.ts",
