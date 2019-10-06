@@ -66,7 +66,7 @@ jobs:
         key: dependency-cache-{{ checksum "package.json" }}
     - run:
         name: Authenticate with registry
-        command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/slang-editor/.npmrc
+        command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/slang-editor/dist/.npmrc
     - run:
         name: Build package
         command: npm run package
