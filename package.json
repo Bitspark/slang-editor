@@ -13,7 +13,8 @@
     "lint:fix": "tslint --fix -p tsconfig.json -c tslint.json -t verbose",
     "lint": "tslint -p tsconfig.json -c tslint.json",
     "validate:deps": "dependency-cruise --exclude \"^node_modules\" --validate .dependency-cruiser.json ./src/slang",
-    "visualize:deps": "dependency-cruise --exclude \"^node_modules\" --output-type dot -- ./src/slang | dot -T svg > dependencygraph.svg"
+    "visualize:deps": "dependency-cruise --exclude \"^node_modules\" --output-type dot -- ./src/slang | dot -T svg > dependencygraph.svg",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",

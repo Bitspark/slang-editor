@@ -72,7 +72,7 @@ jobs:
         command: npm run package
     - run:
         name: Publish package
-        command: npm publish
+        command: cd dist && npm publish
 
 
 workflows:
