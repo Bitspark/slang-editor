@@ -2,11 +2,7 @@ import {dia} from "jointjs";
 
 import {SlangAspects} from "../../aspects";
 import {GenericPortModel, PortModel} from "../../core/abstract/port";
-import {GenericSpecifications} from "../../core/abstract/utils/generics";
-import {PropertyAssignments} from "../../core/abstract/utils/properties";
 import {BlueprintModel} from "../../core/models/blueprint";
-import {LandscapeModel} from "../../core/models/landscape";
-import {XY} from "../../definitions/api";
 import {TypeIdentifier} from "../../definitions/type";
 import {BlackBoxShape} from "../components/blackbox";
 import {ConnectionComponent} from "../components/connection";
@@ -17,12 +13,10 @@ import {PaperView, PaperViewArgs} from "./paper-view";
 
 export class BlueprintView extends PaperView {
 	public readonly whiteBox: WhiteBoxComponent;
-	private readonly landscape: LandscapeModel;
 
 	constructor(frame: ViewFrame, aspects: SlangAspects, private blueprint: BlueprintModel, args: PaperViewArgs) {
 		super(frame, aspects, args);
 		this.addPanning();
-		this.landscape = this.blueprint.getAncestorNode(LandscapeModel)!;
 		this.whiteBox = new WhiteBoxComponent(this, blueprint);
 		this.attachEventHandlers();
 		this.fit();
@@ -60,7 +54,8 @@ export class BlueprintView extends PaperView {
 					!portS.isConnected() &&
 					portS.getType().isPrimitive() &&
 					portS.getTypeIdentifier() !== TypeIdentifier.Trigger) {
-					that.createValueOperator(linkView.getEndAnchor("target"), portS);
+					// The user let go of a connection on the paperview
+					return false;
 				}
 
 				return false;
@@ -156,18 +151,6 @@ export class BlueprintView extends PaperView {
 			return undefined;
 		}
 		return port;
-	}
-
-	private createValueOperator(xy: XY, targetPort: PortModel) {
-		// slang.data.Value
-		const valueBlueprint = this.landscape.findBlueprint("8b62495a-e482-4a3e-8020-0ab8a350ad2d")!;
-
-		const generics = new GenericSpecifications(Array.from(valueBlueprint.getGenericIdentifiers()));
-		generics.specify("valueType", targetPort.getType());
-		const properties = new PropertyAssignments(Array.from(valueBlueprint.getProperties()), generics);
-
-		const valueOperator = this.blueprint.createOperator(null, valueBlueprint, properties, generics, {position: xy});
-		valueOperator.getPortOut()!.connect(targetPort, false);
 	}
 }
 
