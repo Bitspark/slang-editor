@@ -56,6 +56,25 @@ jobs:
         name: Test
         command: npm test
 
+  publish:
+    working_directory: ~/slang-editor
+    docker:
+    - image: bitspark/slang-ci:latest
+    steps:
+    - checkout
+    - restore_cache:
+        key: dependency-cache-{{ checksum "package.json" }}
+    - run:
+        name: Authenticate with registry
+        command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/slang-editor/.npmrc
+    - run:
+        name: Build package
+        command: npm run package
+    - run:
+        name: Publish package
+        command: npm publish
+
+
 workflows:
   version: 2
   build_and_test:
@@ -70,3 +89,14 @@ workflows:
       - test:
           requires:
             - build
+      - publish:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+          requires:
+            - build
+            - lint
+            - deps
+            - test
