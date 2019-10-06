@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/slang-studio
+    working_directory: ~/slang-editor
     docker:
       - image: bitspark/slang-ci:latest
     steps:
@@ -21,7 +21,7 @@ jobs:
           command: npm run-script package
 
   lint:
-    working_directory: ~/slang-studio
+    working_directory: ~/slang-editor
     docker:
       - image: bitspark/slang-ci:latest
     steps:
@@ -33,7 +33,7 @@ jobs:
           command: npm run lint
 
   deps:
-    working_directory: ~/slang-studio
+    working_directory: ~/slang-editor
     docker:
       - image: bitspark/slang-ci:latest
     steps:
@@ -45,7 +45,7 @@ jobs:
           command: npm run validate:deps
 
   test:
-    working_directory: ~/slang-studio
+    working_directory: ~/slang-editor
     docker:
     - image: bitspark/slang-ci:latest
     steps:
