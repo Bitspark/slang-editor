@@ -11,6 +11,8 @@ build
 dist
 bundle.zip
 .tscache
+bundle
+coverage
 
 # misc
 .DS_Store
