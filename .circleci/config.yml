@@ -65,11 +65,11 @@ jobs:
     - restore_cache:
         key: dependency-cache-{{ checksum "package.json" }}
     - run:
-        name: Authenticate with registry
-        command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/slang-editor/dist/.npmrc
-    - run:
         name: Build package
         command: npm run package
+    - run:
+        name: Authenticate with registry
+        command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/slang-editor/dist/.npmrc
     - run:
         name: Publish package
         command: cd dist && npm publish
