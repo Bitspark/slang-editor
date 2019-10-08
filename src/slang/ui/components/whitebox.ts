@@ -4,7 +4,7 @@ import m, {ClassComponent, CVnode} from "mithril";
 import {Styles} from "../../../styles/studio";
 import {GenericPortModel, PortModel} from "../../core/abstract/port";
 import {Connection} from "../../core/abstract/utils/connections";
-import {SlangBehaviorSubject, SlangSubject} from "../../core/abstract/utils/events";
+import {SlangSubject} from "../../core/abstract/utils/events";
 import {BlueprintModel} from "../../core/models/blueprint";
 import {BlueprintDelegateModel} from "../../core/models/delegate";
 import {OperatorModel} from "../../core/models/operator";
@@ -27,7 +27,6 @@ export class WhiteBoxComponent extends CellComponent {
 
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
-	private elementSelected = new SlangBehaviorSubject<OperatorBoxComponent | ConnectionComponent | null>("whitebox-element-selected", null);
 
 	private readonly operators: BlackBoxComponent[] = [];
 	private readonly connections: ConnectionComponent[] = [];
@@ -40,7 +39,7 @@ export class WhiteBoxComponent extends CellComponent {
 		right: [] as IsolatedBlueprintPortComponent[],
 	};
 
-	constructor(paperView: PaperView, private readonly blueprint: BlueprintModel) {
+	constructor(paperView: PaperView, public readonly blueprint: BlueprintModel) {
 		super(paperView, {x: 0, y: 0});
 		this.subscribe();
 
@@ -50,33 +49,12 @@ export class WhiteBoxComponent extends CellComponent {
 			blueprint.size = this.shape.size();
 		});
 
-		this.paperView.getPaper().on("cell:pointerdown", () => {
+		this.paperView.paper.on("cell:pointerdown", () => {
 			this.clearPortInfos();
-		});
-
-		const paper = this.paperView.getPaper();
-		const that = this;
-		paper.on("blank:pointerclick", () => {
-			that.unselect();
-		});
-
-		this.onClick(() => {
-			that.unselect();
-		});
-
-		this.paperView.onEscapePressed(() => {
-			that.unselect();
 		});
 
 		this.render();
 		this.centerizeOuter();
-	}
-
-	public unselect() {
-		const selectedOne = this.elementSelected.getValue();
-		if (selectedOne) {
-			selectedOne.unselect();
-		}
 	}
 
 	public autoLayout() {
@@ -287,11 +265,6 @@ export class WhiteBoxComponent extends CellComponent {
 				port.transition("position/y", targetPosition.y);
 			}
 		});
-	}
-
-	public onElementSelected(cb: (comp: OperatorBoxComponent | ConnectionComponent | null) => void): this {
-		this.elementSelected.subscribe(cb);
-		return this;
 	}
 
 	public onPortMouseEnter(cb: (port: PortModel, x: number, y: number) => void) {
@@ -514,14 +487,9 @@ export class WhiteBoxComponent extends CellComponent {
 		const connComp = new ConnectionComponent(this.paperView, connection);
 
 		if (!this.paperView.isReadOnly) {
-			connComp.onSelect((isSelected: boolean) => {
-				const prev = this.elementSelected.getValue();
-				if (prev) {
-					prev.unselect();
-				}
-				this.elementSelected.next(isSelected ? connComp : null);
+			connComp.onClick(() => {
 				connComp.css({
-					"sl-is-selected": isSelected,
+					"sl-is-selected": true,
 				});
 			});
 		}
@@ -532,19 +500,6 @@ export class WhiteBoxComponent extends CellComponent {
 		const oprComp = this.paperView.getFactory().createOperatorComponent(this.paperView, opr);
 		this.operators.push(oprComp);
 		this.attachPortInfo(oprComp);
-
-		if (!this.paperView.isReadOnly) {
-			oprComp.onSelect((isSelected: boolean) => {
-				const prev = this.elementSelected.getValue();
-				if (prev) {
-					prev.unselect();
-				}
-				this.elementSelected.next(isSelected ? oprComp : null);
-				oprComp.css({
-					"sl-is-selected": isSelected,
-				});
-			});
-		}
 
 		return oprComp;
 	}

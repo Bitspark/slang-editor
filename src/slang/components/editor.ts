@@ -33,13 +33,6 @@ export class SlangEditor extends HTMLElement {
 		this.firstUpdated();
 	}
 
-	/*
-	public static get styles(): CSSResult {
-		return css`:host {
-			display:block
-		}`;
-	}
-	 */
 	public loadBundle(bundle: SlangBundle): BlueprintModel {
 		return this.landscape.loadBundle(bundle);
 	}
@@ -54,12 +47,6 @@ export class SlangEditor extends HTMLElement {
 	public findBlueprint(id: string): BlueprintModel | undefined {
 		return this.landscape.findBlueprint(id);
 	}
-
-	/*
-	public render(): TemplateResult {
-		return html`<div class="ViewFrame"></div><style>${SlangEditorStyling.toString()}</style>`;
-	}
-	 */
 
 	public firstUpdated(): void {
 		if (!this.shadowRoot) {

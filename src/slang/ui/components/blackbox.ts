@@ -4,8 +4,8 @@ import {Styles} from "../../../styles/studio";
 import {BlackBox} from "../../core/abstract/blackbox";
 import {PortModel} from "../../core/abstract/port";
 import {SlangSubject} from "../../core/abstract/utils/events";
-import {BlueprintModel} from "../../core/models/blueprint";
-import {OperatorModel} from "../../core/models/operator";
+import {BlueprintModel} from "../../core/models";
+import {OperatorModel} from "../../core/models";
 import {XY} from "../../definitions/api";
 import {PaperView} from "../views/paper-view";
 
@@ -159,6 +159,15 @@ export abstract class BlackBoxComponent extends CellComponent {
 export class BlueprintBoxComponent extends BlackBoxComponent {
 	constructor(paperView: PaperView, protected blueprint: BlueprintModel) {
 		super(paperView, false);
+
+		this.onClick(() => {
+			console.log("*** click");
+			this.blueprint.clicked.next();
+		});
+		this.onDblClick(() => {
+			this.blueprint.dblclicked.next();
+		});
+
 		this.refresh();
 	}
 
@@ -206,6 +215,13 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 export class OperatorBoxComponent extends BlackBoxComponent {
 	constructor(paperView: PaperView, protected readonly operator: OperatorModel) {
 		super(paperView, paperView.isEditable);
+
+		this.onClick(() => {
+			this.operator.clicked.next();
+		});
+		this.onDblClick(() => {
+			this.operator.dblclicked.next();
+		});
 
 		operator.getGenerics().subscribeGenericsChanged(() => {
 			this.refresh();
