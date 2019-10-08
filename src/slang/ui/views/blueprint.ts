@@ -2,7 +2,7 @@ import {dia} from "jointjs";
 
 import {SlangAspects} from "../../aspects";
 import {GenericPortModel, PortModel} from "../../core/abstract/port";
-import {BlueprintModel} from "../../core/models/blueprint";
+import {BlueprintModel} from "../../core/models";
 import {TypeIdentifier} from "../../definitions/type";
 import {BlackBoxShape} from "../components/blackbox";
 import {ConnectionComponent} from "../components/connection";
@@ -152,8 +152,4 @@ export class BlueprintView extends PaperView {
 		}
 		return port;
 	}
-}
-
-export interface Attrs {
-	port: PortModel;
 }

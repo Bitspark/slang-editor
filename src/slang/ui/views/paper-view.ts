@@ -17,10 +17,34 @@ export interface PaperViewArgs {
 
 export abstract class PaperView extends View {
 
+	public get isEditable(): boolean {
+		return this.args.editable;
+	}
+
+	public get isReadOnly(): boolean {
+		return !this.isEditable;
+	}
+
+	public get isHScrollable(): boolean {
+		return this.args.hscrollable;
+	}
+
+	public get isVScrollable(): boolean {
+		return this.args.vscrollable;
+	}
+
+	public get isDescendable(): boolean {
+		return this.args.descendable === true;
+	}
+
+	public get isRunnable(): boolean {
+		return this.args.runnable === true;
+	}
+	public readonly paper: dia.Paper;
+
 	protected readonly graph = new dia.Graph();
 	private positionChanged = new SlangSubjectTrigger("positionChanged");
 	private escapePressed = new SlangSubjectTrigger("keypressed-escape");
-	private readonly paper: dia.Paper;
 
 	private userInputMode: "scroll" | "hscroll" | "zoom/pan" | null = "scroll";
 
@@ -46,10 +70,6 @@ export abstract class PaperView extends View {
 
 	public toSVGXY(xy: XY): XY {
 		return this.paper.clientToLocalPoint(xy);
-	}
-
-	public getPaper(): dia.Paper {
-		return this.paper;
 	}
 
 	public getCell(id: string | number | dia.Cell): dia.Cell {
@@ -320,30 +340,6 @@ export abstract class PaperView extends View {
 		origin.attr("body/ry", "24");
 		origin.attr("draggable", false);
 		origin.set("obstacle", false);
-	}
-
-	public get isEditable(): boolean {
-		return this.args.editable;
-	}
-
-	public get isReadOnly(): boolean {
-		return !this.isEditable;
-	}
-
-	public get isHScrollable(): boolean {
-		return this.args.hscrollable;
-	}
-
-	public get isVScrollable(): boolean {
-		return this.args.vscrollable;
-	}
-
-	public get isDescendable(): boolean {
-		return this.args.descendable === true;
-	}
-
-	public get isRunnable(): boolean {
-		return this.args.runnable === true;
 	}
 
 	private allowedScrollDelta(deltaX: number, deltaY: number): [number, number] | false {
