@@ -24,7 +24,7 @@ export abstract class PaperView extends View {
 
 	private userInputMode: "scroll" | "hscroll" | "zoom/pan" | null = "scroll";
 
-	private scaleSpeed: number = 0.2;
+	private scaleSpeed: number = 0.1;
 	private minScale: number = 0.35;
 	private maxScale: number = 2.5;
 
@@ -174,23 +174,23 @@ export abstract class PaperView extends View {
 			}
 		});
 
-		this.paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, _x: number, _y: number, delta: number) => {
-			if (!this.handleMouseWheel(originalEvent as WheelEvent, delta)) {
+		this.paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, _x: number, _y: number, direction: number) => {
+			if (!this.handleMouseWheel(originalEvent as WheelEvent, direction)) {
 				originalEvent.preventDefault();
 				originalEvent.stopPropagation();
 			}
 		});
 
-		this.paper.on("cell:mousewheel", (_cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, _x: number, _y: number, delta: number) => {
-			if (!this.handleMouseWheel(originalEvent as WheelEvent, delta)) {
+		this.paper.on("cell:mousewheel", (_cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, _x: number, _y: number, direction: number) => {
+			if (!this.handleMouseWheel(originalEvent as WheelEvent, direction)) {
 				originalEvent.preventDefault();
 				originalEvent.stopPropagation();
 			}
 		});
 
 		["mousewheel"].forEach((eventName) => {
-			this.paper.on("cell:" + eventName, (cellView: dia.CellView, evt: Event, x: number, y: number, delta: number) => {
-				cellView.model.trigger(eventName, cellView, evt, x, y, delta);
+			this.paper.on("cell:" + eventName, (cellView: dia.CellView, evt: Event, x: number, y: number, direction: number) => {
+				cellView.model.trigger(eventName, cellView, evt, x, y, direction);
 			});
 		});
 		["pointerdblclick", "pointerclick", "contextmenu", "pointerdown", "pointermove", "pointerup"].forEach((eventName) => {
@@ -215,14 +215,9 @@ export abstract class PaperView extends View {
 		});
 	}
 
-	protected zoom(delta: number) {
-		const smoothstep = (min: number, max: number, value: number) => {
-			const x = Math.max(0, Math.min(1, (value - min) / (max - min)));
-			return x * x * (3 - 2 * x);
-		};
+	protected zoom(direction: number) {
 		const oldScale = this.paper.scale().sx;
-		let newScale = oldScale + (delta * smoothstep(this.minScale, this.maxScale, oldScale) * this.scaleSpeed);
-		newScale = Math.max(this.minScale, Math.min(this.maxScale, newScale));
+		const newScale = Math.max(Math.min(oldScale + (direction * this.scaleSpeed), this.maxScale), this.minScale);
 		this.paper.scale(newScale);
 		this.positionChanged.next();
 	}
