@@ -156,8 +156,6 @@ abstract class HtmlComponent extends Component {
 	public mount(component: m.Component): this {
 		this.unmount();
 
-		const paper = this.paperView.getPaper();
-
 		m.mount(this.htmlRoot, {
 			oncreate: () => {
 				this.draw();
