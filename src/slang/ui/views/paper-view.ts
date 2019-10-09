@@ -1,4 +1,4 @@
-import {dia, g, shapes, util} from "jointjs";
+import {dia, g, util} from "jointjs";
 
 import {SlangAspects} from "../../aspects";
 import {SlangSubjectTrigger} from "../../core/abstract/utils/events";
@@ -22,8 +22,6 @@ export abstract class PaperView extends View {
 	private escapePressed = new SlangSubjectTrigger("keypressed-escape");
 	private readonly paper: dia.Paper;
 
-	private userInputMode: "scroll" | "hscroll" | "zoom/pan" | null = "scroll";
-
 	private scaleSpeed: number = 0.1;
 	private minScale: number = 0.35;
 	private maxScale: number = 2.5;
@@ -32,6 +30,22 @@ export abstract class PaperView extends View {
 		super(frame, aspects);
 		this.paper = this.createPaper();
 		this.redirectPaperEvents();
+	}
+
+	public get isEditable(): boolean {
+		return this.args.editable;
+	}
+
+	public get isReadOnly(): boolean {
+		return !this.isEditable;
+	}
+
+	public get isDescendable(): boolean {
+		return this.args.descendable === true;
+	}
+
+	public get isRunnable(): boolean {
+		return this.args.runnable === true;
 	}
 
 	public resize(width: number, height: number) {
@@ -70,11 +84,6 @@ export abstract class PaperView extends View {
 
 	public onEscapePressed(cb: () => void): void {
 		this.escapePressed.subscribe(cb);
-	}
-
-	protected reset() {
-		this.paper.scale(1);
-		this.center();
 	}
 
 	protected center() {
@@ -128,38 +137,15 @@ export abstract class PaperView extends View {
 	}
 
 	protected handleMouseWheel(evt: WheelEvent, delta: number): boolean {
-		this.setUserInputMode(evt);
-
-		switch (this.userInputMode) {
-			case "scroll":
-				this.scroll(-evt.deltaX, -evt.deltaY);
-				return false;
-			case "hscroll":
-				this.scroll(-evt.deltaY, 0);
-				return false;
-			case "zoom/pan":
-				this.zoom(delta);
-				return false;
+		if (!this.isZooming(evt)) {
+			return false;
 		}
-
+		this.zoom(delta);
 		return true;
 	}
 
-	protected setUserInputMode(evt: MouseEvent | KeyboardEvent): void {
-		if (evt.ctrlKey || evt.metaKey) {
-			this.userInputMode = "zoom/pan";
-			return;
-		}
-		if (evt.shiftKey) {
-			this.userInputMode = "hscroll";
-			return;
-		}
-		if (this.args.vscrollable || this.args.hscrollable) {
-			this.userInputMode = "scroll";
-			return;
-		}
-
-		this.userInputMode = null;
+	protected isZooming(evt: MouseEvent): boolean {
+		return (evt.ctrlKey || evt.metaKey);
 	}
 
 	protected isPanning(evt: MouseEvent): boolean {
@@ -174,15 +160,17 @@ export abstract class PaperView extends View {
 			}
 		});
 
-		this.paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, _x: number, _y: number, direction: number) => {
-			if (!this.handleMouseWheel(originalEvent as WheelEvent, direction)) {
+		this.paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, _: number, _1: number, direction: number) => {
+			const handled = this.handleMouseWheel(originalEvent as WheelEvent, direction);
+			if (handled) {
 				originalEvent.preventDefault();
 				originalEvent.stopPropagation();
 			}
 		});
 
-		this.paper.on("cell:mousewheel", (_cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, _x: number, _y: number, direction: number) => {
-			if (!this.handleMouseWheel(originalEvent as WheelEvent, direction)) {
+		this.paper.on("cell:mousewheel", (_cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, _: number, _1: number, direction: number) => {
+			const handled = this.handleMouseWheel(originalEvent as WheelEvent, direction);
+			if (handled) {
 				originalEvent.preventDefault();
 				originalEvent.stopPropagation();
 			}
@@ -222,20 +210,6 @@ export abstract class PaperView extends View {
 		this.positionChanged.next();
 	}
 
-	protected scroll(deltaX: number, deltaY: number) {
-		const allowed = this.allowedScrollDelta(deltaX, deltaY);
-		if (!allowed) {
-			return;
-		}
-		const [allowedDeltaX, allowedDeltaY] = allowed;
-
-		const translation = this.paper.translate();
-		const [px, py] = [translation.tx, translation.ty];
-
-		this.paper.translate(px + allowedDeltaX, py + allowedDeltaY);
-		this.positionChanged.next();
-	}
-
 	protected addPanning() {
 		const paper = this.paper;
 
@@ -261,66 +235,6 @@ export abstract class PaperView extends View {
 		});
 	}
 
-	protected getWidth(): number {
-		return this.paper.getArea().width;
-	}
-
-	protected getHeight(): number {
-		return this.paper.getArea().height;
-	}
-
-	protected addOriginPoint() {
-		const origin = new shapes.standard.Circle({
-			size: {
-				width: 4,
-				height: 4,
-			},
-			position: {
-				x: -2,
-				y: -2,
-			},
-		}).addTo(this.graph);
-
-		origin.attr("body/fill", "blue");
-		origin.attr("body/fill-opacity", ".05");
-		origin.attr("body/rx", "24");
-		origin.attr("body/ry", "24");
-		origin.attr("draggable", false);
-		origin.set("obstacle", false);
-	}
-
-	public get isEditable(): boolean {
-		return this.args.editable;
-	}
-
-	public get isReadOnly(): boolean {
-		return !this.isEditable;
-	}
-
-	public get isHScrollable(): boolean {
-		return this.args.hscrollable;
-	}
-
-	public get isVScrollable(): boolean {
-		return this.args.vscrollable;
-	}
-
-	public get isDescendable(): boolean {
-		return this.args.descendable === true;
-	}
-
-	public get isRunnable(): boolean {
-		return this.args.runnable === true;
-	}
-
-	private allowedScrollDelta(deltaX: number, deltaY: number): [number, number] | false {
-		const allowedDeltaX = this.isHScrollable ? deltaX : 0;
-		const allowedDeltaY = this.isVScrollable ? deltaY : 0;
-		if (!(allowedDeltaX || allowedDeltaY)) {
-			return false;
-		}
-		return [allowedDeltaX, allowedDeltaY];
-	}
 }
 
 (util.filter as any).innerShadow = (args: any) => {
