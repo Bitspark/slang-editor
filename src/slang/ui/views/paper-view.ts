@@ -174,14 +174,14 @@ export abstract class PaperView extends View {
 			}
 		});
 
-		this.paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, _: number, _1: number, delta: number) => {
+		this.paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, _x: number, _y: number, delta: number) => {
 			if (!this.handleMouseWheel(originalEvent as WheelEvent, delta)) {
 				originalEvent.preventDefault();
 				originalEvent.stopPropagation();
 			}
 		});
 
-		this.paper.on("cell:mousewheel", (_cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, _: number, _1: number, delta: number) => {
+		this.paper.on("cell:mousewheel", (_cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, _x: number, _y: number, delta: number) => {
 			if (!this.handleMouseWheel(originalEvent as WheelEvent, delta)) {
 				originalEvent.preventDefault();
 				originalEvent.stopPropagation();
