@@ -447,7 +447,10 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 	}
 
 	public subscribeInputPushed(cb: (inputData: SlangTypeValue) => void): void {
-		this.inputPushed.subscribe(cb, this.instance.pipe(filter((ins) => !ins)));
+		const subscription = this.inputPushed.subscribe(cb);
+		this.instance.pipe(filter((ins) => !ins)).subscribe(() => {
+			subscription.unsubscribe();
+		});
 	}
 
 	public subscribeOutputPushed(cb: (outputData: PortMessageJson) => void): void {
