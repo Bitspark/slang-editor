@@ -216,8 +216,12 @@ export abstract class PaperView extends View {
 	}
 
 	protected zoom(delta: number) {
+		const smoothstep = (min: number, max: number, value: number) => {
+			const x = Math.max(0, Math.min(1, (value - min) / (max - min)));
+			return x * x * (3 - 2 * x);
+		};
 		const oldScale = this.paper.scale().sx;
-		let newScale = oldScale + (delta * this.scaleSpeed);
+		let newScale = oldScale + (delta * smoothstep(this.minScale, this.maxScale, oldScale) * this.scaleSpeed);
 		newScale = Math.max(this.minScale, Math.min(this.maxScale, newScale));
 		this.paper.scale(newScale);
 		this.positionChanged.next();
