@@ -127,7 +127,7 @@ export abstract class PaperView extends View {
 		}, opt));
 	}
 
-	protected handleMouseWheel(evt: WheelEvent, x: number, y: number, delta: number): boolean {
+	protected handleMouseWheel(evt: WheelEvent, delta: number): boolean {
 		this.setUserInputMode(evt);
 
 		switch (this.userInputMode) {
@@ -174,15 +174,15 @@ export abstract class PaperView extends View {
 			}
 		});
 
-		this.paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, x: number, y: number, delta: number) => {
-			if (!this.handleMouseWheel(originalEvent as WheelEvent, x, y, delta)) {
+		this.paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, _: number, _1: number, delta: number) => {
+			if (!this.handleMouseWheel(originalEvent as WheelEvent, delta)) {
 				originalEvent.preventDefault();
 				originalEvent.stopPropagation();
 			}
 		});
 
-		this.paper.on("cell:mousewheel", (_cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, x: number, y: number, delta: number) => {
-			if (!this.handleMouseWheel(originalEvent as WheelEvent, x, y, delta)) {
+		this.paper.on("cell:mousewheel", (_cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, _: number, _1: number, delta: number) => {
+			if (!this.handleMouseWheel(originalEvent as WheelEvent, delta)) {
 				originalEvent.preventDefault();
 				originalEvent.stopPropagation();
 			}
