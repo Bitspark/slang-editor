@@ -280,6 +280,12 @@ export class WhiteBoxComponent extends CellComponent {
 	}
 
 	private subscribe() {
+		this.onClick(() => {
+			this.blueprint.clicked.next();
+		});
+		this.onDblClick(() => {
+			this.blueprint.dblclicked.next();
+		});
 
 		this.blueprint.subscribeChildCreated(OperatorModel, (operator) => {
 			const opComp = this.addOperator(operator);

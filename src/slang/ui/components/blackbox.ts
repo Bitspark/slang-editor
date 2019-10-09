@@ -161,7 +161,6 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 		super(paperView, false);
 
 		this.onClick(() => {
-			console.log("*** click");
 			this.blueprint.clicked.next();
 		});
 		this.onDblClick(() => {

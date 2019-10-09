@@ -1,5 +1,6 @@
 import {SlangEditor} from "..";
 import {SlangBundle} from "..";
+import {BlueprintModel, OperatorModel} from "../slang/core/models";
 
 customElements.define("slang-editor", SlangEditor);
 
@@ -464,4 +465,7 @@ const slangEditor = document.getElementById("main") as SlangEditor;
 if (slangEditor) {
 	const blueprint = slangEditor.loadBundle(bundle);
 	slangEditor.displayBlueprint(blueprint);
+	slangEditor.selected.subscribe((e: BlueprintModel|OperatorModel|null) => {
+		console.log("--> selected:", !!e ? e.name : "nope");
+	});
 }

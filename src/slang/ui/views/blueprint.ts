@@ -2,7 +2,8 @@ import {dia} from "jointjs";
 
 import {SlangAspects} from "../../aspects";
 import {GenericPortModel, PortModel} from "../../core/abstract/port";
-import {BlueprintModel} from "../../core/models";
+import {SlangBehaviorSubject} from "../../core/abstract/utils/events";
+import {BlueprintModel, OperatorModel} from "../../core/models";
 import {TypeIdentifier} from "../../definitions/type";
 import {BlackBoxShape} from "../components/blackbox";
 import {ConnectionComponent} from "../components/connection";
@@ -13,17 +14,14 @@ import {PaperView, PaperViewArgs} from "./paper-view";
 
 export class BlueprintView extends PaperView {
 	public readonly whiteBox: WhiteBoxComponent;
+	public readonly selected = new SlangBehaviorSubject<OperatorModel | BlueprintModel | null>("element-selected", null);
 
-	constructor(frame: ViewFrame, aspects: SlangAspects, private blueprint: BlueprintModel, args: PaperViewArgs) {
+	constructor(frame: ViewFrame, aspects: SlangAspects, public readonly blueprint: BlueprintModel, args: PaperViewArgs) {
 		super(frame, aspects, args);
 		this.addPanning();
 		this.whiteBox = new WhiteBoxComponent(this, blueprint);
 		this.attachEventHandlers();
 		this.fit();
-	}
-
-	public getBlueprint(): BlueprintModel {
-		return this.blueprint;
 	}
 
 	protected createPaper(): dia.Paper {
@@ -128,6 +126,20 @@ export class BlueprintView extends PaperView {
 				return;
 			}
 			this.fitOuter(false);
+		});
+
+		this.blueprint.dblclicked.subscribe(() => {
+			console.log("---> this.selected", this.selected);
+			this.selected.next(this.blueprint);
+		});
+
+		this.blueprint.subscribeChildCreated(OperatorModel, (op: OperatorModel) => {
+			console.log("--> subscribe", op);
+			op.dblclicked.subscribe(() => {
+				console.log("---> this.selected", this.selected);
+				this.selected.next(op);
+			});
+
 		});
 	}
 

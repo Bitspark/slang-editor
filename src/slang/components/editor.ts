@@ -1,6 +1,7 @@
 import {STYLING} from "../../styles";
 import {SlangAspects} from "../aspects";
-import {AppModel, BlueprintModel, LandscapeModel} from "../core/models";
+import {SlangBehaviorSubject} from "../core/abstract/utils/events";
+import {AppModel, BlueprintModel, LandscapeModel, OperatorModel} from "../core/models";
 import {SlangBundle} from "../definitions/api";
 import {ViewFrame} from "../ui/frame";
 import {BlueprintView} from "../ui/views/blueprint";
@@ -18,6 +19,7 @@ ${STYLING}
 
 export class SlangEditor extends HTMLElement {
 	public blueprintView?: BlueprintView;
+	public readonly selected = new SlangBehaviorSubject<OperatorModel | BlueprintModel | null>("element-selected", null);
 
 	private blueprint?: BlueprintModel;
 	private viewFrame?: ViewFrame;
@@ -75,6 +77,9 @@ export class SlangEditor extends HTMLElement {
 			runnable: true,
 		};
 		this.blueprintView = new BlueprintView(this.viewFrame, new SlangAspects(), blueprint, viewArgs);
+
+		const that = this;
+		this.blueprintView.selected.subscribe((e: BlueprintModel|OperatorModel|null) => that.selected.next(e));
 		this.viewFrame.setView(this.blueprintView);
 	}
 }
