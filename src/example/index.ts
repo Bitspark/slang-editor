@@ -1,6 +1,8 @@
 import {SlangEditor} from "..";
 import {SlangBundle} from "..";
-import {BlueprintModel, OperatorModel} from "../slang/core/models";
+import {OperatorBoxComponent} from "../slang/ui/components/blackbox";
+import {ConnectionComponent} from "../slang/ui/components/connection";
+import {WhiteBoxComponent} from "../slang/ui/components/whitebox";
 
 customElements.define("slang-editor", SlangEditor);
 
@@ -465,7 +467,7 @@ const slangEditor = document.getElementById("main") as SlangEditor;
 if (slangEditor) {
 	const blueprint = slangEditor.loadBundle(bundle);
 	slangEditor.displayBlueprint(blueprint);
-	slangEditor.selected.subscribe((e: BlueprintModel|OperatorModel|null) => {
-		console.log("--> selected:", !!e ? e.name : "nope");
+	slangEditor.selected.subscribe((comp: WhiteBoxComponent|OperatorBoxComponent|ConnectionComponent|null) => {
+		console.log("--> selected:", comp);
 	});
 }

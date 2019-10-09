@@ -27,14 +27,15 @@ $blackbox-color-label: $black;
 
 // BLACKBOX
 
-.sl-blackbox, .sl-blackbox-ghost {
+.sl-blackbox, .sl-outer {
 	&.sl-is-selected {
-		.sl-rectangle {
-			stroke-width: 4px;
-			stroke: $primary;
+		> rect {
+			// add styling for selected component
 		}
 	}
+}
 
+.sl-blackbox, .sl-blackbox-ghost {
 	.sl-rectangle {
 		fill: $blackbox-color-fill;
 		stroke: $black;
@@ -59,7 +60,7 @@ $blackbox-color-label: $black;
 	.sl-rectangle {
 		stroke: $black;
 		fill: $blueprint-color-fill;
-		stroke-width: 3px;
+		stroke-width: 1.5px;
 	}
 
 	&.sl-blupr-elem {

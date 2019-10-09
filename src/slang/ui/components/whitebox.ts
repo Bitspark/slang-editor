@@ -14,7 +14,7 @@ import {tid2css} from "../utils";
 import {PaperView} from "../views/paper-view";
 
 import {AttachableComponent, CellComponent} from "./base";
-import {BlackBoxComponent, OperatorBoxComponent} from "./blackbox";
+import {OperatorBoxComponent} from "./blackbox";
 import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {ConnectionComponent} from "./connection";
 import {PortGroupPosition} from "./port-group";
@@ -22,14 +22,17 @@ import {PortGroupPosition} from "./port-group";
 export class WhiteBoxComponent extends CellComponent {
 	private static readonly padding = 60;
 
+	public connectionAdded = new SlangSubject<ConnectionComponent>("connection-added");
+	public operatorAdded = new SlangSubject<OperatorBoxComponent>("operator-added");
+
+	public readonly operators: OperatorBoxComponent[] = [];
+	public readonly connections: ConnectionComponent[] = [];
+
 	protected readonly cssAttr = "root/class";
 	protected readonly shape: WhiteBoxComponent.Rect;
 
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
-
-	private readonly operators: BlackBoxComponent[] = [];
-	private readonly connections: ConnectionComponent[] = [];
 	private readonly portInfos: AttachableComponent[] = [];
 
 	private readonly ports = {
@@ -489,24 +492,18 @@ export class WhiteBoxComponent extends CellComponent {
 		return portComponent;
 	}
 
-	private addConnection(connection: Connection) {
+	private addConnection(connection: Connection): ConnectionComponent {
 		const connComp = new ConnectionComponent(this.paperView, connection);
-
-		if (!this.paperView.isReadOnly) {
-			connComp.onClick(() => {
-				connComp.css({
-					"sl-is-selected": true,
-				});
-			});
-		}
+		this.connectionAdded.next(connComp);
 		this.connections.push(connComp);
+		return connComp;
 	}
 
 	private addOperator(opr: OperatorModel): OperatorBoxComponent {
 		const oprComp = this.paperView.getFactory().createOperatorComponent(this.paperView, opr);
-		this.operators.push(oprComp);
 		this.attachPortInfo(oprComp);
-
+		this.operatorAdded.next(oprComp);
+		this.operators.push(oprComp);
 		return oprComp;
 	}
 
