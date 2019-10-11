@@ -136,11 +136,11 @@ export abstract class PaperView extends View {
 		}, opt));
 	}
 
-	protected handleMouseWheel(evt: WheelEvent, delta: number): boolean {
+	protected handleMouseWheel(evt: WheelEvent, x: number, y: number, delta: number): boolean {
 		if (!this.isZooming(evt)) {
 			return false;
 		}
-		this.zoom(delta);
+		this.zoom(x, y, delta);
 		return true;
 	}
 
@@ -160,17 +160,17 @@ export abstract class PaperView extends View {
 			}
 		});
 
-		this.paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, _: number, _1: number, direction: number) => {
-			const handled = this.handleMouseWheel(originalEvent as WheelEvent, direction);
-			if (handled) {
+		this.paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, x: number, y: number, direction: number) => {
+			const handled = this.handleMouseWheel(originalEvent as WheelEvent, x, y, direction);
+			if (!handled) {
 				originalEvent.preventDefault();
 				originalEvent.stopPropagation();
 			}
 		});
 
-		this.paper.on("cell:mousewheel", (_cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, _: number, _1: number, direction: number) => {
-			const handled = this.handleMouseWheel(originalEvent as WheelEvent, direction);
-			if (handled) {
+		this.paper.on("cell:mousewheel", (_cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, x: number, y: number, direction: number) => {
+			const handled = this.handleMouseWheel(originalEvent as WheelEvent, x, y, direction);
+			if (!handled) {
 				originalEvent.preventDefault();
 				originalEvent.stopPropagation();
 			}
@@ -203,9 +203,18 @@ export abstract class PaperView extends View {
 		});
 	}
 
-	protected zoom(direction: number) {
+	protected zoom(x: number, y: number, direction: number) {
 		const oldScale = this.paper.scale().sx;
 		const newScale = Math.max(Math.min(oldScale + (direction * this.scaleSpeed), this.maxScale), this.minScale);
+
+		const translation = this.paper.translate();
+
+		// Zoom using the cursor postion as center
+		const [px, py] = [translation.tx, translation.ty];
+		const deltaPx = x * (oldScale - newScale);
+		const deltaPy = y * (oldScale - newScale);
+		this.paper.translate(px + deltaPx, py + deltaPy);
+
 		this.paper.scale(newScale);
 		this.positionChanged.next();
 	}

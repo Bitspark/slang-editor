@@ -1,84 +1,27 @@
-import {BehaviorSubject, Observable, OperatorFunction, Subject, Subscription} from "rxjs";
+import {BehaviorSubject, Subject, Subscription} from "rxjs";
 
 import {SlangNode} from "../nodes";
 
-abstract class BaseSlangSubject {
-
-	protected constructor(protected readonly name: string) {
-	}
-
-}
-
-export class SlangSubject<T> extends BaseSlangSubject {
-	private readonly subject = new Subject<T>();
-
-	constructor(name: string) {
-		super(name);
-	}
-
-	public next(value: T) {
-		this.subject.next(value);
-	}
-
-	public subscribe(next: (value: T) => void, until?: SlangSubject<any> | SlangSubjectTrigger | Observable<any>): Subscription {
-		const subscription = this.subject.subscribe(next);
-		if (until) {
-			(until as SlangSubjectTrigger).subscribe(() => {
-				subscription.unsubscribe();
-			});
-		}
-		return subscription;
+export class SlangSubject<T> extends Subject<T> {
+	constructor(public readonly name: string) {
+		super();
 	}
 }
 
-export class SlangSubjectTrigger extends BaseSlangSubject {
-	private readonly subject = new Subject<void>();
-
-	constructor(name: string) {
-		super(name);
-	}
-
-	public next() {
-		this.subject.next();
-	}
-
-	public subscribe(next: () => void): Subscription {
-		return this.subject.subscribe(next);
-	}
-
+export class SlangSubjectTrigger extends SlangSubject<void> {
 }
 
-export class SlangBehaviorSubject<T> extends BaseSlangSubject {
-	private readonly subject: BehaviorSubject<T>;
-
-	constructor(name: string, initial: T) {
-		super(name);
-		this.subject = new BehaviorSubject<T>(initial);
-	}
-
-	public next(value: T) {
-		this.subject.next(value);
-	}
-
-	public subscribe(next: (value: T) => void): Subscription {
-		return this.subject.subscribe(next);
-	}
-
-	public getValue(): T {
-		return this.subject.getValue();
-	}
-
-	public pipe(opr: OperatorFunction<any, any>): Observable<T> {
-		return this.subject.pipe(opr);
+export class SlangBehaviorSubject<T> extends BehaviorSubject<T> {
+	constructor(public readonly name: string, initial: T) {
+		super(initial);
 	}
 }
 
-export class SlangBagSubject<T> extends BaseSlangSubject {
+export class SlangBagSubject<T> {
 	private readonly subjectAdded = new Subject<T>();
 	private readonly subjectRemoved = new Subject<T>();
 
-	constructor(protected readonly name: string) {
-		super(name);
+	constructor(public readonly name: string) {
 	}
 
 	public nextAdd(value: T) {
@@ -105,7 +48,7 @@ export class SlangBagSubject<T> extends BaseSlangSubject {
 export class SlangNodeSetBehaviorSubject<T extends SlangNode> extends SlangBagSubject<T> {
 	private readonly nodes: Map<string, T> = new Map<string, T>();
 
-	constructor(protected readonly name: string, initial: T[]) {
+	constructor(name: string, initial: T[]) {
 		super(name);
 		initial.forEach((node) => this.nodes.set(node.getScopedIdentity(), node));
 	}
