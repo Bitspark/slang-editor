@@ -162,7 +162,7 @@ export abstract class PaperView extends View {
 
 		this.paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, x: number, y: number, direction: number) => {
 			const handled = this.handleMouseWheel(originalEvent as WheelEvent, x, y, direction);
-			if (!handled) {
+			if (handled) {
 				originalEvent.preventDefault();
 				originalEvent.stopPropagation();
 			}
@@ -170,7 +170,7 @@ export abstract class PaperView extends View {
 
 		this.paper.on("cell:mousewheel", (_cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, x: number, y: number, direction: number) => {
 			const handled = this.handleMouseWheel(originalEvent as WheelEvent, x, y, direction);
-			if (!handled) {
+			if (handled) {
 				originalEvent.preventDefault();
 				originalEvent.stopPropagation();
 			}
