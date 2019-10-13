@@ -5,10 +5,10 @@ import {Styles} from "../../../styles/studio";
 import {GenericPortModel, PortModel} from "../../core/abstract/port";
 import {Connection} from "../../core/abstract/utils/connections";
 import {SlangSubject} from "../../core/abstract/utils/events";
-import {BlueprintModel} from "../../core/models/blueprint";
-import {BlueprintDelegateModel} from "../../core/models/delegate";
-import {OperatorModel} from "../../core/models/operator";
-import {BlueprintPortModel} from "../../core/models/port";
+import {BlueprintModel} from "../../core/models";
+import {BlueprintDelegateModel} from "../../core/models";
+import {OperatorModel} from "../../core/models";
+import {BlueprintPortModel} from "../../core/models";
 import {TypeIdentifier} from "../../definitions/type";
 import {tid2css} from "../utils";
 import {PaperView} from "../views/paper-view";
@@ -58,6 +58,10 @@ export class WhiteBoxComponent extends CellComponent {
 
 		this.render();
 		this.centerizeOuter();
+	}
+
+	public getModel(): BlueprintModel {
+		return this.blueprint;
 	}
 
 	public autoLayout() {
