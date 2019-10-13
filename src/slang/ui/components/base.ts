@@ -67,7 +67,7 @@ export abstract class CellComponent extends Component {
 	}
 
 	public render() {
-		this.shape.on("pointerclick pointerup",
+		this.shape.on("pointerup",
 			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
 				this.clicked.next({event, x, y});
 			});
