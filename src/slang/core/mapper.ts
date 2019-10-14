@@ -313,9 +313,10 @@ export function toTypeIdentifier(typeName: string): TypeIdentifier {
 		generic: TypeIdentifier.Generic,
 		stream: TypeIdentifier.Stream,
 		map: TypeIdentifier.Map,
+		unspecified: TypeIdentifier.Unspecified,
 	} as { [_: string]: TypeIdentifier })[typeName.toLowerCase()];
 
-	if (!type) {
+	if (type === undefined) {
 		throw new Error(`unknown type identifier '${typeName}'`);
 	}
 
