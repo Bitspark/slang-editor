@@ -28,8 +28,8 @@ export class OperatorModel extends BlackBox {
 
 	// Topics
 	// self
-	private readonly name: string;
-	private readonly blueprint: BlueprintModel;
+	public readonly name: string;
+	public readonly blueprint: BlueprintModel;
 	private geometry: OperatorGeometry | undefined;
 
 	// Properties are one single subject

@@ -8,18 +8,14 @@ import {PaperView} from "../views/paper-view";
 
 import {Container} from "./toolkit";
 
-export type Alignment =
-	"tl" | "t" | "tr" |
-	"l" | "c" | "r" |
-	"bl" | "b" | "br";
+export type Alignment = "tl" | "t" | "tr" | "l" | "c" | "r" | "bl" | "b" | "br";
 
 export interface Position extends XY {
 	align: Alignment;
 }
 
 abstract class Component {
-	protected constructor(private svgXY: XY) {
-	}
+	protected constructor(private svgXY: XY) {}
 
 	public destroy() {
 		return;
@@ -35,13 +31,13 @@ abstract class Component {
 }
 
 export abstract class CellComponent extends Component {
+	public readonly clicked = new SlangSubject<{event: MouseEvent; x: number; y: number}>("clicked");
+	public readonly dblclicked = new SlangSubject<{event: MouseEvent; x: number; y: number}>("dblclicked");
+	public readonly selected = new SlangBehaviorSubject<boolean>("selected", false);
+
 	protected abstract readonly shape: dia.Cell;
 	protected abstract readonly cssAttr: string;
 	private components: Component[] = [];
-
-	private clicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("clicked");
-	private dblclicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("dblclicked");
-	private selected = new SlangBehaviorSubject<boolean>("selected", false);
 
 	protected constructor(protected readonly paperView: PaperView, xy: XY) {
 		super(xy);
@@ -67,16 +63,13 @@ export abstract class CellComponent extends Component {
 	}
 
 	public render() {
-		this.shape.on("pointerclick",
-			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
-				this.clicked.next({event, x, y});
-				this.select();
-			});
-		this.shape.on("pointerdblclick",
-			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
-				this.dblclicked.next({event, x, y});
-				this.select();
-			});
+		this.shape.on("pointerup", (_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
+			this.clicked.next({event, x, y});
+		});
+		this.shape.on("pointerdblclick", (_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
+			this.dblclicked.next({event, x, y});
+			this.select();
+		});
 
 		this.paperView.renderCell(this.shape);
 	}
@@ -127,7 +120,6 @@ export abstract class CellComponent extends Component {
 }
 
 abstract class HtmlComponent extends Component {
-
 	private static createRoot(): HTMLElement {
 		const el = document.createElement("div");
 		el.style.position = "absolute";
@@ -201,10 +193,10 @@ abstract class HtmlComponent extends Component {
 			case "t":
 			case "c":
 			case "b":
-				left = x - (this.htmlRoot.offsetWidth / 2);
+				left = x - this.htmlRoot.offsetWidth / 2;
 				break;
 			case "r":
-				left = x - (this.htmlRoot.offsetWidth);
+				left = x - this.htmlRoot.offsetWidth;
 				break;
 		}
 
@@ -215,10 +207,10 @@ abstract class HtmlComponent extends Component {
 			case "l":
 			case "c":
 			case "r":
-				top = y - (this.htmlRoot.offsetHeight / 2);
+				top = y - this.htmlRoot.offsetHeight / 2;
 				break;
 			case "b":
-				top = y - (this.htmlRoot.offsetHeight);
+				top = y - this.htmlRoot.offsetHeight;
 				break;
 		}
 

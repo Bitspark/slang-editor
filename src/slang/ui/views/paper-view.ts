@@ -16,11 +16,11 @@ export interface PaperViewArgs {
 }
 
 export abstract class PaperView extends View {
+	public readonly paper: dia.Paper;
 
 	protected readonly graph = new dia.Graph();
 	private positionChanged = new SlangSubjectTrigger("positionChanged");
 	private escapePressed = new SlangSubjectTrigger("keypressed-escape");
-	private readonly paper: dia.Paper;
 
 	private scaleSpeed: number = 0.1;
 	private minScale: number = 0.35;
@@ -62,10 +62,6 @@ export abstract class PaperView extends View {
 		return this.paper.clientToLocalPoint(xy);
 	}
 
-	public getPaper(): dia.Paper {
-		return this.paper;
-	}
-
 	public getCell(id: string | number | dia.Cell): dia.Cell {
 		return this.graph.getCell(id);
 	}
@@ -87,7 +83,7 @@ export abstract class PaperView extends View {
 	}
 
 	protected center() {
-		this.paper.setOrigin(this.paper.options.width as number / 2, this.paper.options.height as number / 2);
+		this.paper.setOrigin((this.paper.options.width as number) / 2, (this.paper.options.height as number) / 2);
 		this.positionChanged.next();
 	}
 
@@ -103,37 +99,42 @@ export abstract class PaperView extends View {
 		container.appendChild(inner);
 		const view = this;
 
-		return new dia.Paper(Object.assign({
-			el: inner,
-			model: this.graph,
-			gridSize: 5,
-			drawGrid: false,
-			interactive(cellView: dia.CellView) {
-				if (view.isReadOnly) {
-					return false;
-				}
+		return new dia.Paper(
+			Object.assign(
+				{
+					el: inner,
+					model: this.graph,
+					gridSize: 5,
+					drawGrid: false,
+					interactive(cellView: dia.CellView) {
+						if (view.isReadOnly) {
+							return false;
+						}
 
-				if (cellView.model.attr("draggable") === false) {
-					return false;
-				}
-				if (cellView.model.isLink()) {
-					return {vertexAdd: false};
-				}
-				return true;
-			},
-			restrictTranslate(elementView: dia.ElementView): g.PlainRect {
-				const fn = elementView.model.get("restrictTranslate");
-				if (typeof fn === "function") {
-					return fn();
-				}
-				return {
-					x: -(Number.MAX_VALUE / 2),
-					y: -(Number.MAX_VALUE / 2),
-					width: Number.MAX_VALUE,
-					height: Number.MAX_VALUE,
-				};
-			},
-		}, opt));
+						if (cellView.model.attr("draggable") === false) {
+							return false;
+						}
+						if (cellView.model.isLink()) {
+							return {vertexAdd: false};
+						}
+						return true;
+					},
+					restrictTranslate(elementView: dia.ElementView): g.PlainRect {
+						const fn = elementView.model.get("restrictTranslate");
+						if (typeof fn === "function") {
+							return fn();
+						}
+						return {
+							x: -(Number.MAX_VALUE / 2),
+							y: -(Number.MAX_VALUE / 2),
+							width: Number.MAX_VALUE,
+							height: Number.MAX_VALUE,
+						};
+					},
+				},
+				opt,
+			),
+		);
 	}
 
 	protected handleMouseWheel(evt: WheelEvent, x: number, y: number, delta: number): boolean {
@@ -145,7 +146,7 @@ export abstract class PaperView extends View {
 	}
 
 	protected isZooming(evt: MouseEvent): boolean {
-		return (evt.ctrlKey || evt.metaKey);
+		return evt.ctrlKey || evt.metaKey;
 	}
 
 	protected isPanning(evt: MouseEvent): boolean {
@@ -188,7 +189,7 @@ export abstract class PaperView extends View {
 		});
 		["mouseover", "mouseout", "mouseenter", "mouseleave"].forEach((eventName) => {
 			this.paper.on("cell:" + eventName, (cellView: dia.CellView, evt: MouseEvent) => {
-				const evTarget = (evt.target as Node);
+				const evTarget = evt.target as Node;
 				if (evTarget && evTarget.parentElement) {
 					const portId = evTarget.parentElement.getAttribute("port");
 					if (portId) {
@@ -205,7 +206,7 @@ export abstract class PaperView extends View {
 
 	protected zoom(x: number, y: number, direction: number) {
 		const oldScale = this.paper.scale().sx;
-		const newScale = Math.max(Math.min(oldScale + (direction * this.scaleSpeed), this.maxScale), this.minScale);
+		const newScale = Math.max(Math.min(oldScale + direction * this.scaleSpeed, this.maxScale), this.minScale);
 
 		const translation = this.paper.translate();
 
@@ -234,7 +235,7 @@ export abstract class PaperView extends View {
 			movementX = previousEvent ? currentEvent.screenX - previousEvent.screenX : 0;
 			movementY = previousEvent ? currentEvent.screenY - previousEvent.screenY : 0;
 			const {tx, ty} = paper.translate();
-			paper.translate(tx + movementX , ty + movementY);
+			paper.translate(tx + movementX, ty + movementY);
 			previousEvent = currentEvent;
 			this.positionChanged.next();
 		};
@@ -243,7 +244,6 @@ export abstract class PaperView extends View {
 			doPanning(event);
 		});
 	}
-
 }
 
 (util.filter as any).innerShadow = (args: any) => {

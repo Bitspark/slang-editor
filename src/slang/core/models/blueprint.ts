@@ -107,6 +107,12 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		return this.meta.name;
 	}
 
+	public set name(newName: string) {
+		if (newName !== "") {
+			this.meta.name = newName;
+		}
+	}
+
 	private static revealGenericIdentifiers(port: PortModel): Set<string> {
 		const genericIdentifiers = new Set<string>();
 		if (port.getTypeIdentifier() === TypeIdentifier.Generic) {
@@ -136,6 +142,7 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 
 	public readonly uuid: string;
 	public readonly tests: any;
+
 	// Topics::self
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
 	private saveChanges = new SlangSubjectTrigger("save-changes");
