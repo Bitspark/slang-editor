@@ -19,7 +19,7 @@ ${STYLING}
 
 export class SlangEditor extends HTMLElement {
 	public blueprintView?: BlueprintView;
-	public readonly selected = new SlangBehaviorSubject< SelectableComponent|null>("element-selected", null);
+	public readonly selected = new SlangBehaviorSubject<SelectableComponent | null>("element-selected", null);
 
 	private blueprint?: BlueprintModel;
 	private viewFrame?: ViewFrame;
@@ -39,7 +39,7 @@ export class SlangEditor extends HTMLElement {
 		return this.landscape.loadBundle(bundle);
 	}
 
-	public exportBundle(): SlangBundle|null {
+	public exportBundle(): SlangBundle | null {
 		if (this.blueprint) {
 			return this.landscape.exportBundle(this.blueprint.uuid);
 		}
@@ -79,7 +79,9 @@ export class SlangEditor extends HTMLElement {
 		this.blueprintView = new BlueprintView(this.viewFrame, new SlangAspects(), blueprint, viewArgs);
 
 		const that = this;
-		this.blueprintView.selected.subscribe((e: SelectableComponent|null) => that.selected.next(e));
+		this.blueprintView.selected.subscribe((e: SelectableComponent | null) => {
+			that.selected.next(e);
+		});
 		this.viewFrame.setView(this.blueprintView);
 	}
 }
