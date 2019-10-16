@@ -35,13 +35,13 @@ abstract class Component {
 }
 
 export abstract class CellComponent extends Component {
+	public readonly clicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("clicked");
+	public readonly dblclicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("dblclicked");
+	public readonly selected = new SlangBehaviorSubject<boolean>("selected", false);
+
 	protected abstract readonly shape: dia.Cell;
 	protected abstract readonly cssAttr: string;
 	private components: Component[] = [];
-
-	private clicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("clicked");
-	private dblclicked = new SlangSubject<{ event: MouseEvent, x: number, y: number }>("dblclicked");
-	private selected = new SlangBehaviorSubject<boolean>("selected", false);
 
 	protected constructor(protected readonly paperView: PaperView, xy: XY) {
 		super(xy);
@@ -67,10 +67,9 @@ export abstract class CellComponent extends Component {
 	}
 
 	public render() {
-		this.shape.on("pointerclick",
+		this.shape.on("pointerup",
 			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
 				this.clicked.next({event, x, y});
-				this.select();
 			});
 		this.shape.on("pointerdblclick",
 			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
@@ -156,7 +155,7 @@ abstract class HtmlComponent extends Component {
 	public mount(component: m.Component): this {
 		this.unmount();
 
-		const paper = this.paperView.getPaper();
+		const paper = this.paperView.paper;
 
 		m.mount(this.htmlRoot, {
 			oncreate: () => {

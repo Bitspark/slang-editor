@@ -1,9 +1,10 @@
 import {STYLING} from "../../styles";
 import {SlangAspects} from "../aspects";
+import {SlangBehaviorSubject} from "../core/abstract/utils/events";
 import {AppModel, BlueprintModel, LandscapeModel} from "../core/models";
 import {SlangBundle} from "../definitions/api";
 import {ViewFrame} from "../ui/frame";
-import {BlueprintView} from "../ui/views/blueprint";
+import {BlueprintView, SelectableComponent} from "../ui/views/blueprint";
 
 const template = document.createElement("template");
 template.innerHTML = `
@@ -18,6 +19,7 @@ ${STYLING}
 
 export class SlangEditor extends HTMLElement {
 	public blueprintView?: BlueprintView;
+	public readonly selected = new SlangBehaviorSubject<SelectableComponent | null>("element-selected", null);
 
 	private blueprint?: BlueprintModel;
 	private viewFrame?: ViewFrame;
@@ -33,18 +35,11 @@ export class SlangEditor extends HTMLElement {
 		this.firstUpdated();
 	}
 
-	/*
-	public static get styles(): CSSResult {
-		return css`:host {
-			display:block
-		}`;
-	}
-	 */
 	public loadBundle(bundle: SlangBundle): BlueprintModel {
 		return this.landscape.loadBundle(bundle);
 	}
 
-	public exportBundle(): SlangBundle|null {
+	public exportBundle(): SlangBundle | null {
 		if (this.blueprint) {
 			return this.landscape.exportBundle(this.blueprint.uuid);
 		}
@@ -54,12 +49,6 @@ export class SlangEditor extends HTMLElement {
 	public findBlueprint(id: string): BlueprintModel | undefined {
 		return this.landscape.findBlueprint(id);
 	}
-
-	/*
-	public render(): TemplateResult {
-		return html`<div class="ViewFrame"></div><style>${SlangEditorStyling.toString()}</style>`;
-	}
-	 */
 
 	public firstUpdated(): void {
 		if (!this.shadowRoot) {
@@ -88,6 +77,11 @@ export class SlangEditor extends HTMLElement {
 			runnable: true,
 		};
 		this.blueprintView = new BlueprintView(this.viewFrame, new SlangAspects(), blueprint, viewArgs);
+
+		const that = this;
+		this.blueprintView.selected.subscribe((e: SelectableComponent | null) => {
+			that.selected.next(e);
+		});
 		this.viewFrame.setView(this.blueprintView);
 	}
 }

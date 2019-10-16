@@ -2,28 +2,28 @@ import {dia} from "jointjs";
 
 import {SlangAspects} from "../../aspects";
 import {GenericPortModel, PortModel} from "../../core/abstract/port";
-import {BlueprintModel} from "../../core/models/blueprint";
+import {SlangBehaviorSubject} from "../../core/abstract/utils/events";
+import {BlueprintModel} from "../../core/models";
 import {TypeIdentifier} from "../../definitions/type";
-import {BlackBoxShape} from "../components/blackbox";
+import {BlackBoxShape, OperatorBoxComponent} from "../components/blackbox";
 import {ConnectionComponent} from "../components/connection";
 import {WhiteBoxComponent} from "../components/whitebox";
 import {ViewFrame} from "../frame";
 
 import {PaperView, PaperViewArgs} from "./paper-view";
 
+export type SelectableComponent = OperatorBoxComponent | WhiteBoxComponent | ConnectionComponent;
+
 export class BlueprintView extends PaperView {
 	public readonly whiteBox: WhiteBoxComponent;
+	public readonly selected = new SlangBehaviorSubject<SelectableComponent|null>("element-selected", null);
 
-	constructor(frame: ViewFrame, aspects: SlangAspects, private blueprint: BlueprintModel, args: PaperViewArgs) {
+	constructor(frame: ViewFrame, aspects: SlangAspects, public readonly blueprint: BlueprintModel, args: PaperViewArgs) {
 		super(frame, aspects, args);
 		this.addPanning();
 		this.whiteBox = new WhiteBoxComponent(this, blueprint);
 		this.attachEventHandlers();
 		this.fit();
-	}
-
-	public getBlueprint(): BlueprintModel {
-		return this.blueprint;
 	}
 
 	protected createPaper(): dia.Paper {
@@ -129,6 +129,37 @@ export class BlueprintView extends PaperView {
 			}
 			this.fitOuter(false);
 		});
+
+		const unselectCurrentOne = () => {
+			const currSelected = this.selected.getValue();
+			if (currSelected) {
+				currSelected.unselect();
+			}
+		};
+
+		this.paper.on("blank:pointerdown cell:pointerdown", () => {
+			unselectCurrentOne();
+		});
+
+		const handleSelect = (comp: SelectableComponent) => (selected: boolean) => {
+			unselectCurrentOne();
+			if (selected) {
+				this.selected.next(comp);
+			}
+			// todo: set cssClass within Component class
+			comp.css({
+				"sl-is-selected": selected,
+			});
+		};
+
+		const registerSelectHandle = (comp: SelectableComponent) => comp.selected.subscribe(handleSelect(comp));
+
+		const whiteBox = this.whiteBox;
+		registerSelectHandle(whiteBox);
+		whiteBox.operatorAdded.subscribe(registerSelectHandle);
+		whiteBox.operators.map(registerSelectHandle);
+		whiteBox.connectionAdded.subscribe(registerSelectHandle);
+		whiteBox.connections.map(registerSelectHandle);
 	}
 
 	private fitOuter(animation: boolean) {
@@ -152,8 +183,4 @@ export class BlueprintView extends PaperView {
 		}
 		return port;
 	}
-}
-
-export interface Attrs {
-	port: PortModel;
 }
