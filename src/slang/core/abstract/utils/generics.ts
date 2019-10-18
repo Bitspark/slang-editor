@@ -10,8 +10,7 @@ export class GenericSpecifications {
 	private readonly genericTypes = new Map<string, SlangBehaviorSubject<SlangType | null>>();
 	private readonly ports = new Map<string, Set<PortModel>>();
 
-	public constructor(private genericIdentifiers: string[]) {
-	}
+	public constructor(private genericIdentifiers: string[]) {}
 
 	public specify(identifier: string, type: SlangType): void {
 		if (this.genericIdentifiers.indexOf(identifier) === -1) {
@@ -102,5 +101,4 @@ export class GenericSpecifications {
 		this.genericTypes.set(identifier, newGeneric);
 		return newGeneric;
 	}
-
 }

@@ -13,8 +13,7 @@ import {SlangSubject} from "./utils/events";
 import {GenericSpecifications} from "./utils/generics";
 
 export class PortDataBuffer {
-	constructor(private readonly msglist: PortMessageJson[] = []) {
-	}
+	constructor(private readonly msglist: PortMessageJson[] = []) {}
 
 	public append(msg: PortMessageJson) {
 		this.msglist.push(msg);
@@ -25,7 +24,7 @@ export class PortDataBuffer {
 	}
 
 	public get data(): PortData[] {
-		return this.msglist.map((each) => each.isBOS ? BOS : each.isEOS ? EOS : new PortDataValue(each.data));
+		return this.msglist.map((each) => (each.isBOS ? BOS : each.isEOS ? EOS : new PortDataValue(each.data)));
 	}
 }
 
@@ -36,8 +35,7 @@ export interface PortData {
 }
 
 class PortDataValue {
-	constructor(public readonly value: SlangTypeValue) {
-	}
+	constructor(public readonly value: SlangTypeValue) {}
 
 	public isMarker(): boolean {
 		return false;
@@ -66,7 +64,6 @@ export interface PortGenerics {
 }
 
 export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
-
 	public readonly dataReceived = new Subject<any>();
 
 	protected connectedWith: PortModel[] = [];
@@ -87,7 +84,12 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	// Mixins
 	private readonly streamPort: StreamPort;
 
-	protected constructor(parent: GenericPortModel<O> | O, {type, name, direction}: PortModelArgs, portCtor: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel, protected readonly generics: PortGenerics | null) {
+	protected constructor(
+		parent: GenericPortModel<O> | O,
+		{type, name, direction}: PortModelArgs,
+		portCtor: new (p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel,
+		protected readonly generics: PortGenerics | null,
+	) {
 		super(parent);
 		this.name = name;
 		this.direction = direction;
@@ -99,7 +101,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		this.streamPort.initialize();
 	}
 
-	public reconstruct(type: SlangType, portCtor: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel, direction: PortDirection, generic: boolean = false): void {
+	public reconstruct(type: SlangType, portCtor: new (p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel, direction: PortDirection, generic: boolean = false): void {
 		/*
 		 * When generic == true then this method is called because this port is generic-like and its specification has changed
 		 * When generic == false then this method is called because the port is being reconstructed
@@ -587,7 +589,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		});
 	}
 
-	private subscribeGenerics(portCtor: new(p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel): void {
+	private subscribeGenerics(portCtor: new (p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel): void {
 		const fetchedGenerics = this.fetchGenerics();
 		const specifications = fetchedGenerics.specifications;
 		const identifier = fetchedGenerics.identifier;
@@ -659,7 +661,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			return this.getStreamSub().findGenericPort(portId);
 		}
 		return this.findMapSub(nextPortId).findGenericPort(portId);
-
 	}
 
 	private createDescendingGenericPort(other: PortModel): PortModel {
@@ -712,7 +713,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				break;
 		}
 	}
-
 }
 
 export type PortModel = GenericPortModel<PortOwner>;
