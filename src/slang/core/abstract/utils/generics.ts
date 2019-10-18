@@ -72,18 +72,6 @@ export class GenericSpecifications {
 		}
 	}
 
-	public getUnifiedType(identifier: string): SlangType | null {
-		const portSet = this.ports.get(identifier);
-		if (!portSet) {
-			return null;
-		}
-		let unifiedType = this.get(identifier).getOnlyFixedSubs();
-		for (const registeredPort of portSet) {
-			unifiedType = unifiedType.union(registeredPort.getConnectedType());
-		}
-		return unifiedType;
-	}
-
 	public subscribeGenericTypeChanged(identifier: string, cb: (type: SlangType | null) => void): Subscription {
 		return this.getSubject(identifier).subscribe(cb);
 	}
