@@ -22,7 +22,7 @@ interface SlangTypeStreamJson {
 interface SlangTypeMapJson {
 	type: "map";
 	map: {
-		[subName: string]: SlangTypeJson,
+		[subName: string]: SlangTypeJson;
 	};
 }
 
@@ -53,8 +53,7 @@ export type SlangTypeJson =
 	| SlangTypeUnspecifiedJson
 	| SlangTypeTriggerJson;
 
-export interface SlangTypeStream extends Array<SlangTypeValue> {
-}
+export interface SlangTypeStream extends Array<SlangTypeValue> {}
 
 export interface SlangTypeMap {
 	[sub: string]: SlangTypeValue;
@@ -132,7 +131,6 @@ export namespace SlangTypeJson {
 }
 
 export class SlangType {
-
 	public static new(tid: TypeIdentifier) {
 		return new SlangType(null, tid);
 	}
@@ -202,7 +200,6 @@ export class SlangType {
 			default:
 				return {type: TypeIdentifier[this.typeIdentifier].toLowerCase()} as SlangTypePrimitiveJson | SlangTypeUnspecifiedJson | SlangTypeTriggerJson;
 		}
-
 	}
 
 	public isVoid(): boolean {
