@@ -602,7 +602,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			if (this.connectedWith.length !== 0) {
 				return;
 			}
-
 			const newType = specifications.getUnifiedType(identifier);
 			if (newType && !specifications.get(identifier).equals(newType)) {
 				specifications.specify(identifier, newType);
