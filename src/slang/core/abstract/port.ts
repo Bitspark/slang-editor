@@ -564,7 +564,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 				this.typeIdentifier = TypeIdentifier.Unspecified;
 				this.genericIdentifier = undefined;
 			}
-			for (const connection of this.getDirectConnections()) {
+			for (const connection of this.getConnectionsTo()) {
 				const dest = connection.destination;
 				const src = connection.source;
 				if (!typesCompatibleTo(src.getType(), dest.getType())) {
