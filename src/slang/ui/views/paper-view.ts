@@ -1,4 +1,4 @@
-import {dia, g, shapes, util} from "jointjs";
+import {dia, g, util} from "jointjs";
 
 import {SlangAspects} from "../../aspects";
 import {SlangSubjectTrigger} from "../../core/abstract/utils/events";
@@ -16,37 +16,11 @@ export interface PaperViewArgs {
 }
 
 export abstract class PaperView extends View {
-
-	public get isEditable(): boolean {
-		return this.args.editable;
-	}
-
-	public get isReadOnly(): boolean {
-		return !this.isEditable;
-	}
-
-	public get isHScrollable(): boolean {
-		return this.args.hscrollable;
-	}
-
-	public get isVScrollable(): boolean {
-		return this.args.vscrollable;
-	}
-
-	public get isDescendable(): boolean {
-		return this.args.descendable === true;
-	}
-
-	public get isRunnable(): boolean {
-		return this.args.runnable === true;
-	}
 	public readonly paper: dia.Paper;
 
 	protected readonly graph = new dia.Graph();
 	private positionChanged = new SlangSubjectTrigger("positionChanged");
 	private escapePressed = new SlangSubjectTrigger("keypressed-escape");
-
-	private userInputMode: "scroll" | "hscroll" | "zoom/pan" | null = "scroll";
 
 	private scaleSpeed: number = 0.1;
 	private minScale: number = 0.35;
@@ -56,6 +30,22 @@ export abstract class PaperView extends View {
 		super(frame, aspects);
 		this.paper = this.createPaper();
 		this.redirectPaperEvents();
+	}
+
+	public get isEditable(): boolean {
+		return this.args.editable;
+	}
+
+	public get isReadOnly(): boolean {
+		return !this.isEditable;
+	}
+
+	public get isDescendable(): boolean {
+		return this.args.descendable === true;
+	}
+
+	public get isRunnable(): boolean {
+		return this.args.runnable === true;
 	}
 
 	public resize(width: number, height: number) {
@@ -92,13 +82,8 @@ export abstract class PaperView extends View {
 		this.escapePressed.subscribe(cb);
 	}
 
-	protected reset() {
-		this.paper.scale(1);
-		this.center();
-	}
-
 	protected center() {
-		this.paper.setOrigin(this.paper.options.width as number / 2, this.paper.options.height as number / 2);
+		this.paper.setOrigin((this.paper.options.width as number) / 2, (this.paper.options.height as number) / 2);
 		this.positionChanged.next();
 	}
 
@@ -114,72 +99,54 @@ export abstract class PaperView extends View {
 		container.appendChild(inner);
 		const view = this;
 
-		return new dia.Paper(Object.assign({
-			el: inner,
-			model: this.graph,
-			gridSize: 5,
-			drawGrid: false,
-			interactive(cellView: dia.CellView) {
-				if (view.isReadOnly) {
-					return false;
-				}
+		return new dia.Paper(
+			Object.assign(
+				{
+					el: inner,
+					model: this.graph,
+					gridSize: 5,
+					drawGrid: false,
+					interactive(cellView: dia.CellView) {
+						if (view.isReadOnly) {
+							return false;
+						}
 
-				if (cellView.model.attr("draggable") === false) {
-					return false;
-				}
-				if (cellView.model.isLink()) {
-					return {vertexAdd: false};
-				}
-				return true;
-			},
-			restrictTranslate(elementView: dia.ElementView): g.PlainRect {
-				const fn = elementView.model.get("restrictTranslate");
-				if (typeof fn === "function") {
-					return fn();
-				}
-				return {
-					x: -(Number.MAX_VALUE / 2),
-					y: -(Number.MAX_VALUE / 2),
-					width: Number.MAX_VALUE,
-					height: Number.MAX_VALUE,
-				};
-			},
-		}, opt));
+						if (cellView.model.attr("draggable") === false) {
+							return false;
+						}
+						if (cellView.model.isLink()) {
+							return {vertexAdd: false};
+						}
+						return true;
+					},
+					restrictTranslate(elementView: dia.ElementView): g.PlainRect {
+						const fn = elementView.model.get("restrictTranslate");
+						if (typeof fn === "function") {
+							return fn();
+						}
+						return {
+							x: -(Number.MAX_VALUE / 2),
+							y: -(Number.MAX_VALUE / 2),
+							width: Number.MAX_VALUE,
+							height: Number.MAX_VALUE,
+						};
+					},
+				},
+				opt,
+			),
+		);
 	}
 
-	protected handleMouseWheel(evt: WheelEvent, x: number, y: number, direction: number): boolean {
-		this.setUserInputMode(evt);
-
-		switch (this.userInputMode) {
-			case "scroll":
-				this.scroll(-evt.deltaX, -evt.deltaY);
-				return false;
-			case "hscroll":
-				this.scroll(-evt.deltaY, 0);
-				return false;
-			case "zoom/pan":
-				this.zoom(x, y, direction);
-				return false;
+	protected handleMouseWheel(evt: WheelEvent, x: number, y: number, delta: number): boolean {
+		if (!this.isZooming(evt)) {
+			return false;
 		}
-
+		this.zoom(x, y, delta);
 		return true;
 	}
 
-	protected setUserInputMode(evt: MouseEvent | KeyboardEvent): void {
-		if (evt.ctrlKey || evt.metaKey) {
-			this.userInputMode = "zoom/pan";
-			return;
-		}
-		if (evt.shiftKey) {
-			this.userInputMode = "hscroll";
-			return;
-		}
-		if (this.args.vscrollable || this.args.hscrollable) {
-			this.userInputMode = "scroll";
-			return;
-		}
-
-		this.userInputMode = null;
+	protected isZooming(evt: MouseEvent): boolean {
+		return evt.ctrlKey || evt.metaKey;
 	}
 
 	protected isPanning(evt: MouseEvent): boolean {
@@ -195,14 +162,16 @@ export abstract class PaperView extends View {
 		});
 
 		this.paper.on("blank:mousewheel", ({originalEvent}: JQueryMouseEventObject, x: number, y: number, direction: number) => {
-			if (!this.handleMouseWheel(originalEvent as WheelEvent, x, y, direction)) {
+			const handled = this.handleMouseWheel(originalEvent as WheelEvent, x, y, direction);
+			if (handled) {
 				originalEvent.preventDefault();
 				originalEvent.stopPropagation();
 			}
 		});
 
 		this.paper.on("cell:mousewheel", (_cellView: dia.CellView, {originalEvent}: JQueryMouseEventObject, x: number, y: number, direction: number) => {
-			if (!this.handleMouseWheel(originalEvent as WheelEvent, x, y, direction)) {
+			const handled = this.handleMouseWheel(originalEvent as WheelEvent, x, y, direction);
+			if (handled) {
 				originalEvent.preventDefault();
 				originalEvent.stopPropagation();
 			}
@@ -220,7 +189,7 @@ export abstract class PaperView extends View {
 		});
 		["mouseover", "mouseout", "mouseenter", "mouseleave"].forEach((eventName) => {
 			this.paper.on("cell:" + eventName, (cellView: dia.CellView, evt: MouseEvent) => {
-				const evTarget = (evt.target as Node);
+				const evTarget = evt.target as Node;
 				if (evTarget && evTarget.parentElement) {
 					const portId = evTarget.parentElement.getAttribute("port");
 					if (portId) {
@@ -237,7 +206,7 @@ export abstract class PaperView extends View {
 
 	protected zoom(x: number, y: number, direction: number) {
 		const oldScale = this.paper.scale().sx;
-		const newScale = Math.max(Math.min(oldScale + (direction * this.scaleSpeed), this.maxScale), this.minScale);
+		const newScale = Math.max(Math.min(oldScale + direction * this.scaleSpeed, this.maxScale), this.minScale);
 
 		const translation = this.paper.translate();
 
@@ -248,20 +217,6 @@ export abstract class PaperView extends View {
 		this.paper.translate(px + deltaPx, py + deltaPy);
 
 		this.paper.scale(newScale);
-		this.positionChanged.next();
-	}
-
-	protected scroll(deltaX: number, deltaY: number) {
-		const allowed = this.allowedScrollDelta(deltaX, deltaY);
-		if (!allowed) {
-			return;
-		}
-		const [allowedDeltaX, allowedDeltaY] = allowed;
-
-		const translation = this.paper.translate();
-		const [px, py] = [translation.tx, translation.ty];
-
-		this.paper.translate(px + allowedDeltaX, py + allowedDeltaY);
 		this.positionChanged.next();
 	}
 
@@ -280,7 +235,7 @@ export abstract class PaperView extends View {
 			movementX = previousEvent ? currentEvent.screenX - previousEvent.screenX : 0;
 			movementY = previousEvent ? currentEvent.screenY - previousEvent.screenY : 0;
 			const {tx, ty} = paper.translate();
-			paper.translate(tx + movementX , ty + movementY);
+			paper.translate(tx + movementX, ty + movementY);
 			previousEvent = currentEvent;
 			this.positionChanged.next();
 		};
@@ -288,43 +243,6 @@ export abstract class PaperView extends View {
 		paper.svg.addEventListener("mousemove", (event: any) => {
 			doPanning(event);
 		});
-	}
-
-	protected getWidth(): number {
-		return this.paper.getArea().width;
-	}
-
-	protected getHeight(): number {
-		return this.paper.getArea().height;
-	}
-
-	protected addOriginPoint() {
-		const origin = new shapes.standard.Circle({
-			size: {
-				width: 4,
-				height: 4,
-			},
-			position: {
-				x: -2,
-				y: -2,
-			},
-		}).addTo(this.graph);
-
-		origin.attr("body/fill", "blue");
-		origin.attr("body/fill-opacity", ".05");
-		origin.attr("body/rx", "24");
-		origin.attr("body/ry", "24");
-		origin.attr("draggable", false);
-		origin.set("obstacle", false);
-	}
-
-	private allowedScrollDelta(deltaX: number, deltaY: number): [number, number] | false {
-		const allowedDeltaX = this.isHScrollable ? deltaX : 0;
-		const allowedDeltaY = this.isVScrollable ? deltaY : 0;
-		if (!(allowedDeltaX || allowedDeltaY)) {
-			return false;
-		}
-		return [allowedDeltaX, allowedDeltaY];
 	}
 }
 
