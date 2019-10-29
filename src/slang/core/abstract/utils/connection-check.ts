@@ -26,6 +26,10 @@ export function typesCompatibleTo(sourceType: SlangType, destinationType: SlangT
 		return true;
 	}
 
+	if (sourceType.getTypeIdentifier() === TypeIdentifier.Trigger) {
+		return true;
+	}
+
 	// Careful: destinationType.getTypeIdentifier() === TypeIdentifier.Primitive is not identical with destinationType.isPrimitive()
 	// isPrimitive() is true for Strings, Numbers, etc.
 	if (destinationType.getTypeIdentifier() === TypeIdentifier.Primitive && sourceType.isPrimitive()) {
