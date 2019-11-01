@@ -578,7 +578,7 @@ class PortInfo implements ClassComponent<Attrs> {
 					class: tid2css(tid),
 				},
 				TypeIdentifier[tid]),
-			m(".sl-port-name", port.getName()),
+			m(".sl-port-name", port.getPortReference()),
 		);
 	}
 }
