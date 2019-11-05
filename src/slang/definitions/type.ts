@@ -139,8 +139,16 @@ export class SlangType {
 		return SlangType.new(TypeIdentifier.Unspecified);
 	}
 
+	public static newTrigger(): SlangType {
+		return SlangType.new(TypeIdentifier.Trigger);
+	}
+
 	public static newString(): SlangType {
 		return SlangType.new(TypeIdentifier.String);
+	}
+
+	public static newNumber(): SlangType {
+		return SlangType.new(TypeIdentifier.Number);
 	}
 
 	public static newBoolean(): SlangType {
@@ -151,16 +159,22 @@ export class SlangType {
 		return SlangType.new(TypeIdentifier.Generic).setGenericIdentifier(identifier);
 	}
 
-	public static newMap(): SlangType {
-		return SlangType.new(TypeIdentifier.Map);
+	public static newMap(mapEntries?: {[n: string]: SlangType}): SlangType {
+		const map = SlangType.new(TypeIdentifier.Map);
+		if (mapEntries) {
+			Object.entries(mapEntries).forEach(([name, subType]) => {
+				map.addMapSub(name, subType);
+			});
+		}
+		return map;
 	}
 
-	public static newStream(subTid?: TypeIdentifier): SlangType {
-		const strType = SlangType.new(TypeIdentifier.Stream);
-		if (!subTid) {
-			return strType;
+	public static newStream(sub?: TypeIdentifier|SlangType): SlangType {
+		const stream = SlangType.new(TypeIdentifier.Stream);
+		if (sub) {
+			stream.setStreamSub(sub instanceof SlangType ? sub : SlangType.new(sub));
 		}
-		return SlangType.new(TypeIdentifier.Stream).setStreamSub(SlangType.new(subTid));
+		return stream;
 	}
 
 	private readonly mapSubs: Map<string, SlangType> | undefined;

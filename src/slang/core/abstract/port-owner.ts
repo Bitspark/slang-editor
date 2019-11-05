@@ -13,6 +13,16 @@ export abstract class PortOwner extends SlangNode {
 		this.streamPortOwner.initialize();
 	}
 
+	// tslint:disable-next-line:naming-convention
+	public get II(): PortModel {
+		return this.getPortIn()!;
+	}
+
+	// tslint:disable-next-line:naming-convention
+	public get OO(): PortModel {
+		return this.getPortOut()!;
+	}
+
 	public getPortIn(): PortModel | null {
 		return this.scanChildNode(GenericPortModel, (p) => p.isDirectionIn()) || null;
 	}

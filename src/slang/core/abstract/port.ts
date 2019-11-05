@@ -101,6 +101,14 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		this.streamPort.initialize();
 	}
 
+	public get sub(): GenericPortModel<O> {
+		return this.getStreamSub();
+	}
+
+	public map(name: string): GenericPortModel<O> {
+		return this.findMapSub(name);
+	}
+
 	public reconstruct(type: SlangType, portCtor: new (p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel, direction: PortDirection, generic: boolean = false): void {
 		/*
 		 * When generic == true then this method is called because this port is generic-like and its specification has changed
@@ -643,7 +651,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	 */
 	private connectTo(destination: PortModel, createGenerics: boolean) {
 		if (!canConnectTo(this, destination, createGenerics)) {
-			throw new Error(`cannot connect: ${this.getIdentity()} --> ${destination.getIdentity()}`);
+			throw new Error(`cannot connect: ${this.getOwnerName()}:${this.getPortReference()} --> ${destination.getOwnerName()}:${destination.getPortReference()}`);
 		}
 		if ((createGenerics && this.isGenericLike()) || destination.isTrigger()) {
 			this.connectDirectlyTo(destination, createGenerics);
