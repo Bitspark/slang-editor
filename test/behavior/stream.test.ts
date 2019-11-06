@@ -72,7 +72,7 @@ describe("A stream port", () => {
 		expect(oGenericToGeneric.OO.isConnectedWith(oGenericInStream.II.sub.getMapSubs().next().value)).toBeTruthy();
 	});
 
-	it("groups streams correctly", () => {
+	it("connecting 2 stream ports with a generic port will create 2 stream ports within the generic port", () => {
 		const bp = landscapeModel
 			.createBlueprint({
 				uuid: uuidv4(),
@@ -128,14 +128,13 @@ describe("A stream port", () => {
 		const oOutStreamMap = bp.createBlankOperator(bpOutStreamMap);
 		const oGenericToGeneric = bp.createBlankOperator(bpGenericToGeneric);
 
-		bp.II.connect(bp.OO, true);
 		oOutStreamMap.OO.sub.map("A").connect(oGenericToGeneric.II, true);
 		oOutStreamMap.OO.sub.map("B").connect(oGenericToGeneric.II, true);
-		Array.from(oGenericToGeneric.OO.getMapSubs()).forEach((port) => {
-			port.connect(bp.OO, true);
-		});
 
-		expect(Array.from(bp.OO.getMapSubs()).length).toEqual(2);
+		oGenericToGeneric.OO.map("A").connect(bp.OO, true);
+		oGenericToGeneric.OO.map("B").connect(bp.OO, true);
+
+		expect(bp.OO.mapSubs.length).toEqual(2);
 		expect(Array.from(Array.from(bp.OO.getMapSubs()).find((port) => port.getType().isStream())!.getStreamSub().getMapSubs()).length).toEqual(2);
 	});
 

@@ -105,6 +105,10 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		return this.getStreamSub();
 	}
 
+	public get mapSubs(): Array<GenericPortModel<O>> {
+		return Array.from(this.getMapSubs());
+	}
+
 	public map(name: string): GenericPortModel<O> {
 		return this.findMapSub(name);
 	}
