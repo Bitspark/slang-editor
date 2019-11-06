@@ -10,8 +10,9 @@
     "bundle": "webpack --config webpack/webpack.bundle.js --colors",
     "test": "jest",
     "package": "webpack --config webpack/webpack.package.js && grunt",
-    "lint:fix": "tslint --fix -p tsconfig.json -c tslint.json -t verbose",
+    "link": "npm run package; cd dist/; npm link",
     "lint": "tslint -p tsconfig.json -c tslint.json",
+    "lint:fix": "tslint --fix -p tsconfig.json -c tslint.json -t verbose",
     "validate:deps": "dependency-cruise --exclude \"^node_modules\" --validate .dependency-cruiser.json ./src/slang",
     "visualize:deps": "dependency-cruise --exclude \"^node_modules\" --output-type dot -- ./src/slang | dot -T svg > dependencygraph.svg",
     "postversion": "git push && git push --tags"
