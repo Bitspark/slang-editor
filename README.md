@@ -15,10 +15,11 @@ Every time you run that command it overrides `src/styles/index.ts`. But do NOT C
 
 ### Locally test this package in another project
 
-- Build package `dist/`
-- `cd dist/ && npm link`
+- `npm run link`
 - `cd <another_project_dir>`
 - `npm link @b6k/slang-editor`
+
+After that (as long as the linkage is set) you can just call `npm run package` to test changes.
 
 ## Release to npm
 

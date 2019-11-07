@@ -303,6 +303,10 @@ function operatorJsonToModel(landscape: LandscapeModel, outerBlueprint: Blueprin
 }
 
 export function toTypeIdentifier(typeName: string): TypeIdentifier {
+	if (!typeName) {
+		return TypeIdentifier.Unspecified;
+	}
+
 	const type = ({
 		number: TypeIdentifier.Number,
 		binary: TypeIdentifier.Binary,
