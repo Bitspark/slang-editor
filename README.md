@@ -23,7 +23,4 @@ After that (as long as the linkage is set) you can just call `npm run package` t
 
 ## Release to npm
 
-- Bump version in `package.json` and don't forget to commit
-- Build package `dist/`
-- `cd dist/`
-- `npm publish`
+- simply run `npm version patch --force`
