@@ -1,0 +1,8 @@
+_extends: meta.bitspark.de
+labels:
+  - name: Chrome
+    color: 12226b
+  - name: Editor
+    color: 1d4fc4
+  - name: Firefox
+    color: d93f0b
