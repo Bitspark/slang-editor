@@ -33,7 +33,7 @@ export class SlangEditor extends HTMLElement {
 		this.landscape = appModel.createLandscape();
 		this.aspects = new SlangAspects();
 
-		new OperatorDataApp(appModel, this.aspects);
+		OperatorDataApp.register(appModel, this.aspects);
 
 		this.attachShadow({mode: "open"}).appendChild(template.content.cloneNode(true));
 	}
