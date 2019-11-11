@@ -1,3 +1,4 @@
+import {OperatorDataApp} from "../../apps/operators";
 import {STYLING} from "../../styles";
 import {SlangAspects} from "../aspects";
 import {SlangBehaviorSubject} from "../core/abstract/utils/events";
@@ -24,10 +25,16 @@ export class SlangEditor extends HTMLElement {
 	private blueprint?: BlueprintModel;
 	private viewFrame?: ViewFrame;
 	private readonly landscape: LandscapeModel;
+	private readonly aspects: SlangAspects;
 
 	constructor() {
 		super();
-		this.landscape = AppModel.create("slang").createLandscape();
+		const appModel = AppModel.create("slang");
+		this.landscape = appModel.createLandscape();
+		this.aspects = new SlangAspects();
+
+		new OperatorDataApp(appModel, this.aspects);
+
 		this.attachShadow({mode: "open"}).appendChild(template.content.cloneNode(true));
 	}
 
@@ -76,7 +83,7 @@ export class SlangEditor extends HTMLElement {
 			descendable: true,
 			runnable: true,
 		};
-		this.blueprintView = new BlueprintView(this.viewFrame, new SlangAspects(), blueprint, viewArgs);
+		this.blueprintView = new BlueprintView(this.viewFrame, this.aspects, blueprint, viewArgs);
 
 		const that = this;
 		this.blueprintView.selected.subscribe((e: SelectableComponent | null) => {

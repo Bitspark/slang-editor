@@ -21,20 +21,20 @@ export class OperatorDataApp extends SlangApp {
 		return blueprint;
 	}
 
-	protected register(uuid: UUID, aspectImpl: SlangAspectImpl) {
-		const factory = this.aspects.factory;
+	protected registerBlackBox(uuid: UUID, aspectImpl: SlangAspectImpl) {
 		if (aspectImpl.shape) {
+			const factory = this.aspects.factory;
 			factory.registerBlackBoxShape(uuid, aspectImpl.shape);
 		}
 	}
 
 	protected onReady() {
 		// slang.data.Value
-		this.register("8b62495a-e482-4a3e-8020-0ab8a350ad2d", ValueOperator);
+		this.registerBlackBox("8b62495a-e482-4a3e-8020-0ab8a350ad2d", ValueOperator);
 		// slang.data.Evaluate
-		this.register("37ccdc28-67b0-4bb1-8591-4e0e813e3ec1", EvalOperator);
+		this.registerBlackBox("37ccdc28-67b0-4bb1-8591-4e0e813e3ec1", EvalOperator);
 		// slang.data.Convert
-		this.register("d1191456-3583-4eaf-8ec1-e486c3818c60", ConvertOperator);
+		this.registerBlackBox("d1191456-3583-4eaf-8ec1-e486c3818c60", ConvertOperator);
 	}
 }
 
