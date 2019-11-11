@@ -1,11 +1,12 @@
-import {BlueprintModel} from "../core/models/blueprint";
-import {OperatorModel} from "../core/models/operator";
+import {BlueprintModel} from "../core/models";
+import {OperatorModel} from "../core/models";
+import {UUID} from "../definitions/api";
 
 import {BlackBoxShape, OperatorBoxComponent} from "./components/blackbox";
 import {PaperView} from "./views/paper-view";
 
 export class ComponentFactory {
-	private readonly blackBoxShape = new Map<BlueprintModel, typeof BlackBoxShape>();
+	private readonly blackBoxShape = new Map<UUID, typeof BlackBoxShape>();
 	private readonly opCompClasses = new Map<BlueprintModel, new (pv: PaperView, op: OperatorModel) => OperatorBoxComponent>();
 
 	public createOperatorComponent(paperView: PaperView, operator: OperatorModel): OperatorBoxComponent {
@@ -17,7 +18,7 @@ export class ComponentFactory {
 	}
 
 	public getBlackBoxShape(blueprint: BlueprintModel): typeof BlackBoxShape {
-		const newBlackBoxShape = this.blackBoxShape.get(blueprint);
+		const newBlackBoxShape = this.blackBoxShape.get(blueprint.uuid);
 		if (!newBlackBoxShape) {
 			return BlackBoxShape;
 		}
@@ -25,8 +26,8 @@ export class ComponentFactory {
 
 	}
 
-	public registerBlackBoxShape(blueprint: BlueprintModel, ctr: typeof BlackBoxShape) {
-		this.blackBoxShape.set(blueprint, ctr);
+	public registerBlackBoxShape(uuid: UUID, ctr: typeof BlackBoxShape) {
+		this.blackBoxShape.set(uuid, ctr);
 	}
 
 	public registerOperatorComponent(blueprint: BlueprintModel, ctr: new (pv: PaperView, op: OperatorModel) => OperatorBoxComponent) {

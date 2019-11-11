@@ -1,5 +1,6 @@
 import {SlangApp} from "../../slang/app";
 import {BlueprintModel, LandscapeModel, OperatorModel} from "../../slang/core/models";
+import {UUID} from "../../slang/definitions/api";
 import {TypeIdentifier} from "../../slang/definitions/type";
 import {BlackBoxShape, BlackBoxShapeAttrs} from "../../slang/ui/components/blackbox";
 
@@ -20,17 +21,10 @@ export class OperatorDataApp extends SlangApp {
 		return blueprint;
 	}
 
-	protected register(uuid: string, aspectImpl: SlangAspectImpl) {
-		let bp: BlueprintModel;
-		try {
-			bp = this.getBlueprint(uuid);
-		} catch {
-			return;
-		}
-
+	protected register(uuid: UUID, aspectImpl: SlangAspectImpl) {
 		const factory = this.aspects.factory;
 		if (aspectImpl.shape) {
-			factory.registerBlackBoxShape(bp, aspectImpl.shape);
+			factory.registerBlackBoxShape(uuid, aspectImpl.shape);
 		}
 	}
 
