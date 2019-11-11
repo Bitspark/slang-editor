@@ -17,9 +17,6 @@ import {BlueprintPortModel, OperatorPortModel} from "./models";
 import {BlueprintModel, BlueprintType} from "./models/blueprint";
 import {BlueprintDelegateModel, OperatorDelegateModel} from "./models/delegate";
 
-export class HALLO {
-}
-
 /*
 \
  \ MODEL --> JSON
