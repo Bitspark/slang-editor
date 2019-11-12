@@ -101,7 +101,7 @@
     "preload-webpack-plugin": "^3.0.0-beta.3",
     "sass-loader": "^7.1.0",
     "to-string-loader": "^1.1.5",
-    "ts-jest": "^23.10.5",
+    "ts-jest": "^24.1.0",
     "ts-loader": "^5.3.0",
     "tslint": "^5.14.0",
     "tslint-consistent-codestyle": "^1.15.0",
