@@ -1,4 +1,4 @@
-import {BlueprintJson, SlangBundle} from "../../definitions/api";
+import {BlueprintJson, SlangBundle, UUID} from "../../definitions/api";
 import {SlangNode} from "../abstract";
 import {SlangBehaviorSubject, SlangSubjectTrigger} from "../abstract/utils/events";
 import {blueprintModelToJson, loadBlueprints} from "../mapper";
@@ -19,7 +19,7 @@ export class LandscapeModel extends SlangNode {
 		super(parent);
 	}
 
-	public findBlueprint(uuid: string): BlueprintModel | undefined {
+	public findBlueprint(uuid: UUID): BlueprintModel | undefined {
 		// TODO use type *uuid* for blueprint IDs
 		const uuidDashCount = 5;
 		if (uuid.indexOf(" ") >= 0 || uuid.split("-").length !== uuidDashCount) {
@@ -31,7 +31,7 @@ export class LandscapeModel extends SlangNode {
 
 	// Import and export
 
-	public exportBundle(mainId: string): SlangBundle {
+	public exportBundle(mainId: UUID): SlangBundle {
 		const mainBp = this.findBlueprint(mainId);
 		if (!mainBp) {
 			throw new BundleError(mainId);

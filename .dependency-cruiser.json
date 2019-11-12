@@ -123,24 +123,24 @@
 			}
 		},
 		{
-			"name": "illegal-directory-structure forth",
+			"name": "illegal-directory-structure from",
 			"comment": "only these directories are valid: definitions, core, ui, styles",
 			"severity": "error",
 			"from": {
-				"pathNot": "^src/(slang/(app.ts|slang.ts|aspects.ts|core|definitions|ui|component)|styles)"
+				"pathNot": "^src/(slang/(app.ts|slang.ts|aspects.ts|core|definitions|ui|component)|styles|apps)"
 			},
 			"to": {}
 		},
 		{
-			"name": "illegal-directory-structure back",
+			"name": "illegal-directory-structure to",
 			"comment": "only these directories are valid: definitions, core, ui, styles",
 			"severity": "error",
 			"from": {},
 			"to": {
-				"pathNot": "^src/(slang/(app.ts|slang.ts|aspects.ts|core|definitions|ui|component)|styles)"
+				"pathNot": "^src/(slang/(app.ts|slang.ts|aspects.ts|core|definitions|ui|component)|styles|apps)"
 			}
 		},
-		
+
 		// CIRCULAR RULES
 		{
 			"name": "no-circular-in-ui",
