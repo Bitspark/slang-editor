@@ -43,7 +43,7 @@
   ],
   "dependencies": {
     "backbone": "^1.3.3",
-    "bulma": "^0.7.4",
+    "bulma": "^0.8.0",
     "dagre": "^0.8.2",
     "graphlib": "^2.1.5",
     "jointjs": "github:Bitspark/joint",
