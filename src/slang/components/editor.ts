@@ -14,6 +14,9 @@ template.innerHTML = `
 :host {
 	display: block;
 }
+.ViewFrame {
+	height: 100%;
+}
 ${STYLING}
 </style>
 `;
