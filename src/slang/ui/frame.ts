@@ -1,7 +1,6 @@
 import {View} from "./views/view";
 
 export class ViewFrame {
-
 	private view: View | null = null;
 	private readonly viewEl: HTMLElement;
 
@@ -33,5 +32,4 @@ export class ViewFrame {
 	public getHTMLElement(): HTMLElement {
 		return this.viewEl;
 	}
-
 }

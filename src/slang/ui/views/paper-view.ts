@@ -223,8 +223,8 @@ export abstract class PaperView extends View {
 	protected addPanning() {
 		const paper = this.paper;
 
-		let movementX: number = 0;
-		let movementY: number = 0;
+		let deltaX: number = 0;
+		let deltaY: number = 0;
 		let previousEvent: MouseEvent | null = null;
 
 		const doPanning = (currentEvent: MouseEvent) => {
@@ -232,10 +232,10 @@ export abstract class PaperView extends View {
 				previousEvent = null;
 				return;
 			}
-			movementX = previousEvent ? currentEvent.screenX - previousEvent.screenX : 0;
-			movementY = previousEvent ? currentEvent.screenY - previousEvent.screenY : 0;
+			deltaX = previousEvent ? currentEvent.screenX - previousEvent.screenX : 0;
+			deltaY = previousEvent ? currentEvent.screenY - previousEvent.screenY : 0;
 			const {tx, ty} = paper.translate();
-			paper.translate(tx + movementX, ty + movementY);
+			paper.translate(tx + deltaX, ty + deltaY);
 			previousEvent = currentEvent;
 			this.positionChanged.next();
 		};
