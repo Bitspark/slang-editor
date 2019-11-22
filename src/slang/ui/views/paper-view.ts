@@ -29,7 +29,31 @@ export abstract class PaperView extends View {
 	protected constructor(frame: ViewFrame, aspects: SlangAspects, private args: PaperViewArgs) {
 		super(frame, aspects);
 		this.paper = this.createPaper();
+		this.paintGrid();
 		this.redirectPaperEvents();
+	}
+
+	public paintGrid() {
+		// Draw a double mesh gird, where the smaller pattern is a filler for the bigger.
+		// Use that that to create a bitmap from an svg and use this as data background url.
+		const data =
+			'<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"> \
+				<defs> \
+					<pattern id="smallGrid" width="20" height="20" patternUnits="userSpaceOnUse"> \
+						<path d="M 20 0 L 0 0 0 20" fill="none" stroke="gray" stroke-width="0.5" stroke-opacity="0.2" /> \
+					</pattern> \
+					<pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"> \
+						<rect width="100" height="100" fill="url(#smallGrid)" /> \
+						<path d="M 100 0 L 0 0 0 100" fill="none" stroke="gray" stroke-width="1" stroke-opacity="0.3" /> \
+					</pattern> \
+				</defs> \
+				<rect width="100%" height="100%" fill="url(#grid)" /> \
+			</svg>';
+
+		const svg = new Blob([data], {type: "image/svg+xml;charset=utf-8"});
+		const url = URL.createObjectURL(svg);
+
+		this.paper.$el.css("background-image", 'url("' + url + '")');
 	}
 
 	public get isEditable(): boolean {
