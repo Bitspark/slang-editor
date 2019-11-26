@@ -63,7 +63,7 @@
     "@types/jest": "^24.0.0",
     "@types/jquery": "^3.3.22",
     "@types/lodash": "^4.14.117",
-    "@types/mithril": "^1.1.13",
+    "@types/mithril": "^2.0.2",
     "@babel/polyfill": "^7.0.0",
     "@types/plotly.js": "^1.41.0",
     "@types/uuid": "^3.4.4",
