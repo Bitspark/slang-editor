@@ -56,8 +56,8 @@ export namespace Styles {
 	}
 
 	export class BlackBox {
-		public static rx = 6;
-		public static ry = 6;
+		public static rx = 2;
+		public static ry = 2;
 		public static size = {width: 80, height: 49};
 		public static filter = {
 			name: "dropShadow",
@@ -70,17 +70,9 @@ export namespace Styles {
 	}
 
 	export class Outer {
-		public static rx = 18;
-		public static ry = 18;
+		public static rx = 5;
+		public static ry = 5;
 		public static size = {width: 240, height: 147};
-		public static filter = {
-			name: "innerShadow",
-			args: {
-				dx: 0,
-				dy: 0,
-				blur: 2,
-			},
-		};
 	}
 
 	export class Defaults {
