@@ -64,7 +64,7 @@ $blackbox-color-label: $black;
 .sl-outer {
 	.sl-rectangle {
 		stroke: $black;
-		fill: $blueprint-color-fill;
+		fill: transparent;
 		stroke-width: 1.5px;
 		stroke-dasharray: 2;
 	}
