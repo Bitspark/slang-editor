@@ -287,3 +287,17 @@ export abstract class PaperView extends View {
 </feMerge>
 </filter>`;
 };
+
+(util.filter as any).dropShadow = (args: any) => {
+	const blurRadius = 4;
+	return `<filter>
+<feGaussianBlur in="SourceAlpha" stdDeviation="${Number.isFinite(args.blur) ? args.blur : blurRadius}"/>
+<feOffset dx="${args.dx || 0}" dy="${args.dy || 0}" result="offsetblur"/>
+<feFlood flood-color="${args.color || "black"}" />
+<feComposite in2="offsetblur" operator="in"/>
+<feMerge>
+	<feMergeNode />
+	<feMergeNode in="SourceGraphic" />
+</feMerge>
+</filter>`;
+};

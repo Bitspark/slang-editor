@@ -62,9 +62,10 @@ export namespace Styles {
 		public static filter = {
 			name: "dropShadow",
 			args: {
-				dx: 0,
-				dy: 0,
-				blur: 1,
+				dx: 2,
+				dy: 2,
+				blur: 8,
+				color: "#16214a14",
 			},
 		};
 	}
@@ -73,6 +74,7 @@ export namespace Styles {
 		public static rx = 5;
 		public static ry = 5;
 		public static size = {width: 240, height: 147};
+		public static filter = {};
 	}
 
 	export class Defaults {
@@ -83,6 +85,7 @@ export namespace Styles {
 					rx: BlackBox.rx,
 					ry: BlackBox.ry,
 					class: "sl-rectangle",
+					filter: BlackBox.filter,
 				},
 				label: {
 					class: "sl-label",
@@ -101,7 +104,6 @@ export namespace Styles {
 					ry: Outer.ry,
 					class: "sl-rectangle",
 					cursor: "default",
-					filter: Outer.filter,
 				},
 			},
 		};
