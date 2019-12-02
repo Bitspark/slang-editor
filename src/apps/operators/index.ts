@@ -4,7 +4,7 @@ import {UUID} from "../../slang/definitions/api";
 import {TypeIdentifier} from "../../slang/definitions/type";
 import {BlackBoxShape, BlackBoxShapeAttrs} from "../../slang/ui/components/blackbox";
 
-const ROUND_CORNER = 12;
+const ROUND_CORNER = 5;
 const FONT_SIZE = 9;
 
 export interface SlangAspectImpl {
