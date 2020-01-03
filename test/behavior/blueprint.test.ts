@@ -132,9 +132,9 @@ describe("A new blueprint", () => {
 	});
 
 	it("can have blueprint ports removed when deleting connected operator", () => {
-		// Test setup:
-		// [ -> [S2S] ]
-
+		// bpS2S ports:
+		// In: string
+		// Out: string
 		const bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
 
 		const bpNew = landscapeModel.createBlueprint({
@@ -150,19 +150,53 @@ describe("A new blueprint", () => {
 		const bpPortIn = bpNew.getPortIn()!;
 		const opPortIn = opNew.getPortIn()!;
 
+		// The blueprint should look like this now:
+		// +---------------+
+		// |    +-----+    |
+		// |    O S2S |    |
+		// |    |     |    |
+		// |    +-----+    |
+		// +---------------+
+
+		// Now, connect in-port of the operator with in-port of the blueprint
 		opPortIn.connect(bpPortIn, true);
 
+		// The blueprint should look like this now:
+		// +---------------+
+		// |    +-----+    |
+		// O--->O S2S |    |
+		// |    |     |    |
+		// |    +-----+    |
+		// +---------------+
+
+		// So we expect 1 entry in the generic in-port map of the blueprint:
 		expect(Array.from(bpPortIn.getMapSubs()).length).toEqual(1);
 
+		// Fetch this automatically created in-port of the blueprint:
 		const newPort = bpPortIn.getMapSubs().next().value;
 
+		// Test if the connections are as expected (see ASCII sketch above)
 		expect(newPort.isConnectedWith(opPortIn)).toBeTruthy();
 		expect(opPortIn.isConnectedWith(newPort)).toBeTruthy();
 
+		// Now we remove the operator entirely:
 		opNew.destroy();
 
+		// The blueprint should look like this now:
+		// +---------------+
+		// |               |
+		// |               |
+		// |               |
+		// |               |
+		// +---------------+
+
+		// The port should no longer be connected
 		expect(newPort.isConnected()).toBeFalsy();
+
+		// And test if the automatically created in-port has vanished:
 		expect(Array.from(bpPortIn.getMapSubs()).length).toEqual(0);
+
+		// newPort still exists (because it is referenced in this test), but should be disconnected from any operator
 	});
 
 	it("can have generic operator ports created and removed dynamically", () => {
