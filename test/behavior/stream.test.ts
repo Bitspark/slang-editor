@@ -234,23 +234,74 @@ describe("A stream port", () => {
 			direction: PortDirection.Out,
 		});
 
+		// opS2S ports:
+		// In: string
+		// Out: string
 		const opS2S = bp.createBlankOperator(landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!);
+
+		// opSS2S ports:
+		// In: Stream(string)
+		// Out: string
 		const opSS2S = bp.createBlankOperator(landscapeModel.findBlueprint("605be7c4-b4df-41be-998f-82f7c23e518e")!);
+
+		// opG2G ports:
+		// In: Generic("itemType")
+		// Out: Generic("itemType")
 		const opG2G = bp.createBlankOperator(landscapeModel.findBlueprint("384a2731-745b-4a7f-9972-ac2f4c31cf93")!);
 
+		// The blueprint should look like this now:
+		// +--------------------------------------+
+		// |    +-----+    +------+    +-----+    |
+		// |    O S2S O    O SS2S O    | G2G |    |
+		// |    |     |    |      |    |     |    |
+		// |    +-----+    +------+    +-----+    |
+		// +--------------------------------------+
+
+		// Connect operators:
 		bpIn.connect(opS2S.getPortIn()!, true);
 		opS2S.getPortOut()!.connect(bpOut, true);
 		opSS2S.getPortOut()!.connect(bpOut, true);
 		bpIn.getMapSubs().next().value.connect(opG2G.getPortIn()!, true);
 		opG2G.getPortOut()!.connect(opSS2S.getPortIn()!.getStreamSub(), true);
 
+		// The blueprint should look like this now:
+		// +------------------------------------------------------------+
+		// |                                                            |
+		// |              +-------------------------------------------->O
+		// |              |                   +------------------------>O
+		// |              |                   |   +===============+     |
+		// |      +-----+ |        +------+   |   |      +-----+  |     |
+		// O--+-->O S2S O-+   +===>O SS2S O---+   |   +->O G2G O==+     |
+		// |  |   |     |     |    |      |       |   |  |     |        |
+		// |  |   +-----+     |    +------+       |   |  +-----+        |
+		// |  |               +===================+   |                 |
+		// |  +---------------------------------------+                 |
+		// |                                                            |
+		// +------------------------------------------------------------+
+
 		expect(opG2G.getPortOut()!.getTypeIdentifier()).toEqual(TypeIdentifier.Map);
 		expect(Array.from(opG2G.getPortOut()!.getMapSubs()).length).toEqual(1);
+
 		const mapEntry = opG2G.getPortOut()!.getMapSubs().next().value;
+
+		// Since the in-port of SS2S is a stream port, we expect the generic out-port to have inferred to be a stream as well:
 		expect(mapEntry.getTypeIdentifier()).toEqual(TypeIdentifier.Stream);
+
+		// Automatically created ports should be maps:
 		expect(mapEntry.getStreamSub().getTypeIdentifier()).toEqual(TypeIdentifier.Map);
+
+		// There should be 1 map entry:
 		expect(Array.from(mapEntry.getStreamSub().getMapSubs()).length).toEqual(1);
+
+		// Expect a connection between the base ports (see double-line in the ASCII sketch above) (1)
 		expect(mapEntry.getStreamSub().getMapSubs().next().value.isConnectedWith(opSS2S.getPortIn()!.getStreamSub())).toEqual(true);
+
+		/*
+		 * (1) If two ports of the form Stream(x) and Stream(y) are connected, we do not expect this:
+		 *     Stream(x) --> Stream(y)
+		 *     but this:
+		 *     x --> y
+		 */
 	});
 
 	it("infers the correct stream depth for converts", () => {
