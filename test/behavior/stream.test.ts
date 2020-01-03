@@ -127,25 +127,93 @@ describe("A stream port", () => {
 			direction: PortDirection.Out,
 		});
 
+		// op2OS ports:
+		// In: trigger
+		// Out: Stream(portA: string, portB: number)
 		const op2OS = bp.createBlankOperator(landscapeModel.findBlueprint("b444f701-59fc-43a8-8cdc-8bcce9dd471d")!);
+
+		// opG2G ports:
+		// In: Generic("itemType")
+		// Out: Generic("itemType")
 		const opG2G = bp.createBlankOperator(landscapeModel.findBlueprint("dc1aa556-d62e-4e07-adbb-53dc317481b0")!);
 
+		// Connect out-port Stream(portA: string) of op2OS with generic in-port of opG2G
 		op2OS.getPortOut()!.getStreamSub().findMapSub("portA").connect(opG2G.getPortIn()!, true);
+
+		// We expect opG2G to have an out-port of type Stream(portA: string) now,
+		// because it is linked via the generic identifier "itemType" with the in-port we just connected
+
+		// Connect this out-port with the blueprint out-port
 		Array.from(opG2G.getPortOut()!.getMapSubs()).find((port) => port.getName().indexOf("portA") !== -1)!.connect(bpOut, true);
+
+		// Connect out-port Stream(portB: number) of op2OS with generic in-port of opG2G
 		op2OS.getPortOut()!.getStreamSub().findMapSub("portB").connect(opG2G.getPortIn()!, true);
+
+		// We expect opG2G to have a second entry in its out-port Stream map:
+		// Stream(portA: string, portB: number)
+
+		// Again, connect the second out-port of opG2G with the blueprint out-port
 		Array.from(opG2G.getPortOut()!.getMapSubs()).find((port) => port.getName().indexOf("portB") !== -1)!.connect(bpOut, true);
 
+		// The blueprint should look like this now:
+
+		// +----------------------+
+		// |    +---+    +---+    |
+		// |    |2OS|===>|G2G|===>| (portA)
+		// |    |   |===>|   |===>| (portB)
+		// |    +---+    +---+    |
+		// +----------------------+
+
+		// The blueprint out-port should have the following form:
+		// Map(a: Stream(portA: string, portB: number))
+
+		// So we expect the blueprint out-port to have one entry in the top map (above called "a"):
 		expect(Array.from(bpOut.getMapSubs()).length).toEqual(1);
+
+		// We expect this one entry to be of type stream wrapped around a map with two entries ("portA" and "portB"):
 		expect(Array.from(Array.from(bpOut.getMapSubs()).find((port) => port.getType().isStream())!.getStreamSub().getMapSubs()).length).toEqual(2);
 
+		// Now, disconnect portB of G2G from blueprint out-port
 		Array.from(opG2G.getPortOut()!.getMapSubs()).find((port) => port.getName().indexOf("portB") !== -1)!.disconnectAll();
 
+		// The blueprint should look like this now:
+
+		// +----------------------+
+		// |    +---+    +---+    |
+		// |    |2OS|===>|G2G|===>| (portA)
+		// |    |   |===>|   |    |
+		// |    +---+    +---+    |
+		// +----------------------+
+
+		// The blueprint out-port should have the following form:
+		// Map(a: Stream(portA: string))
+
+		// So we expect the blueprint out-port to still have a map with one entry (above called "a")
 		expect(Array.from(bpOut.getMapSubs()).length).toEqual(1);
+
+		// But now, there should only be 1 entry in the wrapped map ("portA")
 		expect(Array.from(Array.from(bpOut.getMapSubs()).find((port) => port.getType().isStream())!.getStreamSub().getMapSubs()).length).toEqual(1);
 
+		// Now, connect out-port portB of operator G2G again:
 		Array.from(opG2G.getPortOut()!.getMapSubs()).find((port) => port.getName().indexOf("portB") !== -1)!.connect(bpOut, true);
 
+		// The blueprint should again look like this now:
+
+		// +----------------------+
+		// |    +---+    +---+    |
+		// |    |2OS|===>|G2G|===>| (portA)
+		// |    |   |===>|   |===>| (portB)
+		// |    +---+    +---+    |
+		// +----------------------+
+
+		// And the blueprint out-port should have the following form:
+		// Map(a: Stream(portA: string, portB: number))
+
+		// This of course should still be the case (like above):
 		expect(Array.from(bpOut.getMapSubs()).length).toEqual(1);
+
+		// This is actually what this test should make sure:
+		// The out-port "portB" of operator G2G should be within the same stream as "portA" and not be a separate entry in the out-port map:
 		expect(Array.from(Array.from(bpOut.getMapSubs()).find((port) => port.getType().isStream())!.getStreamSub().getMapSubs()).length).toEqual(2);
 	});
 
