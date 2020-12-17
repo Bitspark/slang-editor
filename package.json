@@ -107,7 +107,7 @@
     "tslint-consistent-codestyle": "^1.15.0",
     "tslint-eslint-rules": "^5.4.0",
     "typescript": "^3.4.3",
-    "webpack": "^4.29.6",
+    "webpack": "^5.10.3",
     "webpack-cli": "^4.0.0",
     "webpack-dev-server": "^3.1.10",
     "webpack-merge": "^5.0.7"
