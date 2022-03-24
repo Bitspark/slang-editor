@@ -6,7 +6,7 @@
   "types": "index.d.ts",
   "source": "index.ts",
   "scripts": {
-    "start": "webpack-dev-server --config webpack/webpack.dev.js --colors",
+    "start": "webpack serve --config webpack/webpack.dev.js",
     "bundle": "webpack --config webpack/webpack.bundle.js --colors",
     "test": "jest",
     "package": "webpack --config webpack/webpack.package.js && grunt",

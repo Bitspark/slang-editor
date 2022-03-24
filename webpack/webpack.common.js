@@ -1,5 +1,5 @@
 const Path = require("path");
-const Clean = require("clean-webpack-plugin");
+const {CleanWebpackPlugin} = require("clean-webpack-plugin");
 
 module.exports = env => {
 	return {
@@ -18,7 +18,10 @@ module.exports = env => {
 			},
 		},
 		plugins: [
-			new Clean(["dist"], {root: Path.resolve(__dirname, "..", "..")}),
+			new CleanWebpackPlugin({
+				cleanAfterEveryBuildPatterns: ["dist"],
+				root: Path.resolve(__dirname, "..", ".."),
+			}),
 		],
 		resolve: {
 			extensions: [".tsx", ".ts", ".js"],
