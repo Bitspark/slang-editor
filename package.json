@@ -6,7 +6,7 @@
   "types": "index.d.ts",
   "source": "index.ts",
   "scripts": {
-    "start": "webpack-dev-server --config webpack/webpack.dev.js --colors",
+    "start": "webpack serve --config webpack/webpack.dev.js --color",
     "bundle": "webpack --config webpack/webpack.bundle.js --colors",
     "test": "jest",
     "package": "webpack --config webpack/webpack.package.js && grunt",
@@ -109,7 +109,7 @@
     "typescript": "^3.4.3",
     "webpack": "^4.29.6",
     "webpack-cli": "^4.0.0",
-    "webpack-dev-server": "^3.1.10",
+    "webpack-dev-server": "^3.7.1",
     "webpack-merge": "^5.0.7"
   }
 }
