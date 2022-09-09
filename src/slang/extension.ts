@@ -1,5 +1,5 @@
 import {SlangAspects} from "./aspects";
-import {AppModel} from "./core/models/app";
+import {AppModel} from "./core/models";
 
 export abstract class SlangExtension {
 	public static register(app: AppModel, aspects: SlangAspects) {
