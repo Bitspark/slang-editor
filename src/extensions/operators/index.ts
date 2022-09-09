@@ -1,4 +1,4 @@
-import {SlangApp} from "../../slang/app";
+import {SlangExtension} from "../../slang/extension";
 import {BlueprintModel, LandscapeModel, OperatorModel} from "../../slang/core/models";
 import {UUID} from "../../slang/definitions/api";
 import {TypeIdentifier} from "../../slang/definitions/type";
@@ -11,7 +11,7 @@ export interface SlangAspectImpl {
 	shape?: typeof BlackBoxShape;
 }
 
-export class OperatorDataApp extends SlangApp {
+export class OperatorDataExt extends SlangExtension {
 	protected getBlueprint(uuid: string): BlueprintModel {
 		const landscape = this.app.getChildNode(LandscapeModel)!;
 		const blueprint = landscape.findBlueprint(uuid);

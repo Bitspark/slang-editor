@@ -1,7 +1,7 @@
 import {SlangAspects} from "./aspects";
 import {AppModel} from "./core/models/app";
 
-export abstract class SlangApp {
+export abstract class SlangExtension {
 	public static register(app: AppModel, aspects: SlangAspects) {
 		// @ts-ignore
 		return new this(app, aspects);
