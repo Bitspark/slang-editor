@@ -16,12 +16,21 @@ module.exports = env => (merge(common(env), {
 			disableDotRule: true,
 		},
 	},
+	entry: {
+		index: Path.resolve(__dirname, `../src/app/index.ts`),
+	},
 	plugins: [
 		new Webpack.DefinePlugin({
 			"process.env.NODE_ENV": JSON.stringify("development"),
 		}),
+		//new Html({
+		//	template: Path.resolve(__dirname, `../src/example/index.html`),
+		//}),
 		new Html({
-			template: Path.resolve(__dirname, `../src/example/index.html`),
+			template: Path.resolve(__dirname, `../src/app/index.html`),
+			templateParameters: {
+				'BASEHREF': (env.baseHref) ? env.baseHref : "/",
+			},
 		}),
 	],
 	module: {

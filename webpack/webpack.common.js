@@ -1,5 +1,7 @@
 const Path = require("path");
 const {CleanWebpackPlugin} = require("clean-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const {BaseHrefWebpackPlugin} = require('base-href-webpack-plugin');
 
 module.exports = env => {
 	return {
