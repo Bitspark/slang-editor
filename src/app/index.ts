@@ -1,5 +1,5 @@
-// tslint:disable-next-line
-//import "../styles/standalone.scss";
+// @ts-ignore
+import styling from "../styles/app.scss";
 
 // tslint:disable-next-line
 // import {AutoTriggerApp} from "../apps/autotrigger/src/app";
@@ -16,8 +16,6 @@ import {BlueprintView} from "../slang/ui/views/blueprint";
 //import {LandscapeView} from "../slang/ui/views/landscape";
 import {PaperViewArgs} from "../slang/ui/views/paper-view";
 
-// tslint:disable-next-line
-//import "../styles/studio.scss";
 
 const bundle: SlangBundle = {
 	main: "1f8dc0f2-a7b8-4eb2-8555-3165bba6e843",
@@ -478,8 +476,10 @@ class Slang {
 	private readonly frames: ViewFrame[] = [];
 	private outlet: ViewFrame | null = null;
 	private defaultViewArgs: PaperViewArgs | null = null;
+	private landscape: LandscapeModel;
 
 	constructor(private app: AppModel, private aspects: SlangAspects) {
+		this.landscape = app.createLandscape();
 	}
 
 	public setDefaultViewArgs(defaultViewArgs: PaperViewArgs | null) {
@@ -519,8 +519,7 @@ class Slang {
                 return;
             }
 
-            const landscape = this.app.getChildNode(LandscapeModel)!
-            const blueprint = landscape.loadBundle(bundle)
+            const blueprint = this.landscape.loadBundle(bundle)
 
 			const viewArgs = this.defaultViewArgs || {
 				editable: blueprint.isLocal(),
@@ -629,8 +628,14 @@ window.addEventListener("popstate", () => {
 	history.pushState(null, document.title, location.href);
 });
 
-const studioEl = document.getElementById("slang-editor");
 //const gotoLandEl = document.getElementById("sl-nav-goto-landscape");
+const studioEl = document.getElementById("slang-editor");
+
 if (studioEl) {
+	// embed styling
+	const styleEl = document.createElement("style")
+	styleEl.innerText = styling.toString();
+	document.getElementsByTagName("head")[0].appendChild(styleEl)
+
 	slangStudioStandalone(studioEl);
 }

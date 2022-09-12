@@ -1,0 +1,24 @@
+@import "variables";
+
+html, body {
+	font-family: $font-family-default;
+	font-size: $font-size;
+	color: $black;
+	background: $white;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+}
+
+input {
+	&:focus {
+		outline: none;
+	}
+}
+
+#slang-editor {
+	width: 100vw;
+	height: 100vh;
+}
+
+@import "./editor";
