@@ -1,5 +1,6 @@
 import {
 	BlueprintJson,
+	BlueprintsJson,
 	ConnectionsApiResponse, GenericSpecificationsApiResponse,
 	OperatorJson,
 	PortGroupApiResponse, PortGroupsApiResponse, PropertyApiResponse, PropertyAssignmentsApiResponse,
@@ -194,13 +195,22 @@ function fromTypeIdentifier(t: TypeIdentifier): "string" | "number" | "boolean" 
   \
  */
 
-export function loadBlueprints(landscape: LandscapeModel, blueprintJsonList: BlueprintJson[]) {
+export function loadBlueprints(landscape: LandscapeModel, blueprintsJson: BlueprintsJson) {
 	// 1) Create unfinished blueprints (only with some basic information)
-	blueprintJsonList.forEach((blueprintJson) => {
+	blueprintsJson.elementary.forEach((blueprintJson) => {
+		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Elementary);
+	});
+	blueprintsJson.library.forEach((blueprintJson) => {
+		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Library);
+	});
+	blueprintsJson.local.forEach((blueprintJson) => {
+	//blueprintJsonList.forEach((blueprintJson) => {
 		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Local);
 	});
 
 	// 2) Add Operators. Use previously defined Blueprints for assigning Operator.blueprint
+	const blueprintJsonList = blueprintsJson.library.concat(blueprintsJson.local);
+
 	blueprintJsonList.forEach((bpJson: BlueprintJson) => {
 		const outerBlueprint = landscape.findBlueprint(bpJson.id);
 		if (!outerBlueprint) {

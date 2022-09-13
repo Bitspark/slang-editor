@@ -1,4 +1,5 @@
 const Path = require("path");
+const Webpack = require('webpack');
 const {CleanWebpackPlugin} = require("clean-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const {BaseHrefWebpackPlugin} = require('base-href-webpack-plugin');
@@ -20,6 +21,9 @@ module.exports = env => {
 			},
 		},
 		plugins: [
+			new Webpack.DefinePlugin({
+				'APIURL': JSON.stringify(env.apiUrl)
+			}),
 			new CleanWebpackPlugin({
 				cleanAfterEveryBuildPatterns: ["dist"],
 				root: Path.resolve(__dirname, "..", ".."),
@@ -27,6 +31,10 @@ module.exports = env => {
 		],
 		resolve: {
 			extensions: [".tsx", ".ts", ".js"],
+			alias: {
+				'@slang': Path.resolve('src/slang'),
+				'@styles': Path.resolve('src/styles'),
+			}
 		},
 		module: {
 			rules: [

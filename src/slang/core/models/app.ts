@@ -13,6 +13,12 @@ export class AppModel extends SlangNode {
 	}
 
 	private ready = new SlangBehaviorSubject<boolean>("ready", false);
+	/*
+	private openedBlueprint = new SlangBehaviorSubject<BlueprintModel | null>("opened-blueprint", null);
+	private openedLandscape = new SlangBehaviorSubject<LandscapeModel | null>("opened-landscape", null);
+	private loadRequested = new SlangSubjectTrigger("load-requested");
+	private storeRequested = new SlangSubject<BlueprintModel>("save-requested");
+	*/
 
 	public constructor({}: AppModelArgs) {
 		super(null);
@@ -20,7 +26,6 @@ export class AppModel extends SlangNode {
 	}
 
 	// Actions
-
 	public createLandscape(): LandscapeModel {
 		return this.createChildNode(LandscapeModel, {});
 	}

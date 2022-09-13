@@ -61,7 +61,7 @@ export class LandscapeModel extends SlangNode {
 
 	public loadBundle(bundle: SlangBundle): BlueprintModel {
 		const blueprintJsonList = Object.keys(bundle.blueprints).filter((bpId) => !this.findBlueprint(bpId)).map((bpId) => bundle.blueprints[bpId]);
-		loadBlueprints(this, blueprintJsonList);
+		loadBlueprints(this, {local: blueprintJsonList, library: [], elementary: []});
 
 		const blueprint = this.findBlueprint(bundle.main);
 		if (!blueprint) {

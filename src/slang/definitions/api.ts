@@ -71,7 +71,16 @@ export interface OperatorJson {
 	properties: PropertyAssignmentsApiResponse;
 	generics: GenericSpecificationsApiResponse;
 }
+export interface BlueprintsJson {
+	local: BlueprintJson[];
+	library: BlueprintJson[];
+	elementary: BlueprintJson[];
+}
 
+export interface BlueprintApiResponse {
+	type: string;
+	def: BlueprintJson;
+}
 export interface BlueprintJson {
 	id: string;
 	meta: BlueprintMeta;
