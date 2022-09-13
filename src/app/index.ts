@@ -23,6 +23,9 @@ class Slang {
 	private outlet: ViewFrame | null = null;
 	private defaultViewArgs: PaperViewArgs | null = null;
 	private landscape: LandscapeModel;
+	private extensions = [
+		OperatorDataExt,
+	]
 
 	constructor(private app: AppModel, private aspects: SlangAspects, private api: ApiService) {
 		this.landscape = app.createLandscape();
@@ -47,8 +50,9 @@ class Slang {
 	}
 
 	public async load(): Promise<void> {
+		loadBlueprints(this.landscape, await this.api.getBlueprints());
+		this.extensions.forEach(extClass => extClass.register(this.app, this.aspects))
 		this.subscribe();
-		//return this.app.load();
         return Promise.resolve();
 	}
 
@@ -80,13 +84,11 @@ class Slang {
                 return;
             }
 
-            //const blueprint = this.landscape.loadBundle(bundle)
 
-			loadBlueprints(this.landscape, await this.api.getBlueprints());
 			const blueprint = this.landscape.findBlueprint("a39a873e-dfb9-4ac9-ab12-24cb1051a4bb")!
 
 			const viewArgs = this.defaultViewArgs || {
-				editable: true,//blueprint.isLocal(),
+				editable: blueprint.isLocal(),
 				hscrollable: true,
 				vscrollable: true,
 				descendable: true,
@@ -155,11 +157,6 @@ function slangStudioStandalone(el: HTMLElement): Promise<void> {
 			console.info("reconnected");
 		});
         */
-
-		//new APIStorageApp(appModel, aspects, api);
-		// new DeploymentApp(appModel, aspects, api);
-		OperatorDataExt.register(appModel, aspects);
-		// new BlueprintShareApp(appModel, aspects);
 
 		app.load().then(() => {
             /*
