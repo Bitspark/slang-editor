@@ -84,13 +84,13 @@ class SlangApp {
 	}
 
 	public mount(htmlRoot: HTMLElement) {
-		const localBlueprints = Array.from(this.blueprints.values())//.filter(bp => bp.isLocal());
 		m.mount(htmlRoot, {
 			oncreate: () => {
 			},
 			onupdate: () => {
 			},
 			view: () => {
+				const localBlueprints = Array.from(this.blueprints.values())//.filter(bp => bp.isLocal());
 				return m(".panel",
 				m(".panel-heading", `Blueprints (${localBlueprints.length})`),
 				localBlueprints.map(bp => m(".panel-block", {onclick: () => bp.open()}, bp.getShortName())));
@@ -142,6 +142,9 @@ class SlangApp {
                 return;
             }
 			const blueprint = this.landscape.findBlueprint("a39a873e-dfb9-4ac9-ab12-24cb1051a4bb")!
+
+			///// make use of auto-draw of m.mount
+			m.redraw()
 
 			if (!blueprint) {
 				return;
@@ -197,6 +200,10 @@ class SlangApp {
 declare const APIURL: string;
 const app = new SlangApp();
 app.mount(document.body);
+
+const styleEl = document.createElement("style")
+styleEl.innerText = styling.toString();
+document.getElementsByTagName("head")[0].appendChild(styleEl)
 
 /*
 function slangStudioStandalone(el: HTMLElement): Promise<void> {
