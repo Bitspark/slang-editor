@@ -1,5 +1,5 @@
 // @ts-ignore
-import styling from "../styles/app.scss";
+import styling from "@styles/app.scss";
 
 // tslint:disable-next-line
 // import {AutoTriggerApp} from "../apps/autotrigger/src/app";
@@ -11,6 +11,7 @@ import { View } from "../slang/ui/views/view";
 import {SlangAspects} from "../slang/aspects";
 import {AppModel, BlueprintModel, LandscapeModel} from "../slang/core/models";
 import {ViewFrame} from "../slang/ui/frame";
+// @ts-ignore
 import {BlueprintView} from "../slang/ui/views/blueprint";
 //import {LandscapeView} from "../slang/ui/views/landscape";
 import {PaperViewArgs} from "../slang/ui/views/paper-view";
@@ -18,17 +19,83 @@ import { ApiService } from "./services";
 import { blueprintModelToJson, loadBlueprints } from "../slang/core/mapper";
 import { OperatorDataExt } from "../extensions/operators";
 
-class Slang {
-	private readonly frames: ViewFrame[] = [];
-	private outlet: ViewFrame | null = null;
-	private defaultViewArgs: PaperViewArgs | null = null;
+// @ts-ignore
+import m, {ClassComponent, CVnode} from "mithril";
+// @ts-ignore
+import { SlangBehaviorSubject } from "@slang";
+
+/*
+class SlangApp implements ClassComponent<any> {
+
+	// @ts-ignore
+	public oninit(vnode: m.Vnode<any, this>) {
+		
+	}
+
+	public view({children, attrs}: CVnode<any>) {
+		return m("", attrs, children);
+	}
+}
+
+m.mount(document.body, SlangApp)
+*/
+
+class SlangApp {
 	private landscape: LandscapeModel;
+	private appModel: AppModel;
+	private api: ApiService;
+	private aspects: SlangAspects;
 	private extensions = [
 		OperatorDataExt,
 	]
 
-	constructor(private app: AppModel, private aspects: SlangAspects, private api: ApiService) {
-		this.landscape = app.createLandscape();
+	private blueprints = new Map<string, BlueprintModel>();
+
+	private readonly frames: ViewFrame[] = [];
+	private outlet: ViewFrame | null = null;
+	private defaultViewArgs: PaperViewArgs | null = null;
+
+	constructor() {
+		this.appModel = AppModel.create("slang");
+		this.aspects = new SlangAspects();
+		this.api = new ApiService(APIURL);
+		this.landscape = this.appModel.createLandscape();
+
+		this.registerExtensions()
+		this.subscribe()
+
+		// Emits ready signal
+		this.appModel.load()
+	}
+
+	private registerExtensions() {
+		this.extensions.forEach(extClass => extClass.register(this.appModel, this.aspects))
+	}
+
+	private async loadBlueprints(): Promise<void> {
+		loadBlueprints(this.landscape, await this.api.getBlueprints());
+        return Promise.resolve();
+	}
+
+	public storeBlueprint(blueprint: BlueprintModel): void {
+		this.api.storeBlueprint(blueprintModelToJson(blueprint)).then(() => {
+			return;
+		});
+	}
+
+	public mount(htmlRoot: HTMLElement) {
+		const localBlueprints = Array.from(this.blueprints.values())//.filter(bp => bp.isLocal());
+		m.mount(htmlRoot, {
+			oncreate: () => {
+			},
+			onupdate: () => {
+			},
+			view: () => {
+				return m(".panel",
+				m(".panel-heading", `Blueprints (${localBlueprints.length})`),
+				localBlueprints.map(bp => m(".panel-block", {onclick: () => bp.open()}, bp.getShortName())));
+			},
+		});
 	}
 
 	public setDefaultViewArgs(defaultViewArgs: PaperViewArgs | null) {
@@ -49,13 +116,6 @@ class Slang {
 		this.outlet = frame;
 	}
 
-	public async load(): Promise<void> {
-		loadBlueprints(this.landscape, await this.api.getBlueprints());
-		this.extensions.forEach(extClass => extClass.register(this.app, this.aspects))
-		this.subscribe();
-        return Promise.resolve();
-	}
-
     public displayView(view: View): void {
         if(!this.outlet) {
 			throw new Error(`outlet is not attached`);
@@ -63,30 +123,31 @@ class Slang {
         this.outlet.setView(view)
     }
 
-	/*
-	public async load(): Promise<void> {
-		return new Promise<void>(async (resolve) => {
-			loadBlueprints(this.app.getChildNode(LandscapeModel)!, await this.api.getBlueprints());
-			resolve();
-		});
-	}
-	*/
-
-	public store(blueprint: BlueprintModel): void {
-		this.api.storeBlueprint(blueprintModelToJson(blueprint)).then(() => {
-			return;
-		});
-	}
-
 	private subscribe(): void {
-        this.app.subscribeReady(async (readyState) => {
+
+		this.appModel.subscribeLoadRequested(() => {
+			return this.loadBlueprints()
+		});
+
+		this.appModel.subscribeStoreRequested((blueprint: BlueprintModel) => {
+			this.storeBlueprint(blueprint);
+		});
+
+		this.landscape.subscribeChildCreated(BlueprintModel, (blueprint) => {
+			this.blueprints.set(blueprint.uuid, blueprint)
+		});
+
+        this.appModel.subscribeReady(async (readyState) => {
             if (!readyState) {
                 return;
             }
-
-
 			const blueprint = this.landscape.findBlueprint("a39a873e-dfb9-4ac9-ab12-24cb1051a4bb")!
 
+			if (!blueprint) {
+				return;
+			}
+
+			// @ts-ignore
 			const viewArgs = this.defaultViewArgs || {
 				editable: blueprint.isLocal(),
 				hscrollable: true,
@@ -95,8 +156,9 @@ class Slang {
 				runnable: true,
 			};
 
-            const blueprintView = new BlueprintView(this.outlet!, this.aspects, blueprint, viewArgs);
-            this.displayView(blueprintView);
+
+            //const blueprintView = new BlueprintView(this.outlet!, this.aspects, blueprint, viewArgs);
+            //this.displayView(blueprintView);
         })
 
         /*
@@ -133,54 +195,53 @@ class Slang {
 
 
 declare const APIURL: string;
+const app = new SlangApp();
+app.mount(document.body);
 
+/*
 function slangStudioStandalone(el: HTMLElement): Promise<void> {
 	return new Promise<void>((resolve) => {
 		const appModel = AppModel.create("slang");
 		const aspects = new SlangAspects();
 		const api = new ApiService(APIURL);
 		const app = new Slang(appModel, aspects, api);
-		const frame = new ViewFrame(el);
-		app.addFrame(frame, true);
+		//const frame = new ViewFrame(el);
 
-        /*
-		api.subscribeConnected(() => {
-			console.info("connected");
-		});
-		api.subscribeReconnecting(() => {
-			console.info("reconnecting");
-		});
-		api.subscribeDisconnected(() => {
-			console.info("disconnected");
-		});
-		api.subscribeReconnected(() => {
-			console.info("reconnected");
-		});
-        */
+		const mainLandscape = appModel.getChildNode(LandscapeModel)!;
+
+		//app.addFrame(frame, true);
 
 		app.load().then(() => {
-            /*
-			const mainLandscape = appModel.getChildNode(LandscapeModel)!;
-			mainLandscape.open();
+			const localBlueprints: BlueprintModel[] = []
+			mainLandscape.subscribeChildCreated(BlueprintModel, (blueprint: BlueprintModel) => {
 
-			if (gotoLandEl) {
-				gotoLandEl.style.display = "none";
+				blueprint.subscribeOpenedChanged((opened) => {
+					if(opened) { 
+						console.log("Open Blueprint", blueprint)
+					}
+				})
 
-				gotoLandEl.onclick = () => {
-					mainLandscape.open();
-				};
+				localBlueprints.push(blueprint)
+			});
 
-				appModel.subscribeOpenedBlueprintChanged((blueprint) => {
-					gotoLandEl.style.display = blueprint ? "" : "none";
-				});
-			}
+			m.mount(el, {
+				oncreate: () => {
+				},
+				onupdate: () => {
+				},
+				view: () => {
+					return m(".panel",
+					m(".panel-heading", "Blueprints"),
+					localBlueprints.map(bp => m(".panel-block", {onclick: () => bp.open()}, bp.getShortName())));
+				},
+			});
 
-            */
 			resolve();
 		});
 
 	});
 }
+/*
 
 // prevent browser history back
 history.pushState(null, document.title, location.href);
@@ -189,13 +250,15 @@ window.addEventListener("popstate", () => {
 });
 
 //const gotoLandEl = document.getElementById("sl-nav-goto-landscape");
-const studioEl = document.getElementById("slang-editor");
-
-if (studioEl) {
+const appEl = document.getElementById("slang-app");
+* /
+const appEl = null
+if (appEl) {
 	// embed styling
 	const styleEl = document.createElement("style")
 	styleEl.innerText = styling.toString();
 	document.getElementsByTagName("head")[0].appendChild(styleEl)
 
-	slangStudioStandalone(studioEl);
+	slangStudioStandalone(appEl);
 }
+*/
