@@ -20,9 +20,12 @@ import { blueprintModelToJson, loadBlueprints } from "../slang/core/mapper";
 import { OperatorDataExt } from "../extensions/operators";
 
 // @ts-ignore
-import m, {ClassComponent, CVnode} from "mithril";
-// @ts-ignore
-import { SlangBehaviorSubject } from "@slang";
+import m, {buildPathname, ClassComponent, CVnode} from "mithril";
+import uuidv4 from "uuid/v4";
+import { BlueprintType } from "../slang/core/models/blueprint";
+import { SlangType } from "../slang/definitions/type";
+import { PortDirection } from "../slang/core/abstract/port";
+
 
 /*
 class SlangApp implements ClassComponent<any> {
@@ -76,6 +79,25 @@ class SlangApp {
 		loadBlueprints(this.landscape, await this.api.getBlueprints());
         return Promise.resolve();
 	}
+	
+	private createNewBlueprint() {
+		const newBlueprint = this.landscape.createBlueprint({
+			uuid: uuidv4(),
+			meta: {name: `Unnamed${new Date().getTime()}`},
+			type: BlueprintType.Local,
+		});
+		newBlueprint.createPort({
+			name: "",
+			type: SlangType.newMap(),
+			direction: PortDirection.In,
+		});
+		newBlueprint.createPort({
+			name: "",
+			type: SlangType.newMap(),
+			direction: PortDirection.Out,
+		});
+		newBlueprint.open();
+	}
 
 	public storeBlueprint(blueprint: BlueprintModel): void {
 		this.api.storeBlueprint(blueprintModelToJson(blueprint)).then(() => {
@@ -90,10 +112,19 @@ class SlangApp {
 			onupdate: () => {
 			},
 			view: () => {
-				const localBlueprints = Array.from(this.blueprints.values())//.filter(bp => bp.isLocal());
-				return m(".panel",
-				m(".panel-heading", `Blueprints (${localBlueprints.length})`),
-				localBlueprints.map(bp => m(".panel-block", {onclick: () => bp.open()}, bp.getShortName())));
+				const localBlueprints = Array.from(this.blueprints.values()).filter(bp => bp.isLocal());
+				return m("section.section",
+					m(".container",
+						m(".panel",
+							m(".panel-heading", `Blueprints (${localBlueprints.length})`),
+							m("a.panel-block", {onclick:() => this.createNewBlueprint()}, [m("span.panel-icon", m("i.fas.fa-plus")), "New Blueprint"]),
+							localBlueprints.map(bp => m("a.panel-block",
+							{onclick: () => bp.open()},
+							[m("span.panel-icon", m("i.fas.fa-circle")), bp.getShortName()])
+							)
+						)
+					)
+				);
 			},
 		});
 	}

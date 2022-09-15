@@ -32,7 +32,6 @@ module.exports = env => {
 		resolve: {
 			extensions: [".tsx", ".ts", ".js"],
 			alias: {
-				'@slang': Path.resolve('src/slang'),
 				'@styles': Path.resolve('src/styles'),
 			}
 		},
