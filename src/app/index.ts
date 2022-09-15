@@ -13,7 +13,6 @@ import {AppModel, BlueprintModel, LandscapeModel} from "../slang/core/models";
 import {ViewFrame} from "../slang/ui/frame";
 // @ts-ignore
 import {BlueprintView} from "../slang/ui/views/blueprint";
-//import {LandscapeView} from "../slang/ui/views/landscape";
 import {PaperViewArgs} from "../slang/ui/views/paper-view";
 import { ApiService } from "./services";
 import { blueprintModelToJson, loadBlueprints } from "../slang/core/mapper";
@@ -80,7 +79,7 @@ class SlangApp {
         return Promise.resolve();
 	}
 	
-	private createNewBlueprint() {
+	private createNewBlueprint(): BlueprintModel {
 		const newBlueprint = this.landscape.createBlueprint({
 			uuid: uuidv4(),
 			meta: {name: `Unnamed${new Date().getTime()}`},
@@ -96,7 +95,7 @@ class SlangApp {
 			type: SlangType.newMap(),
 			direction: PortDirection.Out,
 		});
-		newBlueprint.open();
+		return newBlueprint;
 	}
 
 	public storeBlueprint(blueprint: BlueprintModel): void {
@@ -106,6 +105,19 @@ class SlangApp {
 	}
 
 	public mount(htmlRoot: HTMLElement) {
+		const frame = new ViewFrame(htmlRoot);
+		this.addFrame(frame, true);
+		const blueprint = this.createNewBlueprint()
+		const viewArgs = this.defaultViewArgs || {
+			editable: blueprint.isLocal(),
+			hscrollable: true,
+			vscrollable: true,
+			descendable: true,
+			runnable: true,
+		};
+		const blueprintView = new BlueprintView(this.outlet!, this.aspects, blueprint, viewArgs);
+		this.displayView(blueprintView)
+		/*
 		m.mount(htmlRoot, {
 			oncreate: () => {
 			},
@@ -117,7 +129,7 @@ class SlangApp {
 					m(".container",
 						m(".panel",
 							m(".panel-heading", `Blueprints (${localBlueprints.length})`),
-							m("a.panel-block", {onclick:() => this.createNewBlueprint()}, [m("span.panel-icon", m("i.fas.fa-plus")), "New Blueprint"]),
+							m("a.panel-block", {onclick:() => this.createNewBlueprint().open()}, [m("span.panel-icon", m("i.fas.fa-plus")), "New Blueprint"]),
 							localBlueprints.map(bp => m("a.panel-block",
 							{onclick: () => bp.open()},
 							[m("span.panel-icon", m("i.fas.fa-circle")), bp.getShortName()])
@@ -127,6 +139,7 @@ class SlangApp {
 				);
 			},
 		});
+		*/
 	}
 
 	public setDefaultViewArgs(defaultViewArgs: PaperViewArgs | null) {
@@ -155,7 +168,6 @@ class SlangApp {
     }
 
 	private subscribe(): void {
-
 		this.appModel.subscribeLoadRequested(() => {
 			return this.loadBlueprints()
 		});
@@ -172,31 +184,10 @@ class SlangApp {
             if (!readyState) {
                 return;
             }
-			const blueprint = this.landscape.findBlueprint("a39a873e-dfb9-4ac9-ab12-24cb1051a4bb")!
-
-			///// make use of auto-draw of m.mount
 			m.redraw()
-
-			if (!blueprint) {
-				return;
-			}
-
-			// @ts-ignore
-			const viewArgs = this.defaultViewArgs || {
-				editable: blueprint.isLocal(),
-				hscrollable: true,
-				vscrollable: true,
-				descendable: true,
-				runnable: true,
-			};
-
-
-            //const blueprintView = new BlueprintView(this.outlet!, this.aspects, blueprint, viewArgs);
-            //this.displayView(blueprintView);
         })
 
-        /*
-		this.app.subscribeOpenedBlueprintChanged((blueprint) => {
+		this.appModel.subscribeOpenedBlueprintChanged((blueprint) => {
 			if (!blueprint || !this.outlet) {
 				return;
 			}
@@ -209,11 +200,12 @@ class SlangApp {
 				runnable: true,
 			};
 
-			const view = new BlueprintView(this.outlet, blueprint, viewArgs);
-			this.outlet.setView(view);
+            const blueprintView = new BlueprintView(this.outlet!, this.aspects, blueprint, viewArgs);
+			this.displayView(blueprintView)
 		});
 
-		this.app.subscribeOpenedLandscapeChanged((landscape) => {
+		/*
+		this.appModel.subscribeOpenedLandscapeChanged((landscape) => {
 			if (!landscape || !this.outlet) {
 				return;
 			}
@@ -223,7 +215,7 @@ class SlangApp {
 				((bp) => bp.isLocal()) as (bp: BlueprintModel) => boolean);
 			this.outlet.setView(view);
 		});
-        */
+		*/
 	}
 }
 
