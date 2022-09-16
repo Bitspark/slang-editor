@@ -1,6 +1,6 @@
 import uuidv4 from "uuid/v4";
 import { ApiService } from "./services";
-import { SlangAspects } from "src/slang/aspects";
+import { SlangAspects } from "../slang/aspects";
 import { PortDirection } from "../slang/core/abstract/port";
 import { blueprintModelToJson, loadBlueprints } from "../slang/core/mapper";
 import { AppModel, BlueprintModel } from "../slang/core/models";
@@ -23,6 +23,7 @@ export class AppState {
     public static readonly landscape = AppState.appModel.createLandscape();
 	public static blueprints: BlueprintModel[] = [];
 
+    public static currentBlueprint: BlueprintModel|null = null;
 
 	public static init() {
         if (AppState.initalized) {
@@ -72,6 +73,14 @@ export class AppState {
 		});
 		return newBlueprint;
 	}
+
+    public static async addOperator(blueprint: BlueprintModel) {
+        if (!AppState.currentBlueprint) {
+            return
+        }
+
+        AppState.currentBlueprint.createBlankOperator(blueprint, {position: {x: 0, y: 0}})
+    }
 
 	public static async loadBlueprints(): Promise<void> {
 		loadBlueprints(AppState.landscape, await API.getBlueprints());

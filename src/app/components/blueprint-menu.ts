@@ -1,5 +1,5 @@
 import m, {ClassComponent, CVnode} from "mithril";
-import { BlueprintModel } from "src/slang/core/models";
+import { BlueprintModel } from "../../slang/core/models";
 import { AppState } from "../state";
 
 export class BlueprintMenu implements ClassComponent<any> {
@@ -8,18 +8,19 @@ export class BlueprintMenu implements ClassComponent<any> {
 
 	// @ts-ignore
 	public oninit(vnode: m.Vnode<any, this>) {
-        this.localBlueprints = AppState.blueprints.filter(bp => bp.isLocal())
+        this.localBlueprints = AppState.blueprints.filter(bp => bp.isLocal() && bp.uuid !== AppState.currentBlueprint!.uuid)
         this.otherBlueprints = AppState.blueprints.filter(bp => !bp.isLocal())
 	}
 
 	public view({attrs}: CVnode<any>) {
-		return m("aside.menu", attrs,
+        
+		return m(".menu", attrs,
             m("p.menu-label", "Your Blueprints"),
             m("ul.menu-list", this.localBlueprints.map(
                 bp => m("li", m("a",
                 {
                     onclick() {
-                        console.log("Add Blueprint", bp)
+                        attrs.onselect(bp);
                     }
                 }, bp.getShortName())),
             )),
@@ -28,7 +29,7 @@ export class BlueprintMenu implements ClassComponent<any> {
                 bp => m("li", m("a",
                 {
                     onclick() {
-                        console.log("Add Blueprint", bp)
+                        attrs.onselect(bp);
                     }
                 }, bp.getShortName())),
             )),

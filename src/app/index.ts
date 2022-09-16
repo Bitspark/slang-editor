@@ -7,11 +7,6 @@ import styling from "@styles/app.scss";
 // import {OperatorDataApp} from "../apps/operators/app";
 // import {BlueprintShareApp} from "../apps/share/src/app";
 // import {APIStorageApp} from "../apps/storage/src/app";
-import { View } from "../slang/ui/views/view";
-import {ViewFrame} from "../slang/ui/frame";
-// @ts-ignore
-import {BlueprintView} from "../slang/ui/views/blueprint";
-import {PaperViewArgs} from "../slang/ui/views/paper-view";
 
 // @ts-ignore
 import m, {buildPathname, ClassComponent, CVnode} from "mithril";
@@ -36,43 +31,23 @@ m.mount(document.body, SlangApp)
 */
 
 class SlangApp {
-	private readonly frames: ViewFrame[] = [];
-	private outlet: ViewFrame | null = null;
-	private defaultViewArgs: PaperViewArgs | null = null;
-
 	constructor() {
 		this.subscribe()
 		AppState.init()
 	}
 
 	public mount(htmlRoot: HTMLElement) {
-		const frame = new ViewFrame(htmlRoot);
-		this.addFrame(frame, true);
-		const blueprint = AppState.createEmptyBlueprint()
-		const viewArgs = this.defaultViewArgs || {
-			editable: blueprint.isLocal(),
-			hscrollable: true,
-			vscrollable: true,
-			descendable: true,
-			runnable: true,
-		};
-
-
         AppState.appModel.subscribeReady(async (readyState) => {
 			if (!readyState) {
 				return
 			}
 
-			const blueprintView = new BlueprintView(this.outlet!, AppState.aspects, blueprint, viewArgs);
-			this.displayView(blueprintView)
+			const blueprint = AppState.createEmptyBlueprint()
+			AppState.currentBlueprint = blueprint;
 
 			m.mount(htmlRoot, {
 				view() {
-					return m("section.section", 
-						m(".container",
-							m(BlueprintEditorView)
-						)
-					)
+					return m(BlueprintEditorView)
 				}
 			});
 		});
@@ -101,31 +76,6 @@ class SlangApp {
 		});
 		*/
 	}
-
-	public setDefaultViewArgs(defaultViewArgs: PaperViewArgs | null) {
-		this.defaultViewArgs = defaultViewArgs;
-	}
-
-	public addFrame(frame: ViewFrame, outlet: boolean = false): void {
-		this.frames.push(frame);
-		if (outlet) {
-			this.outlet = frame;
-		}
-	}
-
-	public setOutlet(frame: ViewFrame): void {
-		if (this.frames.indexOf(frame) === -1) {
-			throw new Error(`outlet has to be owned by the app`);
-		}
-		this.outlet = frame;
-	}
-
-    public displayView(view: View): void {
-        if(!this.outlet) {
-			throw new Error(`outlet is not attached`);
-        }
-        this.outlet.setView(view)
-    }
 
 	private subscribe(): void {
         AppState.appModel.subscribeReady(async (readyState) => {
