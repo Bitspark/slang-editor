@@ -6,7 +6,7 @@ export class ViewFrame {
 
 	public constructor(private readonly container: HTMLElement) {
 		const viewEl = document.createElement("div");
-		viewEl.className = "View";
+		viewEl.className = "sl-view";
 		viewEl.style.overflow = "hidden";
 		viewEl.style.position = "relative";
 		container.appendChild(viewEl);
