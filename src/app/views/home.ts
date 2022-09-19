@@ -17,7 +17,7 @@ export class HomeView implements ClassComponent<any> {
 	// @ts-ignore
 	public view({attrs}: CVnode<any>) {
         const localBlueprints = this.localBlueprints;
-        return m(".panel",
+        return m("section.section", m(".container", m(".panel",
             m(".panel-heading", `Blueprints (${localBlueprints.length})`),
             m("a.panel-block", {
                 onclick:() => AppState.createEmptyBlueprint().open()
@@ -27,6 +27,6 @@ export class HomeView implements ClassComponent<any> {
             },
             [m("span.panel-icon", m("i.fas.fa-circle")), bp.getShortName()])
             )
-        )
-}
+        )));
+    }
 }
