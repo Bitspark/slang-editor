@@ -34,7 +34,7 @@ export class BlueprintEditorView implements ClassComponent<any> {
     }
 
 	public view({attrs}: CVnode<any>) {
-		return m(".columns", attrs, [
+		return m(".columns.sle-comp__blueprint-editor", attrs, [
                 m(BlueprintMenu, {
                     class: "column is-2",
                     onselect(blueprint: BlueprintModel) {

@@ -9,7 +9,7 @@ html, body {
 	margin: 0;
 	padding: 0;
 	overflow-x: hidden;
-	overflow-y: scroll;
+	overflow-y: hidden;
 }
 
 input {
@@ -21,6 +21,15 @@ input {
 body {
 	width: 100vw;
 	height: 100vh;
+	border: 1px $fuchsia solid;
+}
+
+.sle-comp__blueprint-editor {
+	height: 100vh;
+}
+
+.sle-comp__blueprint-menu {
+	overflow-y: scroll;
 }
 
 @import "./editor";

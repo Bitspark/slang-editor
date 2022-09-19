@@ -14,7 +14,7 @@ export class BlueprintMenu implements ClassComponent<any> {
 
 	public view({attrs}: CVnode<any>) {
         
-		return m(".menu", attrs,
+		return m(".menu.sle-comp__blueprint-menu", attrs,
             m("p.menu-label", "Your Blueprints"),
             m("ul.menu-list", this.localBlueprints.map(
                 bp => m("li", m("a",
