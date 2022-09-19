@@ -7,7 +7,7 @@ export class HomeView implements ClassComponent<any> {
 
 	// @ts-ignore
 	public oninit(vnode: m.Vnode<any, this>) {
-        this.localBlueprints = AppState.blueprints.filter(bp => bp.isLocal() && bp.uuid !== AppState.currentBlueprint!.uuid)
+        this.localBlueprints = AppState.blueprints.filter(bp => bp.isLocal())
 	}
 
 	// @ts-ignore

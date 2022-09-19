@@ -7,8 +7,9 @@ export class BlueprintMenu implements ClassComponent<any> {
     private otherBlueprints: BlueprintModel[] = []
 
 	// @ts-ignore
-	public oninit(vnode: m.Vnode<any, this>) {
-        this.localBlueprints = AppState.blueprints.filter(bp => bp.isLocal() && bp.uuid !== AppState.currentBlueprint!.uuid)
+	public oninit({attrs}: m.Vnode<any, this>) {
+        const exclude = attrs.exclude ? attrs.exclude : () => false;
+        this.localBlueprints = AppState.blueprints.filter(bp => bp.isLocal() && !exclude(bp))
         this.otherBlueprints = AppState.blueprints.filter(bp => !bp.isLocal())
 	}
 

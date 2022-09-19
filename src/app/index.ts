@@ -11,26 +11,10 @@ import styling from "@styles/app.scss";
 // @ts-ignore
 import m, {buildPathname, ClassComponent, CVnode} from "mithril";
 // @ts-ignore
-import { BlueprintEditorView } from "./views/editor";
+import { EditBlueprintView } from "./views/edit-blueprint";
 import { HomeView } from "./views/home";
 import { AppState } from "./state";
 
-
-/*
-class SlangApp implements ClassComponent<any> {
-
-	// @ts-ignore
-	public oninit(vnode: m.Vnode<any, this>) {
-		
-	}
-
-	public view({children, attrs}: CVnode<any>) {
-		return m("", attrs, children);
-	}
-}
-
-m.mount(document.body, SlangApp)
-*/
 
 class SlangApp {
 	constructor() {
@@ -44,58 +28,29 @@ class SlangApp {
 				return
 			}
 
-			m.mount(htmlRoot, {
-				view() {
-					return m(HomeView)
-				}
-			});
+			m.route(htmlRoot, "/", {
+				"/": HomeView,
+				"/edit/:uuid": EditBlueprintView,
+			})
 		});
-
-		/*
-		m.mount(htmlRoot, {
-			oncreate: () => {
-			},
-			onupdate: () => {
-			},
-			view: () => {
-				const localBlueprints = Array.from(this.blueprints.values()).filter(bp => bp.isLocal());
-				return m("section.section",
-					m(".container",
-						m(".panel",
-							m(".panel-heading", `Blueprints (${localBlueprints.length})`),
-							m("a.panel-block", {onclick:() => this.createNewBlueprint().open()}, [m("span.panel-icon", m("i.fas.fa-plus")), "New Blueprint"]),
-							localBlueprints.map(bp => m("a.panel-block",
-							{onclick: () => bp.open()},
-							[m("span.panel-icon", m("i.fas.fa-circle")), bp.getShortName()])
-							)
-						)
-					)
-				);
-			},
-		});
-		*/
 	}
 
 	private subscribe(): void {
-        AppState.appModel.subscribeReady(async (readyState) => {
+		const appModel = AppState.appModel;
+
+        appModel.subscribeReady(async (readyState) => {
             if (!readyState) {
                 return;
             }
-			m.redraw()
+			//m.redraw()
         })
 
-		/*
-		this.appModel.subscribeOpenedLandscapeChanged((landscape) => {
-			if (!landscape || !this.outlet) {
+		appModel.subscribeOpenedBlueprintChanged((blueprint) => {
+			if (!blueprint) {
 				return;
 			}
-			const view = new LandscapeView(
-				this.outlet,
-				landscape,
-				((bp) => bp.isLocal()) as (bp: BlueprintModel) => boolean);
-			this.outlet.setView(view);
+			m.route.set("/edit/:uuid", {uuid: blueprint.uuid});
 		});
-		*/
 	}
 }
 

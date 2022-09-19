@@ -21,9 +21,9 @@ export class AppState {
 	public static readonly aspects = new SlangAspects();
 	public static readonly appModel = AppModel.create("slang");
     public static readonly landscape = AppState.appModel.createLandscape();
-	public static blueprints: BlueprintModel[] = [];
 
-    public static currentBlueprint: BlueprintModel|null = null;
+	public static blueprints: BlueprintModel[] = [];
+	public static blueprintsByUUID = new Map<String, BlueprintModel>()
 
 	public static init() {
         if (AppState.initalized) {
@@ -41,7 +41,7 @@ export class AppState {
 
 	private static subscribe(): void {
 		AppState.landscape.subscribeChildCreated(BlueprintModel, (blueprint) => {
-			//AppState.blueprints.set(blueprint.uuid, blueprint)
+			AppState.blueprintsByUUID.set(blueprint.uuid, blueprint)
 			AppState.blueprints.push(blueprint)
 		});
 
@@ -53,6 +53,11 @@ export class AppState {
 			AppState.storeBlueprint(blueprint);
 		});
 
+	}
+
+	public static getBlueprint(uuid: String): BlueprintModel|null {
+		const bp = AppState.blueprintsByUUID.get(uuid);
+		return (bp)?bp:null;
 	}
 
 	public static createEmptyBlueprint(): BlueprintModel {
@@ -73,14 +78,6 @@ export class AppState {
 		});
 		return newBlueprint;
 	}
-
-    public static async addOperator(blueprint: BlueprintModel) {
-        if (!AppState.currentBlueprint) {
-            return
-        }
-
-        AppState.currentBlueprint.createBlankOperator(blueprint, {position: {x: 0, y: 0}})
-    }
 
 	public static async loadBlueprints(): Promise<void> {
 		loadBlueprints(AppState.landscape, await API.getBlueprints());
