@@ -10,7 +10,9 @@ import styling from "@styles/app.scss";
 
 // @ts-ignore
 import m, {buildPathname, ClassComponent, CVnode} from "mithril";
-import { BlueprintEditorView } from "./views/blueprint-editor";
+// @ts-ignore
+import { BlueprintEditorView } from "./views/editor";
+import { HomeView } from "./views/home";
 import { AppState } from "./state";
 
 
@@ -42,12 +44,9 @@ class SlangApp {
 				return
 			}
 
-			const blueprint = AppState.createEmptyBlueprint()
-			AppState.currentBlueprint = blueprint;
-
 			m.mount(htmlRoot, {
 				view() {
-					return m(BlueprintEditorView)
+					return m(HomeView)
 				}
 			});
 		});
@@ -84,25 +83,6 @@ class SlangApp {
             }
 			m.redraw()
         })
-
-		/*
-		this.appModel.subscribeOpenedBlueprintChanged((blueprint) => {
-			if (!blueprint || !this.outlet) {
-				return;
-			}
-
-			const viewArgs = this.defaultViewArgs || {
-				editable: blueprint.isLocal(),
-				hscrollable: true,
-				vscrollable: true,
-				descendable: true,
-				runnable: true,
-			};
-
-            const blueprintView = new BlueprintView(this.outlet!, this.aspects, blueprint, viewArgs);
-			this.displayView(blueprintView)
-		});
-		*/
 
 		/*
 		this.appModel.subscribeOpenedLandscapeChanged((landscape) => {
