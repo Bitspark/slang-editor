@@ -42,9 +42,7 @@ export class EditBlueprintView implements ClassComponent<any> {
 		return m(".columns.sle-comp__blueprint-editor", attrs, [
                 m(BlueprintMenu, {
                     class: "column is-2",
-                    exclude(bp: BlueprintModel) {
-                        blueprint.uuid === bp.uuid;
-                    },
+                    exclude: (bp: BlueprintModel) => blueprint.uuid === bp.uuid,
                     onselect(bp: BlueprintModel) {
                         blueprint.createBlankOperator(bp, {position: {x: 0, y: 0}})
                     }
