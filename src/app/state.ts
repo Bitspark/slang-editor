@@ -22,6 +22,7 @@ export class AppState {
 	public static readonly appModel = AppModel.create("slang");
     public static readonly landscape = AppState.appModel.createLandscape();
 
+	public static activeBlueprint: BlueprintModel|null;
 	public static blueprints: BlueprintModel[] = [];
 	public static blueprintsByUUID = new Map<String, BlueprintModel>()
 

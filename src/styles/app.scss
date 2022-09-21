@@ -25,11 +25,34 @@ body {
 }
 
 .sle-comp__blueprint-editor {
-	height: 100vh;
+	main {
+		height: 100vh;
+	}
+
+	.slang-editor {
+		height: 100vh;
+		.joint-paper {
+			height: 100%;
+		}
+	}
 }
 
 .sle-comp__blueprint-menu {
+	height: 100vh;
 	overflow-y: scroll;
+}
+
+.sle-comp__blueprint-ctrl-bar {
+	min-height: 1rem;
+
+	.input {
+		border: 0;
+		box-shadow: none;
+	}
+
+	.ctrl-bar__name {
+		width: 320px;
+	}
 }
 
 @import "./editor";

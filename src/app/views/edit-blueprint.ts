@@ -2,26 +2,24 @@ import m, {ClassComponent, CVnode} from "mithril";
 import { BlueprintModel } from "../../slang/core/models";
 import { ViewFrame } from "../../slang/ui/frame";
 import { BlueprintView } from "../../slang/ui/views/blueprint";
+import { BlueprintControlBar } from "../components/blueprint-control-bar";
 import { BlueprintMenu } from "../components/blueprint-menu";
 import { AppState } from "../state";
 
 export class EditBlueprintView implements ClassComponent<any> {
 	// @ts-ignore
-    blueprint: BlueprintModel|null;
-
-	// @ts-ignore
 	public oninit({attrs}: m.Vnode<any, this>) {
-        this.blueprint = AppState.getBlueprint(attrs.uuid)
+        AppState.activeBlueprint = AppState.getBlueprint(attrs.uuid)
 	}
 
     public oncreate(vnode: m.VnodeDOM<any, this>) {
-        const blueprint = this.blueprint;
+        const blueprint = AppState.activeBlueprint;
         if (!blueprint) {
             console.error("EditBlueprintView requires an existing Blueprint.");
             return;
         }
 
-        const el = vnode.dom.getElementsByTagName("main")[0];
+        const el = vnode.dom.getElementsByClassName("slang-editor")[0];
 		const frame = new ViewFrame(el);
 
 		const viewArgs = {
@@ -37,9 +35,10 @@ export class EditBlueprintView implements ClassComponent<any> {
     }
 
 	public view({attrs}: CVnode<any>) {
-        const blueprint = this.blueprint!;
+        const blueprint = AppState.activeBlueprint!;
 
-		return m(".columns.sle-comp__blueprint-editor", attrs, [
+		return m(".sle-comp__blueprint-editor", attrs,
+            m(".columns", [
                 m(BlueprintMenu, {
                     class: "column is-2",
                     exclude: (bp: BlueprintModel) => blueprint.uuid === bp.uuid,
@@ -47,9 +46,11 @@ export class EditBlueprintView implements ClassComponent<any> {
                         blueprint.createBlankOperator(bp, {position: {x: 0, y: 0}})
                     }
                 }),
-                m("main#slang-editor", {
-                    class: "column"
-                }),
-            ]);
+                m("main.column", [
+                    m(BlueprintControlBar),
+                    m(".slang-editor"),
+                ])
+            ])
+        );
 	}
 }

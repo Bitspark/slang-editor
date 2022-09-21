@@ -15,25 +15,27 @@ export class BlueprintMenu implements ClassComponent<any> {
 
 	public view({attrs}: CVnode<any>) {
         
-		return m(".menu.sle-comp__blueprint-menu", attrs,
-            m("p.menu-label", "Your Blueprints"),
-            m("ul.menu-list", this.localBlueprints.map(
-                bp => m("li", m("a",
-                {
-                    onclick() {
-                        attrs.onselect(bp);
-                    }
-                }, bp.getShortName())),
-            )),
-            m("p.menu-label", "Shared Blueprints"),
-            m("ul.menu-list", this.otherBlueprints.map(
-                bp => m("li", m("a",
-                {
-                    onclick() {
-                        attrs.onselect(bp);
-                    }
-                }, bp.getShortName())),
-            )),
+		return m(".sle-comp__blueprint-menu", attrs,
+            m(".menu",
+                m("p.menu-label", "Your Blueprints"),
+                m("ul.menu-list", this.localBlueprints.map(
+                    bp => m("li", m("a",
+                    {
+                        onclick() {
+                            attrs.onselect(bp);
+                        }
+                    }, bp.getShortName())),
+                )),
+                m("p.menu-label", "Shared Blueprints"),
+                m("ul.menu-list", this.otherBlueprints.map(
+                    bp => m("li", m("a",
+                    {
+                        onclick() {
+                            attrs.onselect(bp);
+                        }
+                    }, bp.getShortName())),
+                )),
+            )
         );
 	}
 }
