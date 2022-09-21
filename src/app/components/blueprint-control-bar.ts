@@ -22,6 +22,16 @@ export class BlueprintControlBar implements ClassComponent<any> {
                     blueprint.name = event.target.value
                 },
             }),
+            m("div", {
+                    class: "is-flex-grow-1",
+                    onclick() {
+                        blueprint.save();
+                    },
+                },
+                m(".buttons", 
+                    m("a.button.is-primary", m("strong", "Save"))
+                )
+            )
         ]);
 	}
 }

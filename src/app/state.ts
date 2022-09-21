@@ -80,12 +80,12 @@ export class AppState {
 		return newBlueprint;
 	}
 
-	public static async loadBlueprints(): Promise<void> {
+	private static async loadBlueprints(): Promise<void> {
 		loadBlueprints(AppState.landscape, await API.getBlueprints());
         return Promise.resolve();
 	}
 	
-	public static storeBlueprint(blueprint: BlueprintModel): void {
+	private static storeBlueprint(blueprint: BlueprintModel): void {
 		API.storeBlueprint(blueprintModelToJson(blueprint)).then(() => {
 			return;
 		});
