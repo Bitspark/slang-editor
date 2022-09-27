@@ -19,10 +19,6 @@ export class OperatorControl implements ClassComponent<OperatorMenuAttrs> {
 		const bp = opr.getBlueprint();
 		const v = attrs.view;
 
-        console.log("v", v);
-        console.log("v.isEditable", v.isEditable);
-        console.log("v.isDescendable", v.isDescendable);
-
 		return m(".sle-comp-opr-ctrl",
 			m(Box,
 				m(".buttons", [

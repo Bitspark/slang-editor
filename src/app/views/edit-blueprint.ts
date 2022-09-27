@@ -15,9 +15,11 @@ class Editor {
     public static blueprintView: BlueprintView;
     public static operatorControl?: AttachableComponent;
 
-    public static init(rootEl: HTMLElement, blueprint: BlueprintModel) {
+    public static init(rootEl: HTMLElement) {
 		this.frame = new ViewFrame(rootEl as HTMLElement);
+	}
 
+	public static show(blueprint: BlueprintModel) {
 		const viewArgs = {
 			editable: blueprint.isLocal(),
 			hscrollable: true,
@@ -74,10 +76,32 @@ class Editor {
 export class EditBlueprintView implements ClassComponent<any> {
 	// @ts-ignore
 	public oninit({attrs}: m.Vnode<any, this>) {
-        AppState.activeBlueprint = AppState.getBlueprint(attrs.uuid)
+        AppState.activeBlueprint = AppState.getBlueprint(attrs.uuid);
 	}
 
-    public oncreate(vnode: m.VnodeDOM<any, this>) {
+	// @ts-ignore
+	public onbeforeupdate({attrs}: m.Vnode<any, this>) {
+		const activeBlueprint = AppState.activeBlueprint;
+		if (!activeBlueprint) {
+			console.error("EditBlueprintView requires an existing Blueprint.");
+			return;
+		}
+
+		if (activeBlueprint.uuid !== attrs.uuid) {
+			// BlueprintView will be updated to show requested Blueprint.
+			// requested Blueprint will become newly active Blueprint.
+			const requestedBlueprint = AppState.getBlueprint(attrs.uuid)
+
+			if (!requestedBlueprint) {
+				console.error("EditBlueprintView requires an existing Blueprint.");
+				return;
+			}
+			AppState.activeBlueprint = requestedBlueprint
+			Editor.show(requestedBlueprint);
+		}
+	}
+
+    public oncreate(vnode: m.VnodeDOM<any>) {
         const blueprint = AppState.activeBlueprint;
         if (!blueprint) {
             console.error("EditBlueprintView requires an existing Blueprint.");
@@ -85,8 +109,13 @@ export class EditBlueprintView implements ClassComponent<any> {
         }
 
         const el = vnode.dom.getElementsByClassName("slang-editor")[0];
-		Editor.init(el as HTMLElement, blueprint);
+		Editor.init(el as HTMLElement);
+		Editor.show(blueprint);
     }
+
+	// @ts-ignore
+	public onupdate({attrs}: m.Vnode<any>) {
+	}
 
 	public view({attrs}: CVnode<any>) {
         const blueprint = AppState.activeBlueprint!;
