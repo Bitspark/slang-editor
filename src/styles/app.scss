@@ -24,6 +24,12 @@ body {
 	border: 1px $fuchsia solid;
 }
 
+.sle-comp-opr-ctrl {
+	.box {
+		padding: 0.25rem;
+	}
+}
+
 .sle-comp__blueprint-editor {
 	main {
 		height: 100vh;
