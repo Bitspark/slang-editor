@@ -42,15 +42,7 @@ class SlangApp {
             if (!readyState) {
                 return;
             }
-			//m.redraw()
         })
-
-		appModel.subscribeOpenedBlueprintChanged((blueprint) => {
-			if (!blueprint) {
-				return;
-			}
-			m.route.set("/edit/:uuid", {uuid: blueprint.uuid});
-		});
 	}
 }
 

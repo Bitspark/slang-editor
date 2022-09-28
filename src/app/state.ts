@@ -22,7 +22,7 @@ export class AppState {
 	public static readonly appModel = AppModel.create("slang");
     public static readonly landscape = AppState.appModel.createLandscape();
 
-	public static activeBlueprint: BlueprintModel|null;
+	private static _activeBlueprint: BlueprintModel|null;
 	public static blueprints: BlueprintModel[] = [];
 	public static blueprintsByUUID = new Map<String, BlueprintModel>()
 
@@ -34,6 +34,21 @@ export class AppState {
 		AppState.registerExtensions()
         AppState.subscribe()
 		AppState.appModel.load()
+	}
+
+	public static get activeBlueprint(): BlueprintModel|null {
+		return this._activeBlueprint;
+	}
+
+	public static set activeBlueprint(blueprint: BlueprintModel|null) {
+		if (this._activeBlueprint) {
+			this._activeBlueprint.close()
+		}
+
+		if (blueprint) {
+			blueprint.open();
+		}
+		this._activeBlueprint = blueprint;
 	}
 
 	private static registerExtensions() {

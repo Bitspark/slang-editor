@@ -39,9 +39,7 @@ export class OperatorControl implements ClassComponent<OperatorMenuAttrs> {
 							size: "small",
 							fas: "project-diagram",
 							tooltip: "Open blueprint",
-							onClick: () => {
-								bp.open();
-							},
+							onClick: () => m.route.set("/edit/:uuid", {uuid: bp.uuid})
 						})
 						: undefined,
 				]),
