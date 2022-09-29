@@ -15,3 +15,15 @@ export class Box implements ClassComponent<any> {
 		return m(".box", attrs, children);
 	}
 }
+
+export class Block implements ClassComponent<{}> {
+	public view({children}: CVnode<{}>) {
+		return m(".block", children);
+	}
+}
+
+export class Title implements ClassComponent<{}> {
+	public view({children}: CVnode<{}>) {
+		return m("h5", children);
+	}
+}
