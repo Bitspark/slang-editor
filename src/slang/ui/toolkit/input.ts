@@ -1,9 +1,10 @@
 import m, {ClassComponent, CVnode, CVnodeDOM} from "mithril";
+import { buildCssClass, HasSizeAttrs } from ".";
 
 import {MithrilEvent, MithrilKeyboardEvent} from "./events";
 import {Icon} from "./icons";
 
-export interface BaseInputAttrs<T> {
+export interface BaseInputAttrs<T> extends HasSizeAttrs {
 	label?: string;
 	help?: string;
 	autofocus?: boolean;
@@ -35,7 +36,7 @@ export class StringInput implements BaseInput<string> {
 	public view({attrs}: CVnode<BaseInputAttrs<string>>) {
 		return wrapInput(attrs, m("input",
 			{
-				class: "input",
+				class: buildCssClass(attrs, "input"),
 				type: "text",
 				value: attrs.initValue,
 				oncreate: (v: CVnodeDOM<any>) => {
@@ -58,7 +59,7 @@ export class NumberInput implements BaseInput<number> {
 	public view({attrs}: CVnode<BaseInputAttrs<number>>) {
 		return wrapInput(attrs, m("input",
 			{
-				class: "input",
+				class: buildCssClass(attrs, "input"),
 				type: "number",
 				value: attrs.initValue,
 				oncreate: (v: CVnodeDOM<any>) => {
@@ -116,7 +117,7 @@ export class FileInput implements BaseInput<File> {
 			m("file-label",
 				m("input",
 					{
-						class: "file-input",
+						class: buildCssClass(attrs, "file-input"),
 						type: "file",
 						accept: (this.accept) ? this.accept : undefined,
 						oncreate: (v: CVnodeDOM<any>) => {

@@ -4,10 +4,10 @@ export interface HasSizeAttrs {
 	size?: "small" | "medium" | "large";
 }
 
-export function buildCssClass(attrs: HasSizeAttrs): string {
-	const css: string[] = [];
-	css.push("is-" + (attrs.size ? attrs.size! : "medium"));
-	return css.join(".");
+export function buildCssClass(attrs: HasSizeAttrs, className?: string): string {
+	const css: string[] = [className?className:""];
+	css.push("is-" + (attrs.size ? attrs.size! : "small"));
+	return css.join(" ");
 }
 
 export class Box implements ClassComponent<any> {
