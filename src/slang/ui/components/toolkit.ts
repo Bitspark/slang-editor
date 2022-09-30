@@ -12,6 +12,6 @@ export class Container implements ClassComponent<any> {
 
 export class Floater implements ClassComponent<HasCloseAttrs> {
 	public view({children, attrs}: CVnode<any>) {
-		return m("", attrs, children);
+		return m(".sl-floater", attrs, children);
 	}
 }

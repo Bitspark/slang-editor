@@ -27,8 +27,7 @@ export class OperatorDashboard implements ClassComponent<DashboardAttrs> {
 			onmousewheel: (e: WheelEvent) => {
 				e.stopPropagation();
 			},
-		}, m(Box,
-			dashboardModules.map((dashboardModule: any) => {
+		}, m(Box, dashboardModules.map((dashboardModule: any) => {
 				return m(dashboardModule, {
 					operator: attrs.operator,
 				});

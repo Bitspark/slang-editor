@@ -5,17 +5,14 @@ import { ViewFrame } from "../../slang/ui/frame";
 import { BlueprintView, SelectableComponent } from "../../slang/ui/views/blueprint";
 import { BlueprintControlBar } from "../components/blueprint-control-bar";
 import { BlueprintMenu } from "../components/blueprint-menu";
-import { AppState, EditorState } from "../state";
-import { Floater } from "../../slang/ui/components/toolkit";
-import { AttachableComponent } from "src/slang/ui/components/base";
+import { AppState } from "../state";
 import { OperatorDashboard } from "../components/operator-dashboard";
 import { OperatorControl } from "../components/operator-control";
-
+import { ContextMenu } from "../components/operator-context-menu";
 
 class Editor {
 	private static frame: ViewFrame;
     public static blueprintView: BlueprintView;
-    public static operatorContext?: AttachableComponent;
 
     public static init(rootEl: HTMLElement) {
 		this.frame = new ViewFrame(rootEl as HTMLElement);
@@ -32,66 +29,40 @@ class Editor {
 
         const blueprintView = new BlueprintView(this.frame, AppState.aspects, blueprint, viewArgs);
 		blueprintView.selected.subscribe((e: SelectableComponent | null) => {
-            this.destroyContextMenu();
+            ContextMenu.hide();
             if (!e) {
 				return;
 			}
 
             const selectedOne = e;
-			const that = this;
-
             if (selectedOne instanceof OperatorBoxComponent) {
-				this.createContextMenu(selectedOne, {
-					view: () => m(Floater, {
-							onclose: () => {
-								that.destroyContextMenu();
-							},
+				const view = blueprintView;
+				const operator = selectedOne.getModel();
+
+				ContextMenu.show(selectedOne, 
+					m(OperatorControl, {
+						operator,
+						view,
+						ondelete() {
+							ContextMenu.hide();
+							operator.destroy();
 						},
-						m(OperatorControl, {
-							operator: selectedOne.getModel(),
-							view: blueprintView,
-							onclose() {
-								that.destroyContextMenu();
-							},
-							onconfig() {
-								console.log(">onconfig")
-								that.destroyContextMenu();
-								that.createContextMenu(selectedOne, {
-									view: () => m(Floater, {
-											onclose: () => {
-												that.destroyContextMenu();
-											},
-										},
-										m(OperatorDashboard, {
-											operator: selectedOne.getModel(),
-											view: blueprintView,
-										})
-									),
-								})
-							}
-						})
-					),
-				})
+						onopen() {
+							ContextMenu.hide();
+							m.route.set("/edit/:uuid", {uuid: blueprint.uuid})
+						},
+						onconfig() {
+							ContextMenu.hide();
+							ContextMenu.show(selectedOne,
+								m(OperatorDashboard, {operator, view}))
+						}
+					})
+				)
 			}
 
 			return true;
 		});
         this.frame.setView(blueprintView);
-	}
-
-	private static createContextMenu(oprBox: OperatorBoxComponent, comp: m.Component) {
-		this.operatorContext = oprBox
-		.createComponent({x: 0, y: 0, align: "tl"})
-		.attachTo(oprBox.getShape(), "tr")
-		.mount(comp);
-	}
-
-	private static destroyContextMenu() {
-		if (!this.operatorContext) {
-			return;
-		}
-		this.operatorContext.destroy();
-		this.operatorContext = undefined;
 	}
 }
 
@@ -155,13 +126,6 @@ export class EditBlueprintView implements ClassComponent<any> {
                     m(BlueprintControlBar),
                     m(".slang-editor"),
                 ]),
-				EditorState.showOperatorConfig?
-                m(".column.is-2", [
-					m(OperatorDashboard, {
-						operator: EditorState.selectedOperator!,
-						view: EditorState.view!,
-					})
-                ]) : undefined
             ])
         );
 	}
