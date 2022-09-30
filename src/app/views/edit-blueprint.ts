@@ -40,8 +40,8 @@ class Editor {
 				const operator = selectedOne.getModel();
 				const operatorBp = operator.blueprint;
 
-				ContextMenu.show(selectedOne, 
-					m(OperatorControl, {
+				ContextMenu.show(selectedOne, {
+					view: () => m(OperatorControl, {
 						ondelete: view.isEditable
 						? () => {
 							ContextMenu.hide();
@@ -59,12 +59,13 @@ class Editor {
 						onconfig: operatorBp.hasProperties()
 						? () => {
 							ContextMenu.hide();
-							ContextMenu.show(selectedOne,
-								m(OperatorDashboard, {operator, view}))
+							ContextMenu.show(selectedOne, {
+								view: () => m(OperatorDashboard, {operator, view})
+							});
 						}
 						: undefined
 					})
-				)
+				});
 			}
 
 			return true;
