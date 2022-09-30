@@ -38,24 +38,31 @@ class Editor {
             if (selectedOne instanceof OperatorBoxComponent) {
 				const view = blueprintView;
 				const operator = selectedOne.getModel();
+				const operatorBp = operator.blueprint;
 
 				ContextMenu.show(selectedOne, 
 					m(OperatorControl, {
-						operator,
-						view,
-						ondelete() {
+						ondelete: view.isEditable
+						? () => {
 							ContextMenu.hide();
 							operator.destroy();
-						},
-						onopen() {
+						}
+						: undefined,
+
+						onopen: view.isDescendable && !operatorBp.isElementary()
+						? () => {
 							ContextMenu.hide();
-							m.route.set("/edit/:uuid", {uuid: blueprint.uuid})
-						},
-						onconfig() {
+							m.route.set("/edit/:uuid", {uuid: operatorBp.uuid})
+						}
+						: undefined,
+
+						onconfig: operatorBp.hasProperties()
+						? () => {
 							ContextMenu.hide();
 							ContextMenu.show(selectedOne,
 								m(OperatorDashboard, {operator, view}))
 						}
+						: undefined
 					})
 				)
 			}
