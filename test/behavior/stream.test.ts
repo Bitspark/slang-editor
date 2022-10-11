@@ -2,9 +2,8 @@ import uuidv4 from "uuid/v4";
 
 import {PortDirection} from "../../src/slang/core/abstract/port";
 import {StreamType} from "../../src/slang/core/abstract/stream";
-import {AppModel} from "../../src/slang/core/models/app";
+import {AppModel, LandscapeModel} from "../../src/slang/core/models";
 import {BlueprintType} from "../../src/slang/core/models/blueprint";
-import {LandscapeModel} from "../../src/slang/core/models/landscape";
 import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
 import {TestStorageApp} from "../helpers/TestStorageApp";
 import data from "../resources/definitions.json";
@@ -61,53 +60,82 @@ describe("A stream port", () => {
 			type: BlueprintType.Local,
 		});
 
-		const opGIS = bp.createBlankOperator(landscapeModel.findBlueprint("10a6eea5-4d5b-43b6-9106-6820d1009e3b")!);
-		const opG2G = bp.createBlankOperator(landscapeModel.findBlueprint("dc1aa556-d62e-4e07-adbb-53dc317481b0")!);
+		const oGenericInStream = bp.createBlankOperator(landscapeModel.findBlueprint("10a6eea5-4d5b-43b6-9106-6820d1009e3b")!);
+		const oGenericToGeneric = bp.createBlankOperator(landscapeModel.findBlueprint("dc1aa556-d62e-4e07-adbb-53dc317481b0")!);
 
-		opG2G.getGenerics().specify("itemType", SlangType.new(TypeIdentifier.Number));
+		oGenericToGeneric.getGenerics().specify("itemType", SlangType.new(TypeIdentifier.Number));
 
-		const g2gOut = opG2G.getPortOut()!;
-		const gisInSub = opGIS.getPortIn()!.getStreamSub();
+		expect(oGenericToGeneric.OO.canConnect(oGenericInStream.II.sub)).toBeTruthy();
 
-		expect(g2gOut.canConnect(gisInSub)).toEqual(true);
-		g2gOut.connect(gisInSub, true);
-		expect(g2gOut.isConnectedWith(gisInSub.getMapSubs().next().value)).toEqual(true);
+		oGenericToGeneric.OO.connect(oGenericInStream.II.sub, true);
+
+		expect(oGenericToGeneric.OO.isConnectedWith(oGenericInStream.II.sub.getMapSubs().next().value)).toBeTruthy();
 	});
 
-	it("groups streams correctly", () => {
-		const bp = landscapeModel.createBlueprint({
-			uuid: uuidv4(),
-			meta: {name: "test-bp-2"},
-			type: BlueprintType.Local,
-		});
-		const bpIn = bp.createPort({
-			name: "",
-			type: new SlangType(null, TypeIdentifier.Number),
-			direction: PortDirection.In,
-		});
-		const bpOut = bp.createPort({
-			name: "",
-			type: new SlangType(null, TypeIdentifier.Unspecified),
-			direction: PortDirection.Out,
-		});
+	it("connecting 2 stream ports with a generic port will create 2 stream ports within the generic port", () => {
+		const bp = landscapeModel
+			.createBlueprint({
+				uuid: uuidv4(),
+				meta: {name: "test-bp-2"},
+				type: BlueprintType.Local,
+			})
+			.definePort({
+				name: "",
+				type: SlangType.newNumber(),
+				direction: PortDirection.In,
+			})
+			.definePort({
+				name: "",
+				type: SlangType.newUnspecified(),
+				direction: PortDirection.Out,
+			});
+		const bpOutStreamMap = landscapeModel
+			.createBlueprint({
+				uuid: uuidv4(),
+				meta: {name: "OutStreamMap"},
+				type: BlueprintType.Local,
+			})
+			.definePort({
+				name: "",
+				type: SlangType.newTrigger(),
+				direction: PortDirection.In,
+			})
+			.definePort({
+				name: "",
+				type: SlangType.newStream(SlangType.newMap({
+					A: SlangType.newString(),
+					B: SlangType.newNumber(),
+				})),
+				direction: PortDirection.Out,
+			});
+		const bpGenericToGeneric = landscapeModel
+			.createBlueprint({
+				uuid: uuidv4(),
+				meta: {name: "GenericToGeneric"},
+				type: BlueprintType.Local,
+			})
+			.definePort({
+				name: "",
+				type: SlangType.newGeneric("itemType"),
+				direction: PortDirection.In,
+			})
+			.definePort({
+				name: "",
+				type: SlangType.newGeneric("itemType"),
+				direction: PortDirection.Out,
+			});
 
-		bpIn.connect(bpOut, true);
+		const oOutStreamMap = bp.createBlankOperator(bpOutStreamMap);
+		const oGenericToGeneric = bp.createBlankOperator(bpGenericToGeneric);
 
-		const op2OS = bp.createBlankOperator(landscapeModel.findBlueprint("b444f701-59fc-43a8-8cdc-8bcce9dd471d")!);
-		const opG2G = bp.createBlankOperator(landscapeModel.findBlueprint("dc1aa556-d62e-4e07-adbb-53dc317481b0")!);
+		oOutStreamMap.OO.sub.map("A").connect(oGenericToGeneric.II, true);
+		oOutStreamMap.OO.sub.map("B").connect(oGenericToGeneric.II, true);
 
-		const osOut = op2OS.getPortOut()!;
-		const g2gIn = opG2G.getPortIn()!;
-		const g2gOut = opG2G.getPortOut()!;
+		oGenericToGeneric.OO.map("A").connect(bp.OO, true);
+		oGenericToGeneric.OO.map("B").connect(bp.OO, true);
 
-		osOut.getStreamSub().findMapSub("portA").connect(g2gIn, true);
-		osOut.getStreamSub().findMapSub("portB").connect(g2gIn, true);
-		Array.from(g2gOut.getMapSubs()).forEach((port) => {
-			port.connect(bpOut, true);
-		});
-
-		expect(Array.from(bpOut.getMapSubs()).length).toEqual(2);
-		expect(Array.from(Array.from(bpOut.getMapSubs()).find((port) => port.getType().isStream())!.getStreamSub().getMapSubs()).length).toEqual(2);
+		expect(bp.OO.mapSubs.length).toEqual(2);
+		expect(Array.from(Array.from(bp.OO.getMapSubs()).find((port) => port.getType().isStream())!.getStreamSub().getMapSubs()).length).toEqual(2);
 	});
 
 	it("groups streams correctly after deletion", () => {

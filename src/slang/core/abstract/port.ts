@@ -7,7 +7,7 @@ import {BlackBox} from "./blackbox";
 import {SlangNode} from "./nodes";
 import {PortOwner} from "./port-owner";
 import {StreamPort} from "./stream";
-import {canConnectTo} from "./utils/connection-check";
+import {canConnectTo, typesCompatibleTo} from "./utils/connection-check";
 import {Connections} from "./utils/connections";
 import {SlangSubject} from "./utils/events";
 import {GenericSpecifications} from "./utils/generics";
@@ -99,6 +99,18 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		this.streamPort = new StreamPort(this);
 		this.reconstruct(type, portCtor, direction);
 		this.streamPort.initialize();
+	}
+
+	public get sub(): GenericPortModel<O> {
+		return this.getStreamSub();
+	}
+
+	public get mapSubs(): Array<GenericPortModel<O>> {
+		return Array.from(this.getMapSubs());
+	}
+
+	public map(name: string): GenericPortModel<O> {
+		return this.findMapSub(name);
 	}
 
 	public reconstruct(type: SlangType, portCtor: new (p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel, direction: PortDirection, generic: boolean = false): void {
@@ -289,52 +301,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			case TypeIdentifier.Generic:
 				type.setGenericIdentifier(this.getGenericIdentifier());
 				break;
-		}
-		return type;
-	}
-
-	public anySubStreamConnected(): boolean {
-		if (this.connectedWith.length !== 0) {
-			return true;
-		}
-
-		if (this.typeIdentifier === TypeIdentifier.Map) {
-			for (const sub of this.getMapSubs()) {
-				if (sub.anySubStreamConnected()) {
-					return true;
-				}
-			}
-		} else if (this.typeIdentifier === TypeIdentifier.Stream) {
-			return this.getStreamSub().anySubStreamConnected();
-		}
-
-		return false;
-	}
-
-	public getConnectedType(): SlangType {
-		const type = new SlangType(null, this.typeIdentifier, true);
-		switch (this.typeIdentifier) {
-			case TypeIdentifier.Map:
-				for (const subPort of this.getMapSubs()) {
-					if (!subPort.anySubStreamConnected()) {
-						continue;
-					}
-					const subType = subPort.getConnectedType();
-					if (!subType.isVoid()) {
-						type.addMapSub(subPort.getName(), subType);
-					}
-				}
-				break;
-			case TypeIdentifier.Stream:
-				type.setStreamSub(this.getStreamSub().getConnectedType());
-				break;
-			case TypeIdentifier.Generic:
-				type.setGenericIdentifier(this.getGenericIdentifier());
-				break;
-			default:
-				if (!this.anySubStreamConnected()) {
-					return new SlangType(null, TypeIdentifier.Unspecified, true);
-				}
 		}
 		return type;
 	}
@@ -598,16 +564,6 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			fetchedGenerics.specifications.unregisterPort(fetchedGenerics.identifier, this);
 		});
 
-		this.subscribeDisconnected(() => {
-			if (this.connectedWith.length !== 0) {
-				return;
-			}
-			const newType = specifications.getUnifiedType(identifier);
-			if (newType && !specifications.get(identifier).equals(newType)) {
-				specifications.specify(identifier, newType);
-			}
-		});
-
 		if (!this.isGenericLike()) {
 			return;
 		}
@@ -619,6 +575,13 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 			} else {
 				this.typeIdentifier = TypeIdentifier.Unspecified;
 				this.genericIdentifier = undefined;
+			}
+			for (const connection of this.getConnectionsTo()) {
+				const dest = connection.destination;
+				const src = connection.source;
+				if (!typesCompatibleTo(src.getType(), dest.getType())) {
+					src.disconnectTo(dest);
+				}
 			}
 		});
 	}
@@ -692,7 +655,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	 */
 	private connectTo(destination: PortModel, createGenerics: boolean) {
 		if (!canConnectTo(this, destination, createGenerics)) {
-			throw new Error(`cannot connect: ${this.getIdentity()} --> ${destination.getIdentity()}`);
+			throw new Error(`cannot connect: ${this.getOwnerName()}:${this.getPortReference()} --> ${destination.getOwnerName()}:${destination.getPortReference()}`);
 		}
 		if ((createGenerics && this.isGenericLike()) || destination.isTrigger()) {
 			this.connectDirectlyTo(destination, createGenerics);

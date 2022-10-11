@@ -220,6 +220,11 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		return this.createChildNode(BlueprintPortModel, args);
 	}
 
+	public definePort(args: PortModelArgs): this {
+		this.createPort(args);
+		return this;
+	}
+
 	public getShortName(): string {
 		return this.name;
 	}

@@ -20,9 +20,13 @@ function typesMapCompatibleTo(mapTypeA: SlangType, mapTypeB: SlangType): boolean
 	return true;
 }
 
-function typesCompatibleTo(sourceType: SlangType, destinationType: SlangType): boolean {
+export function typesCompatibleTo(sourceType: SlangType, destinationType: SlangType): boolean {
 	// Triggers can always be destinations, even for specifications, maps and streams
 	if (destinationType.getTypeIdentifier() === TypeIdentifier.Trigger) {
+		return true;
+	}
+
+	if (sourceType.getTypeIdentifier() === TypeIdentifier.Trigger) {
 		return true;
 	}
 
