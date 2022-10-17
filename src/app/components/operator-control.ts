@@ -9,7 +9,7 @@ interface OperatorControlAttrs {
 export class OperatorControl implements ClassComponent<OperatorControlAttrs> {
 	public view({attrs}: CVnode<OperatorControlAttrs>): any {
 
-		return m(".sle-comp-opr-ctrl",
+		return m(".sle-comp__opr-ctrl",
 			m(".buttons", [
 				attrs.ondelete
 				? m(IconButton, {

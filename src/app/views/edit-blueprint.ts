@@ -7,8 +7,9 @@ import { BlueprintControlBar } from "../components/blueprint-control-bar";
 import { BlueprintMenu } from "../components/blueprint-menu";
 import { AppState } from "../state";
 import { OperatorDashboard } from "../components/operator-dashboard";
-import { OperatorControl } from "../components/operator-control";
+//import { OperatorControl } from "../components/operator-control";
 import { ContextMenu } from "../components/operator-context-menu";
+import { Box } from "../../slang/ui/toolkit";
 
 class Editor {
 	private static frame: ViewFrame;
@@ -38,6 +39,10 @@ class Editor {
             if (selectedOne instanceof OperatorBoxComponent) {
 				const view = blueprintView;
 				const operator = selectedOne.getModel();
+				ContextMenu.show(selectedOne, {
+					view: () => m(OperatorDashboard, {operator, view})
+				});
+				/*
 				const operatorBp = operator.blueprint;
 
 				ContextMenu.show(selectedOne, {
@@ -66,6 +71,7 @@ class Editor {
 						: undefined
 					})
 				});
+				*/
 			}
 
 			return true;
@@ -120,6 +126,17 @@ export class EditBlueprintView implements ClassComponent<any> {
 
 	public view({attrs}: CVnode<any>) {
         const blueprint = AppState.activeBlueprint!;
+
+		return m(".sle-view__edit-blupr", attrs,
+			m(".slang-editor"),
+			m(Box, {class: "sle-view__edit-blupr__top-left"}, m(BlueprintControlBar)),
+			m(Box, {class: "sle-view__edit-blupr__left-sidebar"}, m(BlueprintMenu, {
+				exclude: (bp: BlueprintModel) => blueprint.uuid === bp.uuid,
+				onselect(bp: BlueprintModel) {
+					blueprint.createBlankOperator(bp, {position: {x: 0, y: 0}})
+				}
+			}))
+		);
 
 		return m(".sle-comp__blueprint-editor", attrs,
             m(".columns", [

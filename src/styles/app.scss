@@ -24,13 +24,11 @@ body {
 	border: 1px $fuchsia solid;
 }
 
-.sle-comp-opr-ctrl {
-}
+.sle-view__edit-blupr {
+	> .box {
+		padding: 0.5rem;
+	}
 
-.sle-comp__opr-dashboard {
-}
-
-.sle-comp__blueprint-editor {
 	main {
 		height: 100vh;
 	}
@@ -43,8 +41,28 @@ body {
 	}
 }
 
+.sle-view__edit-blupr__top-left {
+	position: absolute;
+	left: 10px;
+	top: 10px;
+}
+
+.sle-view__edit-blupr__left-sidebar {
+	position: absolute;
+	left: 10px;
+	top: 100px;
+	height: 90vh;
+}
+
+
+.sle-comp__opr-ctrl {
+}
+
+.sle-comp__opr-dashboard {
+}
+
 .sle-comp__blueprint-menu {
-	height: 100vh;
+	height: 100%;
 	overflow-y: scroll;
 }
 
