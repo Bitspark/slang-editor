@@ -23,13 +23,34 @@ export interface BaseInputAttrs<T> extends HasSizeAttrs {
 export interface BaseInput<T> extends ClassComponent<BaseInputAttrs<T>> {
 }
 
-function wrapInput<T>(attrs: BaseInputAttrs<T>, input: m.Children): any {
+// @ts-ignore
+function tacoInput<T>(attrs: BaseInputAttrs<T>, input: m.Children): any {
 	return m(".field",
 		[
 			attrs.label ? m("label.label", attrs.label) : undefined,
 			m(".control", input),
 			attrs.help ? m("p.help", attrs.help) : undefined,
 		]);
+}
+
+function wrapInput<T>(attrs: BaseInputAttrs<T>, input: m.Children): any {
+	return m(".field", { class: "is-horizontal"	},
+	[
+		attrs.label
+		? m(".field-label", { class: buildCssClass(attrs) }, attrs.label)
+		: undefined,
+
+		m(".field-body", 
+			m(".field", 
+				m("p.control", input)
+			)
+		),
+
+		attrs.help
+		? m("p.help", attrs.help)
+		: undefined,
+	])
+
 }
 
 export class StringInput implements BaseInput<string> {
@@ -59,7 +80,7 @@ export class NumberInput implements BaseInput<number> {
 	public view({attrs}: CVnode<BaseInputAttrs<number>>) {
 		return wrapInput(attrs, m("input",
 			{
-				class: buildCssClass(attrs, "input"),
+				class: buildCssClass(attrs),
 				type: "number",
 				value: attrs.initValue,
 				oncreate: (v: CVnodeDOM<any>) => {
@@ -157,7 +178,7 @@ interface SelectInputAttrs extends BaseInputAttrs<string> {
 
 export class SelectInput implements ClassComponent<SelectInputAttrs> {
 	public view({attrs}: CVnode<SelectInputAttrs>) {
-		return wrapInput(attrs, m(".select",
+		return wrapInput(attrs, m(".select", {class: buildCssClass(attrs)},
 			m("select",
 				{
 					name: attrs.label,
