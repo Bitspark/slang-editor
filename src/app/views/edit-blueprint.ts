@@ -7,7 +7,7 @@ import { BlueprintControlBar } from "../components/blueprint-control-bar";
 import { BlueprintMenu } from "../components/blueprint-menu";
 import { AppState } from "../state";
 import { OperatorDashboard } from "../components/operator-dashboard";
-//import { OperatorControl } from "../components/operator-control";
+import { OperatorControl } from "../components/operator-control";
 import { ContextMenu } from "../components/operator-context-menu";
 import { Box } from "../../slang/ui/toolkit";
 
@@ -39,39 +39,29 @@ class Editor {
             if (selectedOne instanceof OperatorBoxComponent) {
 				const view = blueprintView;
 				const operator = selectedOne.getModel();
-				ContextMenu.show(selectedOne, {
-					view: () => m(OperatorDashboard, {operator, view})
-				});
-				/*
 				const operatorBp = operator.blueprint;
-
 				ContextMenu.show(selectedOne, {
-					view: () => m(OperatorControl, {
-						ondelete: view.isEditable
-						? () => {
-							ContextMenu.hide();
-							operator.destroy();
-						}
-						: undefined,
+					view: () => m(".sle-comp__opr-context-menu",
+						m(OperatorControl, {
+							ondelete: view.isEditable
+							? () => {
+								ContextMenu.hide();
+								operator.destroy();
+							}
+							: undefined,
 
-						onopen: view.isDescendable && !operatorBp.isElementary()
-						? () => {
-							ContextMenu.hide();
-							m.route.set("/edit/:uuid", {uuid: operatorBp.uuid})
-						}
-						: undefined,
-
-						onconfig: operatorBp.hasProperties()
-						? () => {
-							ContextMenu.hide();
-							ContextMenu.show(selectedOne, {
-								view: () => m(OperatorDashboard, {operator, view})
-							});
-						}
+							onopen: view.isDescendable && !operatorBp.isElementary()
+							? () => {
+								ContextMenu.hide();
+								m.route.set("/edit/:uuid", {uuid: operatorBp.uuid})
+							}
+							: undefined,
+						}),
+						operatorBp.hasProperties() || operatorBp.hasGenerics() 
+						? m(OperatorDashboard, {operator, view})
 						: undefined
-					})
+					)
 				});
-				*/
 			}
 
 			return true;
@@ -137,21 +127,5 @@ export class EditBlueprintView implements ClassComponent<any> {
 				}
 			}))
 		);
-
-		return m(".sle-comp__blueprint-editor", attrs,
-            m(".columns", [
-                m(BlueprintMenu, {
-                    class: "column is-2",
-                    exclude: (bp: BlueprintModel) => blueprint.uuid === bp.uuid,
-                    onselect(bp: BlueprintModel) {
-                        blueprint.createBlankOperator(bp, {position: {x: 0, y: 0}})
-                    }
-                }),
-                m("main.column", [
-                    m(BlueprintControlBar),
-                    m(".slang-editor"),
-                ]),
-            ])
-        );
 	}
 }

@@ -54,6 +54,11 @@ body {
 	height: 90vh;
 }
 
+.sle-comp__opr-context-menu {
+	> div {
+		margin-bottom: 8px;
+	}
+}
 
 .sle-comp__opr-ctrl {
 }
