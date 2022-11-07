@@ -182,6 +182,7 @@ export class SelectInput implements ClassComponent<SelectInputAttrs> {
 			m("select",
 				{
 					name: attrs.label,
+					class: buildCssClass(attrs),
 					oncreate: (v: CVnodeDOM<any>) => {
 						if (v.attrs.autofocus) {
 							(v.dom as HTMLElement).focus();

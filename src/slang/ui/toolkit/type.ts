@@ -3,9 +3,8 @@ import m, {ClassComponent, CVnode} from "mithril";
 import {toTypeIdentifier} from "../../core/mapper";
 import {SlangType, TYPEID_NAMES_NOGEN, TypeIdentifier} from "../../definitions/type";
 
-import {Button} from "./buttons";
+import {IconButton} from "./buttons";
 import {MithrilKeyboardEvent} from "./events";
-import {Icon} from "./icons";
 import {BaseInputAttrs, SelectInput, StringInput} from "./input"
 import {Block} from "./";
 
@@ -27,47 +26,57 @@ class MapEntriesInput implements ClassComponent<MapEntriesInputAttrs> {
 	public view({attrs}: CVnode<MapEntriesInputAttrs>) {
 		const entries = attrs.entries;
 
-		return m("",
-			m("", [
-				entries.map(([tname, type], index: number) => {
-					return m(".sl-inp-grp", {
-						class: (MapEntriesInput.hasNameCollision(index, tname, entries)) ? "sl-error" : "",
-					}, [
-						m(StringInput, {
-							label: "",
-							initValue: tname,
-							onInput(ntname: string) {
-								attrs.oneditEntry(index, [ntname, type]);
-							},
-							onkeydown: (e: MithrilKeyboardEvent) => {
-								switch (e.key) {
-									case "Enter":
-										attrs.onappendEntry(["", type]);
-										break;
-								}
-							},
-						}),
-						m(TypeSelect, {
-							type,
-							label: "",
-							onInput: (ntype: SlangType) => {
-								attrs.oneditEntry(index, [tname, ntype]);
-							},
-						}),
-						m(Button, {
-							onClick: () => {
-								attrs.onremoveEntry(index);
-							},
-						}, m(Icon, {fas: "times"})),
-					]);
-				}),
-				m("", m(Button, {
-					onClick: () => {
-						attrs.onappendEntry(["", SlangType.newUnspecified()]);
-					},
-				}, m(Icon, {fas: "plus"}))),
-			]),
-		);
+		return m("", [
+			entries.map(([tname, type], index: number) => {
+				return m(".is-flex.is-flex-direction-row", {
+					class: (MapEntriesInput.hasNameCollision(index, tname, entries)) ? "sl-error" : "",
+				}, [
+					m(IconButton, {
+						size: "small",
+						color: "text",
+						fas: "minus",
+
+						tooltip: "Remove entry",
+						onClick: () => {
+							attrs.onremoveEntry(index);
+						},
+					}),
+					m(StringInput, {
+						label: "",
+						size: "small",
+						initValue: tname,
+						onInput(ntname: string) {
+							attrs.oneditEntry(index, [ntname, type]);
+						},
+						onkeydown: (e: MithrilKeyboardEvent) => {
+							switch (e.key) {
+								case "Enter":
+									attrs.onappendEntry(["", type]);
+									break;
+							}
+						},
+					}),
+					m(TypeSelect, {
+						type,
+						label: "",
+						size: "small",
+						onInput: (ntype: SlangType) => {
+							attrs.oneditEntry(index, [tname, ntype]);
+						},
+					}),
+				]);
+			}),
+			m("", m(IconButton, {
+				size: "small",
+				color: "text",
+				fas: "plus",
+
+				tooltip: "Add entry",
+				onClick: () => {
+					attrs.onappendEntry(["", SlangType.newUnspecified()]);
+				},
+			})),
+		]);
 	}
 
 }
@@ -151,7 +160,7 @@ export class TypeSelect implements ClassComponent<TypeSelectAttrs> {
 					}));
 
 			case TypeIdentifier.Stream:
-				return m(Block,
+				return m(".is-flex.is-flex-direction-row",
 					this.renderInput(t, attrs.onInput, attrs.label),
 					m(StreamTypeSelectInput, {
 						type: t,
@@ -169,6 +178,7 @@ export class TypeSelect implements ClassComponent<TypeSelectAttrs> {
 
 		return m(SelectInput, {
 			label,
+			size: "small", 
 			selected: ti,
 			options: (fixed) ? [ti] : this.portTypeOptions,
 			onInput: (fixed) ? () => null :
