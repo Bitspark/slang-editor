@@ -1,4 +1,5 @@
 import m, {ClassComponent, CVnode} from "mithril";
+import { IconButton } from "../../slang/ui/toolkit/buttons";
 import { AppState } from "../state";
 
 export class BlueprintControlBar implements ClassComponent<any> {
@@ -14,7 +15,7 @@ export class BlueprintControlBar implements ClassComponent<any> {
             class: "is-flex is-flex-wrap-nowrap is-align-content-stretch"
         }, [
             m("input.input.ctrl-bar__name", {
-                class: "is-flex-grow-3",
+                class: "is-flex-grow-3 is-medium",
                 type: "text",
                 value: blueprint.name,
                 // @ts-ignore
@@ -22,13 +23,23 @@ export class BlueprintControlBar implements ClassComponent<any> {
                     blueprint.name = event.target.value
                 },
             }),
-            m(".buttons", 
-                m("a.button.is-primary", {
+            m(".buttons.are-medium", 
+                m(IconButton, {
                     class: "is-flex-grow-1",
+                    color: "black",
+                    fas: "play",
                     onclick() {
                         blueprint.save();
                     },
-                }, m("strong", "Save"))
+                }),
+                m(IconButton, {
+                    class: "is-flex-grow-1",
+                    color: "black",
+                    fas: "save",
+                    onclick() {
+                        blueprint.save();
+                    },
+                })
             ),
         ]);
 	}

@@ -10,31 +10,31 @@ export class OperatorControl implements ClassComponent<OperatorControlAttrs> {
 	public view({attrs}: CVnode<OperatorControlAttrs>): any {
 
 		return m(".sle-comp__opr-ctrl",
-			m(".buttons", [
+			m(".buttons.are-normal", [
 				attrs.ondelete
 				? m(IconButton, {
-					size: "small",
+					color: "black",
 					fas: "trash-alt",
 					tooltip: "Remove operator",
-					onClick: attrs.ondelete
+					onclick: attrs.ondelete
 				})
 				: undefined,
 
 				attrs.onopen
 				? m(IconButton, {
-					size: "small",
+					color: "black",
 					fas: "project-diagram",
 					tooltip: "Open blueprint",
-					onClick: attrs.onopen
+					onclick: attrs.onopen
 				})
 				: undefined,
 
 				attrs.onconfig
 				? m(IconButton, {
-					size: "small",
+					color: "black",
 					fas: "wrench",
 					tooltip: "Configure operator",
-					onClick: attrs.onconfig
+					onclick: attrs.onconfig
 				})
 				: undefined,
 			]),

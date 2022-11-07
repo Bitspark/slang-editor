@@ -5,13 +5,25 @@ import {MithrilMouseEvent} from "./events";
 import {Icon, IconAttrs} from "./icons";
 
 interface ButtonAttrs extends HasSizeAttrs {
+	class?: string;
 	tooltip?: string;
 	notAllowed?: boolean;
 	inactive?: boolean;
 	full?: boolean;
 	type?: "button" | "submit" | "reset";
+	color?: "white" | "light" | "dark" | "black" | "text" | "ghost" |
+		   "primary" | "link" | "info" | "success" | "warning" | "danger"
 
+	// deprecated
 	onClick?(e: MithrilMouseEvent): void;
+	onclick?(e: MithrilMouseEvent): void;
+}
+
+function buttonColorCssClass(attrs: ButtonAttrs): string {
+	if (!attrs.color) {
+		return ""
+	}
+	return "is-" + attrs.color
 }
 
 export class Button implements ClassComponent<ButtonAttrs> {
@@ -24,16 +36,20 @@ export class Button implements ClassComponent<ButtonAttrs> {
 
 	public view({attrs, children}: CVnode<ButtonAttrs>) {
 		const that = this;
+		
+		if (attrs.onClick) {
+			attrs.onclick = attrs.onClick
+		}
 
 		return m("a.button", {
-			class: buildCssClass(attrs),
+			class: buildCssClass(attrs, buttonColorCssClass(attrs)),
 			inacitve: that.isInactive(attrs),
 			onclick: (that.isClickable(attrs)) ? (e: MithrilMouseEvent) => {
 				if (that.alreadyClicked) {
 					return;
 				}
 				that.alreadyClicked = true;
-				attrs.onClick!(e);
+				attrs.onclick!(e);
 				setTimeout(() => {
 					that.alreadyClicked = false;
 				}, that.bounceInterval);
@@ -44,7 +60,7 @@ export class Button implements ClassComponent<ButtonAttrs> {
 	}
 
 	private isClickable(attrs: ButtonAttrs): boolean {
-		return !!attrs.onClick && !attrs.notAllowed;
+		return !!attrs.onclick && !attrs.notAllowed;
 	}
 
 	private isInactive(attrs: ButtonAttrs): boolean {

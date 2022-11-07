@@ -6,7 +6,9 @@ export interface HasSizeAttrs {
 
 export function buildCssClass(attrs: HasSizeAttrs, className?: string): string {
 	const css: string[] = [className?className:""];
-	css.push("is-" + (attrs.size ? attrs.size! : "small"));
+	if (attrs.size) {
+		css.push("is-" + attrs.size!);
+	}
 	return css.join(" ");
 }
 
