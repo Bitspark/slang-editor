@@ -92,6 +92,7 @@ export class PropertyFormDashboardModule implements DashboardModule {
 	private renderPropertyInput(fieldName: string, {type, initValue}: { type: SlangType, initValue?: SlangTypeValue }): m.Children {
 		return m(Input.ConsoleEntry, {
 			type,
+			size: "small",
 			label: fieldName,
 			initValue: !this.formData.has(fieldName) ? initValue : undefined,
 			onInput: (v: any) => {

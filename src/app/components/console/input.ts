@@ -82,13 +82,18 @@ export namespace Input {
 			const labelName = attrs.label;
 			const labelText = (labelName) ? `${attrs.label}:` : "";
 			const values = this.values;
-			return m(".sl-inp-grp.map",
-				m("label", {
-					for: labelName,
-				}, [
-					labelText,
-					Array.from(attrs.entries)
+
+			return m(".field", { class: "is-horizontal"	},
+			[
+				labelText? m(".field-label", { class: "is-small" }, labelText): undefined,
+
+				m(".field-body", 
+					m(".field", 
+						m("p.control",
+						Array
+						.from(attrs.entries)
 						.map(([subName, subType]) => m(ConsoleEntry, {
+								size: "small",
 								label: subName,
 								type: subType,
 								initValue: this.values.get(subName),
@@ -97,9 +102,10 @@ export namespace Input {
 									attrs.onInput(this.post(values));
 								},
 							}),
-						),
-				]),
-			);
+						))
+					)
+				),
+			])
 		}
 
 		private pre(objectValue: { [sub: string]: SlangTypeValue }): Map<string, SlangTypeValue> {
@@ -131,44 +137,54 @@ export namespace Input {
 
 		public view({attrs}: CVnode<StreamInputAttrs>) {
 			const labelName = attrs.label;
-			const labelText = (labelName) ? `${attrs.label}:` : "";
+			const labelText = (labelName) ? attrs.label : "";
 			const that = this;
 
 			if (attrs.initValue) {
 				this.values = attrs.initValue;
 			}
 
-			return m(".sl-inp-grp.stream",
-				m("label", {
-					for: labelName,
-				}, [
-					labelText,
-					that.values.map((entry: any, index: number) => {
-						return entry === undefined ? undefined :
-							m(".entry", [
-								m(Button, {
-									onClick: () => {
-										that.values[index] = undefined;
-										attrs.onInput(that.getValues());
-									},
-								}, m(Icon, {fas: "times"})),
-								m(ConsoleEntry, {
-									type: attrs.type,
-									initValue: entry,
-									onInput: (v: any) => {
-										that.values[index] = v;
-										attrs.onInput(that.getValues());
-									},
-								}),
-							]);
-					}),
-					m(".entry", m(Button, {
-						onClick: () => {
-							that.values.push(null);
-						},
-					}, m(Icon, {fas: "plus"}))),
-				]),
-			);
+			return m(".field", { class: "is-horizontal"	},
+			[
+				labelText? m(".field-label", { class: "is-small" }, labelText): undefined,
+
+				m(".field-body",
+					m(".field", [
+						m("p.control",
+							that.values.map((entry: any, index: number) => {
+								return entry === undefined
+								? undefined
+								: m(".is-flex.is-flex-direction-row", [
+									m(Button, {
+										color: "text",
+										size: "small",
+										onclick: () => {
+											that.values[index] = undefined;
+											attrs.onInput(that.getValues());
+										},
+									}, m(Icon, {fas: "minus"})),
+									m(ConsoleEntry, {
+										size: "small",
+										type: attrs.type,
+										initValue: entry,
+										onInput: (v: any) => {
+											that.values[index] = v;
+											attrs.onInput(that.getValues());
+										},
+									}),
+								]);
+							})
+						),
+						m("", m(Button, {
+							color: "text",
+							size: "small",
+							onclick: () => {
+								that.values.push(null);
+							},
+						}, m(Icon, {fas: "plus"}))),
+					]),
+				),
+			])
 		}
 
 		private getValues(): any[] {
