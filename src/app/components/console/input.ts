@@ -1,5 +1,5 @@
 import m, {ClassComponent, CVnode} from "mithril";
-import {SlangType, SlangTypeValue, TypeIdentifier} from "../../../slang/definitions/type";
+import {SlangType, SlangTypeStream, SlangTypeValue, TypeIdentifier} from "../../../slang/definitions/type";
 import {Button} from "../../../slang/ui/toolkit/buttons";
 import {Icon} from "../../../slang/ui/toolkit/icons";
 import {BaseInput, BaseInputAttrs, BooleanInput, NumberInput, StringInput} from "../../../slang/ui/toolkit/input";
@@ -140,8 +140,8 @@ export namespace Input {
 			const labelText = (labelName) ? attrs.label : "";
 			const that = this;
 
-			if (attrs.initValue) {
-				this.values = attrs.initValue;
+			if (this.values.length === 0 && attrs.initValue) {
+				this.values = this.pre(attrs.initValue);
 			}
 
 			return m(".field", { class: "is-horizontal"	},
@@ -160,7 +160,7 @@ export namespace Input {
 										size: "small",
 										onclick: () => {
 											that.values[index] = undefined;
-											attrs.onInput(that.getValues());
+											attrs.onInput(this.post(this.values));
 										},
 									}, m(Icon, {fas: "minus"})),
 									m(ConsoleEntry, {
@@ -169,7 +169,7 @@ export namespace Input {
 										initValue: entry,
 										onInput: (v: any) => {
 											that.values[index] = v;
-											attrs.onInput(that.getValues());
+											attrs.onInput(this.post(this.values));
 										},
 									}),
 								]);
@@ -180,6 +180,7 @@ export namespace Input {
 							size: "small",
 							onclick: () => {
 								that.values.push(null);
+								console.log("->", that.values)
 							},
 						}, m(Icon, {fas: "plus"}))),
 					]),
@@ -187,8 +188,12 @@ export namespace Input {
 			])
 		}
 
-		private getValues(): any[] {
-			return this.values.filter((v) => !(v === null || v === undefined));
+		private pre(objectValue: any[]): SlangTypeStream {
+			return Array.isArray(objectValue) ? objectValue : [];
+		}
+
+		private post(streamValue: SlangTypeStream): any[] {
+			return streamValue.filter((v) => !(v === null || v === undefined));
 		}
 	}
 }
