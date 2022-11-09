@@ -82,6 +82,12 @@ body {
 	.ctrl-bar__name {
 		width: 320px;
 	}
+
+	.ctrl-bar__uuid {
+		position: absolute;
+		bottom: 0;
+		left: 19px;
+	}
 }
 
 @import "./editor";
