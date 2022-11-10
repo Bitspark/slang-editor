@@ -9,8 +9,9 @@ export class BlueprintMenu implements ClassComponent<any> {
 	// @ts-ignore
 	public oninit({attrs}: m.Vnode<any, this>) {
         const exclude = attrs.exclude ? attrs.exclude : () => false;
-        this.localBlueprints = AppState.blueprints.filter(bp => bp.isLocal() && !exclude(bp))
-        this.otherBlueprints = AppState.blueprints.filter(bp => !bp.isLocal())
+        const blueprints = AppState.blueprints.sort((l, r) => l.name.localeCompare(r.name))
+        this.localBlueprints = blueprints.filter(bp => bp.isLocal() && !exclude(bp))
+        this.otherBlueprints = blueprints.filter(bp => !bp.isLocal())
 	}
 
 	public view({attrs}: CVnode<any>) {

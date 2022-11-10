@@ -16,7 +16,7 @@ export class HomeView implements ClassComponent<any> {
 
 	// @ts-ignore
 	public view({attrs}: CVnode<any>) {
-        const localBlueprints = this.localBlueprints;
+        const localBlueprints = this.localBlueprints.sort((l, r) => l.name.localeCompare(r.name));
         return m("section.section", m(".container", m(".panel",
             m(".panel-heading", `Blueprints (${localBlueprints.length})`),
             m("a.panel-block", {

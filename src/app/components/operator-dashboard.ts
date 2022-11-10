@@ -7,7 +7,6 @@ import {PaperView} from "../../slang/ui/views/paper-view";
 import {Input} from "./console";
 import {Block, Box, Title} from "../../slang/ui/toolkit";
 import {TypeSelect} from "../../slang/ui/toolkit/type";
-import { Icon } from "../../slang/ui/toolkit/icons";
 
 interface DashboardAttrs {
 	view: PaperView;
