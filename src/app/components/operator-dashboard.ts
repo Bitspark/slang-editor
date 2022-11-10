@@ -7,6 +7,7 @@ import {PaperView} from "../../slang/ui/views/paper-view";
 import {Input} from "./console";
 import {Block, Box, Title} from "../../slang/ui/toolkit";
 import {TypeSelect} from "../../slang/ui/toolkit/type";
+import { Icon } from "../../slang/ui/toolkit/icons";
 
 interface DashboardAttrs {
 	view: PaperView;
@@ -14,7 +15,7 @@ interface DashboardAttrs {
 }
 
 export class OperatorDashboard implements ClassComponent<DashboardAttrs> {
-    private readonly dashboardModules = [PropertyFormDashboardModule, PortTypeDashboardModule]
+    private readonly dashboardModules = [OperatorDetailsDashboardModule, PropertyFormDashboardModule, PortTypeDashboardModule]
 
 	public view({attrs}: CVnode<DashboardAttrs>): any {
 		const view = attrs.view;
@@ -42,6 +43,24 @@ export interface DashboardModuleAttrs {
 }
 
 export interface DashboardModule extends ClassComponent<DashboardModuleAttrs> {
+}
+
+export class OperatorDetailsDashboardModule implements DashboardModule {
+	private operator!: OperatorModel;
+
+	public oninit({attrs}: CVnode<DashboardModuleAttrs>): any {
+		this.operator = attrs.operator;
+	}
+
+	public view(_: CVnode<DashboardModuleAttrs>): any {
+		const op = this.operator;
+
+		return m(Block, [
+			m("p", m("strong", op.blueprint.name)),
+			m("p", m("small", op.blueprint.uuid)),
+			m("p", op.blueprint.help)
+		]);
+	}
 }
 
 export class PropertyFormDashboardModule implements DashboardModule {

@@ -111,6 +111,10 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		this.meta.name = newName;
 	}
 
+	public get help(): string {
+		return this.meta.shortDescription ? this.meta.shortDescription : "";
+	}
+
 	private static revealGenericIdentifiers(port: PortModel): Set<string> {
 		const genericIdentifiers = new Set<string>();
 		if (port.getTypeIdentifier() === TypeIdentifier.Generic) {

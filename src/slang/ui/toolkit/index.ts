@@ -26,6 +26,12 @@ export class Block implements ClassComponent<{}> {
 
 export class Title implements ClassComponent<{}> {
 	public view({children}: CVnode<{}>) {
-		return m("h5", children);
+		return m("h5.title.is-5", children);
+	}
+}
+
+export class Subtitle implements ClassComponent<{}> {
+	public view({children}: CVnode<{}>) {
+		return m("h5.subtitle.is-5", children);
 	}
 }

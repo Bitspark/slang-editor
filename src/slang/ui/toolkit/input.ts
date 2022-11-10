@@ -122,7 +122,7 @@ export class BooleanInput implements BaseInput<boolean> {
 							autofocus: attrs.autofocus,
 						},
 					),
-					attrs.label ? " " + attrs.label : "",
+					m("small", attrs.label ? attrs.label : ""),
 				),
 			),
 			attrs.help ? m("p.help", attrs.help) : undefined,
