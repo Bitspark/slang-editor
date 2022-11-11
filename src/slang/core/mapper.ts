@@ -343,22 +343,24 @@ function setBlueprintDelegates(blueprint: BlueprintModel, delegates: PortGroupsA
 }
 
 function createPort(typeDef: TypeDefApiResponse, owner: BlueprintModel | BlueprintDelegateModel, direction: PortDirection): BlueprintPortModel {
-	return owner.createPort({direction, name: "", type: createTypeModel(typeDef)});
+	return owner.createPort({direction, name: "", type: createTypeModel(typeDef, {isGhostPort: true})});
 }
 
-function createTypeModel(typeDef: TypeDefApiResponse): SlangType {
-	const type = new SlangType(null, toTypeIdentifier(typeDef.type));
+function createTypeModel(typeDef: TypeDefApiResponse, {isGhostPort}: {isGhostPort: boolean} = {isGhostPort: false}): SlangType {
+	// isGhostPort == true: SlangType is handle as if it was inferred --> for blueprint ports this is intented
+	// 						When ever a connection is removed all inferred ports will with no connection will be removed
+	const type = new SlangType(null, toTypeIdentifier(typeDef.type), isGhostPort);
 	switch (type.getTypeIdentifier()) {
 		case TypeIdentifier.Map:
 			if (!typeDef.map) {
 				break;
 			}
 			Object.keys(typeDef.map).forEach((subName: string) => {
-				type.addMapSub(subName, createTypeModel(typeDef.map![subName]));
+				type.addMapSub(subName, createTypeModel(typeDef.map![subName], {isGhostPort}));
 			});
 			break;
 		case TypeIdentifier.Stream:
-			type.setStreamSub(createTypeModel(typeDef.stream!));
+			type.setStreamSub(createTypeModel(typeDef.stream!, {isGhostPort}));
 			break;
 		case TypeIdentifier.Generic:
 			type.setGenericIdentifier(typeDef.generic!);
