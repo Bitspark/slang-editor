@@ -77,6 +77,7 @@ export class AppState {
 	}
 
 	public static createEmptyBlueprint(): BlueprintModel {
+		// ABC
 		const newBlueprint = AppState.landscape.createBlueprint({
 			uuid: uuidv4(),
 			meta: {name: `Unnamed${new Date().getTime()}`},
@@ -84,12 +85,12 @@ export class AppState {
 		});
 		newBlueprint.createPort({
 			name: "",
-			type: SlangType.newMap(),
+			type: SlangType.newUnspecified(),
 			direction: PortDirection.In,
 		});
 		newBlueprint.createPort({
 			name: "",
-			type: SlangType.newMap(),
+			type: SlangType.newUnspecified(),
 			direction: PortDirection.Out,
 		});
 		return newBlueprint;
