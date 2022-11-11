@@ -99,13 +99,17 @@ $blackbox-color-label: $black;
 
 .sl-port {
 	@extend %transition;
-	stroke-width: 0;
-	stroke-opacity: 0.6;
+	stroke-width: 2;
+	stroke-opacity: 1;
 	transition-property: stroke-width;
 
 	&.sl-stripe {
 		stroke: white;
 		fill: white;
+	}
+
+	&.sl-type-stream {
+		fill: transparent !important;
 	}
 
 	&.sl-type-number {

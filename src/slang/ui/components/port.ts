@@ -1,4 +1,5 @@
 import {attributes, dia, g} from "jointjs";
+import { TypeIdentifier } from "../../../slang/definitions/type";
 
 import {Styles} from "../../../styles/studio";
 import {PortModel} from "../../core/abstract/port";
@@ -14,6 +15,10 @@ export class PortComponent {
 	// STATIC:
 
 	private static getPortShape(width: number, height: number): string {
+		// reduce with and height of port because every port gets a 2px outer edge
+		width -= 3
+		height -= 2
+
 		return `M ${-width / 2} ${-height / 2} ` +
 			`L ${width / 2} ${-height / 2} ` +
 			`L 0 ${height / 2} z`;
@@ -34,7 +39,13 @@ export class PortComponent {
 				if (ghost) {
 					classes.push(tid2css("ghost"));
 				} else {
+					const typeId = port.getTypeIdentifier()
 					classes.push(tid2css(port.getTypeIdentifier()));
+					if (typeId === TypeIdentifier.Stream) {
+					// I assume sub type is not a stream or map
+						classes.push(tid2css(port.getStreamSub().getTypeIdentifier()))
+					}
+
 				}
 			} else {
 				classes.push(`sl-stripe`);
