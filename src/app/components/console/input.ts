@@ -180,7 +180,6 @@ export namespace Input {
 							size: "small",
 							onclick: () => {
 								that.values.push(null);
-								console.log("->", that.values)
 							},
 						}, m(Icon, {fas: "plus"}))),
 					]),
