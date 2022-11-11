@@ -62,15 +62,17 @@ export abstract class CellComponent extends Component {
 	}
 
 	public render() {
+		// @ts-ignore
 		this.shape.on("pointerclick", (_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
-			this.userInteracted.next(UserEvents.pointerClick(event));
+			this.userInteracted.next(UserEvents.pointerClick({event, xy: {x, y}}));
 		});
+		// @ts-ignore
 		this.shape.on("pointerdblclick", (_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
-			this.userInteracted.next(UserEvents.pointerDbclick(event));
+			this.userInteracted.next(UserEvents.pointerDbclick({event, xy: {x, y}}));
 		});
 		// @ts-ignore
 		this.shape.on("contextmenu", (_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
-			this.userInteracted.next(UserEvents.contextmenu(event));
+			this.userInteracted.next(UserEvents.contextmenu({event, xy: {x, y}}));
 		});
 
 		this.paperView.renderCell(this.shape);

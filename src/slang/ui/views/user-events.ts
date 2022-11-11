@@ -5,7 +5,10 @@ import { WhiteBoxComponent } from "../components/whitebox";
 export type TargetableComponent = OperatorBoxComponent | WhiteBoxComponent | ConnectionComponent;
 
 export interface UserEvent {
+	xy: {x:  number, y: number}
+
 	target?: TargetableComponent
+
 	left: {
 		click?: MouseEvent,
 		dbclick?: MouseEvent,
@@ -17,20 +20,16 @@ export interface UserEvent {
 }
 
 export namespace UserEvents {
-	export function mouseLeftClick(event: MouseEvent, target?: TargetableComponent): UserEvent {
-		return pointerClick(event, target);
+	interface MouseEventArgs {
+		target?: TargetableComponent,
+		xy: {x: number, y: number}
+
+		event: MouseEvent,
 	}
 
-	export function mouseLeftDbclick(event: MouseEvent, target?: TargetableComponent): UserEvent {
-		return pointerClick(event, target);
-	}
-
-	export function mouseRightClick(event: MouseEvent, target?: TargetableComponent): UserEvent {
-		return contextmenu(event, target);
-	}
-
-	export function pointerClick(event: MouseEvent, target?: TargetableComponent): UserEvent {
+	export function mouseLeftClick({event, target, xy}: MouseEventArgs): UserEvent {
 		return {
+			xy,
 			target,
 			left: {
 				click: event
@@ -39,8 +38,9 @@ export namespace UserEvents {
 		}
 	}
 
-	export function pointerDbclick(event: MouseEvent, target?: TargetableComponent): UserEvent {
+	export function mouseLeftDbclick({event, target, xy}: MouseEventArgs): UserEvent {
 		return {
+			xy,
 			target,
 			left: {
 				dbclick: event
@@ -49,13 +49,26 @@ export namespace UserEvents {
 		}
 	}
 
-	export function contextmenu(event: MouseEvent, target?: TargetableComponent): UserEvent {
+	export function mouseRightClick({event, target, xy}: MouseEventArgs): UserEvent {
 		return {
+			xy,
 			target,
 			left: {},
 			right: {
 				click: event
 			}
 		};
+	}
+
+	export function pointerClick(args: MouseEventArgs): UserEvent {
+		return mouseLeftClick(args)
+	}
+
+	export function pointerDbclick(args: MouseEventArgs): UserEvent {
+		return mouseLeftDbclick(args)
+	}
+
+	export function contextmenu(args: MouseEventArgs): UserEvent {
+		return mouseRightClick(args)
 	}
 }
