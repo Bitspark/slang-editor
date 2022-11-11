@@ -467,7 +467,4 @@ const slangEditor = document.getElementById("main") as SlangEditor;
 if (slangEditor) {
 	const blueprint = slangEditor.loadBundle(bundle);
 	slangEditor.displayBlueprint(blueprint);
-	slangEditor.selected.subscribe((comp: WhiteBoxComponent|OperatorBoxComponent|ConnectionComponent|null) => {
-		console.log("--> selected:", comp);
-	});
 }

@@ -2,22 +2,18 @@ import {dia} from "jointjs";
 
 import {SlangAspects} from "../../aspects";
 import {GenericPortModel, PortModel} from "../../core/abstract/port";
-import {SlangBehaviorSubject, SlangSubject} from "../../core/abstract/utils/events";
+import {SlangSubject} from "../../core/abstract/utils/events";
 import {BlueprintModel} from "../../core/models";
 import {TypeIdentifier} from "../../definitions/type";
-import {BlackBoxShape, OperatorBoxComponent} from "../components/blackbox";
+import {BlackBoxShape} from "../components/blackbox";
 import {ConnectionComponent} from "../components/connection";
 import {WhiteBoxComponent} from "../components/whitebox";
 import {ViewFrame} from "../frame";
-
 import {PaperView, PaperViewArgs} from "./paper-view";
-import { UserEvent } from "./user-events";
-
-export type SelectableComponent = OperatorBoxComponent | WhiteBoxComponent | ConnectionComponent;
+import {TargetableComponent, UserEvent } from "./user-events";
 
 export class BlueprintView extends PaperView {
 	public readonly whiteBox: WhiteBoxComponent;
-	public readonly selected = new SlangBehaviorSubject<SelectableComponent|null>("element-selected", null);
 	public readonly userInteracted = new SlangSubject<UserEvent>("user-interacted");
 
 	constructor(frame: ViewFrame, aspects: SlangAspects, public readonly blueprint: BlueprintModel, args: PaperViewArgs) {
@@ -132,37 +128,18 @@ export class BlueprintView extends PaperView {
 			this.fitOuter(false);
 		});
 
-		const unselectCurrentOne = () => {
-			const currSelected = this.selected.getValue();
-			if (currSelected) {
-				currSelected.unselect();
-			}
-		};
-
+		/*
 		this.paper.on("blank:pointerdown cell:pointerdown", () => {
 			unselectCurrentOne();
 		});
-
-		/*
-		const handleSelect = (comp: SelectableComponent) => (selected: boolean) => {
-			unselectCurrentOne();
-			if (selected) {
-				this.selected.next(comp);
-			}
-			// todo: set cssClass within Component class
-			comp.css({
-				"sl-is-selected": selected,
-			});
-		};
 		*/
 
-		const handleUserEvents = (comp: SelectableComponent) => (event: UserEvent) => {
+		const handleUserEvents = (comp: TargetableComponent) => (event: UserEvent) => {
 			event.target = comp
 			this.userInteracted.next(event);
 		};
 
-		//const registerSelectHandle = (comp: SelectableComponent) => comp.selected.subscribe(handleSelect(comp));
-		const registerUserEventsHandle = (comp: SelectableComponent) => comp.userInteracted.subscribe(handleUserEvents(comp));
+		const registerUserEventsHandle = (comp: TargetableComponent) => comp.userInteracted.subscribe(handleUserEvents(comp));
 
 		const whiteBox = this.whiteBox;
 		registerUserEventsHandle(whiteBox);

@@ -1,7 +1,11 @@
-import { SelectableComponent } from "./blueprint";
+import { OperatorBoxComponent } from "../components/blackbox";
+import { ConnectionComponent } from "../components/connection";
+import { WhiteBoxComponent } from "../components/whitebox";
+
+export type TargetableComponent = OperatorBoxComponent | WhiteBoxComponent | ConnectionComponent;
 
 export interface UserEvent {
-	target?: SelectableComponent
+	target?: TargetableComponent
 	left: {
 		click?: MouseEvent,
 		dbclick?: MouseEvent,
@@ -13,19 +17,19 @@ export interface UserEvent {
 }
 
 export namespace UserEvents {
-	export function mouseLeftClick(event: MouseEvent, target?: SelectableComponent): UserEvent {
+	export function mouseLeftClick(event: MouseEvent, target?: TargetableComponent): UserEvent {
 		return pointerClick(event, target);
 	}
 
-	export function mouseLeftDbclick(event: MouseEvent, target?: SelectableComponent): UserEvent {
+	export function mouseLeftDbclick(event: MouseEvent, target?: TargetableComponent): UserEvent {
 		return pointerClick(event, target);
 	}
 
-	export function mouseRightClick(event: MouseEvent, target?: SelectableComponent): UserEvent {
+	export function mouseRightClick(event: MouseEvent, target?: TargetableComponent): UserEvent {
 		return contextmenu(event, target);
 	}
 
-	export function pointerClick(event: MouseEvent, target?: SelectableComponent): UserEvent {
+	export function pointerClick(event: MouseEvent, target?: TargetableComponent): UserEvent {
 		return {
 			target,
 			left: {
@@ -35,7 +39,7 @@ export namespace UserEvents {
 		}
 	}
 
-	export function pointerDbclick(event: MouseEvent, target?: SelectableComponent): UserEvent {
+	export function pointerDbclick(event: MouseEvent, target?: TargetableComponent): UserEvent {
 		return {
 			target,
 			left: {
@@ -45,7 +49,7 @@ export namespace UserEvents {
 		}
 	}
 
-	export function contextmenu(event: MouseEvent, target?: SelectableComponent): UserEvent {
+	export function contextmenu(event: MouseEvent, target?: TargetableComponent): UserEvent {
 		return {
 			target,
 			left: {},

@@ -106,25 +106,6 @@ export abstract class CellComponent extends Component {
 		});
 		return this;
 	}
-
-	public onSelect(cb: (s: boolean) => void): this {
-		this.selected.subscribe((selected: boolean) => {
-			cb(selected);
-		});
-		return this;
-	}
-
-	public select() {
-		if (!this.selected.getValue()) {
-			this.selected.next(true);
-		}
-	}
-
-	public unselect() {
-		if (this.selected.getValue()) {
-			this.selected.next(false);
-		}
-	}
 }
 
 abstract class HtmlComponent extends Component {
