@@ -110,13 +110,15 @@ function operatorModelToJSON(operator: OperatorModel): OperatorJson {
 function typeModelToJSON(type: SlangType): TypeDefApiResponse {
 	switch (type.getTypeIdentifier()) {
 		case TypeIdentifier.Map:
-			return {
+			return type.hasMapSubs() 
+			? {
 				type: fromTypeIdentifier(type.getTypeIdentifier())!,
 				map: iter2map<[string, SlangType], any>(type.getMapSubs(), (obj, [name, slType]) => {
 					obj[name] = typeModelToJSON(slType);
 					return obj;
 				}),
-			};
+			}
+			: {type: fromTypeIdentifier(TypeIdentifier.Unspecified)};
 		case TypeIdentifier.Stream:
 			return {
 				type: fromTypeIdentifier(type.getTypeIdentifier())!,
@@ -182,11 +184,8 @@ function operatorPortDef(port: OperatorPortModel): string {
 
 }
 
-function fromTypeIdentifier(t: TypeIdentifier): "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic" | undefined {
-	if (t !== TypeIdentifier.Unspecified) {
-		return TypeIdentifier[t].toLowerCase() as "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic";
-	}
-	return undefined;
+function fromTypeIdentifier(t: TypeIdentifier): "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic" {
+	return TypeIdentifier[t].toLowerCase() as "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic";
 }
 
 /*
