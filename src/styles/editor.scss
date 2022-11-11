@@ -152,9 +152,9 @@ $blackbox-color-label: $black;
 .sl-connection-wrap {
 	fill: none;
 	stroke: $grey;
-	stroke-width: 10px;
+	stroke-width: 14px;
 	stroke-opacity: 0;
-	stroke-linecap: round;
+	stroke-linecap: square;
 
 	&:hover {
 		stroke-opacity: 0.3;
@@ -173,7 +173,6 @@ $blackbox-color-label: $black;
 .sl-connection {
 	vector-effect: none;
 	fill: none;
-	stroke-opacity: 1;
 
 	&.sl-type-number {
 		stroke: $type-color-number;
@@ -205,7 +204,6 @@ $blackbox-color-label: $black;
 
 	&.sl-type-ghost {
 		stroke: $type-color-ghost;
-		stroke-opacity: 0.3;
 	}
 }
 

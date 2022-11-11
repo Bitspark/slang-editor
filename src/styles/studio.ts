@@ -19,19 +19,19 @@ export namespace Styles {
 	};
 
 	export class Port {
-		public static width = 8;
+		public static width = 14;
 		public static height = 8;
 	}
 
 	export namespace Connection {
 		class BaseConnection {
-			public static strokeWidth = 1;
+			public static strokeWidth = 6;
 			public static vectorEffect = "default";
 			public static stroke = (type: TypeIdentifier | "ghost"): string => typeColors[type];
 		}
 
 		export class OrdinaryConnection extends BaseConnection {
-			public static strokeOpacity = 1;
+			public static strokeOpacity = 0.7;
 
 		}
 
@@ -41,7 +41,7 @@ export namespace Styles {
 	}
 
 	export class PortGroup {
-		public static portSpacing = 10;
+		public static portSpacing = Port.width;
 		public static translationIn = 4;
 		public static translationOut = -4;
 	}
