@@ -5,6 +5,7 @@ import {SlangBehaviorSubject, SlangSubject} from "../../core/abstract/utils/even
 import {XY} from "../../definitions/api";
 import {cssattr, cssobj, CSSType, cssupdate} from "../utils";
 import {PaperView} from "../views/paper-view";
+import { UserEvent, UserEvents } from "../views/user-events";
 
 import {Container} from "./toolkit";
 
@@ -35,6 +36,8 @@ export abstract class CellComponent extends Component {
 	public readonly dblclicked = new SlangSubject<{event: MouseEvent; x: number; y: number}>("dblclicked");
 	public readonly selected = new SlangBehaviorSubject<boolean>("selected", false);
 
+	public readonly userInteracted = new SlangSubject<UserEvent>("user-interacted");
+
 	protected abstract readonly shape: dia.Cell;
 	protected abstract readonly cssAttr: string;
 	private components: Component[] = [];
@@ -63,12 +66,17 @@ export abstract class CellComponent extends Component {
 	}
 
 	public render() {
-		this.shape.on("pointerup", (_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
+		this.shape.on("pointerclick", (_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
 			this.clicked.next({event, x, y});
+			this.userInteracted.next(UserEvents.pointerClick(event));
 		});
 		this.shape.on("pointerdblclick", (_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
 			this.dblclicked.next({event, x, y});
-			this.select();
+			this.userInteracted.next(UserEvents.pointerDbclick(event));
+		});
+		// @ts-ignore
+		this.shape.on("contextmenu", (_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
+			this.userInteracted.next(UserEvents.contextmenu(event));
 		});
 
 		this.paperView.renderCell(this.shape);

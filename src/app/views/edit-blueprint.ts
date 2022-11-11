@@ -2,7 +2,7 @@ import m, {ClassComponent, CVnode} from "mithril";
 import { OperatorBoxComponent } from "../../slang/ui/components/blackbox";
 import { BlueprintModel } from "../../slang/core/models";
 import { ViewFrame } from "../../slang/ui/frame";
-import { BlueprintView, SelectableComponent } from "../../slang/ui/views/blueprint";
+import { BlueprintView } from "../../slang/ui/views/blueprint";
 import { BlueprintControlBar } from "../components/blueprint-control-bar";
 import { BlueprintMenu } from "../components/blueprint-menu";
 import { AppState } from "../state";
@@ -10,6 +10,8 @@ import { OperatorDashboard } from "../components/operator-dashboard";
 import { OperatorControl } from "../components/operator-control";
 import { ContextMenu } from "../components/operator-context-menu";
 import { Box } from "../../slang/ui/toolkit";
+import { UserEvent } from "../../slang/ui/views/user-events";
+import { ConnectionComponent } from "../../slang/ui/components/connection";
 
 class Editor {
 	private static frame: ViewFrame;
@@ -29,18 +31,23 @@ class Editor {
 		};
 
         const blueprintView = new BlueprintView(this.frame, AppState.aspects, blueprint, viewArgs);
-		blueprintView.selected.subscribe((e: SelectableComponent | null) => {
+
+		blueprintView.onUserEvent((e: UserEvent) => {
             ContextMenu.hide();
-            if (!e) {
-				return;
+
+			if (e.target instanceof ConnectionComponent) {
+				if (e.left.click) {
+					e.target.css({
+						"sl-is-selected": true,
+					});
+				}
 			}
 
-            const selectedOne = e;
-            if (selectedOne instanceof OperatorBoxComponent) {
-				const view = blueprintView;
-				const operator = selectedOne.getModel();
+			if (e.right.click && e.target instanceof OperatorBoxComponent) {
+				const operator = e.target.getModel();
 				const operatorBp = operator.blueprint;
-				ContextMenu.show(selectedOne, {
+				const view = blueprintView;
+				ContextMenu.show(e.target, {
 					view: () => m(".sle-comp__opr-context-menu",
 						m(OperatorControl, {
 							ondelete: view.isEditable
@@ -63,8 +70,6 @@ class Editor {
 					)
 				});
 			}
-
-			return true;
 		});
         this.frame.setView(blueprintView);
 	}

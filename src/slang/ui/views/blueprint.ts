@@ -2,7 +2,7 @@ import {dia} from "jointjs";
 
 import {SlangAspects} from "../../aspects";
 import {GenericPortModel, PortModel} from "../../core/abstract/port";
-import {SlangBehaviorSubject} from "../../core/abstract/utils/events";
+import {SlangBehaviorSubject, SlangSubject} from "../../core/abstract/utils/events";
 import {BlueprintModel} from "../../core/models";
 import {TypeIdentifier} from "../../definitions/type";
 import {BlackBoxShape, OperatorBoxComponent} from "../components/blackbox";
@@ -11,12 +11,14 @@ import {WhiteBoxComponent} from "../components/whitebox";
 import {ViewFrame} from "../frame";
 
 import {PaperView, PaperViewArgs} from "./paper-view";
+import { UserEvent } from "./user-events";
 
 export type SelectableComponent = OperatorBoxComponent | WhiteBoxComponent | ConnectionComponent;
 
 export class BlueprintView extends PaperView {
 	public readonly whiteBox: WhiteBoxComponent;
 	public readonly selected = new SlangBehaviorSubject<SelectableComponent|null>("element-selected", null);
+	public readonly userInteracted = new SlangSubject<UserEvent>("user-interacted");
 
 	constructor(frame: ViewFrame, aspects: SlangAspects, public readonly blueprint: BlueprintModel, args: PaperViewArgs) {
 		super(frame, aspects, args);
@@ -141,6 +143,7 @@ export class BlueprintView extends PaperView {
 			unselectCurrentOne();
 		});
 
+		/*
 		const handleSelect = (comp: SelectableComponent) => (selected: boolean) => {
 			unselectCurrentOne();
 			if (selected) {
@@ -151,15 +154,22 @@ export class BlueprintView extends PaperView {
 				"sl-is-selected": selected,
 			});
 		};
+		*/
 
-		const registerSelectHandle = (comp: SelectableComponent) => comp.selected.subscribe(handleSelect(comp));
+		const handleUserEvents = (comp: SelectableComponent) => (event: UserEvent) => {
+			event.target = comp
+			this.userInteracted.next(event);
+		};
+
+		//const registerSelectHandle = (comp: SelectableComponent) => comp.selected.subscribe(handleSelect(comp));
+		const registerUserEventsHandle = (comp: SelectableComponent) => comp.userInteracted.subscribe(handleUserEvents(comp));
 
 		const whiteBox = this.whiteBox;
-		registerSelectHandle(whiteBox);
-		whiteBox.operatorAdded.subscribe(registerSelectHandle);
-		whiteBox.operators.map(registerSelectHandle);
-		whiteBox.connectionAdded.subscribe(registerSelectHandle);
-		whiteBox.connections.map(registerSelectHandle);
+		registerUserEventsHandle(whiteBox);
+		whiteBox.operatorAdded.subscribe(registerUserEventsHandle);
+		whiteBox.operators.map(registerUserEventsHandle);
+		whiteBox.connectionAdded.subscribe(registerUserEventsHandle);
+		whiteBox.connections.map(registerUserEventsHandle);
 	}
 
 	private fitOuter(animation: boolean) {
@@ -182,5 +192,11 @@ export class BlueprintView extends PaperView {
 			return undefined;
 		}
 		return port;
+	}
+
+	public onUserEvent(cb: (e: UserEvent) => void) {
+		this.userInteracted.subscribe((event) => {
+			cb(event);
+		});
 	}
 }
