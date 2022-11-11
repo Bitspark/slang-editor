@@ -1,5 +1,6 @@
 import {
 	BlueprintJson,
+	BlueprintsJson,
 	ConnectionsApiResponse, GenericSpecificationsApiResponse,
 	OperatorJson,
 	PortGroupApiResponse, PortGroupsApiResponse, PropertyApiResponse, PropertyAssignmentsApiResponse,
@@ -194,13 +195,22 @@ function fromTypeIdentifier(t: TypeIdentifier): "string" | "number" | "boolean" 
   \
  */
 
-export function loadBlueprints(landscape: LandscapeModel, blueprintJsonList: BlueprintJson[]) {
+export function loadBlueprints(landscape: LandscapeModel, blueprintsJson: BlueprintsJson) {
 	// 1) Create unfinished blueprints (only with some basic information)
-	blueprintJsonList.forEach((blueprintJson) => {
+	blueprintsJson.elementary.forEach((blueprintJson) => {
+		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Elementary);
+	});
+	blueprintsJson.library.forEach((blueprintJson) => {
+		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Library);
+	});
+	blueprintsJson.local.forEach((blueprintJson) => {
+	//blueprintJsonList.forEach((blueprintJson) => {
 		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Local);
 	});
 
 	// 2) Add Operators. Use previously defined Blueprints for assigning Operator.blueprint
+	const blueprintJsonList = blueprintsJson.library.concat(blueprintsJson.local);
+
 	blueprintJsonList.forEach((bpJson: BlueprintJson) => {
 		const outerBlueprint = landscape.findBlueprint(bpJson.id);
 		if (!outerBlueprint) {
@@ -257,7 +267,7 @@ function instantiateBlueprintOperators(landscape: LandscapeModel, blueprint: Blu
 		try {
 			operatorJsonToModel(landscape, blueprint, opName, operatorJsonByName[opName]);
 		} catch (e) {
-			console.error(`${blueprint.name} (${opName}): ${e.stack}`);
+			console.error(`[CREATE_OPERATOR_IN_BLUEPRINT] "${blueprint.name}"."${opName}": ${e.stack}`);
 		}
 	});
 }
@@ -266,7 +276,7 @@ function connectBlueprintOperators(blueprint: BlueprintModel, connections: Conne
 	Object.keys(connections).forEach((sourcePortReference: string) => {
 		const sourcePort = blueprint.resolvePortReference(sourcePortReference);
 		if (!sourcePort) {
-			console.error(`${blueprint.name}: port ${sourcePortReference} cannot be resolved`);
+			console.error(`[CONNECT_PORT_ACCESS_SRC] ${blueprint.name}: port ${sourcePortReference} cannot be resolved`);
 			return;
 		}
 
@@ -274,14 +284,14 @@ function connectBlueprintOperators(blueprint: BlueprintModel, connections: Conne
 		for (const destinationPortReference of destinationPortReferences) {
 			const destinationPort = blueprint.resolvePortReference(destinationPortReference);
 			if (!destinationPort) {
-				console.error(`${blueprint.name}: port ${destinationPortReference} cannot be resolved`);
+				console.error(`[CONNECT_PORT_ACCESS_DST] ${blueprint.name}: port ${destinationPortReference} cannot be resolved`);
 				continue;
 			}
 
 			try {
 				sourcePort.connect(destinationPort, false);
 			} catch (e) {
-				console.error(`${blueprint.name}: ${sourcePort.getPortReference()} -> ${destinationPort.getPortReference()} - ${e.toString()}`);
+				console.error(`[CONNECT_PORT] ${blueprint.name}: ${sourcePort.getPortReference()} -> ${destinationPort.getPortReference()} - ${e.toString()}`);
 			}
 		}
 	});
@@ -318,7 +328,7 @@ export function toTypeIdentifier(typeName: string): TypeIdentifier {
 	} as { [_: string]: TypeIdentifier })[typeName.toLowerCase()];
 
 	if (type === undefined) {
-		throw new Error(`unknown type identifier '${typeName}'`);
+		throw new Error(`unknown type identifier "${typeName}"`);
 	}
 
 	return type;
@@ -375,7 +385,11 @@ function createPropertyAssignments(blueprint: BlueprintModel, propDefs: Property
 	const propAssigns = new PropertyAssignments(Array.from(blueprint.getProperties()), genSpeci);
 	if (propDefs) {
 		Object.keys(propDefs).forEach((propName: string) => {
-			propAssigns.get(propName).assign(propDefs[propName]);
+			try {
+				propAssigns.get(propName).assign(propDefs[propName]);
+			} catch (e) {
+				console.warn(`[UNSUPPORTED_PROPTERTY] Blueprint "${blueprint.name}": ${e}`);
+			}
 		});
 	}
 	return propAssigns;
@@ -397,7 +411,7 @@ function createGenericSpecifications(blueprint: BlueprintModel, genericsData: Ge
 export class BlueprintExistsError extends Error {
 
 	constructor(id: string) {
-		super(`Blueprint with ID ${id} already exists`);
+		super(`Blueprint with uuid ${id} already exists`);
 	}
 
 }

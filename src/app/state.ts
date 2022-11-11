@@ -1,0 +1,109 @@
+import uuidv4 from "uuid/v4";
+import { ApiService } from "./services";
+import { SlangAspects } from "../slang/aspects";
+import { PortDirection } from "../slang/core/abstract/port";
+import { blueprintModelToJson, loadBlueprints } from "../slang/core/mapper";
+import { AppModel, BlueprintModel } from "../slang/core/models";
+import { BlueprintType } from "../slang/core/models/blueprint";
+import { SlangType } from "../slang/definitions/type";
+import { OperatorDataExt } from "../extensions/operators";
+
+declare const APIURL: string;
+const API = new ApiService(APIURL);
+
+export class AppState {
+	private static extensions = [
+		OperatorDataExt,
+	]
+
+    private static initalized = false;
+
+	public static readonly aspects = new SlangAspects();
+	public static readonly appModel = AppModel.create("slang");
+    public static readonly landscape = AppState.appModel.createLandscape();
+
+	private static _activeBlueprint: BlueprintModel|null;
+	public static blueprints: BlueprintModel[] = [];
+	public static blueprintsByUUID = new Map<String, BlueprintModel>()
+
+	public static init() {
+        if (AppState.initalized) {
+            return;
+        }
+
+		AppState.registerExtensions()
+        AppState.subscribe()
+		AppState.appModel.load()
+	}
+
+	public static get activeBlueprint(): BlueprintModel|null {
+		return this._activeBlueprint;
+	}
+
+	public static set activeBlueprint(blueprint: BlueprintModel|null) {
+		if (this._activeBlueprint) {
+			this._activeBlueprint.close()
+		}
+
+		if (blueprint) {
+			blueprint.open();
+		}
+		this._activeBlueprint = blueprint;
+	}
+
+	private static registerExtensions() {
+		AppState.extensions.forEach(extClass => extClass.register(AppState.appModel, AppState.aspects))
+	}
+
+	private static subscribe(): void {
+		AppState.landscape.subscribeChildCreated(BlueprintModel, (blueprint) => {
+			AppState.blueprintsByUUID.set(blueprint.uuid, blueprint)
+			AppState.blueprints.push(blueprint)
+		});
+
+		AppState.appModel.subscribeLoadRequested(() => {
+			return AppState.loadBlueprints()
+		});
+
+		AppState.appModel.subscribeStoreRequested((blueprint: BlueprintModel) => {
+			AppState.storeBlueprint(blueprint);
+		});
+
+	}
+
+	public static getBlueprint(uuid: String): BlueprintModel|null {
+		const bp = AppState.blueprintsByUUID.get(uuid);
+		return (bp)?bp:null;
+	}
+
+	public static createEmptyBlueprint(): BlueprintModel {
+		const newBlueprint = AppState.landscape.createBlueprint({
+			uuid: uuidv4(),
+			meta: {name: `Unnamed${new Date().getTime()}`},
+			type: BlueprintType.Local,
+		});
+		newBlueprint.createPort({
+			name: "",
+			type: SlangType.newMap(),
+			direction: PortDirection.In,
+		});
+		newBlueprint.createPort({
+			name: "",
+			type: SlangType.newMap(),
+			direction: PortDirection.Out,
+		});
+		return newBlueprint;
+	}
+
+	private static async loadBlueprints(): Promise<void> {
+		loadBlueprints(AppState.landscape, await API.getBlueprints());
+        return Promise.resolve();
+	}
+	
+	private static storeBlueprint(blueprint: BlueprintModel): void {
+		API.storeBlueprint(blueprintModelToJson(blueprint)).then(() => {
+			return;
+		});
+	}
+     
+}

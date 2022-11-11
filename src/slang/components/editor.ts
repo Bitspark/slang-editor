@@ -1,4 +1,4 @@
-import {OperatorDataApp} from "../../apps/operators";
+import {OperatorDataExt} from "../../extensions/operators";
 import {STYLING} from "../../styles";
 import {SlangAspects} from "../aspects";
 import {SlangBehaviorSubject} from "../core/abstract/utils/events";
@@ -36,7 +36,7 @@ export class SlangEditor extends HTMLElement {
 		this.landscape = appModel.createLandscape();
 		this.aspects = new SlangAspects();
 
-		OperatorDataApp.register(appModel, this.aspects);
+		OperatorDataExt.register(appModel, this.aspects);
 
 		this.attachShadow({mode: "open"}).appendChild(template.content.cloneNode(true));
 	}

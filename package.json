@@ -6,7 +6,7 @@
   "types": "index.d.ts",
   "source": "index.ts",
   "scripts": {
-    "start": "webpack-dev-server --config webpack/webpack.dev.js --colors",
+    "start": "webpack serve --config webpack/webpack.dev.js --color --env apiUrl=http://localhost:5149",
     "bundle": "webpack --config webpack/webpack.bundle.js --colors",
     "test": "jest",
     "package": "webpack --config webpack/webpack.package.js && grunt",
@@ -43,9 +43,11 @@
   ],
   "dependencies": {
     "backbone": "^1.3.3",
+    "base-href-webpack-plugin": "^3.0.1",
     "bulma": "^0.7.4",
     "dagre": "^0.8.2",
     "graphlib": "^2.1.5",
+    "html-webpack-plugin": "^4.5.2",
     "jointjs": "github:Bitspark/joint",
     "jquery": "^3.3.1",
     "lodash": "^4.17.11",
@@ -88,7 +90,6 @@
     "grunt-shell": "^3.0.1",
     "grunt-string-replace": "^1.3.1",
     "grunt-ts": "^6.0.0-beta.22",
-    "html-webpack-plugin": "^4.0.0-beta.5",
     "jest": "^25.2.3",
     "jest-fetch-mock": "^3.0.0",
     "jest-websocket-mock": "^2.0.0",
@@ -109,7 +110,7 @@
     "typescript": "^3.4.3",
     "webpack": "^4.29.6",
     "webpack-cli": "^4.0.0",
-    "webpack-dev-server": "^3.1.10",
+    "webpack-dev-server": "^3.7.1",
     "webpack-merge": "^5.0.7"
   }
 }

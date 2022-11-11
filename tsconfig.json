@@ -8,6 +8,9 @@
 		"outDir": "dist",
 		"rootDir": "src",
 		"baseUrl": "./",
+		"paths": {
+			"@styles": ["src/styles/*"],
+		},
 		"sourceMap": true,
 		"declaration": true,
 		"strict": true,

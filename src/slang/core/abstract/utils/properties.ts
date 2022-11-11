@@ -113,7 +113,7 @@ export class PropertyAssignments {
 	private getByName(propertyName: string): PropertyAssignment {
 		const propVal = this.assignments.get(propertyName);
 		if (!propVal) {
-			throw new Error(`property ${propertyName} not assigned: ${propertyName}`);
+			throw new Error(`property is not expected: ${propertyName}`);
 		}
 		return propVal;
 	}

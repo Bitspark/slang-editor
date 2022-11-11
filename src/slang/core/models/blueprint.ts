@@ -108,9 +108,11 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 	}
 
 	public set name(newName: string) {
-		if (newName !== "") {
-			this.meta.name = newName;
-		}
+		this.meta.name = newName;
+	}
+
+	public get help(): string {
+		return this.meta.shortDescription ? this.meta.shortDescription : "";
 	}
 
 	private static revealGenericIdentifiers(port: PortModel): Set<string> {
@@ -169,17 +171,10 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		this.genericIdentifiers = new Set<string>();
 		this.tests = tests;
 
-		this.geometry = !geometry ? {
-			size: {width: 240, height: 147},
-			port: {
-				in: {
-					position: 0,
-				},
-				out: {
-					position: 0,
-				},
-			},
-		} : geometry;
+		this.geometry = {
+			size: (geometry && geometry.size) ? geometry.size : {width: 240, height: 147},
+			port: (geometry && geometry.port) ? geometry.port : {in: {position: 0}, out: {position: 0}}
+		} 
 
 		this.subscribeChildCreated(OperatorModel, (operator) => {
 			operator.reconstruct();

@@ -1,9 +1,9 @@
-import {SlangApp} from "../../slang/app";
+import {SlangExtension as SlangExtension} from "../../slang/extension";
 import {PortModel} from "../../slang/core/abstract/port";
 import {OperatorPortModel} from "../../slang/core/models";
 import {TypeIdentifier} from "../../slang/definitions/type";
 
-export class AutoTriggerApp extends SlangApp {
+export class AutoTriggerExt extends SlangExtension {
 
 	private static connectPorts(sourcePort: PortModel, triggerPort: PortModel) {
 		if (sourcePort.getTypeIdentifier() !== TypeIdentifier.Map) {
@@ -19,7 +19,7 @@ export class AutoTriggerApp extends SlangApp {
 		}
 		for (const sub of sourcePort.getMapSubs()) {
 			try {
-				AutoTriggerApp.connectPorts(sub, triggerPort);
+				AutoTriggerExt.connectPorts(sub, triggerPort);
 				return;
 			} catch (e) {
 				console.error(e);
@@ -47,7 +47,7 @@ export class AutoTriggerApp extends SlangApp {
 					return;
 				}
 				try {
-					AutoTriggerApp.connectPorts(sourcePort, port);
+					AutoTriggerExt.connectPorts(sourcePort, port);
 				} catch (e) {
 					console.error(e);
 				}

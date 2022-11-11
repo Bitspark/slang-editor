@@ -1,5 +1,8 @@
 const Path = require("path");
-const Clean = require("clean-webpack-plugin");
+const Webpack = require('webpack');
+const {CleanWebpackPlugin} = require("clean-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const {BaseHrefWebpackPlugin} = require('base-href-webpack-plugin');
 
 module.exports = env => {
 	return {
@@ -18,10 +21,19 @@ module.exports = env => {
 			},
 		},
 		plugins: [
-			new Clean(["dist"], {root: Path.resolve(__dirname, "..", "..")}),
+			new Webpack.DefinePlugin({
+				'APIURL': JSON.stringify(env.apiUrl)
+			}),
+			new CleanWebpackPlugin({
+				cleanAfterEveryBuildPatterns: ["dist"],
+				root: Path.resolve(__dirname, "..", ".."),
+			}),
 		],
 		resolve: {
 			extensions: [".tsx", ".ts", ".js"],
+			alias: {
+				'@styles': Path.resolve('src/styles'),
+			}
 		},
 		module: {
 			rules: [
