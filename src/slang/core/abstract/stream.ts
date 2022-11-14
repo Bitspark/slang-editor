@@ -490,13 +490,27 @@ export class StreamPort {
 
 		for (let i = 0; i < nextStreamDepth; i++) {
 			const newStreamType = new SlangType(newMapType, TypeIdentifier.Stream);
-			const newStreamName = `gen_str_${(new Date().getTime()) % maxRandomNumber}`;
-			newMapType.addMapSub(newStreamName, newStreamType);
-			portId.push(newStreamName);
 
-			newMapType = new SlangType(newStreamType, TypeIdentifier.Map);
-			newStreamType.setStreamSub(newMapType);
+			if (i === 0) {
+				const newStreamName = `gen_str_${(new Date().getTime()) % maxRandomNumber}`;
+				newMapType.addMapSub(newStreamName, newStreamType);
+				portId.push(newStreamName);
+			} else { 
+				newMapType.setStreamSub(newStreamType);
+			} 
+
+			if (i < nextStreamDepth - 1) {
+				newMapType = newStreamType;
+			} else {
+				newMapType = new SlangType(newStreamType, other.getTypeIdentifier(), true);
+				newStreamType.setStreamSub(newMapType);
+			}
+
 			portId.push("~");
+		}
+
+		if (nextStreamDepth) {
+			return {portId, type};
 		}
 
 		newMapType.addMapSub(subName, new SlangType(newMapType, other.getTypeIdentifier(), true));
