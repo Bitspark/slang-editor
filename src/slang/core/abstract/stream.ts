@@ -442,7 +442,7 @@ export class StreamPort {
 
 		let type: SlangType;
 		if (this.port.getTypeIdentifier() !== TypeIdentifier.Map) {
-			type = new SlangType(null, TypeIdentifier.Map);
+			type = new SlangType(null, TypeIdentifier.Map, true);
 		} else {
 			type = this.port.getType();
 		}
@@ -475,7 +475,7 @@ export class StreamPort {
 			}
 
 			const {type: createdType, portId: createdPortId} = streamSub.createGenericType(other);
-			const streamType = new SlangType(type, TypeIdentifier.Stream);
+			const streamType = new SlangType(type, TypeIdentifier.Stream, true);
 
 			streamType.setStreamSub(createdType);
 			type.addMapSub(sub.getName(), streamType);
@@ -489,7 +489,7 @@ export class StreamPort {
 		let newMapType = type;
 
 		for (let i = 0; i < nextStreamDepth; i++) {
-			const newStreamType = new SlangType(newMapType, TypeIdentifier.Stream);
+			const newStreamType = new SlangType(newMapType, TypeIdentifier.Stream, true);
 
 			if (i === 0) {
 				const newStreamName = `gen_str_${(new Date().getTime()) % maxRandomNumber}`;
