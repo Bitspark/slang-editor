@@ -114,7 +114,7 @@ export class ConnectionComponent extends CellComponent {
 		}
 
 		link.attr(".connection/class", cssClasses.join(" "));
-		link.attr(".connection/stroke-width", lines === 1 ? 2 : 1);
+		link.attr(".connection/stroke-width", lines === 1 ? Styles.Connection.OrdinaryConnection.strokeWidth : 1);
 		link.attr(".connection-wrap/class", "sl-connection-wrap");
 
 		if (!stream) {
@@ -149,7 +149,8 @@ export class ConnectionComponent extends CellComponent {
 			z: -1,
 			attrs: {
 				".connection": {
-					strokeOpacity: Styles.Connection.GhostConnection.strokeOpacity,
+					strokeWidth: Styles.Connection.OrdinaryConnection.strokeWidth,
+					strokeOpacity: Styles.Connection.OrdinaryConnection.strokeOpacity,
 					cursor: "pointer",
 				},
 				".connection-wrap": {
@@ -160,12 +161,6 @@ export class ConnectionComponent extends CellComponent {
 				},
 			},
 		} as any);
-		this.shape.transition("attrs/.connection/stroke-opacity", Styles.Connection.OrdinaryConnection.strokeOpacity, {
-			duration: 360,
-			timingFunction: (t) => {
-				return Math.sqrt(t);
-			},
-		});
 
 		this.refresh();
 
@@ -186,11 +181,10 @@ export class ConnectionComponent extends CellComponent {
 	}
 
 	public refresh(): void {
-
+		ConnectionComponent.refresh(this.connection.source, this.connection.destination, this.shape);
 		if (!this.getShape().graph) {
 			this.render();
 		}
-		ConnectionComponent.refresh(this.connection.source, this.connection.destination, this.shape);
 	}
 
 	public getId(): string {

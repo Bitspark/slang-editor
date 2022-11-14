@@ -331,6 +331,13 @@ export class SlangType {
 		return this.mapSubs!.get(name) || null;
 	}
 
+	public hasMapSubs(): boolean {
+		if (this.typeIdentifier !== TypeIdentifier.Map) {
+			throw new Error(`type '${TypeIdentifier[this.typeIdentifier]}' is not a map therefore doesn't have sub types`);
+		}
+		return this.mapSubs!.size > 0;
+	}
+
 	public getMapSubs(): IterableIterator<[string, SlangType]> {
 		if (this.typeIdentifier !== TypeIdentifier.Map) {
 			throw new Error(`access of map sub types of a type of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);

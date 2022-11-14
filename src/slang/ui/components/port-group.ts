@@ -19,7 +19,16 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
 			break;
 
 		case TypeIdentifier.Stream:
-			portItems.push.apply(portItems, createPortItems(parent, position, port.getStreamSub(), createGhostPorts, isBlackBox));
+			const streamSub = port.getStreamSub()
+
+			if (streamSub.getTypeIdentifier() === TypeIdentifier.Map || streamSub.getTypeIdentifier() === TypeIdentifier.Stream) {
+				portItems.push.apply(portItems, createPortItems(parent, position, streamSub, createGhostPorts, isBlackBox));
+			}
+			else {
+				// Stream with just a simple sub stream type --> PortComponent can visualize this stream type
+				portItems.push(new PortComponent(port, parent, false, isBlackBox));
+			}
+
 			break;
 
 		case TypeIdentifier.Unspecified:

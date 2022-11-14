@@ -159,14 +159,6 @@ export abstract class BlackBoxComponent extends CellComponent {
 export class BlueprintBoxComponent extends BlackBoxComponent {
 	constructor(paperView: PaperView, protected blueprint: BlueprintModel) {
 		super(paperView, false);
-
-		this.onClick(() => {
-			this.blueprint.clicked.next();
-		});
-		this.onDblClick(() => {
-			this.blueprint.dblclicked.next();
-		});
-
 		this.refresh();
 	}
 
@@ -214,13 +206,6 @@ export class BlueprintBoxComponent extends BlackBoxComponent {
 export class OperatorBoxComponent extends BlackBoxComponent {
 	constructor(paperView: PaperView, protected readonly operator: OperatorModel) {
 		super(paperView, paperView.isEditable);
-
-		this.onClick(() => {
-			this.operator.clicked.next();
-		});
-		this.onDblClick(() => {
-			this.operator.dblclicked.next();
-		});
 
 		operator.getGenerics().subscribeGenericsChanged(() => {
 			this.refresh();
