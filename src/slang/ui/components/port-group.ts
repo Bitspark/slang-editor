@@ -8,39 +8,32 @@ import {PortComponent} from "./port";
 
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";
 
-function createPortItems(parent: PortGroupComponent, position: PortGroupPosition, port: PortModel, createGhostPorts: boolean, isBlackBox: boolean): PortComponent[] {
+/* isStreamSub: port is a sub of a stream --> is primitive port is direct child of a stream, it will be visualized accordingly */
+function createPortItems(parent: PortGroupComponent, position: PortGroupPosition, port: PortModel, createGhostPorts: boolean, isBlackBox: boolean, isStreamSub: boolean): PortComponent[] {
 	const portItems: PortComponent[] = [];
 
 	switch (port.getTypeIdentifier()) {
 		case TypeIdentifier.Map:
 			for (const sub of port.getMapSubs()) {
-				portItems.push.apply(portItems, createPortItems(parent, position, sub, createGhostPorts, isBlackBox));
+				portItems.push.apply(portItems, createPortItems(parent, position, sub, createGhostPorts, isBlackBox, false));
 			}
 			break;
 
 		case TypeIdentifier.Stream:
 			const streamSub = port.getStreamSub()
-
-			if (streamSub.getTypeIdentifier() === TypeIdentifier.Map || streamSub.getTypeIdentifier() === TypeIdentifier.Stream) {
-				portItems.push.apply(portItems, createPortItems(parent, position, streamSub, createGhostPorts, isBlackBox));
-			}
-			else {
-				// Stream with just a simple sub stream type --> PortComponent can visualize this stream type
-				portItems.push(new PortComponent(port, parent, false, isBlackBox));
-			}
-
+			portItems.push.apply(portItems, createPortItems(parent, position, streamSub, createGhostPorts, isBlackBox, true));
 			break;
 
 		case TypeIdentifier.Unspecified:
 			break;
 
 		default:
-			portItems.push(new PortComponent(port, parent, false, isBlackBox));
+			portItems.push(new PortComponent(port, parent, false, isBlackBox, isStreamSub));
 	}
 
 	if (createGhostPorts && port.isGenericLike() &&
 		(port.getTypeIdentifier() === TypeIdentifier.Map || port.getTypeIdentifier() === TypeIdentifier.Unspecified)) {
-		portItems.push(new PortComponent(port, parent, true, isBlackBox));
+		portItems.push(new PortComponent(port, parent, true, isBlackBox, isStreamSub));
 	}
 
 	return portItems;
@@ -159,7 +152,7 @@ export class PortGroupComponent {
 
 		parentElement.removePorts(this.ports.map((port) => port.getPortElement()));
 
-		const ports = createPortItems(this, this.getGroupPosition(), this.port, createGhostPorts, this.isBlackBox);
+		const ports = createPortItems(this, this.getGroupPosition(), this.port, createGhostPorts, this.isBlackBox, false);
 
 		this.ports.length = 0;
 		this.ports.push.apply(this.ports, ports);

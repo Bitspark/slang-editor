@@ -24,7 +24,7 @@ export class PortComponent {
 			`L 0 ${height / 2} z`;
 	}
 
-	private static getPortMarkup(port: PortModel, ghost: boolean): string {
+	private static getPortMarkup(port: PortModel, ghost: boolean, isStreamSub: boolean): string {
 		const streamDepth = 0; // TODO
 		if (streamDepth < 0) {
 			throw new Error(`stream depth cannot be negative`);
@@ -39,13 +39,11 @@ export class PortComponent {
 				if (ghost) {
 					classes.push(tid2css("ghost"));
 				} else {
-					const typeId = port.getTypeIdentifier()
 					classes.push(tid2css(port.getTypeIdentifier()));
-					if (typeId === TypeIdentifier.Stream) {
-					// I assume sub type is not a stream or map
-						classes.push(tid2css(port.getStreamSub().getTypeIdentifier()))
+					if (isStreamSub) {
+						// this port is a subport of a stream
+						classes.push(tid2css(TypeIdentifier.Stream))
 					}
-
 				}
 			} else {
 				classes.push(`sl-stripe`);
@@ -87,14 +85,15 @@ export class PortComponent {
 	private position: g.PlainPoint | undefined;
 	private readonly portElement: dia.Element.Port = {};
 
-	constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent, readonly ghost: boolean, isBlackBox: boolean) {
+	/* isStreamSub: port is a sub of a stream --> is primitive port is direct child of a stream, it will be visualized accordingly */
+	constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent, readonly ghost: boolean, isBlackBox: boolean, isStreamSub: boolean) {
 		if (ghost) {
 			this.portElement.id = `${port.getIdentity()}.*`;
 		} else {
 			this.portElement.id = `${port.getIdentity()}`;
 		}
 		this.portElement.group = parent.getName();
-		this.portElement.markup = PortComponent.getPortMarkup(port, ghost);
+		this.portElement.markup = PortComponent.getPortMarkup(port, ghost, isStreamSub);
 		this.portElement.attrs = {
 			path: PortComponent.getPortAttributes(parent.getGroupPosition(), port, isBlackBox),
 			g: {
