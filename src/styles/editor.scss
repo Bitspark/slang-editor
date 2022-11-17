@@ -7,9 +7,9 @@ $type-color-string: $brown;
 $type-color-boolean: $orange;
 $type-color-binary: $green;
 $type-color-primitive: $cyan;
-$type-color-trigger: rgba($grey, 0.5);
+$type-color-trigger: $grey;
 $type-color-generic: $purple;
-$type-color-ghost: rgba($purple, 0.5);
+$type-color-ghost: rgba($purple, 0.8);
 
 $port-color-stroke: $black;
 $port-color-valid: $green;
@@ -54,7 +54,7 @@ $blackbox-color-label: $black;
 	.sl-rectangle {
 		fill: $blackbox-color-fill;
 		stroke: $black;
-		stroke-width: 1.5px;
+		stroke-width: 1px;
 		paint-order: stroke;
 	}
 
@@ -75,8 +75,8 @@ $blackbox-color-label: $black;
 	.sl-rectangle {
 		stroke: $black;
 		fill: transparent;
-		stroke-width: 1.5px;
-		stroke-dasharray: 2;
+		stroke-width: 0.5px;
+		stroke-dasharray: 3;
 	}
 
 	&.sl-blupr-elem {
@@ -99,7 +99,7 @@ $blackbox-color-label: $black;
 
 .sl-port {
 	@extend %transition;
-	stroke-width: 2;
+	stroke-width: 1;
 	stroke-opacity: 1;
 	transition-property: stroke-width;
 

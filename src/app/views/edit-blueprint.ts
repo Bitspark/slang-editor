@@ -53,7 +53,14 @@ class Editor {
 							ondelete: view.isEditable
 							? () => {
 								ContextMenu.hide();
-								operator.destroy();
+								blueprint.deleteOperator(operator)
+							}
+							: undefined,
+
+							onclone: view.isEditable
+							? () => {
+								ContextMenu.hide();
+								blueprint.cloneOperator(operator);
 							}
 							: undefined,
 

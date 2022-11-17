@@ -2,6 +2,7 @@ import m, {ClassComponent, CVnode} from "mithril";
 import {IconButton} from "../../slang/ui/toolkit/buttons";
 interface OperatorControlAttrs {
 	ondelete?(): void;
+	onclone?(): void;
 	onopen?(): void;
 	onconfig?(): void;
 }
@@ -17,6 +18,15 @@ export class OperatorControl implements ClassComponent<OperatorControlAttrs> {
 					fas: "trash-alt",
 					tooltip: "Remove operator",
 					onclick: attrs.ondelete
+				})
+				: undefined,
+
+				attrs.onclone
+				? m(IconButton, {
+					color: "black",
+					fas: "clone",
+					tooltip: "Clone operator",
+					onclick: attrs.onclone
 				})
 				: undefined,
 
