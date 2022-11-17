@@ -113,7 +113,7 @@ export class PropertyFormDashboardModule implements DashboardModule {
 			size: "small",
 			label: fieldName,
 			initValue: !this.formData.has(fieldName) ? initValue : undefined,
-			onInput: (v: any) => {
+			oninput: (v: any) => {
 				this.formData.set(fieldName, v);
 				this.beforeFormSubmit(this.formData).forEach((value, propertyName) => {
 					this.operator.getProperties().get(propertyName).assign(value);
@@ -154,7 +154,7 @@ export class PortTypeDashboardModule implements DashboardModule {
 		return m(TypeSelect, {
 			label: genId,
 			type: genType,
-			onInput: (nType: SlangType) => {
+			oninput: (nType: SlangType) => {
 				this.operator.getGenerics().specify(genId, nType);
 			},
 		});

@@ -11,7 +11,7 @@ export interface BaseInputAttrs<T> extends HasSizeAttrs {
 	initValue?: T;
 	readonly?: boolean;
 
-	onInput(value: T, e?: { redraw: boolean }): void;
+	oninput(value: T, e?: { redraw: boolean }): void;
 
 	onchange?(file: File): void;
 
@@ -66,7 +66,7 @@ export class StringInput implements BaseInput<string> {
 					}
 				},
 				oninput: (e: MithrilEvent) => {
-					attrs.onInput(e.currentTarget.value, e);
+					attrs.oninput(e.currentTarget.value, e);
 				},
 				onkeydown: attrs.onkeydown,
 				onkeyup: attrs.onkeyup,
@@ -89,7 +89,7 @@ export class NumberInput implements BaseInput<number> {
 					}
 				},
 				oninput: (e: MithrilEvent) => {
-					attrs.onInput(Number(e.currentTarget.value), e);
+					attrs.oninput(Number(e.currentTarget.value), e);
 				},
 				onkeydown: attrs.onkeydown,
 				onkeyup: attrs.onkeyup,
@@ -115,7 +115,7 @@ export class BooleanInput implements BaseInput<boolean> {
 							},
 							// @ts-ignore
 							oninput: m.withAttr("checked", (v: boolean) => {
-								attrs.onInput(v);
+								attrs.oninput(v);
 							}),
 							onkeydown: attrs.onkeydown,
 							onkeyup: attrs.onkeyup,
@@ -148,7 +148,7 @@ export class FileInput implements BaseInput<File> {
 						},
 						// @ts-ignore
 						oninput: m.withAttr("files", (files: File[]) => {
-							attrs.onInput(files[0]);
+							attrs.oninput(files[0]);
 						}),
 						onkeydown: attrs.onkeydown,
 						onkeyup: attrs.onkeyup,
@@ -189,7 +189,7 @@ export class SelectInput implements ClassComponent<SelectInputAttrs> {
 						}
 					},
 					oninput: (e: MithrilEvent) => {
-						attrs.onInput(e.currentTarget.value, e);
+						attrs.oninput(e.currentTarget.value, e);
 					},
 					onkeydown: attrs.onkeydown,
 					onkeyup: attrs.onkeyup,

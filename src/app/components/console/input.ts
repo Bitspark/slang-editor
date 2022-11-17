@@ -58,7 +58,7 @@ export namespace Input {
 					return m(BooleanInput, attrs);
 
 				case TypeIdentifier.Trigger:
-					attrs.onInput(null);
+					attrs.oninput(null);
 					return;
 
 				default:
@@ -97,9 +97,9 @@ export namespace Input {
 								label: subName,
 								type: subType,
 								initValue: this.values.get(subName),
-								onInput: (v: any) => {
+								oninput: (v: any) => {
 									values.set(subName, v);
-									attrs.onInput(this.post(values));
+									attrs.oninput(this.post(values));
 								},
 							}),
 						))
@@ -160,16 +160,16 @@ export namespace Input {
 										size: "small",
 										onclick: () => {
 											that.values[index] = undefined;
-											attrs.onInput(this.post(this.values));
+											attrs.oninput(this.post(this.values));
 										},
 									}, m(Icon, {fas: "minus"})),
 									m(ConsoleEntry, {
 										size: "small",
 										type: attrs.type,
 										initValue: entry,
-										onInput: (v: any) => {
+										oninput: (v: any) => {
 											that.values[index] = v;
-											attrs.onInput(this.post(this.values));
+											attrs.oninput(this.post(this.values));
 										},
 									}),
 								]);

@@ -45,7 +45,7 @@ class MapEntriesInput implements ClassComponent<MapEntriesInputAttrs> {
 						label: "",
 						size: "small",
 						initValue: tname,
-						onInput(ntname: string) {
+						oninput(ntname: string) {
 							attrs.oneditEntry(index, [ntname, type]);
 						},
 						onkeydown: (e: MithrilKeyboardEvent) => {
@@ -60,7 +60,7 @@ class MapEntriesInput implements ClassComponent<MapEntriesInputAttrs> {
 						type,
 						label: "",
 						size: "small",
-						onInput: (ntype: SlangType) => {
+						oninput: (ntype: SlangType) => {
 							attrs.oneditEntry(index, [tname, ntype]);
 						},
 					}),
@@ -100,17 +100,17 @@ export class MapTypeSelectInput implements ClassComponent<TypeSelectAttrs> {
 
 			onremoveEntry(idx: number) {
 				that.mapEntries.splice(idx, 1);
-				attrs.onInput(that.getMapSlangType(that.mapEntries));
+				attrs.oninput(that.getMapSlangType(that.mapEntries));
 			},
 
 			onappendEntry(entry: [string, SlangType]) {
 				that.mapEntries.push(entry);
-				attrs.onInput(that.getMapSlangType(that.mapEntries));
+				attrs.oninput(that.getMapSlangType(that.mapEntries));
 			},
 
 			oneditEntry(idx: number, entry: [string, SlangType]) {
 				that.mapEntries[idx] = entry;
-				attrs.onInput(that.getMapSlangType(that.mapEntries));
+				attrs.oninput(that.getMapSlangType(that.mapEntries));
 			},
 		});
 	}
@@ -128,8 +128,8 @@ export class StreamTypeSelectInput implements ClassComponent<TypeSelectAttrs> {
 		const t = attrs.type;
 		return m(TypeSelect, {
 			type: t.getStreamSub(),
-			onInput: (ntype: SlangType) => {
-				attrs.onInput(that.getStreamSlangType(ntype));
+			oninput: (ntype: SlangType) => {
+				attrs.oninput(that.getStreamSlangType(ntype));
 			},
 		});
 	}
@@ -153,21 +153,21 @@ export class TypeSelect implements ClassComponent<TypeSelectAttrs> {
 		switch (ti) {
 			case TypeIdentifier.Map:
 				return m(Block,
-					this.renderInput(t, attrs.onInput, attrs.label),
+					this.renderInput(t, attrs.oninput, attrs.label),
 					m(MapTypeSelectInput, {
 						type: t,
-						onInput: attrs.onInput,
+						oninput: attrs.oninput,
 					}));
 
 			case TypeIdentifier.Stream:
 				return m(".is-flex.is-flex-direction-row",
-					this.renderInput(t, attrs.onInput, attrs.label),
+					this.renderInput(t, attrs.oninput, attrs.label),
 					m(StreamTypeSelectInput, {
 						type: t,
-						onInput: attrs.onInput,
+						oninput: attrs.oninput,
 					}));
 			default:
-				return this.renderInput(t, attrs.onInput, attrs.label);
+				return this.renderInput(t, attrs.oninput, attrs.label);
 		}
 
 	}
@@ -181,7 +181,7 @@ export class TypeSelect implements ClassComponent<TypeSelectAttrs> {
 			size: "small", 
 			selected: ti,
 			options: (fixed) ? [ti] : this.portTypeOptions,
-			onInput: (fixed) ? () => null :
+			oninput: (fixed) ? () => null :
 				(opt: string) => {
 					if (this.portTypeOptions.indexOf(opt) < 0) {
 						return;
