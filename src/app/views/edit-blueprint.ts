@@ -57,6 +57,13 @@ class Editor {
 							}
 							: undefined,
 
+							onclone: view.isEditable
+							? () => {
+								ContextMenu.hide();
+								blueprint.cloneOperator(operator);
+							}
+							: undefined,
+
 							onopen: view.isDescendable && !operatorBp.isElementary()
 							? () => {
 								ContextMenu.hide();
