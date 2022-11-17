@@ -6,6 +6,7 @@ import {XY} from "../../definitions/api";
 import {cssattr, cssobj, CSSType, cssupdate} from "../utils";
 import {PaperView} from "../views/paper-view";
 import { UserEvent, UserEvents } from "../views/user-events";
+import { BlackBoxComponent } from "./blackbox";
 
 import {Container} from "./toolkit";
 
@@ -195,15 +196,16 @@ export class AttachableComponent extends HtmlComponent {
 		super(paperView, offset);
 	}
 
-	public attachTo(elem: dia.Element, align?: Alignment) {
-		this.update(elem, align);
-		elem.on("change:position change:size", () => {
-			this.update(elem, align);
+	public attachTo(comp: BlackBoxComponent, align?: Alignment) {
+		this.update(comp, align);
+		comp.changed.subscribe(() => {
+			this.update(comp, align);
 		});
 		return this;
 	}
 
-	protected update(elem: dia.Element, align?: Alignment) {
+	protected update(comp: BlackBoxComponent, align?: Alignment) {
+		const elem = comp.getShape();
 		const bbox = elem.getBBox();
 		let originPos = bbox.center();
 

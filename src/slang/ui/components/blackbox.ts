@@ -85,6 +85,7 @@ export abstract class BlackBoxComponent extends CellComponent {
 	protected shape!: BlackBoxShape;
 	protected portGroups!: PortGroupComponent[];
 
+	public readonly changed = new SlangSubject<null>("position-size-changed");
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
 
@@ -102,6 +103,10 @@ export abstract class BlackBoxComponent extends CellComponent {
 		this.shape = this.createShape();
 		this.portGroups.forEach((group) => {
 			group.setParent(this.shape, this.createGhostPorts);
+		});
+
+		this.shape.on("change:position change:size", () => {
+			this.changed.next(null);
 		});
 
 		this.render();

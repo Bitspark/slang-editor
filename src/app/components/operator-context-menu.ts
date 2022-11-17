@@ -9,7 +9,7 @@ export class ContextMenu {
 	public static show(oprBox: OperatorBoxComponent, comp: m.Component) {
 		this.contextMenu = oprBox
 		.createComponent({x: 0, y: 0, align: "tl"})
-		.attachTo(oprBox.getShape(), "tr")
+		.attachTo(oprBox, "tr")
 		.mount(comp)
 	}
 
