@@ -208,6 +208,10 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		)
 	}
 
+	public deleteOperator(op: OperatorModel)  {
+		op.destroy()
+	}
+
 	public createBlankOperator(blueprint: BlueprintModel, geometry?: OperatorGeometry): OperatorModel {
 		const name = this.getNextOperatorName(blueprint);
 		return this.createChildNode(OperatorModel, {
