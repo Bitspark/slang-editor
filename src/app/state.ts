@@ -66,10 +66,9 @@ export class AppState {
 			await AppState.loadRunningOperator();
 		});
 
-		AppState.appModel.subscribeStoreRequested((blueprint: BlueprintModel) => {
-			AppState.storeBlueprint(blueprint);
+		AppState.appModel.subscribeStoreRequested(async (blueprint: BlueprintModel) => {
+			await AppState.storeBlueprint(blueprint);
 		});
-
 	}
 
 	public static getBlueprint(uuid: string): BlueprintModel|null {
@@ -97,6 +96,11 @@ export class AppState {
 		return newBlueprint;
 	}
 
+	public static async runOperator(blueprint: BlueprintModel) {
+		await AppState.storeBlueprint(blueprint);
+		await API.startOperator(blueprint)
+	}
+
 	private static async loadBlueprints(): Promise<void> {
 		loadBlueprints(AppState.landscape, await API.getBlueprints());
 	}
@@ -114,10 +118,8 @@ export class AppState {
 		});
 	}
 
-	private static storeBlueprint(blueprint: BlueprintModel): void {
-		API.storeBlueprint(blueprintModelToJson(blueprint)).then(() => {
-			return;
-		});
+	private static async storeBlueprint(blueprint: BlueprintModel) {
+		await API.storeBlueprint(blueprintModelToJson(blueprint));
 	}
 
 }

@@ -1,5 +1,12 @@
 import {SlangTypeValue} from "../slang/definitions/type";
-import {BlueprintsJson, BlueprintJson, BlueprintApiResponse, RunningOperatorJson} from "../slang/definitions/api";
+import {
+	BlueprintsJson,
+	BlueprintJson,
+	BlueprintApiResponse,
+	RunningOperatorJson,
+	RunOperatorJson
+} from "../slang/definitions/api";
+import {BlueprintModel} from "../slang/core/models";
 
 export class ApiService {
 
@@ -41,6 +48,17 @@ export class ApiService {
 		);
 	}
 
+	public async startOperator(blueprint: BlueprintModel): Promise<RunningOperatorJson> {
+		return this.httpPost<RunOperatorJson, RunningOperatorJson>(
+			"/run/",
+			{blueprint: blueprint.uuid},
+			(data: {object: RunningOperatorJson} ) => data.object,
+			(err: any) => {
+				console.error(err);
+			},
+		);
+	}
+
 	public async storeBlueprint(blueprintDefJSON: BlueprintJson): Promise<any> {
 		const process = (data: any) => {
 			if (data) {
@@ -59,6 +77,7 @@ export class ApiService {
 				.then((response: Response) => response.json())
 				.then((data: any) => {
 					resolve(process(data));
+					console.log("SAVED")
 				})
 				.catch(error);
 		});
