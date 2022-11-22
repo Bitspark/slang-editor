@@ -41,7 +41,7 @@ export class Button implements ClassComponent<ButtonAttrs> {
 			attrs.onclick = attrs.onClick
 		}
 
-		return m("a.button", {
+		return m("button.button", {
 			class: buildCssClass(attrs, buttonColorCssClass(attrs)),
 			inacitve: that.isInactive(attrs),
 			onclick: (that.isClickable(attrs)) ? (e: MithrilMouseEvent) => {

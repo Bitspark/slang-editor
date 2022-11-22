@@ -27,20 +27,28 @@ export class BlueprintControlBar implements ClassComponent<any> {
             m(".buttons.are-medium", 
                 m(IconButton, {
                     class: "is-flex-grow-1",
-                    color: "black",
-                    fas: "play",
-                    onclick() {
-                        blueprint.save();
-                    },
-                }),
-                m(IconButton, {
-                    class: "is-flex-grow-1",
-                    color: "black",
                     fas: "save",
                     onclick() {
                         blueprint.save();
                     },
+                }),
+
+                blueprint.isRunning
+                ? m(IconButton, {
+                    class: "is-flex-grow-1",
+                    fas: "stop",
+                    onclick() {
+                        //blueprint.stop();
+                    },
                 })
+                : m(IconButton, {
+                    class: "is-flex-grow-1",
+                    fas: "play",
+                    onclick() {
+                        blueprint.save();
+                    },
+                })
+
             ),
         ]);
 	}
