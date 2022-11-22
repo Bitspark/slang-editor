@@ -1,5 +1,5 @@
 import {SlangTypeValue} from "../slang/definitions/type";
-import {BlueprintsJson, BlueprintJson, BlueprintApiResponse} from "../slang/definitions/api";
+import {BlueprintsJson, BlueprintJson, BlueprintApiResponse, RunningOperatorJson} from "../slang/definitions/api";
 
 export class ApiService {
 
@@ -21,6 +21,19 @@ export class ApiService {
 					library: bpdef.filter((bp) => bp.type === "library").map((bp) => bp.def),
 					local: bpdef.filter((bp) => bp.type === "local").map((bp) => bp.def),
 				};
+			},
+			(err: any) => {
+				console.error(err);
+			},
+		);
+	}
+
+	public async getRunningOperators(): Promise<RunningOperatorJson[]> {
+		return this.httpGet<{}, RunningOperatorJson[]>(
+			"/run/",
+			{},
+			(data: any) => {
+				return (data as { objects: RunningOperatorJson[] }).objects;
 			},
 			(err: any) => {
 				console.error(err);

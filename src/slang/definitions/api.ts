@@ -48,7 +48,7 @@ export interface GenericSpecificationsApiResponse {
 }
 
 export interface RunningOperatorJson {
-	operator: string;
+	blueprint: string;
 	url: string;
 	handle: string;
 }

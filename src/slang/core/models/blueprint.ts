@@ -65,7 +65,7 @@ export interface BlueprintModelArgs {
 	tests?: any;
 }
 
-export interface BlueprintInstance {
+export interface RunningOperator {
 	handle: string;
 	url: string;
 }
@@ -115,6 +115,14 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		return this.meta.shortDescription ? this.meta.shortDescription : "";
 	}
 
+	public set runningOperator(runningOperator: RunningOperator|null) {
+		this._runningOperator.next(runningOperator);
+	}
+
+	public get runningOperator(): RunningOperator|null {
+		return this._runningOperator.getValue();
+	}
+
 	private static revealGenericIdentifiers(port: PortModel): Set<string> {
 		const genericIdentifiers = new Set<string>();
 		if (port.getTypeIdentifier() === TypeIdentifier.Generic) {
@@ -149,16 +157,16 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 	private opened = new SlangBehaviorSubject<boolean>("opened", false);
 	private saveChanges = new SlangSubjectTrigger("save-changes");
 
-	// Topics::Deployment
-	private instance = new SlangBehaviorSubject<BlueprintInstance | null>("instance", null);
+	// Topics::Run Operator
+	private _runningOperator = new SlangBehaviorSubject<RunningOperator | null>("running-operator", null);
 	private inputPushed = new SlangSubject<SlangTypeValue>("input-pushed");
 	private outputPushed = new SlangSubject<PortMessageJson>("output-pushed");
-	private readonly fakeGenerics = new GenericSpecifications(FAKE_GENERIC_VALUES);
-	private readonly geometry: BlueprintGeometry;
 
 	// Properties
 	private readonly type: BlueprintType;
 	private readonly meta: BlueprintMeta;
+	private readonly geometry: BlueprintGeometry;
+	private readonly fakeGenerics = new GenericSpecifications(FAKE_GENERIC_VALUES);
 
 	private properties: PropertyModel[] = [];
 	private genericIdentifiers: Set<string>;
@@ -173,8 +181,8 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 
 		this.geometry = {
 			size: (geometry && geometry.size) ? geometry.size : {width: 240, height: 147},
-			port: (geometry && geometry.port) ? geometry.port : {in: {position: 0}, out: {position: 0}}
-		} 
+			port: (geometry && geometry.port) ? geometry.port : {in: {position: 0}, out: {position: 0}},
+		};
 
 		this.subscribeChildCreated(OperatorModel, (operator) => {
 			operator.reconstruct();
@@ -209,7 +217,7 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 	}
 
 	public deleteOperator(op: OperatorModel)  {
-		op.destroy()
+		op.destroy();
 	}
 
 	public createBlankOperator(blueprint: BlueprintModel, geometry?: OperatorGeometry): OperatorModel {
@@ -233,8 +241,8 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		return this.name;
 	}
 
-	public isDeployed(): boolean {
-		return this.instance.getValue() !== null;
+	public isStarted(): boolean {
+		return this._runningOperator.getValue() !== null;
 	}
 
 	public isLocal(): boolean {
@@ -380,10 +388,6 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		return this.getShortName();
 	}
 
-	public getInstanceAccess(): BlueprintInstance | null {
-		return this.instance.getValue();
-	}
-
 	public isStreamSource(): boolean {
 		return true;
 	}
@@ -429,23 +433,23 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 	}
 
 	public pushInput(inputData: SlangTypeValue) {
-		if (this.isDeployed()) {
+		if (this.isStarted()) {
 			this.inputPushed.next(inputData);
 		}
 	}
 
 	public pushOutput(outputData: PortMessageJson) {
-		if (this.isDeployed()) {
+		if (this.isStarted()) {
 			this.outputPushed.next(outputData);
 		}
 	}
 
-	public deploy(instanceAcess: BlueprintInstance) {
-		this.instance.next(instanceAcess);
+	public run() {
+		this._runningOperator.next(null);
 	}
 
 	public shutdown() {
-		this.instance.next(null);
+		this._runningOperator.next(null);
 	}
 
 	public save() {
@@ -464,7 +468,7 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 
 	public subscribeInputPushed(cb: (inputData: SlangTypeValue) => void): void {
 		const subscription = this.inputPushed.subscribe(cb);
-		this.instance.pipe(filter((ins) => !ins)).subscribe(() => {
+		this._runningOperator.pipe(filter((ins) => !ins)).subscribe(() => {
 			subscription.unsubscribe();
 		});
 	}

@@ -20,7 +20,7 @@ export class AppState {
 
 	public static readonly aspects = new SlangAspects();
 	public static readonly appModel = AppModel.create("slang");
-    public static readonly landscape = AppState.appModel.createLandscape();
+    public static readonly landscape = AppState.appModel.createLandscape(); // Containing all blueprints
 
 	private static _activeBlueprint: BlueprintModel|null;
 	public static blueprints: BlueprintModel[] = [];
@@ -61,8 +61,9 @@ export class AppState {
 			AppState.blueprints.push(blueprint)
 		});
 
-		AppState.appModel.subscribeLoadRequested(() => {
-			return AppState.loadBlueprints()
+		AppState.appModel.subscribeLoadRequested( async () => {
+			await AppState.loadBlueprints();
+			await AppState.loadRunningOperator();
 		});
 
 		AppState.appModel.subscribeStoreRequested((blueprint: BlueprintModel) => {
@@ -71,7 +72,7 @@ export class AppState {
 
 	}
 
-	public static getBlueprint(uuid: String): BlueprintModel|null {
+	public static getBlueprint(uuid: string): BlueprintModel|null {
 		const bp = AppState.blueprintsByUUID.get(uuid);
 		return (bp)?bp:null;
 	}
@@ -98,13 +99,25 @@ export class AppState {
 
 	private static async loadBlueprints(): Promise<void> {
 		loadBlueprints(AppState.landscape, await API.getBlueprints());
-        return Promise.resolve();
 	}
-	
+	private static async loadRunningOperator(): Promise<void> {
+		const runningOperators = await API.getRunningOperators();
+
+		runningOperators.forEach(({blueprint, handle, url}) => {
+			const blueprintModel = this.getBlueprint(blueprint);
+
+			if (!blueprintModel) {
+				console.error("[LOAD_RUNNING_OPERATORS] no blueprint found for running operator:", blueprint, handle);
+				return;
+			}
+			blueprintModel.runningOperator = {handle, url};
+		});
+	}
+
 	private static storeBlueprint(blueprint: BlueprintModel): void {
 		API.storeBlueprint(blueprintModelToJson(blueprint)).then(() => {
 			return;
 		});
 	}
-     
+
 }
