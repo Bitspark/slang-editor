@@ -24,6 +24,16 @@ body {
 	border: 1px $fuchsia solid;
 }
 
+.sle-view__blueprint-overview {
+	.blueprint--is-running {
+		.panel-icon {
+			path {
+				fill: $green;
+			}
+		}
+	}
+}
+
 .sle-view__edit-blupr {
 	> .box {
 		padding: 0.5rem;

@@ -115,6 +115,10 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		return this.meta.shortDescription ? this.meta.shortDescription : "";
 	}
 
+	public get isRunning(): boolean {
+		return !!this.runningOperator
+	}
+
 	public set runningOperator(runningOperator: RunningOperator|null) {
 		this._runningOperator.next(runningOperator);
 	}
