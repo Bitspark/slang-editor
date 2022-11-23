@@ -9,6 +9,10 @@ import {
 import {BlueprintModel} from "../slang/core/models";
 import {RunningOperator} from "../slang/core/models/blueprint";
 
+function handleError(e: unknown) {
+	console.error(e)
+}
+
 export class ApiService {
 
 	private readonly url: string;
@@ -30,9 +34,7 @@ export class ApiService {
 					local: bpdef.filter((bp) => bp.type === "local").map((bp) => bp.def),
 				};
 			},
-			(err: any) => {
-				console.error(err);
-			},
+			handleError,
 		);
 	}
 
@@ -43,9 +45,7 @@ export class ApiService {
 			(data: any) => {
 				return (data as { objects: RunningOperatorJson[] }).objects;
 			},
-			(err: any) => {
-				console.error(err);
-			},
+			handleError,
 		);
 	}
 
@@ -54,9 +54,7 @@ export class ApiService {
 			"/run/",
 			{blueprint: blueprint.uuid},
 			(data: {object: RunningOperatorJson} ) => data.object,
-			(err: any) => {
-				console.error(err);
-			},
+			handleError,
 		);
 	}
 
@@ -65,9 +63,7 @@ export class ApiService {
 			runningOperator.url,
 			{},
 			() => null,
-			(err: any) => {
-				console.error(err);
-			},
+			handleError,
 		);
 	}
 
@@ -79,9 +75,7 @@ export class ApiService {
 			}
 			return true;
 		};
-		const error = (err: any) => {
-			console.error(err);
-		};
+		const error = handleError;
 
 		return new Promise<boolean>((resolve) => {
 			const reqInit = {method: "post", body: JSON.stringify(blueprintDefJSON)};
@@ -89,7 +83,6 @@ export class ApiService {
 				.then((response: Response) => response.json())
 				.then((data: any) => {
 					resolve(process(data));
-					console.log("SAVED")
 				})
 				.catch(error);
 		});
@@ -100,9 +93,7 @@ export class ApiService {
 			instanceUrl,
 			inputData,
 			(outputData: SlangTypeValue) => outputData,
-			(err: any) => {
-				console.error(err);
-			},
+			handleError,
 		);
 	}
 
@@ -110,7 +101,7 @@ export class ApiService {
 		return new Promise<T>((resolve) => {
 			const reqInit = (method !== "get") ? {method, body: JSON.stringify(data)} : {};
 			fetch(this.url + path, reqInit)
-				.then((response: Response) => response.json())
+				.then((response: Response) => response.status !== 204 ? response.json() : {})
 				.then((responseParsed: any) => {
 					resolve(process(responseParsed));
 				})
