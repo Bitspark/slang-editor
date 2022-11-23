@@ -4,10 +4,6 @@ import { AppState } from "../state";
 
 export class BlueprintControlBar implements ClassComponent<any> {
 	// @ts-ignore
-	public oninit({attrs}: m.Vnode<any, this>) {
-	}
-
-	// @ts-ignore
 	public view({attrs}: CVnode<any>) {
         const blueprint = AppState.activeBlueprint!;
 
@@ -46,6 +42,7 @@ export class BlueprintControlBar implements ClassComponent<any> {
                     fas: "play",
                     async onclick() {
                         await AppState.runOperator(blueprint);
+                        m.redraw();
                     },
                 })
 
