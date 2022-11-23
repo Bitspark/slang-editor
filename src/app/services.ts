@@ -7,6 +7,7 @@ import {
 	RunOperatorJson
 } from "../slang/definitions/api";
 import {BlueprintModel} from "../slang/core/models";
+import {RunningOperator} from "../slang/core/models/blueprint";
 
 export class ApiService {
 
@@ -48,11 +49,22 @@ export class ApiService {
 		);
 	}
 
-	public async startOperator(blueprint: BlueprintModel): Promise<RunningOperatorJson> {
+	public async runOperator(blueprint: BlueprintModel): Promise<RunningOperatorJson> {
 		return this.httpPost<RunOperatorJson, RunningOperatorJson>(
 			"/run/",
 			{blueprint: blueprint.uuid},
 			(data: {object: RunningOperatorJson} ) => data.object,
+			(err: any) => {
+				console.error(err);
+			},
+		);
+	}
+
+	public async stopOperator(runningOperator: RunningOperator): Promise<null> {
+		return this.httpDelete<{}, null>(
+			runningOperator.url,
+			{},
+			() => null,
 			(err: any) => {
 				console.error(err);
 			},

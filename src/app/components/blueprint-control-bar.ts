@@ -33,8 +33,9 @@ export class BlueprintControlBar implements ClassComponent<any> {
                 ? m(IconButton, { // stop running operator
                     class: "is-flex-grow-1",
                     fas: "stop",
-                    onclick() {
-                        //blueprint.stop();
+                    async onclick() {
+                        await AppState.stopOperator(blueprint);
+                        m.redraw();
                     },
                 })
                 : m(IconButton, { // run operator

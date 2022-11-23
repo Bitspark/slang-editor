@@ -98,7 +98,15 @@ export class AppState {
 
 	public static async runOperator(blueprint: BlueprintModel) {
 		await AppState.storeBlueprint(blueprint);
-		blueprint.runningOperator = await API.startOperator(blueprint)
+		blueprint.runningOperator = await API.runOperator(blueprint)
+	}
+
+	public static async stopOperator(blueprint: BlueprintModel) {
+		if (!blueprint.runningOperator) {
+			return;
+		}
+		await API.stopOperator(blueprint.runningOperator!)
+		blueprint.runningOperator = null;
 	}
 
 	private static async loadBlueprints(): Promise<void> {
