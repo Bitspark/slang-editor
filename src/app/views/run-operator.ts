@@ -5,8 +5,10 @@ import { BlueprintView } from "../../slang/ui/views/blueprint";
 import { BlueprintControlBar } from "../components/blueprint-control-bar";
 import { AppState } from "../state";
 import { Box, Block } from "../../slang/ui/toolkit";
-import {InputConsole} from "../components/console";
+import {Input} from "../components/console";
 import {SlangType, SlangTypeValue} from "../../slang/definitions/type";
+import {List, ListEntry} from "../components/list";
+import {Button} from "../../slang/ui/toolkit/buttons";
 
 class Editor {
 	private static frame: ViewFrame;
@@ -29,6 +31,8 @@ class Editor {
 }
 
 class RunningOperator {
+	public static log: {send: SlangTypeValue, received: SlangTypeValue}[] = [];
+
 	private static blueprint: BlueprintModel;
 
 	public static get inType(): SlangType {
@@ -45,11 +49,15 @@ class RunningOperator {
 	}
 
 	public static async sendData(data: SlangTypeValue) {
+		this.log.unshift({send: data, received: null});
 		await AppState.sendData(this.blueprint, data);
 	}
+
 }
 
 export class RunOperatorView implements ClassComponent<any> {
+	private value: SlangTypeValue | undefined;
+
 	// @ts-ignore
 	public oninit({attrs}: m.Vnode<any, this>) {
         AppState.activeBlueprint = AppState.getBlueprint(attrs.uuid);
@@ -74,6 +82,7 @@ export class RunOperatorView implements ClassComponent<any> {
 
 	public view({attrs}: CVnode<any>) {
         //const blueprint = AppState.activeBlueprint!;
+		const that = this;
 
 		return m(".sle-view__run-opr", attrs,
 				m(".sle-view__layout",
@@ -84,13 +93,30 @@ export class RunOperatorView implements ClassComponent<any> {
 						)
 					),
 					m(".sle-view__layout--half-screen",
-						m(".sle-view__run-opr__view-run-opr",
-							m(Block,
-								m(InputConsole, {
-									type: RunningOperator.inType,
-									onsubmit(value: SlangTypeValue) {
-										RunningOperator.sendData(value);
-									}
+						m(".sle-view__run-opr__datalog",
+							m(List,
+								m(ListEntry,
+									m(Block,
+										m(Input.ConsoleEntry, {
+											type: RunningOperator.inType,
+											onInput(value: any) {
+												that.value = value;
+											},
+										}),
+										m(Button, {
+											full: true,
+											notAllowed: that.value === undefined,
+											onclick:
+												that.value !== undefined
+												? () => {
+													RunningOperator.sendData(that.value!);
+												}
+												: undefined,
+										}, "⏎"),
+									),
+								),
+								RunningOperator.log.map((i) => {
+									return m(ListEntry, JSON.stringify(i.send))
 								})
 							),
 						)

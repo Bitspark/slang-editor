@@ -1,10 +1,7 @@
-import m, {ClassComponent, CVnode} from "mithril";
-import {Input} from "./input";
+//import m, {ClassComponent, CVnode} from "mithril";
 export {Input} from "./input";
 export {Output} from "./output";
 export {ConsoleValueTypeManager} from "./manager"
-import {SlangType, SlangTypeValue} from "../../../slang/definitions/type";
-import {Button} from "../../../slang/ui/toolkit/buttons";
 
 //import {debounceTime} from "rxjs/operators";
 
@@ -13,6 +10,7 @@ import {Button} from "../../../slang/ui/toolkit/buttons";
 //import {SlangType, SlangTypeJson,} from "../../../slang/definitions/type";
 
 
+/*
 interface InputConsoleAttrs {
 	type: SlangType;
 
@@ -42,7 +40,7 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
                         attrs.onsubmit(that.value!);
                     }
                     : undefined,
-			}, "Push"),
+			}, ""),
 		);
 	}
 
@@ -61,7 +59,6 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 		});
 	}
 }
-/*
 interface OutputConsoleAttrs {
 	model: OutputConsoleModel;
 }
