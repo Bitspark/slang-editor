@@ -1,7 +1,10 @@
-//import m, {ClassComponent, CVnode} from "mithril";
+import m, {ClassComponent, CVnode} from "mithril";
+import {Input} from "./input";
 export {Input} from "./input";
 export {Output} from "./output";
 export {ConsoleValueTypeManager} from "./manager"
+import {SlangType, SlangTypeValue} from "../../../slang/definitions/type";
+import {Button} from "../../../slang/ui/toolkit/buttons";
 
 //import {debounceTime} from "rxjs/operators";
 
@@ -10,11 +13,10 @@ export {ConsoleValueTypeManager} from "./manager"
 //import {SlangType, SlangTypeJson,} from "../../../slang/definitions/type";
 
 
-/*
 interface InputConsoleAttrs {
 	type: SlangType;
 
-	onSubmit(value: SlangTypeValue): void;
+	onsubmit(value: SlangTypeValue): void;
 }
 
 export class InputConsole implements ClassComponent<InputConsoleAttrs> {
@@ -34,9 +36,12 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 			m(Button, {
 				full: true,
 				notAllowed: !that.isValid(),
-				onClick: that.isValid ? () => {
-					attrs.onSubmit(that.value!);
-				} : undefined,
+				onClick:
+                    that.isValid()
+                    ? () => {
+                        attrs.onsubmit(that.value!);
+                    }
+                    : undefined,
 			}, "Push"),
 		);
 	}
@@ -49,13 +54,14 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 		return m(Input.ConsoleEntry, {
 			initValue,
 			type: type!,
+            // XXX obsolete, rename to lower case
 			onInput: (v: any) => {
 				this.value = v;
 			},
 		});
 	}
 }
-
+/*
 interface OutputConsoleAttrs {
 	model: OutputConsoleModel;
 }

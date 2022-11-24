@@ -4,7 +4,9 @@ import { ViewFrame } from "../../slang/ui/frame";
 import { BlueprintView } from "../../slang/ui/views/blueprint";
 import { BlueprintControlBar } from "../components/blueprint-control-bar";
 import { AppState } from "../state";
-import { Box } from "../../slang/ui/toolkit";
+import { Box, Block } from "../../slang/ui/toolkit";
+import {InputConsole} from "../components/console";
+import {SlangType, SlangTypeValue} from "../../slang/definitions/type";
 
 class Editor {
 	private static frame: ViewFrame;
@@ -26,16 +28,38 @@ class Editor {
 	}
 }
 
+class RunningOperator {
+	private static blueprint: BlueprintModel;
+
+	public static get inType(): SlangType {
+		return this.blueprint.getPortIn()!.getType();
+	}
+
+	public static init(blueprint: BlueprintModel) {
+		if (!blueprint.isRunning) {
+			console.error("RunOperatorView only meant for a Blueprint with running operator.")
+			return;
+		}
+
+		this.blueprint = blueprint;
+	}
+
+	public static async sendData(data: SlangTypeValue) {
+		await AppState.sendData(this.blueprint, data);
+	}
+}
+
 export class RunOperatorView implements ClassComponent<any> {
 	// @ts-ignore
 	public oninit({attrs}: m.Vnode<any, this>) {
         AppState.activeBlueprint = AppState.getBlueprint(attrs.uuid);
+		RunningOperator.init(AppState.activeBlueprint!);
 	}
 
     public oncreate(vnode: m.VnodeDOM<any>) {
         const blueprint = AppState.activeBlueprint;
         if (!blueprint) {
-            console.error("EditBlueprintView requires an existing Blueprint.");
+            console.error("RunOperatorView requires an existing Blueprint.");
             return;
         }
 
@@ -61,7 +85,14 @@ export class RunOperatorView implements ClassComponent<any> {
 					),
 					m(".sle-view__layout--half-screen",
 						m(".sle-view__run-opr__view-run-opr",
-							m("h1", "hey")
+							m(Block,
+								m(InputConsole, {
+									type: RunningOperator.inType,
+									onsubmit(value: SlangTypeValue) {
+										RunningOperator.sendData(value);
+									}
+								})
+							),
 						)
 					)
 				)

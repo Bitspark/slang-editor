@@ -5,11 +5,26 @@ import { PortDirection } from "../slang/core/abstract/port";
 import { blueprintModelToJson, loadBlueprints } from "../slang/core/mapper";
 import { AppModel, BlueprintModel } from "../slang/core/models";
 import { BlueprintType } from "../slang/core/models/blueprint";
-import { SlangType } from "../slang/definitions/type";
+import {SlangType, SlangTypeValue} from "../slang/definitions/type";
 import { OperatorDataExt } from "../extensions/operators";
 
 declare const APIURL: string;
 const API = new ApiService(APIURL);
+
+/*
+	App:
+		contains the current state of SlangEditorApp
+		- all blueprints
+		- blueprint in use --> editing/viewing
+
+		bundles all required services for SlangEditorApp
+		- load blueprint from backend
+		- store blueprint to backend
+		- run operator of blueprint
+		- send data to running operator
+		- receive data from operator
+
+ */
 
 export class AppState {
 	private static extensions = [
@@ -105,13 +120,21 @@ export class AppState {
 		if (!blueprint.runningOperator) {
 			return;
 		}
-		await API.stopOperator(blueprint.runningOperator!)
+		await API.stopOperator(blueprint.runningOperator)
 		blueprint.runningOperator = null;
+	}
+
+	public static async sendData(blueprint: BlueprintModel, data: SlangTypeValue) {
+		if (!blueprint.runningOperator) {
+			return;
+		}
+		await API.sendData(blueprint.runningOperator, data)
 	}
 
 	private static async loadBlueprints(): Promise<void> {
 		loadBlueprints(AppState.landscape, await API.getBlueprints());
 	}
+
 	private static async loadRunningOperator(): Promise<void> {
 		const runningOperators = await API.getRunningOperators();
 

@@ -58,6 +58,15 @@ export class ApiService {
 		);
 	}
 
+	public async sendData(runningOperator: RunningOperator, data: SlangTypeValue): Promise<null> {
+		return this.httpPost<SlangTypeValue, null>(
+			runningOperator.url,
+			data,
+			() => null,
+			handleError,
+		);
+	}
+
 	public async stopOperator(runningOperator: RunningOperator): Promise<null> {
 		return this.httpDelete<{}, null>(
 			runningOperator.url,

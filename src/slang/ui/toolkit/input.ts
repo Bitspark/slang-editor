@@ -11,6 +11,7 @@ export interface BaseInputAttrs<T> extends HasSizeAttrs {
 	initValue?: T;
 	readonly?: boolean;
 
+	// XXX obsolete, rename to lower case
 	onInput(value: T, e?: { redraw: boolean }): void;
 
 	onchange?(file: File): void;
