@@ -64,6 +64,32 @@ body {
 	height: 90vh;
 }
 
+.sle-view__run-opr {
+	> .box {
+		padding: 0.5rem;
+	}
+
+	.sle-view__edit-blupr {
+		border-right: 2px rgba(0, 0, 0, 0.1) solid;
+	}
+
+	.sle-view__run-opr__view-run-opr {
+	}
+}
+
+.sle-view__layout {
+	margin: 0;
+	vertical-align: top;
+
+	.sle-view__layout--half-screen {
+		display: inline-block;
+		width: 50vw;
+		margin: -1px;
+		float: left;
+	}
+}
+
+
 .sle-comp__opr-context-menu {
 	> div {
 		margin-bottom: 8px;
