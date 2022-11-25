@@ -37,7 +37,7 @@ export class AppState {
 	public static readonly appModel = AppModel.create("slang");
     public static readonly landscape = AppState.appModel.createLandscape(); // Containing all blueprints
 
-	private static _activeBlueprint: BlueprintModel|null;
+	private static _currentBlueprint: BlueprintModel|null;
 	public static blueprints: BlueprintModel[] = [];
 	public static blueprintsByUUID = new Map<String, BlueprintModel>()
 
@@ -51,19 +51,23 @@ export class AppState {
 		AppState.appModel.load()
 	}
 
-	public static get activeBlueprint(): BlueprintModel|null {
-		return this._activeBlueprint;
+	public static get currentBlueprint(): BlueprintModel {
+		if (!this._currentBlueprint) {
+			throw Error("no current blueprint set")
+		}
+
+		return this._currentBlueprint;
 	}
 
-	public static set activeBlueprint(blueprint: BlueprintModel|null) {
-		if (this._activeBlueprint) {
-			this._activeBlueprint.close()
+	public static set currentBlueprint(blueprint: BlueprintModel) {
+		if (this._currentBlueprint) {
+			this._currentBlueprint.close()
 		}
 
 		if (blueprint) {
 			blueprint.open();
 		}
-		this._activeBlueprint = blueprint;
+		this._currentBlueprint = blueprint;
 	}
 
 	private static registerExtensions() {

@@ -15,7 +15,6 @@ import { ConnectionComponent } from "../../slang/ui/components/connection";
 
 class Editor {
 	private static frame: ViewFrame;
-    public static blueprintView: BlueprintView;
 
     public static init(rootEl: HTMLElement) {
 		this.frame = new ViewFrame(rootEl as HTMLElement);
@@ -87,30 +86,8 @@ export class EditBlueprintView implements ClassComponent<any> {
 	public oninit({attrs}: m.Vnode<any, this>) {
 	}
 
-	// @ts-ignore
-	public onbeforeupdate({attrs}: m.Vnode<any, this>) {
-		const activeBlueprint = AppState.activeBlueprint;
-		if (!activeBlueprint) {
-			console.error("EditBlueprintView requires an existing Blueprint.");
-			return;
-		}
-
-		if (activeBlueprint.uuid !== attrs.uuid) {
-			// BlueprintView will be updated to show requested Blueprint.
-			// requested Blueprint will become newly active Blueprint.
-			const requestedBlueprint = AppState.getBlueprint(attrs.uuid)
-
-			if (!requestedBlueprint) {
-				console.error("EditBlueprintView requires an existing Blueprint.");
-				return;
-			}
-			AppState.activeBlueprint = requestedBlueprint
-			Editor.show(requestedBlueprint);
-		}
-	}
-
     public oncreate(vnode: m.VnodeDOM<any>) {
-        const blueprint = AppState.activeBlueprint;
+        const blueprint = AppState.currentBlueprint;
         if (!blueprint) {
             console.error("EditBlueprintView requires an existing Blueprint.");
             return;
@@ -126,7 +103,7 @@ export class EditBlueprintView implements ClassComponent<any> {
 	}
 
 	public view({attrs}: CVnode<any>) {
-        const blueprint = AppState.activeBlueprint!;
+        const blueprint = AppState.currentBlueprint!;
 
 		return m(".sle-view__edit-blupr", attrs,
 			m(".slang-editor"),

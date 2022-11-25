@@ -64,11 +64,11 @@ export class RunOperatorView implements ClassComponent<any> {
 
 	// @ts-ignore
 	public oninit({attrs}: m.Vnode<any, this>) {
-		RunningOperator.init(AppState.activeBlueprint!);
+		RunningOperator.init(AppState.currentBlueprint!);
 	}
 
     public oncreate(vnode: m.VnodeDOM<any>) {
-        const blueprint = AppState.activeBlueprint;
+        const blueprint = AppState.currentBlueprint;
         if (!blueprint) {
             console.error("RunOperatorView requires an existing Blueprint.");
             return;

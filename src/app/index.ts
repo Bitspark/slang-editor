@@ -33,12 +33,14 @@ class SlangApp {
 				"/": HomeView,
 				"/:uuid": {
 					render: function({attrs}: CVnode<any>) {
-						const blueprint = AppState.activeBlueprint = AppState.getBlueprint(attrs.uuid);
+						const blueprint = AppState.getBlueprint(attrs.uuid);
 
 						if (!blueprint) {
 							console.error("unknown blueprint uuid:", attrs.uuid)
 							return;
 						}
+
+						AppState.currentBlueprint = blueprint
 
 						return m(
 							blueprint.isRunning
