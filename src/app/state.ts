@@ -124,11 +124,11 @@ export class AppState {
 		blueprint.runningOperator = null;
 	}
 
-	public static async sendData(blueprint: BlueprintModel, data: SlangTypeValue) {
+	public static async sendData(blueprint: BlueprintModel, data: SlangTypeValue): Promise<SlangTypeValue> {
 		if (!blueprint.runningOperator) {
-			return;
+			throw new Error("operator not running");
 		}
-		await API.sendData(blueprint.runningOperator, data)
+		return await API.sendData(blueprint.runningOperator, data);
 	}
 
 	private static async loadBlueprints(): Promise<void> {

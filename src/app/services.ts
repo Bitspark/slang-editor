@@ -58,11 +58,11 @@ export class ApiService {
 		);
 	}
 
-	public async sendData(runningOperator: RunningOperator, data: SlangTypeValue): Promise<null> {
-		return this.httpPost<SlangTypeValue, null>(
+	public async sendData(runningOperator: RunningOperator, inData: SlangTypeValue): Promise<SlangTypeValue> {
+		return this.httpPost<SlangTypeValue, SlangTypeValue>(
 			runningOperator.url,
-			data,
-			() => null,
+			inData,
+			(outData: any) => outData as SlangTypeValue,
 			handleError,
 		);
 	}

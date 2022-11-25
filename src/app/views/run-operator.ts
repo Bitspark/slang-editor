@@ -31,7 +31,7 @@ class Editor {
 }
 
 class RunningOperator {
-	public static log: {send: SlangTypeValue, received: SlangTypeValue}[] = [];
+	public static log: {sent: SlangTypeValue, received: SlangTypeValue}[] = [];
 
 	private static blueprint: BlueprintModel;
 
@@ -49,8 +49,12 @@ class RunningOperator {
 	}
 
 	public static async sendData(data: SlangTypeValue) {
-		this.log.unshift({send: data, received: null});
-		await AppState.sendData(this.blueprint, data);
+		try {
+			const received = await AppState.sendData(this.blueprint, data);
+			this.log.unshift({sent: data, received});
+		} catch (err) {
+			console.error(err)
+		}
 	}
 
 }
@@ -93,7 +97,7 @@ export class RunOperatorView implements ClassComponent<any> {
 						)
 					),
 					m(".sle-view__layout--half-screen",
-						m(".sle-view__run-opr__datalog",
+						m(".sle-comp__datalog",
 							m(List,
 								m(ListEntry,
 									m(Block,
@@ -109,14 +113,19 @@ export class RunOperatorView implements ClassComponent<any> {
 											onclick:
 												that.value !== undefined
 												? () => {
-													RunningOperator.sendData(that.value!);
+													RunningOperator.sendData(that.value!).then(m.redraw)
 												}
 												: undefined,
 										}, "⏎"),
 									),
 								),
 								RunningOperator.log.map((i) => {
-									return m(ListEntry, JSON.stringify(i.send))
+									return m(ListEntry, {
+											class: "sle-comp__datalog__log-entry"
+										},
+										m(".sle-comp__datalog__sent", JSON.stringify(i.sent)),
+										m(".sle-comp__datalog__recv", JSON.stringify(i.received)),
+									);
 								})
 							),
 						)
