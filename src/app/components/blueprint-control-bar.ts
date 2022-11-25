@@ -5,7 +5,7 @@ import { AppState } from "../state";
 export class BlueprintControlBar implements ClassComponent<any> {
 	// @ts-ignore
 	public view({attrs}: CVnode<any>) {
-        const blueprint = AppState.currentBlueprint!;
+        const blueprint = AppState.currentBlueprint;
 
 		return m("nav.sle-comp__blueprint-ctrl-bar", {
             class: "is-flex is-flex-wrap-nowrap is-align-content-stretch"

@@ -7,8 +7,6 @@ import {cssattr, cssobj, CSSType, cssupdate} from "../utils";
 import {PaperView} from "../views/paper-view";
 import { UserEvent, UserEvents } from "../views/user-events";
 
-import {Container} from "./toolkit";
-
 export type Alignment = "tl" | "t" | "tr" | "l" | "c" | "r" | "bl" | "b" | "br";
 
 export interface Position extends XY {
@@ -127,7 +125,7 @@ abstract class HtmlComponent extends Component {
 				this.draw();
 			},
 			view: () => {
-				return m(Container, m(component));
+				return m("", m(component));
 			},
 		});
 		return this;

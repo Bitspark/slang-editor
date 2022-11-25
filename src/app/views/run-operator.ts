@@ -7,7 +7,7 @@ import { AppState } from "../state";
 import { Box, Block } from "../../slang/ui/toolkit";
 import {Input} from "../components/console";
 import {SlangType, SlangTypeValue} from "../../slang/definitions/type";
-import {List, ListEntry} from "../components/list";
+import {List, ListEntry} from "../components/toolkit/list";
 import {Button} from "../../slang/ui/toolkit/buttons";
 
 class Editor {
@@ -30,7 +30,7 @@ class Editor {
 	}
 }
 
-class RunningOperator {
+class RunningOperatorView {
 	public static log: {sent: SlangTypeValue, received: SlangTypeValue}[] = [];
 
 	private static blueprint: BlueprintModel;
@@ -64,16 +64,11 @@ export class RunOperatorView implements ClassComponent<any> {
 
 	// @ts-ignore
 	public oninit({attrs}: m.Vnode<any, this>) {
-		RunningOperator.init(AppState.currentBlueprint!);
+		RunningOperatorView.init(AppState.currentBlueprint!);
 	}
 
     public oncreate(vnode: m.VnodeDOM<any>) {
         const blueprint = AppState.currentBlueprint;
-        if (!blueprint) {
-            console.error("RunOperatorView requires an existing Blueprint.");
-            return;
-        }
-
         const el = vnode.dom.getElementsByClassName("slang-editor")[0];
 		Editor.init(el as HTMLElement);
 		Editor.show(blueprint);
@@ -101,7 +96,7 @@ export class RunOperatorView implements ClassComponent<any> {
 								m(ListEntry,
 									m(Block,
 										m(Input.ConsoleEntry, {
-											type: RunningOperator.inType,
+											type: RunningOperatorView.inType,
 											onInput(value: any) {
 												that.value = value;
 											},
@@ -112,13 +107,13 @@ export class RunOperatorView implements ClassComponent<any> {
 											onclick:
 												that.value !== undefined
 												? () => {
-													RunningOperator.sendData(that.value!).then(m.redraw)
+													RunningOperatorView.sendData(that.value!).then(m.redraw)
 												}
 												: undefined,
 										}, "⏎"),
 									),
 								),
-								RunningOperator.log.map((i) => {
+								RunningOperatorView.log.map((i) => {
 									return m(ListEntry, {
 											class: "sle-comp__datalog__log-entry"
 										},

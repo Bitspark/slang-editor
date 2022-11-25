@@ -8,7 +8,7 @@ import { BlueprintMenu } from "../components/blueprint-menu";
 import { AppState } from "../state";
 import { OperatorDashboard } from "../components/operator-dashboard";
 import { OperatorControl } from "../components/operator-control";
-import { ContextMenu } from "../components/operator-context-menu";
+import { ContextMenu } from "../components/toolkit/context-menu";
 import { Box } from "../../slang/ui/toolkit";
 import { UserEvent } from "../../slang/ui/views/user-events";
 import { ConnectionComponent } from "../../slang/ui/components/connection";

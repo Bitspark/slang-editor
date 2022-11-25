@@ -125,7 +125,9 @@ export class AppState {
 			return;
 		}
 		await API.stopOperator(blueprint.runningOperator)
+		console.log("HEY", blueprint, blueprint.runningOperator)
 		blueprint.runningOperator = null;
+		console.log("OPERATOR STOPPED")
 	}
 
 	public static async sendData(blueprint: BlueprintModel, data: SlangTypeValue): Promise<SlangTypeValue> {
