@@ -30,7 +30,7 @@ class Editor {
 	}
 }
 
-class RunningOperatorView {
+class RunningOperator {
 	public static log: {sent: SlangTypeValue, received: SlangTypeValue}[] = [];
 
 	private static blueprint: BlueprintModel;
@@ -64,7 +64,7 @@ export class RunOperatorView implements ClassComponent<any> {
 
 	// @ts-ignore
 	public oninit({attrs}: m.Vnode<any, this>) {
-		RunningOperatorView.init(AppState.currentBlueprint!);
+		RunningOperator.init(AppState.currentBlueprint!);
 	}
 
     public oncreate(vnode: m.VnodeDOM<any>) {
@@ -96,7 +96,7 @@ export class RunOperatorView implements ClassComponent<any> {
 								m(ListEntry,
 									m(Block,
 										m(Input.ConsoleEntry, {
-											type: RunningOperatorView.inType,
+											type: RunningOperator.inType,
 											onInput(value: any) {
 												that.value = value;
 											},
@@ -107,13 +107,13 @@ export class RunOperatorView implements ClassComponent<any> {
 											onclick:
 												that.value !== undefined
 												? () => {
-													RunningOperatorView.sendData(that.value!).then(m.redraw)
+													RunningOperator.sendData(that.value!).then(m.redraw)
 												}
 												: undefined,
 										}, "⏎"),
 									),
 								),
-								RunningOperatorView.log.map((i) => {
+								RunningOperator.log.map((i) => {
 									return m(ListEntry, {
 											class: "sle-comp__datalog__log-entry"
 										},

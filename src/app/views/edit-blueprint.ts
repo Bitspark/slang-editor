@@ -66,7 +66,7 @@ class Editor {
 							onopen: view.isDescendable && !operatorBp.isElementary()
 							? () => {
 								ContextMenu.hide();
-								m.route.set("/edit/:uuid", {uuid: operatorBp.uuid})
+								m.route.set("/:uuid", {uuid: operatorBp.uuid})
 							}
 							: undefined,
 						}),

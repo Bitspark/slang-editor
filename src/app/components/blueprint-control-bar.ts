@@ -24,11 +24,11 @@ export class BlueprintControlBar implements ClassComponent<any> {
                 m(IconButton, {
                     class: "is-flex-grow-1",
                     fas: "save",
+                    disabled: blueprint.isRunning,
                     onclick() {
                         blueprint.save();
                     },
                 }),
-
                 blueprint.isRunning
                 ? m(IconButton, { // stop running operator
                     class: "is-flex-grow-1",
