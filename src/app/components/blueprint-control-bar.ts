@@ -14,10 +14,13 @@ export class BlueprintControlBar implements ClassComponent<any> {
                 class: "is-flex-grow-3 is-medium",
                 type: "text",
                 value: blueprint.name,
+                disabled: blueprint.isRunning,
+                oninput: (!blueprint.isRunning)
                 // @ts-ignore
-                oninput(event) {
+                ? (event) => {
                     blueprint.name = event.target.value
-                },
+                }
+                : undefined,
             }),
             m("small.ctrl-bar__uuid", blueprint.uuid),
             m(".buttons.are-medium", 

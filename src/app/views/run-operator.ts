@@ -85,9 +85,9 @@ export class RunOperatorView implements ClassComponent<any> {
 		return m(".sle-view__run-opr", attrs,
 				m(".sle-view__layout",
 					m(".sle-view__layout--half-screen",
-						m(".sle-view__edit-blupr",
+						m(".sle-comp__blueprint-editor__topbar",
 							m(".slang-editor"),
-							m(Box, {class: "sle-view__edit-blupr__top-left"}, m(BlueprintControlBar)),
+							m(Box, {class: "sle-comp__blueprint-editor__topbar"}, m(BlueprintControlBar)),
 						)
 					),
 					m(".sle-view__layout--half-screen",
@@ -103,7 +103,7 @@ export class RunOperatorView implements ClassComponent<any> {
 										}),
 										m(Button, {
 											full: true,
-											notAllowed: that.value === undefined,
+											disabled: that.value === undefined,
 											onclick:
 												that.value !== undefined
 												? () => {
