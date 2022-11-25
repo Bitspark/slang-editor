@@ -1,5 +1,5 @@
 import uuidv4 from "uuid/v4";
-import {ApiService, MessagePayload, MessageTopic} from "./services";
+import { ApiService } from "./services";
 import { SlangAspects } from "../slang/aspects";
 import { PortDirection } from "../slang/core/abstract/port";
 import { blueprintModelToJson, loadBlueprints } from "../slang/core/mapper";
@@ -7,7 +7,6 @@ import { AppModel, BlueprintModel } from "../slang/core/models";
 import { BlueprintType } from "../slang/core/models/blueprint";
 import {SlangType, SlangTypeValue} from "../slang/definitions/type";
 import { OperatorDataExt } from "../extensions/operators";
-import {PortMessageJson} from "../slang/definitions/api";
 
 declare const APIURL: string;
 const API = new ApiService(APIURL);
@@ -85,22 +84,6 @@ export class AppState {
 		AppState.appModel.subscribeStoreRequested(async (blueprint: BlueprintModel) => {
 			await AppState.storeBlueprint(blueprint);
 		});
-
-		API.subscribeConnected(() => {
-			console.info("connected");
-		});
-		API.subscribeReconnecting(() => {
-			console.info("reconnecting");
-		});
-		API.subscribeDisconnected(() => {
-			console.info("disconnected");
-		});
-		API.subscribeReconnected(() => {
-			console.info("reconnected");
-		});
-		API.subscribeMessage((m) => {
-			console.info("Message:", m.payload);
-		});
 	}
 
 	public static getBlueprint(uuid: string): BlueprintModel|null {
@@ -146,11 +129,6 @@ export class AppState {
 			return;
 		}
 		await API.sendData(blueprint.runningOperator, data)
-	}
-
-	public static onReceivePortMessage(cb: (data: PortMessageJson) => void) {
-		return API.getTopicObserver(MessageTopic.Port)
-			.subscribe((m :MessagePayload) => cb(m as PortMessageJson))
 	}
 
 	private static async loadBlueprints(): Promise<void> {
