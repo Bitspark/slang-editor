@@ -31,8 +31,23 @@ class SlangApp {
 
 			m.route(htmlRoot, "/", {
 				"/": HomeView,
-				"/edit/:uuid": EditBlueprintView,
-				"/run/:uuid": RunOperatorView,
+				"/:uuid": {
+					render: function({attrs}: CVnode<any>) {
+						const blueprint = AppState.activeBlueprint = AppState.getBlueprint(attrs.uuid);
+
+						if (!blueprint) {
+							console.error("unknown blueprint uuid:", attrs.uuid)
+							return;
+						}
+
+						return m(
+							blueprint.isRunning
+							? RunOperatorView
+							: EditBlueprintView,
+							attrs
+						)
+					},
+				}
 			})
 		});
 	}

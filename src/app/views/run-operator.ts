@@ -64,7 +64,6 @@ export class RunOperatorView implements ClassComponent<any> {
 
 	// @ts-ignore
 	public oninit({attrs}: m.Vnode<any, this>) {
-        AppState.activeBlueprint = AppState.getBlueprint(attrs.uuid);
 		RunningOperator.init(AppState.activeBlueprint!);
 	}
 

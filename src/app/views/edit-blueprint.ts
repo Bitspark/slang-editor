@@ -85,7 +85,6 @@ class Editor {
 export class EditBlueprintView implements ClassComponent<any> {
 	// @ts-ignore
 	public oninit({attrs}: m.Vnode<any, this>) {
-        AppState.activeBlueprint = AppState.getBlueprint(attrs.uuid);
 	}
 
 	// @ts-ignore

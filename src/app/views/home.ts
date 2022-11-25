@@ -28,7 +28,7 @@ export class HomeView implements ClassComponent<any> {
                 localBlueprints.map(bp =>
                     m("a.panel-block.blueprint", {
                         class: bp.isRunning ? "blueprint--is-running" : "",
-                        onclick: () => m.route.set("/edit/:uuid", {uuid: bp.uuid})
+                        onclick: () => m.route.set("/:uuid", {uuid: bp.uuid})
                     },
                     [
                         m("span.panel-icon",
