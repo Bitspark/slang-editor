@@ -1,4 +1,4 @@
-import m, {ClassComponent, CVnode} from "mithril";
+import m, { ClassComponent, CVnode } from "mithril";
 import { OperatorBoxComponent } from "../../slang/ui/components/blackbox";
 import { BlueprintModel } from "../../slang/core/models";
 import { ViewFrame } from "../../slang/ui/frame";
@@ -7,11 +7,11 @@ import { BlueprintControlBar } from "../components/blueprint-control-bar";
 import { BlueprintMenu } from "../components/blueprint-menu";
 import { AppState } from "../state";
 import { OperatorDashboard } from "../components/operator-dashboard";
-import { OperatorControl } from "../components/operator-control";
 import { ContextMenu } from "../components/operator-context-menu";
 import { Box } from "../../slang/ui/toolkit";
 import { UserEvent } from "../../slang/ui/views/user-events";
 import { ConnectionComponent } from "../../slang/ui/components/connection";
+import { IconButton } from "../../slang/ui/toolkit/buttons";
 
 class Editor {
 	private static frame: ViewFrame;
@@ -48,32 +48,61 @@ class Editor {
 				const operatorBp = operator.blueprint;
 				const view = blueprintView;
 				ContextMenu.show(e.target, {
-					view: () => m(".sle-comp__opr-context-menu",
-						m(OperatorControl, {
-							ondelete: view.isEditable
-							? () => {
-								ContextMenu.hide();
-								blueprint.deleteOperator(operator)
-							}
-							: undefined,
+					view: () =>
+					m(".sle-comp__opr-context-menu",
+						m(".sle-comp__opr-ctrl",
+							m(".buttons.are-normal", [
+								view.isEditable
+								? m(IconButton, {
+									color: "black",
+									fas: "trash-alt",
+									tooltip: "Remove operator",
+									onclick() {
+										ContextMenu.hide();
+										blueprint.deleteOperator(operator)
+									}
+								})
+								: undefined,
 
-							onclone: view.isEditable
-							? () => {
-								ContextMenu.hide();
-								blueprint.cloneOperator(operator);
-							}
-							: undefined,
+								view.isEditable
+								? m(IconButton, {
+									color: "black",
+									fas: "clone",
+									tooltip: "Clone operator",
+									onclick() {
+										ContextMenu.hide();
+										blueprint.cloneOperator(operator);
+									}
+								})
+								: undefined,
 
-							onopen: view.isDescendable && !operatorBp.isElementary()
-							? () => {
-								ContextMenu.hide();
-								m.route.set("/edit/:uuid", {uuid: operatorBp.uuid})
-							}
-							: undefined,
-						}),
-						operatorBp.hasProperties() || operatorBp.hasGenerics() 
-						? m(OperatorDashboard, {operator, view})
-						: undefined
+								view.isDescendable && !operatorBp.isElementary()
+								? m(IconButton, {
+									color: "black",
+									fas: "project-diagram",
+									tooltip: "Open blueprint",
+									onclick()  {
+										ContextMenu.hide();
+										m.route.set("/edit/:uuid", {uuid: operatorBp.uuid})
+									}
+								})
+								: undefined,
+							])
+						),
+						/*
+						m(".sle-comp__opr-dashboard", {
+							onmousewheel: (e: WheelEvent) => {
+								e.stopPropagation();
+							},
+						},
+							m(Box, [
+								m(OperatorDetailsDashboardModule, {operator}),
+								m(PropertyFormDashboardModule, {operator}),
+								m(PortTypeDashboardModule, {operator}),
+							])
+						)
+						*/
+						m(OperatorDashboard, {operator, view})
 					)
 				});
 			}
