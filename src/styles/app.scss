@@ -37,6 +37,30 @@ body {
 .sle-view__edit-blueprint {
 }
 
+.sle-view__run-opr {
+	> .box {
+		padding: 0.5rem;
+	}
+
+	.sle-comp__blueprint-editor__topbar {
+		border-right: 2px rgba(0, 0, 0, 0.1) solid;
+	}
+}
+
+.sle-view__layout {
+	margin: 0;
+	vertical-align: top;
+
+	.sle-view__layout--half-screen {
+		display: inline-block;
+		width: 50vw;
+		margin: -1px;
+		float: left;
+	}
+}
+
+
+
 .sle-comp__blueprint-editor {
 	> .box {
 		padding: 0.5rem;
@@ -67,16 +91,6 @@ body {
 	height: 90vh;
 }
 
-.sle-view__run-opr {
-	> .box {
-		padding: 0.5rem;
-	}
-
-	.sle-comp__blueprint-editor__topbar {
-		border-right: 2px rgba(0, 0, 0, 0.1) solid;
-	}
-}
-
 .sle-comp__datalog {
 	.panel-block {
 		display: block;
@@ -92,19 +106,6 @@ body {
 	}
 }
 
-.sle-view__layout {
-	margin: 0;
-	vertical-align: top;
-
-	.sle-view__layout--half-screen {
-		display: inline-block;
-		width: 50vw;
-		margin: -1px;
-		float: left;
-	}
-}
-
-
 .sle-comp__opr-context-menu {
 	> div {
 		margin-bottom: 8px;
@@ -115,6 +116,9 @@ body {
 }
 
 .sle-comp__opr-dashboard {
+	> .box {
+		margin-bottom: 9px;
+	}
 }
 
 .sle-comp__blueprint-menu {

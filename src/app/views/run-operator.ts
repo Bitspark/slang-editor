@@ -1,34 +1,13 @@
 import m, {ClassComponent, CVnode} from "mithril";
 import { BlueprintModel } from "../../slang/core/models";
-import { ViewFrame } from "../../slang/ui/frame";
-import { BlueprintView } from "../../slang/ui/views/blueprint";
 import { BlueprintControlBar } from "../components/blueprint-control-bar";
 import { AppState } from "../state";
-import { Box, Block } from "../../slang/ui/toolkit";
+import { Block } from "../../slang/ui/toolkit";
 import {Input} from "../components/console";
 import {SlangType, SlangTypeValue} from "../../slang/definitions/type";
 import {List, ListEntry} from "../components/toolkit/list";
 import {Button} from "../../slang/ui/toolkit/buttons";
-
-class Editor {
-	private static frame: ViewFrame;
-
-    public static init(rootEl: HTMLElement) {
-		this.frame = new ViewFrame(rootEl as HTMLElement);
-	}
-
-	public static show(blueprint: BlueprintModel) {
-		const viewArgs = {
-			editable: false,
-			hscrollable: true,
-			vscrollable: true,
-			descendable: true,
-			runnable: true,
-		};
-        const blueprintView = new BlueprintView(this.frame, AppState.aspects, blueprint, viewArgs);
-        this.frame.setView(blueprintView);
-	}
-}
+import {BlueprintEditor, BlueprintEditorTopBar} from "../components/blueprint-editor";
 
 class RunningOperator {
 	public static log: {sent: SlangTypeValue, received: SlangTypeValue}[] = [];
@@ -67,11 +46,8 @@ export class RunOperatorView implements ClassComponent<any> {
 		RunningOperator.init(AppState.currentBlueprint!);
 	}
 
+	// @ts-ignore
     public oncreate(vnode: m.VnodeDOM<any>) {
-        const blueprint = AppState.currentBlueprint;
-        const el = vnode.dom.getElementsByClassName("slang-editor")[0];
-		Editor.init(el as HTMLElement);
-		Editor.show(blueprint);
     }
 
 	// @ts-ignore
@@ -85,9 +61,8 @@ export class RunOperatorView implements ClassComponent<any> {
 		return m(".sle-view__run-opr", attrs,
 				m(".sle-view__layout",
 					m(".sle-view__layout--half-screen",
-						m(".sle-comp__blueprint-editor__topbar",
-							m(".slang-editor"),
-							m(Box, {class: "sle-comp__blueprint-editor__topbar"}, m(BlueprintControlBar)),
+						m(BlueprintEditor,
+							m(BlueprintEditorTopBar, m(BlueprintControlBar)),
 						)
 					),
 					m(".sle-view__layout--half-screen",

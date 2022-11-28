@@ -14,13 +14,20 @@ import { ConnectionComponent } from "../../slang/ui/components/connection";
 class Editor {
 	private static frame: ViewFrame;
 
+
     public static init(rootEl: HTMLElement) {
 		this.frame = new ViewFrame(rootEl as HTMLElement);
 	}
 
+	public static isReadonly(blueprint: BlueprintModel): boolean {
+		return !blueprint.isLocal() || blueprint.isRunning;
+	}
+
 	public static show(blueprint: BlueprintModel) {
+		const isEditable = !this.isReadonly(blueprint);
+
 		const viewArgs = {
-			editable: blueprint.isLocal(),
+			editable: isEditable,
 			hscrollable: true,
 			vscrollable: true,
 			descendable: true,
@@ -47,30 +54,28 @@ class Editor {
 				ContextMenu.show(e.target, {
 					view: () => m(".sle-comp__opr-context-menu",
 						m(OperatorControl, {
-							ondelete: view.isEditable
+							ondelete: isEditable
 							? () => {
 								ContextMenu.hide();
 								blueprint.deleteOperator(operator)
 							}
 							: undefined,
 
-							onclone: view.isEditable
+							onclone: isEditable
 							? () => {
 								ContextMenu.hide();
 								blueprint.cloneOperator(operator);
 							}
 							: undefined,
 
-							onopen: view.isDescendable && !operatorBp.isElementary()
+							onopen: view.isDescendable && !blueprint.isRunning && !operatorBp.isElementary()
 							? () => {
 								ContextMenu.hide();
 								m.route.set("/:uuid", {uuid: operatorBp.uuid})
 							}
 							: undefined,
 						}),
-						operatorBp.hasProperties() || operatorBp.hasGenerics() 
-						? m(OperatorDashboard, {operator, view})
-						: undefined
+						 m(OperatorDashboard, {operator, view})
 					)
 				});
 			}

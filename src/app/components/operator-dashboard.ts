@@ -14,26 +14,29 @@ interface DashboardAttrs {
 }
 
 export class OperatorDashboard implements ClassComponent<DashboardAttrs> {
-    private readonly dashboardModules = [OperatorDetailsDashboardModule, PropertyFormDashboardModule, PortTypeDashboardModule]
+    private readonly dashboardModules = [PropertyFormDashboardModule, PortTypeDashboardModule]
 
 	public view({attrs}: CVnode<DashboardAttrs>): any {
 		const view = attrs.view;
-
-		if (view.isReadOnly) {
-			return undefined;
-		}
+		const operator = attrs.operator;
 
 		const dashboardModules = this.dashboardModules
 		return m(".sle-comp__opr-dashboard", {
 			onmousewheel: (e: WheelEvent) => {
 				e.stopPropagation();
 			},
-		}, m(Box, dashboardModules.map((dashboardModule: any) => {
+		},
+			m(Box,
+				m(OperatorDetailsDashboardModule, {operator: attrs.operator})
+			),
+			view.isEditable && (operator.hasGenerics() || operator.hasProperties())
+			? m(Box, dashboardModules.map((dashboardModule: any) => {
 				return m(dashboardModule, {
 					operator: attrs.operator,
 				});
-			})
-		));
+			}))
+			: undefined
+		);
 	}
 }
 
@@ -77,7 +80,6 @@ export class PropertyFormDashboardModule implements DashboardModule {
 
 	public view(_: CVnode<DashboardModuleAttrs>): m.Children {
 		const blueprint = this.blueprint!;
-
 		if (!blueprint.hasProperties()) {
 			return undefined;
 		}
