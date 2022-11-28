@@ -22,7 +22,7 @@ export class HomeView implements ClassComponent<any> {
                 m(".panel-heading", `Blueprints (${localBlueprints.length})`),
 
                 m("a.panel-block", {
-                    onclick:() => m.route.set("/edit/:uuid", {uuid: AppState.createEmptyBlueprint().uuid})
+                    onclick:() => m.route.set("/:uuid", {uuid: AppState.createEmptyBlueprint().uuid})
                 }, [m("span.panel-icon", m("i.fas.fa-plus")), "New Blueprint"]),
 
                 localBlueprints.map(bp =>
