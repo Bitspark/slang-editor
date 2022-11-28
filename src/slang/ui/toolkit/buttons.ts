@@ -7,8 +7,7 @@ import {Icon, IconAttrs} from "./icons";
 interface ButtonAttrs extends HasSizeAttrs {
 	class?: string;
 	tooltip?: string;
-	notAllowed?: boolean;
-	inactive?: boolean;
+	disabled?: boolean;
 	full?: boolean;
 	type?: "button" | "submit" | "reset";
 	color?: "white" | "light" | "dark" | "black" | "text" | "ghost" |
@@ -41,10 +40,13 @@ export class Button implements ClassComponent<ButtonAttrs> {
 			attrs.onclick = attrs.onClick
 		}
 
-		return m("a.button", {
+		return m("button.button", {
 			class: buildCssClass(attrs, buttonColorCssClass(attrs)),
-			inacitve: that.isInactive(attrs),
-			onclick: (that.isClickable(attrs)) ? (e: MithrilMouseEvent) => {
+			title: attrs.tooltip,
+			type: attrs.type,
+			disabled: that.isDisabled(attrs),
+			onclick: (!this.isDisabled(attrs) && !!attrs.onclick)
+			? (e: MithrilMouseEvent) => {
 				if (that.alreadyClicked) {
 					return;
 				}
@@ -53,18 +55,13 @@ export class Button implements ClassComponent<ButtonAttrs> {
 				setTimeout(() => {
 					that.alreadyClicked = false;
 				}, that.bounceInterval);
-			} : undefined,
-			title: attrs.tooltip,
-			type: attrs.type,
+			}
+			: undefined,
 		}, children);
 	}
 
-	private isClickable(attrs: ButtonAttrs): boolean {
-		return !!attrs.onclick && !attrs.notAllowed;
-	}
-
-	private isInactive(attrs: ButtonAttrs): boolean {
-		return !!attrs.notAllowed && !!attrs.inactive;
+	private isDisabled(attrs: ButtonAttrs): boolean {
+		return !!attrs.disabled;
 	}
 }
 

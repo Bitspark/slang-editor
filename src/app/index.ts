@@ -14,6 +14,7 @@ import m, {buildPathname, ClassComponent, CVnode} from "mithril";
 import { EditBlueprintView } from "./views/edit-blueprint";
 import { HomeView } from "./views/home";
 import { AppState } from "./state";
+import {RunOperatorView} from "./views/run-operator";
 
 
 class SlangApp {
@@ -30,7 +31,25 @@ class SlangApp {
 
 			m.route(htmlRoot, "/", {
 				"/": HomeView,
-				"/edit/:uuid": EditBlueprintView,
+				"/:uuid": {
+					render: function({attrs}: CVnode<any>) {
+						const blueprint = AppState.getBlueprint(attrs.uuid);
+
+						if (!blueprint) {
+							console.error("unknown blueprint uuid:", attrs.uuid)
+							return;
+						}
+
+						AppState.currentBlueprint = blueprint
+
+						return m(
+							blueprint.isRunning
+							? RunOperatorView
+							: EditBlueprintView,
+							attrs
+						)
+					},
+				}
 			})
 		});
 	}

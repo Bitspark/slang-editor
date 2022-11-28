@@ -4,12 +4,8 @@ import { AppState } from "../state";
 
 export class BlueprintControlBar implements ClassComponent<any> {
 	// @ts-ignore
-	public oninit({attrs}: m.Vnode<any, this>) {
-	}
-
-	// @ts-ignore
 	public view({attrs}: CVnode<any>) {
-        const blueprint = AppState.activeBlueprint!;
+        const blueprint = AppState.currentBlueprint;
 
 		return m("nav.sle-comp__blueprint-ctrl-bar", {
             class: "is-flex is-flex-wrap-nowrap is-align-content-stretch"
@@ -18,29 +14,42 @@ export class BlueprintControlBar implements ClassComponent<any> {
                 class: "is-flex-grow-3 is-medium",
                 type: "text",
                 value: blueprint.name,
+                disabled: blueprint.isRunning,
+                oninput: (!blueprint.isRunning)
                 // @ts-ignore
-                oninput(event) {
+                ? (event) => {
                     blueprint.name = event.target.value
-                },
+                }
+                : undefined,
             }),
             m("small.ctrl-bar__uuid", blueprint.uuid),
             m(".buttons.are-medium", 
                 m(IconButton, {
                     class: "is-flex-grow-1",
-                    color: "black",
-                    fas: "play",
+                    fas: "save",
+                    disabled: blueprint.isRunning,
                     onclick() {
                         blueprint.save();
                     },
                 }),
-                m(IconButton, {
+                blueprint.isRunning
+                ? m(IconButton, { // stop running operator
                     class: "is-flex-grow-1",
-                    color: "black",
-                    fas: "save",
-                    onclick() {
-                        blueprint.save();
+                    fas: "stop",
+                    async onclick() {
+                        await AppState.stopOperator(blueprint);
+                        m.redraw();
                     },
                 })
+                : m(IconButton, { // run operator
+                    class: "is-flex-grow-1",
+                    fas: "play",
+                    async onclick() {
+                        await AppState.runOperator(blueprint);
+                        m.redraw();
+                    },
+                })
+
             ),
         ]);
 	}

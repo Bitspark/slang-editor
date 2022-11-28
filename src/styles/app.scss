@@ -4,7 +4,7 @@
 html, body {
 	font-family: $font-family-default;
 	font-size: $font-size;
-	color: $black;
+	color: $text-color;
 	background: $white;
 	margin: 0;
 	padding: 0;
@@ -24,7 +24,44 @@ body {
 	border: 1px $fuchsia solid;
 }
 
-.sle-view__edit-blupr {
+.sle-view__blueprint-overview {
+	.blueprint--is-running {
+		.panel-icon {
+			path {
+				fill: $green;
+			}
+		}
+	}
+}
+
+.sle-view__edit-blueprint {
+}
+
+.sle-view__run-opr {
+	> .box {
+		padding: 0.5rem;
+	}
+
+	.sle-comp__blueprint-editor__topbar {
+		border-right: 2px rgba(0, 0, 0, 0.1) solid;
+	}
+}
+
+.sle-view__layout {
+	margin: 0;
+	vertical-align: top;
+
+	.sle-view__layout--half-screen {
+		display: inline-block;
+		width: 50vw;
+		margin: -1px;
+		float: left;
+	}
+}
+
+
+
+.sle-comp__blueprint-editor {
 	> .box {
 		padding: 0.5rem;
 	}
@@ -33,7 +70,7 @@ body {
 		height: 100vh;
 	}
 
-	.slang-editor {
+	.blueprint-canvas {
 		height: 100vh;
 		.joint-paper {
 			height: 100%;
@@ -41,17 +78,32 @@ body {
 	}
 }
 
-.sle-view__edit-blupr__top-left {
+.sle-comp__blueprint-editor__topbar {
 	position: absolute;
 	left: 10px;
 	top: 10px;
 }
 
-.sle-view__edit-blupr__left-sidebar {
+.sle-comp__blueprint-editor__left-sidebar {
 	position: absolute;
 	left: 10px;
 	top: 100px;
 	height: 90vh;
+}
+
+.sle-comp__datalog {
+	.panel-block {
+		display: block;
+	}
+
+	.sle-comp__datalog__log-entry {
+	}
+
+	.sle-comp__datalog__sent {
+	}
+
+	.sle-comp__datalog__recv {
+	}
 }
 
 .sle-comp__opr-context-menu {
@@ -64,6 +116,9 @@ body {
 }
 
 .sle-comp__opr-dashboard {
+	> .box {
+		margin-bottom: 9px;
+	}
 }
 
 .sle-comp__blueprint-menu {
@@ -77,6 +132,14 @@ body {
 	.input {
 		border: 0;
 		box-shadow: none;
+
+		&[disabled] {
+			cursor: default;
+			background-color: transparent;
+			border: 0;
+			box-shadow: none;
+			color: $text-color;
+		}
 	}
 
 	.ctrl-bar__name {

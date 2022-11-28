@@ -17,16 +17,26 @@ export class HomeView implements ClassComponent<any> {
 	// @ts-ignore
 	public view({attrs}: CVnode<any>) {
         const localBlueprints = this.localBlueprints.sort((l, r) => l.name.localeCompare(r.name));
-        return m("section.section", m(".container", m(".panel",
-            m(".panel-heading", `Blueprints (${localBlueprints.length})`),
-            m("a.panel-block", {
-                onclick:() => m.route.set("/edit/:uuid", {uuid: AppState.createEmptyBlueprint().uuid})
-            }, [m("span.panel-icon", m("i.fas.fa-plus")), "New Blueprint"]),
-            localBlueprints.map(bp => m("a.panel-block", {
-                onclick: () => m.route.set("/edit/:uuid", {uuid: bp.uuid})
-            },
-            [m("span.panel-icon", m("i.fas.fa-circle")), bp.getShortName()])
-            )
+        return m("section.section.sle-view__blueprint-overview", m(".container",
+            m(".panel",
+                m(".panel-heading", `Blueprints (${localBlueprints.length})`),
+
+                m("a.panel-block", {
+                    onclick:() => m.route.set("/:uuid", {uuid: AppState.createEmptyBlueprint().uuid})
+                }, [m("span.panel-icon", m("i.fas.fa-plus")), "New Blueprint"]),
+
+                localBlueprints.map(bp =>
+                    m("a.panel-block.blueprint", {
+                        class: bp.isRunning ? "blueprint--is-running" : "",
+                        onclick: () => m.route.set("/:uuid", {uuid: bp.uuid})
+                    },
+                    [
+                        m("span.panel-icon",
+                            m("i.fas.fa-circle")
+                        ), bp.getShortName()
+                    ]
+                    )
+                )
         )));
     }
 }

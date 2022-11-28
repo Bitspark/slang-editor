@@ -14,7 +14,7 @@ export {ConsoleValueTypeManager} from "./manager"
 interface InputConsoleAttrs {
 	type: SlangType;
 
-	onSubmit(value: SlangTypeValue): void;
+	onsubmit(value: SlangTypeValue): void;
 }
 
 export class InputConsole implements ClassComponent<InputConsoleAttrs> {
@@ -34,10 +34,13 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 			m(Button, {
 				full: true,
 				notAllowed: !that.isValid(),
-				onClick: that.isValid ? () => {
-					attrs.onSubmit(that.value!);
-				} : undefined,
-			}, "Push"),
+				onClick:
+                    that.isValid()
+                    ? () => {
+                        attrs.onsubmit(that.value!);
+                    }
+                    : undefined,
+			}, ""),
 		);
 	}
 
@@ -49,13 +52,13 @@ export class InputConsole implements ClassComponent<InputConsoleAttrs> {
 		return m(Input.ConsoleEntry, {
 			initValue,
 			type: type!,
+            // XXX obsolete, rename to lower case
 			onInput: (v: any) => {
 				this.value = v;
 			},
 		});
 	}
 }
-
 interface OutputConsoleAttrs {
 	model: OutputConsoleModel;
 }

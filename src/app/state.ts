@@ -5,11 +5,26 @@ import { PortDirection } from "../slang/core/abstract/port";
 import { blueprintModelToJson, loadBlueprints } from "../slang/core/mapper";
 import { AppModel, BlueprintModel } from "../slang/core/models";
 import { BlueprintType } from "../slang/core/models/blueprint";
-import { SlangType } from "../slang/definitions/type";
+import {SlangType, SlangTypeValue} from "../slang/definitions/type";
 import { OperatorDataExt } from "../extensions/operators";
 
 declare const APIURL: string;
 const API = new ApiService(APIURL);
+
+/*
+	App:
+		contains the current state of SlangEditorApp
+		- all blueprints
+		- blueprint in use --> editing/viewing
+
+		bundles all required services for SlangEditorApp
+		- load blueprint from backend
+		- store blueprint to backend
+		- run operator of blueprint
+		- send data to running operator
+		- receive data from operator
+
+ */
 
 export class AppState {
 	private static extensions = [
@@ -20,9 +35,9 @@ export class AppState {
 
 	public static readonly aspects = new SlangAspects();
 	public static readonly appModel = AppModel.create("slang");
-    public static readonly landscape = AppState.appModel.createLandscape();
+    public static readonly landscape = AppState.appModel.createLandscape(); // Containing all blueprints
 
-	private static _activeBlueprint: BlueprintModel|null;
+	private static _currentBlueprint: BlueprintModel|null;
 	public static blueprints: BlueprintModel[] = [];
 	public static blueprintsByUUID = new Map<String, BlueprintModel>()
 
@@ -36,19 +51,23 @@ export class AppState {
 		AppState.appModel.load()
 	}
 
-	public static get activeBlueprint(): BlueprintModel|null {
-		return this._activeBlueprint;
+	public static get currentBlueprint(): BlueprintModel {
+		if (!this._currentBlueprint) {
+			throw Error("no current blueprint set")
+		}
+
+		return this._currentBlueprint;
 	}
 
-	public static set activeBlueprint(blueprint: BlueprintModel|null) {
-		if (this._activeBlueprint) {
-			this._activeBlueprint.close()
+	public static set currentBlueprint(blueprint: BlueprintModel) {
+		if (this._currentBlueprint) {
+			this._currentBlueprint.close()
 		}
 
 		if (blueprint) {
 			blueprint.open();
 		}
-		this._activeBlueprint = blueprint;
+		this._currentBlueprint = blueprint;
 	}
 
 	private static registerExtensions() {
@@ -61,17 +80,17 @@ export class AppState {
 			AppState.blueprints.push(blueprint)
 		});
 
-		AppState.appModel.subscribeLoadRequested(() => {
-			return AppState.loadBlueprints()
+		AppState.appModel.subscribeLoadRequested( async () => {
+			await AppState.loadBlueprints();
+			await AppState.loadRunningOperator();
 		});
 
-		AppState.appModel.subscribeStoreRequested((blueprint: BlueprintModel) => {
-			AppState.storeBlueprint(blueprint);
+		AppState.appModel.subscribeStoreRequested(async (blueprint: BlueprintModel) => {
+			await AppState.storeBlueprint(blueprint);
 		});
-
 	}
 
-	public static getBlueprint(uuid: String): BlueprintModel|null {
+	public static getBlueprint(uuid: string): BlueprintModel|null {
 		const bp = AppState.blueprintsByUUID.get(uuid);
 		return (bp)?bp:null;
 	}
@@ -96,15 +115,48 @@ export class AppState {
 		return newBlueprint;
 	}
 
+	public static async runOperator(blueprint: BlueprintModel) {
+		await AppState.storeBlueprint(blueprint);
+		blueprint.runningOperator = await API.runOperator(blueprint)
+	}
+
+	public static async stopOperator(blueprint: BlueprintModel) {
+		if (!blueprint.runningOperator) {
+			return;
+		}
+		await API.stopOperator(blueprint.runningOperator)
+		console.log("HEY", blueprint, blueprint.runningOperator)
+		blueprint.runningOperator = null;
+		console.log("OPERATOR STOPPED")
+	}
+
+	public static async sendData(blueprint: BlueprintModel, data: SlangTypeValue): Promise<SlangTypeValue> {
+		if (!blueprint.runningOperator) {
+			throw new Error("operator not running");
+		}
+		return await API.sendData(blueprint.runningOperator, data);
+	}
+
 	private static async loadBlueprints(): Promise<void> {
 		loadBlueprints(AppState.landscape, await API.getBlueprints());
-        return Promise.resolve();
 	}
-	
-	private static storeBlueprint(blueprint: BlueprintModel): void {
-		API.storeBlueprint(blueprintModelToJson(blueprint)).then(() => {
-			return;
+
+	private static async loadRunningOperator(): Promise<void> {
+		const runningOperators = await API.getRunningOperators();
+
+		runningOperators.forEach(({blueprint, handle, url}) => {
+			const blueprintModel = this.getBlueprint(blueprint);
+
+			if (!blueprintModel) {
+				console.error("[LOAD_RUNNING_OPERATORS] no blueprint found for running operator:", blueprint, handle);
+				return;
+			}
+			blueprintModel.runningOperator = {handle, url};
 		});
 	}
-     
+
+	private static async storeBlueprint(blueprint: BlueprintModel) {
+		await API.storeBlueprint(blueprintModelToJson(blueprint));
+	}
+
 }

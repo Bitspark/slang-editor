@@ -1,5 +1,17 @@
 import {SlangTypeValue} from "../slang/definitions/type";
-import {BlueprintsJson, BlueprintJson, BlueprintApiResponse} from "../slang/definitions/api";
+import {
+	BlueprintsJson,
+	BlueprintJson,
+	BlueprintApiResponse,
+	RunningOperatorJson,
+	RunOperatorJson
+} from "../slang/definitions/api";
+import {BlueprintModel} from "../slang/core/models";
+import {RunningOperator} from "../slang/core/models/blueprint";
+
+function handleError(e: unknown) {
+	console.error(e)
+}
 
 export class ApiService {
 
@@ -22,9 +34,45 @@ export class ApiService {
 					local: bpdef.filter((bp) => bp.type === "local").map((bp) => bp.def),
 				};
 			},
-			(err: any) => {
-				console.error(err);
+			handleError,
+		);
+	}
+
+	public async getRunningOperators(): Promise<RunningOperatorJson[]> {
+		return this.httpGet<{}, RunningOperatorJson[]>(
+			"/run/",
+			{},
+			(data: any) => {
+				return (data as { objects: RunningOperatorJson[] }).objects;
 			},
+			handleError,
+		);
+	}
+
+	public async runOperator(blueprint: BlueprintModel): Promise<RunningOperatorJson> {
+		return this.httpPost<RunOperatorJson, RunningOperatorJson>(
+			"/run/",
+			{blueprint: blueprint.uuid},
+			(data: {object: RunningOperatorJson} ) => data.object,
+			handleError,
+		);
+	}
+
+	public async sendData(runningOperator: RunningOperator, inData: SlangTypeValue): Promise<SlangTypeValue> {
+		return this.httpPost<SlangTypeValue, SlangTypeValue>(
+			runningOperator.url,
+			inData,
+			(outData: any) => outData as SlangTypeValue,
+			handleError,
+		);
+	}
+
+	public async stopOperator(runningOperator: RunningOperator): Promise<null> {
+		return this.httpDelete<{}, null>(
+			runningOperator.url,
+			{},
+			() => null,
+			handleError,
 		);
 	}
 
@@ -36,9 +84,7 @@ export class ApiService {
 			}
 			return true;
 		};
-		const error = (err: any) => {
-			console.error(err);
-		};
+		const error = handleError;
 
 		return new Promise<boolean>((resolve) => {
 			const reqInit = {method: "post", body: JSON.stringify(blueprintDefJSON)};
@@ -56,9 +102,7 @@ export class ApiService {
 			instanceUrl,
 			inputData,
 			(outputData: SlangTypeValue) => outputData,
-			(err: any) => {
-				console.error(err);
-			},
+			handleError,
 		);
 	}
 
@@ -66,7 +110,7 @@ export class ApiService {
 		return new Promise<T>((resolve) => {
 			const reqInit = (method !== "get") ? {method, body: JSON.stringify(data)} : {};
 			fetch(this.url + path, reqInit)
-				.then((response: Response) => response.json())
+				.then((response: Response) => response.status !== 204 ? response.json() : {})
 				.then((responseParsed: any) => {
 					resolve(process(responseParsed));
 				})

@@ -47,8 +47,14 @@ export interface GenericSpecificationsApiResponse {
 	[genericIdentifier: string]: TypeDefApiResponse;
 }
 
+export interface RunOperatorJson {
+	blueprint: string;
+	properties?: PropertyAssignmentsApiResponse;
+	generics?: GenericSpecificationsApiResponse;
+}
+
 export interface RunningOperatorJson {
-	operator: string;
+	blueprint: string;
 	url: string;
 	handle: string;
 }
