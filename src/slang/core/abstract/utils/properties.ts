@@ -91,7 +91,7 @@ export class PropertyAssignments {
 
 	public copy(): PropertyAssignments {
 		const copy = new PropertyAssignments(
-			this.getProperties(),
+			this.properties,
 			this.generics
 		);
 

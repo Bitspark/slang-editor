@@ -7,7 +7,7 @@ export abstract class PortOwner extends SlangNode {
 
 	private readonly streamPortOwner: StreamPortOwner;
 
-	protected constructor(parent: SlangNode, streamSource: boolean) {
+	protected constructor(parent: SlangNode|null, streamSource: boolean) {
 		super(parent);
 		this.streamPortOwner = new StreamPortOwner(this, streamSource);
 		this.streamPortOwner.initialize();

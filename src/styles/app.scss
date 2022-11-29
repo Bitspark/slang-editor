@@ -107,12 +107,17 @@ body {
 }
 
 .sle-comp__opr-context-menu {
-	> div {
+	/*
+	border: 1px $fuchsia solid;
+	border-radius: 5px;
+	*/
+
+	> div, .box  {
 		margin-bottom: 9px !important;
 	}
 
-	.box {
-		margin-bottom: 9px !important;
+	> div:last-child, .box:last-child {
+		margin-bottom: 0 !important;
 	}
 
 	.buttons .button {
