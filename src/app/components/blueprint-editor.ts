@@ -10,6 +10,7 @@ import { Box } from "../../slang/ui/toolkit";
 import { UserEvent } from "../../slang/ui/views/user-events";
 import { ConnectionComponent } from "../../slang/ui/components/connection";
 import {Label, IconButton} from "../../slang/ui/toolkit/buttons";
+import {XY} from "../../slang/definitions/api";
 
 class Clipboard {
 	private copied: OperatorModel|null = null;
@@ -22,11 +23,11 @@ class Clipboard {
 		this.copied = operator.copy();
 	}
 
-	public paste(blueprint: BlueprintModel) {
+	public paste(blueprint: BlueprintModel, position?: XY) {
 		if(!this.copied) {
 			return;
 		}
-		blueprint.copyOperator(this.copied);
+		blueprint.copyOperator(this.copied, position);
 	}
 
 	public flush() {
@@ -90,20 +91,6 @@ class Editor {
 								isEditable
 									? m(IconButton, {
 										color: "black",
-										fas:"trash-alt",
-										tooltip: "Remove operator",
-										onclick() {
-											ContextMenu.hide();
-											blueprint.deleteOperator(operator)
-										}
-									},
-										m(Label, "remove")
-									)
-									: undefined,
-
-								isEditable
-									? m(IconButton, {
-										color: "black",
 										fas: "copy",
 										tooltip: "Copy operator to clipboard",
 										onclick() {
@@ -112,6 +99,20 @@ class Editor {
 										}
 									},
 										m(Label, "copy")
+									)
+									: undefined,
+
+								isEditable
+									? m(IconButton, {
+											color: "black",
+											fas:"trash-alt",
+											tooltip: "Remove operator",
+											onclick() {
+												ContextMenu.hide();
+												blueprint.deleteOperator(operator)
+											}
+										},
+										m(Label, "remove")
 									)
 									: undefined,
 
@@ -145,7 +146,7 @@ class Editor {
 										disabled: !Editor.clipboard.notEmpty(),
 										onclick() {
 											ContextMenu.hide();
-											Editor.clipboard.paste(blueprint)
+											Editor.clipboard.paste(blueprint, e.xy)
 										}
 									},
 										m(Label, "paste")
