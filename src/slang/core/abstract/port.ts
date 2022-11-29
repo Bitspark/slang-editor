@@ -559,6 +559,19 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		if (this.typeIdentifier === TypeIdentifier.Unspecified) {
 			this.typeIdentifier = TypeIdentifier.Map;
 		} else if (this.typeIdentifier !== TypeIdentifier.Map) {
+			try {
+				// this ports generic will only be overridden when it is unspecified
+				if (specifications.get(identifier).getTypeIdentifier() !== TypeIdentifier.Unspecified) {
+					return this;
+				}
+			} catch (e) {
+				// generic is not specified
+			}
+
+			if (other.getTypeIdentifier() === TypeIdentifier.Unspecified) {
+				return this;
+			}
+
 			// TODO: Replace this legacy solution once all specifications are ensured to be maps
 			specifications.specify(identifier, other.getType());
 			return this;
