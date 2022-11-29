@@ -35,6 +35,8 @@ export class OperatorDataExt extends SlangExtension {
 		this.registerBlackBox("37ccdc28-67b0-4bb1-8591-4e0e813e3ec1", EvalOperator);
 		// slang.data.Convert
 		this.registerBlackBox("d1191456-3583-4eaf-8ec1-e486c3818c60", ConvertOperator);
+		// Log
+		this.registerBlackBox("8f9c02df-da41-4266-b486-0c22173a6383", LogOperator);
 	}
 }
 
@@ -43,7 +45,7 @@ class DataBlackBoxShape extends BlackBoxShape {
 		super(attrs);
 
 		const width = 120;
-		const height = 25;
+		const height = 24;
 
 		this.attr("body/rx", ROUND_CORNER);
 		this.attr("body/ry", ROUND_CORNER);
@@ -94,8 +96,8 @@ class ConvertOperator implements SlangAspectImpl {
 		constructor(attrs: BlackBoxShapeAttrs) {
 			super(attrs);
 
-			const width = 80;
-			const height = 25;
+			const width = 70;
+			const height = 24;
 
 			this.attr("body/rx", ROUND_CORNER);
 			this.attr("body/ry", ROUND_CORNER);
@@ -117,6 +119,20 @@ class ConvertOperator implements SlangAspectImpl {
 			const toType = TypeIdentifier[portOut.getTypeIdentifier()];
 
 			this.attr("label/text", `${fromType} → ${toType}`);
+		}
+	};
+}
+
+class LogOperator implements SlangAspectImpl {
+	public static shape = class extends DataBlackBoxShape {
+		constructor(attrs: BlackBoxShapeAttrs) {
+			super(attrs);
+
+			const width = 40;
+			const height = 24;
+
+			this.attr("label/font-size", FONT_SIZE);
+			this.resize(width, height);
 		}
 	};
 }
