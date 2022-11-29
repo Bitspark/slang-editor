@@ -5,11 +5,11 @@ import { ViewFrame } from "../../slang/ui/frame";
 import { BlueprintView } from "../../slang/ui/views/blueprint";
 import { AppState } from "../state";
 import { OperatorDashboard } from "./operator-dashboard";
-import { OperatorControl } from "./operator-control";
 import { ContextMenu } from "./toolkit/context-menu";
 import { Box } from "../../slang/ui/toolkit";
 import { UserEvent } from "../../slang/ui/views/user-events";
 import { ConnectionComponent } from "../../slang/ui/components/connection";
+import {IconButton} from "../../slang/ui/toolkit/buttons";
 
 class Editor {
 	private static frame: ViewFrame;
@@ -53,29 +53,46 @@ class Editor {
 				const view = blueprintView;
 				ContextMenu.show(e.target, {
 					view: () => m(".sle-comp__opr-context-menu",
-						m(OperatorControl, {
-							ondelete: isEditable
-							? () => {
-								ContextMenu.hide();
-								blueprint.deleteOperator(operator)
-							}
+						m(".buttons.are-normal", {},
+
+							isEditable
+							? m(IconButton, {
+								color: "black",
+								fas: "trash-alt",
+								tooltip: "Remove operator",
+								onclick() {
+									ContextMenu.hide();
+									blueprint.deleteOperator(operator)
+								}
+							})
 							: undefined,
 
-							onclone: isEditable
-							? () => {
-								ContextMenu.hide();
-								blueprint.cloneOperator(operator);
-							}
+							isEditable
+							? m(IconButton, {
+								color: "black",
+								fas: "copy",
+								tooltip: "Copy operator",
+								onclick() {
+									ContextMenu.hide();
+									blueprint.copyOperator(operator);
+								}
+							})
 							: undefined,
 
-							onopen: view.isDescendable && !blueprint.isRunning && !operatorBp.isElementary()
-							? () => {
-								ContextMenu.hide();
-								m.route.set("/:uuid", {uuid: operatorBp.uuid})
-							}
+							view.isDescendable && !blueprint.isRunning && !operatorBp.isElementary()
+							? m(IconButton, {
+								color: "black",
+								fas: "project-diagram",
+								tooltip: "Open blueprint",
+								onclick() {
+									ContextMenu.hide();
+									m.route.set("/:uuid", {uuid: operatorBp.uuid})
+								}
+							})
 							: undefined,
-						}),
-						 m(OperatorDashboard, {operator, view})
+
+						),
+						m(OperatorDashboard, {operator, view})
 					)
 				});
 			}

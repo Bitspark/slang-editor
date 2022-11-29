@@ -108,17 +108,19 @@ body {
 
 .sle-comp__opr-context-menu {
 	> div {
-		margin-bottom: 8px;
+		margin-bottom: 9px !important;
 	}
-}
 
-.sle-comp__opr-ctrl {
+	.box {
+		margin-bottom: 9px !important;
+	}
+
+	.buttons .button {
+		margin-bottom: 0;
+	}
 }
 
 .sle-comp__opr-dashboard {
-	> .box {
-		margin-bottom: 9px;
-	}
 }
 
 .sle-comp__blueprint-menu {

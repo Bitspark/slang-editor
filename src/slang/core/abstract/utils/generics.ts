@@ -12,6 +12,14 @@ export class GenericSpecifications {
 
 	public constructor(private genericIdentifiers: string[]) {}
 
+	public copy(): GenericSpecifications {
+		const copy = new GenericSpecifications(this.genericIdentifiers)
+		Array.from(this.getIterator()).forEach(([genId, type]) => {
+			copy.specify(genId, type);
+		});
+		return copy;
+	}
+
 	public specify(identifier: string, type: SlangType): void {
 		if (this.genericIdentifiers.indexOf(identifier) === -1) {
 			throw new Error(`unknown generic identifier ${identifier}`);

@@ -210,12 +210,12 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		});
 	}
 
-	public cloneOperator(orig: OperatorModel): OperatorModel {
+	public copyOperator(orig: OperatorModel): OperatorModel {
 		return this.createOperator(
 			null,
 			orig.blueprint,
-			orig.getProperties(),
-			orig.getGenerics(),
+			orig.getProperties().copy(),
+			orig.getGenerics().copy(),
 			{position: {x: 0, y: 0}}
 		)
 	}
