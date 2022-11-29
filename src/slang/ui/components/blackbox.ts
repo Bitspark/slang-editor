@@ -31,7 +31,6 @@ function createPortGroups(blackBox: BlackBox): PortGroupComponent[] {
 	const delegates = Array.from(blackBox.getDelegates());
 
 	const countRight = Math.ceil(delegates.length / 2);
-	// const countRight = delegates.length;
 	const widthRight = 0.5 / countRight;
 	const stepRight = 0.5 / countRight;
 	let posRight = 0;

@@ -87,10 +87,10 @@ export class PortGroupComponent {
 						portPosition = {x: positionAbs, y: elBBox.height + factor * translate};
 						break;
 					case "left":
-						portPosition = {x: factor * translate, y: positionAbs};
+						portPosition = {x: -factor * translate, y: positionAbs};
 						break;
 					case "right":
-						portPosition = {x: elBBox.width - factor * translate, y: positionAbs};
+						portPosition = {x: elBBox.width + factor * translate, y: positionAbs};
 						break;
 				}
 
