@@ -3,6 +3,7 @@ import { buildCssClass, HasSizeAttrs } from ".";
 
 import {MithrilMouseEvent} from "./events";
 import {Icon, IconAttrs} from "./icons";
+export {Icon} from "./icons";
 
 interface ButtonAttrs extends HasSizeAttrs {
 	class?: string;
@@ -68,5 +69,11 @@ export class Button implements ClassComponent<ButtonAttrs> {
 export class IconButton implements ClassComponent<ButtonAttrs & IconAttrs> {
 	public view({attrs, children}: CVnode<ButtonAttrs & IconAttrs>) {
 		return m(Button, attrs, m(Icon, attrs), children);
+	}
+}
+
+export class Label implements ClassComponent<ButtonAttrs & IconAttrs> {
+	public view({attrs, children}: CVnode<ButtonAttrs & IconAttrs>) {
+		return m("span", attrs, children);
 	}
 }

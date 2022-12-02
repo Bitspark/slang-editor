@@ -1,6 +1,6 @@
 import {filter} from "rxjs/operators";
 
-import {OperatorGeometry, PortMessageJson, UUID} from "../../definitions/api";
+import {OperatorGeometry, PortMessageJson, UUID, XY} from "../../definitions/api";
 import {SlangParsing} from "../../definitions/parsing";
 import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 import {BlackBox} from "../abstract/blackbox";
@@ -210,13 +210,13 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		});
 	}
 
-	public cloneOperator(orig: OperatorModel): OperatorModel {
+	public copyOperator(orig: OperatorModel, position?: XY): OperatorModel {
 		return this.createOperator(
 			null,
 			orig.blueprint,
-			orig.getProperties(),
-			orig.getGenerics(),
-			{position: {x: 0, y: 0}}
+			orig.getProperties().copy(),
+			orig.getGenerics().copy(),
+			{position:position? position :{x: 0, y: 0}}
 		)
 	}
 

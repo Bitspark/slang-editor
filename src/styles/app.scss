@@ -107,18 +107,25 @@ body {
 }
 
 .sle-comp__opr-context-menu {
-	> div {
-		margin-bottom: 8px;
-	}
-}
+	/*
+	border: 1px $fuchsia solid;
+	border-radius: 5px;
+	*/
 
-.sle-comp__opr-ctrl {
+	> div, .box  {
+		margin-bottom: 9px !important;
+	}
+
+	> div:last-child, .box:last-child {
+		margin-bottom: 0 !important;
+	}
+
+	.buttons .button {
+		margin-bottom: 0;
+	}
 }
 
 .sle-comp__opr-dashboard {
-	> .box {
-		margin-bottom: 9px;
-	}
 }
 
 .sle-comp__blueprint-menu {

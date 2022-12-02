@@ -36,7 +36,7 @@ export abstract class CellComponent extends Component {
 	protected abstract readonly cssAttr: string;
 	private components: Component[] = [];
 
-	protected constructor(protected readonly paperView: PaperView, xy: XY) {
+	protected constructor(public readonly paperView: PaperView, xy: XY) {
 		super(xy);
 	}
 

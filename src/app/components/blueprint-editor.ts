@@ -1,19 +1,49 @@
 import m, {ClassComponent, CVnode} from "mithril";
 import { OperatorBoxComponent } from "../../slang/ui/components/blackbox";
-import { BlueprintModel } from "../../slang/core/models";
+import {BlueprintModel, OperatorModel} from "../../slang/core/models";
 import { ViewFrame } from "../../slang/ui/frame";
 import { BlueprintView } from "../../slang/ui/views/blueprint";
 import { AppState } from "../state";
 import { OperatorDashboard } from "./operator-dashboard";
-import { OperatorControl } from "./operator-control";
 import { ContextMenu } from "./toolkit/context-menu";
 import { Box } from "../../slang/ui/toolkit";
 import { UserEvent } from "../../slang/ui/views/user-events";
 import { ConnectionComponent } from "../../slang/ui/components/connection";
+import {Label, IconButton} from "../../slang/ui/toolkit/buttons";
+import {XY} from "../../slang/definitions/api";
+
+class Clipboard {
+	private copied: OperatorModel|null = null;
+
+	public constructor() {
+	}
+
+	public copy(operator: OperatorModel) {
+		this.flush();
+		this.copied = operator.copy();
+	}
+
+	public paste(blueprint: BlueprintModel, position?: XY) {
+		if(!this.copied) {
+			return;
+		}
+		blueprint.copyOperator(this.copied, position);
+	}
+
+	public flush() {
+		if(this.copied) {
+			this.copied.destroy();
+		}
+	}
+
+	public notEmpty(): boolean {
+		return !!this.copied;
+	}
+}
 
 class Editor {
 	private static frame: ViewFrame;
-
+	private static clipboard = new Clipboard();
 
     public static init(rootEl: HTMLElement) {
 		this.frame = new ViewFrame(rootEl as HTMLElement);
@@ -47,38 +77,88 @@ class Editor {
 				}
 			}
 
-			if (e.right.click && e.target instanceof OperatorBoxComponent) {
-				const operator = e.target.getModel();
-				const operatorBp = operator.blueprint;
-				const view = blueprintView;
-				ContextMenu.show(e.target, {
-					view: () => m(".sle-comp__opr-context-menu",
-						m(OperatorControl, {
-							ondelete: isEditable
-							? () => {
-								ContextMenu.hide();
-								blueprint.deleteOperator(operator)
-							}
-							: undefined,
 
-							onclone: isEditable
-							? () => {
-								ContextMenu.hide();
-								blueprint.cloneOperator(operator);
-							}
-							: undefined,
+			if (e.right.click) {
 
-							onopen: view.isDescendable && !blueprint.isRunning && !operatorBp.isElementary()
-							? () => {
-								ContextMenu.hide();
-								m.route.set("/:uuid", {uuid: operatorBp.uuid})
-							}
-							: undefined,
-						}),
-						 m(OperatorDashboard, {operator, view})
-					)
-				});
+				if (e.target instanceof OperatorBoxComponent) {
+					const operator = e.target.getModel();
+					const operatorBp = operator.blueprint;
+					const view = blueprintView;
+					ContextMenu.show(e.target, {
+						view: () => m(".sle-comp__opr-context-menu",
+							m(".buttons.are-normal", {},
+
+								isEditable
+									? m(IconButton, {
+										color: "black",
+										fas: "copy",
+										tooltip: "Copy operator to clipboard",
+										onclick() {
+											ContextMenu.hide();
+											Editor.clipboard.copy(operator);
+										}
+									},
+										m(Label, "copy")
+									)
+									: undefined,
+
+								isEditable
+									? m(IconButton, {
+											color: "black",
+											fas:"trash-alt",
+											tooltip: "Remove operator",
+											onclick() {
+												ContextMenu.hide();
+												blueprint.deleteOperator(operator)
+											}
+										},
+										m(Label, "remove")
+									)
+									: undefined,
+
+								view.isDescendable && !blueprint.isRunning && !operatorBp.isElementary()
+									? m(IconButton, {
+										color: "black",
+										fas: "project-diagram",
+										tooltip: "Open blueprint",
+										onclick() {
+											ContextMenu.hide();
+											m.route.set("/:uuid", {uuid: operatorBp.uuid})
+										},
+									}, m(Label, "open"))
+									: undefined,
+
+							),
+							m(OperatorDashboard, {operator, view})
+						)
+					});
+				}
+				else {
+					ContextMenu.show2(e, {
+						view: () => m(".sle-comp__opr-context-menu",
+							m(".buttons.are-normal", {},
+
+								isEditable
+									? m(IconButton, {
+										color: "black",
+										fas: "paste",
+										tooltip: "Paste operator from clipboard",
+										disabled: !Editor.clipboard.notEmpty(),
+										onclick() {
+											ContextMenu.hide();
+											Editor.clipboard.paste(blueprint, e.xy)
+										}
+									},
+										m(Label, "paste")
+									)
+									: undefined,
+							),
+						)
+					});
+				}
 			}
+
+
 		});
         this.frame.setView(blueprintView);
 	}

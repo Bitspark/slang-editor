@@ -38,7 +38,7 @@ export class OperatorModel extends BlackBox {
 	// Generics have internal, fine-grained subjects
 	private readonly generics: GenericSpecifications;
 
-	constructor(parent: BlueprintModel, args: OperatorModelArgs) {
+	constructor(parent: BlueprintModel|null, args: OperatorModelArgs) {
 		super(parent, false);
 		this.name = args.name;
 		this.blueprint = args.blueprint;
@@ -51,6 +51,18 @@ export class OperatorModel extends BlackBox {
 			this.generics = new GenericSpecifications(Array.from(args.blueprint.getGenericIdentifiers()));
 			this.properties = new PropertyAssignments(Array.from(args.blueprint.getProperties()), this.generics);
 		}
+	}
+
+	public copy(): OperatorModel {
+		return new OperatorModel(
+			null,
+			{
+				name: "",
+				blueprint: this.blueprint,
+				properties: this.properties.copy(),
+				generics: this.generics.copy(),
+			}
+		);
 	}
 
 	public getName(): string {
