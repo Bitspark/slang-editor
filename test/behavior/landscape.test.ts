@@ -4,7 +4,7 @@ import {LandscapeModel} from "../../src/slang/core/models/landscape";
 import {TypeIdentifier} from "../../src/slang/definitions/type";
 import {TestStorageApp} from "../helpers/TestStorageApp";
 import data from "../resources/definitions.json";
-import {SlangBundle} from "../../src/slang/definitions/api";
+import {SlangFileJson} from "../../src/slang/definitions/api";
 
 describe("The landscape", () => {
 	let appModel: AppModel;
@@ -27,7 +27,7 @@ describe("The landscape", () => {
 	});
 
 	it("can load a bundle", () => {
-		const bundle: SlangBundle = {
+		const bundle: SlangFileJson = {
 			main: "a4df2ce5-bf32-4be3-b0a3-85411ec699d4",
 			blueprints: {
 				"a4df2ce5-bf32-4be3-b0a3-85411ec699d4": {
@@ -49,18 +49,18 @@ describe("The landscape", () => {
 			},
 		};
 
-		const bp = landscapeModel.loadBundle(bundle);
+		const bp = landscapeModel.import(bundle);
 		expect(landscapeModel.findBlueprint("a4df2ce5-bf32-4be3-b0a3-85411ec699d4")).toBeTruthy();
 		expect(bp.name).toEqual("Test Blueprint");
 		expect(bp.getPortIn()!.getTypeIdentifier()).toEqual(TypeIdentifier.String);
 		expect(bp.getPortOut()!.getTypeIdentifier()).toEqual(TypeIdentifier.Number);
 
-		const bp2 = landscapeModel.loadBundle(bundle);
+		const bp2 = landscapeModel.import(bundle);
 		expect(bp).toEqual(bp2);
 	});
 
 	it("can load a bundle with existing bps", () => {
-		const bundle1: SlangBundle = {
+		const bundle1: SlangFileJson = {
 			main: "a4df2ce5-bf32-4be3-b0a3-85411ec699d4",
 			blueprints: {
 				"a4df2ce5-bf32-4be3-b0a3-85411ec699d4": {
@@ -82,7 +82,7 @@ describe("The landscape", () => {
 			},
 		};
 
-		const bundle2: SlangBundle = {
+		const bundle2: SlangFileJson = {
 			main: "27cfa63a-f2e3-4cb1-8b92-d709064214a9",
 			blueprints: {
 				"a4df2ce5-bf32-4be3-b0a3-85411ec699d4": {
@@ -127,15 +127,15 @@ describe("The landscape", () => {
 			},
 		};
 
-		landscapeModel.loadBundle(bundle1);
-		const bp = landscapeModel.loadBundle(bundle2);
+		landscapeModel.import(bundle1);
+		const bp = landscapeModel.import(bundle2);
 
 		expect(landscapeModel.findBlueprint("27cfa63a-f2e3-4cb1-8b92-d709064214a9")).toBeTruthy();
 		expect(bp.name).toEqual("Test Blueprint 2");
 	});
 
 	it("can export a bundle", () => {
-		const bundle = landscapeModel.exportBundle("8019ef19-94c1-46d4-9a34-6dcd4a5281a8");
+		const bundle = landscapeModel.export("8019ef19-94c1-46d4-9a34-6dcd4a5281a8");
 		expect(Object.keys(bundle.blueprints)).toEqual(["8019ef19-94c1-46d4-9a34-6dcd4a5281a8", "ba24c37f-2b04-44b4-97ad-fd931c9ab77b"]);
 	});
 });

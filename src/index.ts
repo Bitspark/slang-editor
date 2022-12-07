@@ -1,2 +1,2 @@
 export {SlangEditor} from "./slang/components";
-export {SlangBundle} from "./slang/definitions/api";
+export {SlangFileJson} from "./slang/definitions/api";

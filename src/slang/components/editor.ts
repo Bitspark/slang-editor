@@ -2,7 +2,7 @@ import {OperatorDataExt} from "../../extensions/operators";
 import {STYLING} from "../../styles";
 import {SlangAspects} from "../aspects";
 import {AppModel, BlueprintModel, LandscapeModel} from "../core/models";
-import {SlangBundle} from "../definitions/api";
+import {SlangFileJson} from "../definitions/api";
 import {ViewFrame} from "../ui/frame";
 import {BlueprintView} from "../ui/views/blueprint";
 
@@ -43,13 +43,13 @@ export class SlangEditor extends HTMLElement {
 		this.firstUpdated();
 	}
 
-	public loadBundle(bundle: SlangBundle): BlueprintModel {
-		return this.landscape.loadBundle(bundle);
+	public import(slangFile: SlangFileJson): BlueprintModel {
+		return this.landscape.import(slangFile);
 	}
 
-	public exportBundle(): SlangBundle | null {
+	public export(): SlangFileJson | null {
 		if (this.blueprint) {
-			return this.landscape.exportBundle(this.blueprint.uuid);
+			return this.landscape.export(this.blueprint.uuid);
 		}
 		return null;
 	}

@@ -111,7 +111,7 @@ export interface ConnectionsApiResponse {
 	[sourcePortReference: string]: string[];
 }
 
-export interface SlangBundle {
+export interface SlangFileJson {
 	main: string;
 	args?: {
 		properties: PropertyAssignmentsApiResponse;

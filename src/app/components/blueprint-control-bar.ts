@@ -1,9 +1,9 @@
 import m, {ClassComponent, CVnode} from "mithril";
 import { IconButton } from "../../slang/ui/toolkit/buttons";
 import { AppState } from "../state";
-import {SlangBundle} from "../../slang/definitions/api";
+import {SlangFileJson} from "../../slang/definitions/api";
 
-function download(slangFile: SlangBundle) {
+function download(slangFile: SlangFileJson) {
     const a = document.createElement("a");
     a.href = URL.createObjectURL(
         new Blob([JSON.stringify(slangFile)], {

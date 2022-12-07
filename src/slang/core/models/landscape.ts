@@ -1,4 +1,4 @@
-import {BlueprintJson, SlangBundle, UUID} from "../../definitions/api";
+import {BlueprintJson, SlangFileJson, UUID} from "../../definitions/api";
 import {SlangNode} from "../abstract";
 import {SlangBehaviorSubject, SlangSubjectTrigger} from "../abstract/utils/events";
 import {blueprintModelToJson, loadBlueprints} from "../mapper";
@@ -31,7 +31,7 @@ export class LandscapeModel extends SlangNode {
 
 	// Import and export
 
-	public exportBundle(mainId: UUID): SlangBundle {
+	public export(mainId: UUID): SlangFileJson {
 		const mainBp = this.findBlueprint(mainId);
 		if (!mainBp) {
 			throw new BundleError(mainId);
@@ -59,7 +59,7 @@ export class LandscapeModel extends SlangNode {
 		};
 	}
 
-	public loadBundle(bundle: SlangBundle): BlueprintModel {
+	public import(bundle: SlangFileJson): BlueprintModel {
 		const blueprintJsonList = Object.keys(bundle.blueprints).filter((bpId) => !this.findBlueprint(bpId)).map((bpId) => bundle.blueprints[bpId]);
 		loadBlueprints(this, {local: blueprintJsonList, library: [], elementary: []});
 
