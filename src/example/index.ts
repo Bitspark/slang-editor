@@ -1,15 +1,12 @@
 import {SlangEditor} from "..";
-import {SlangBundle} from "..";
-import {OperatorBoxComponent} from "../slang/ui/components/blackbox";
-import {ConnectionComponent} from "../slang/ui/components/connection";
-import {WhiteBoxComponent} from "../slang/ui/components/whitebox";
+import {SlangFileJson} from "..";
 
 customElements.define("slang-editor", SlangEditor);
 
 // tslint:disable-next-line
 //import "../styles/standalone.scss";
 
-const bundle: SlangBundle = {
+const bundle: SlangFileJson = {
 	main: "1f8dc0f2-a7b8-4eb2-8555-3165bba6e843",
 	blueprints: {
 		"8b62495a-e482-4a3e-8020-0ab8a350ad2d": {
@@ -465,6 +462,6 @@ const bundle: SlangBundle = {
 
 const slangEditor = document.getElementById("main") as SlangEditor;
 if (slangEditor) {
-	const blueprint = slangEditor.loadBundle(bundle);
+	const blueprint = slangEditor.import(bundle);
 	slangEditor.displayBlueprint(blueprint);
 }

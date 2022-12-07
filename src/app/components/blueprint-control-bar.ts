@@ -1,13 +1,27 @@
 import m, {ClassComponent, CVnode} from "mithril";
 import { IconButton } from "../../slang/ui/toolkit/buttons";
 import { AppState } from "../state";
+import {SlangFileJson} from "../../slang/definitions/api";
+
+function download(slangFile: SlangFileJson) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(
+        new Blob([JSON.stringify(slangFile)], {
+            type: 'application/binary'}
+        )
+    )
+    a.setAttribute("download", `${slangFile.main}.slang`);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
 
 export class BlueprintControlBar implements ClassComponent<any> {
-	// @ts-ignore
-	public view({attrs}: CVnode<any>) {
+    // @ts-ignore
+    public view({attrs}: CVnode<any>) {
         const blueprint = AppState.currentBlueprint;
 
-		return m("nav.sle-comp__blueprint-ctrl-bar", {
+        return m("nav.sle-comp__blueprint-ctrl-bar", {
             class: "is-flex is-flex-wrap-nowrap is-align-content-stretch"
         }, [
             m("input.input.ctrl-bar__name", {
@@ -48,8 +62,14 @@ export class BlueprintControlBar implements ClassComponent<any> {
                         await AppState.runOperator(blueprint);
                         m.redraw();
                     },
+                }),
+                m(IconButton, { // download slang file
+                    class: "is-flex-grow-1",
+                    fas: "download",
+                    async onclick() {
+                        download(AppState.exportSlangFile(blueprint));
+                    },
                 })
-
             ),
         ]);
 	}
