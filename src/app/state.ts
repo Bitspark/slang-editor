@@ -7,6 +7,7 @@ import { AppModel, BlueprintModel } from "../slang/core/models";
 import { BlueprintType } from "../slang/core/models/blueprint";
 import {SlangType, SlangTypeValue} from "../slang/definitions/type";
 import { OperatorDataExt } from "../extensions/operators";
+import {SlangBundle} from "../slang/definitions/api";
 
 declare const APIURL: string;
 const API = new ApiService(APIURL);
@@ -155,6 +156,10 @@ export class AppState {
 
 	private static async storeBlueprint(blueprint: BlueprintModel) {
 		await API.storeBlueprint(blueprintModelToJson(blueprint));
+	}
+
+	public static exportSlangFile(blueprint: BlueprintModel): SlangBundle {
+		return this.landscape.exportBundle(blueprint.uuid);
 	}
 
 }
