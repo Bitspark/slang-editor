@@ -8,11 +8,18 @@ import {SlangType, SlangTypeValue} from "../../slang/definitions/type";
 import {List, ListEntry} from "../components/toolkit/list";
 import {Button} from "../../slang/ui/toolkit/buttons";
 import {BlueprintEditor, BlueprintEditorTopBar} from "../components/blueprint-editor";
+import {UUID} from "../../slang/definitions/api";
+
+type RunningOperatorLog = {sent: SlangTypeValue, received: SlangTypeValue}[];
 
 class RunningOperator {
-	public static log: {sent: SlangTypeValue, received: SlangTypeValue}[] = [];
+	private static logs = new Map<UUID, RunningOperatorLog>();
 
 	private static blueprint: BlueprintModel;
+
+	public static get log(): RunningOperatorLog {
+		return this.logs.get(this.blueprint.uuid)!
+	}
 
 	public static get inType(): SlangType {
 		return this.blueprint.getPortIn()!.getType();
@@ -25,6 +32,9 @@ class RunningOperator {
 		}
 
 		this.blueprint = blueprint;
+		if (!this.logs.has(this.blueprint.uuid)) {
+			this.logs.set(this.blueprint.uuid, [])
+		}
 	}
 
 	public static async sendData(data: SlangTypeValue) {
