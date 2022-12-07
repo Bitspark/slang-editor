@@ -379,8 +379,9 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 				return null;
 			}
 
-			port = port.findMapSub(pathPart);
-			if (!port) {
+			try {
+				port = port.findMapSub(pathPart);
+			} catch (e) {
 				return undefined;
 			}
 		}

@@ -116,9 +116,11 @@ export class BlueprintView extends PaperView {
 	}
 
 	private attachEventHandlers() {
+		/*
 		if (this.isReadOnly) {
 			return;
 		}
+		 */
 
 		this.graph.on("change:position change:size", (cell: dia.Cell) => {
 			// Moving around inner operators
