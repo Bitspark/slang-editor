@@ -44,8 +44,10 @@ class Clipboard {
 class Editor {
 	private static frame: ViewFrame;
 	private static clipboard = new Clipboard();
+	private static shownBlueprint?: BlueprintModel = undefined;
 
     public static init(rootEl: HTMLElement) {
+		this.shownBlueprint = undefined
 		this.frame = new ViewFrame(rootEl as HTMLElement);
 	}
 
@@ -54,6 +56,11 @@ class Editor {
 	}
 
 	public static show(blueprint: BlueprintModel) {
+		if (this.shownBlueprint && this.shownBlueprint.uuid === blueprint.uuid) {
+			return;
+		}
+		this.shownBlueprint = blueprint
+
 		const isEditable = !this.isReadonly(blueprint);
 
 		const viewArgs = {
@@ -175,6 +182,13 @@ export class BlueprintEditor implements ClassComponent<any> {
 		Editor.init(el as HTMLElement);
 		Editor.show(blueprint);
     }
+
+	// @ts-ignore
+	public onbeforeupdate({attrs}: m.Vnode<any, this>) {
+		const activeBlueprint = AppState.currentBlueprint;
+		Editor.show(activeBlueprint);
+	}
+
 
 	// @ts-ignore
 	public onupdate({attrs}: m.Vnode<any>) {
