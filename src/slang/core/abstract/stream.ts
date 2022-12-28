@@ -327,6 +327,14 @@ export function containsMisplacedStreamTypeTo(searchStream: StreamType, stream: 
 	return false;
 }
 
+export function generateUniqueSubportName(portType: SlangType, other: PortModel): string {
+	console.assert(portType.isMap())
+	const guessedPortName = (other.getName() ? other.getName() : other.getOwnerName()).replace(/[\W_]/gi, "_").replace("__", "_")
+	const portName = (guessedPortName !== "_") ? guessedPortName : "port"
+	//const similiarPortNames = Array.from(portType.getMapSubs()).filter(([subName, _]) => subName.startsWith(portName)).map(([subName, _]) => subName).sort()
+	return `${portName}_${(new Date().getTime()) % 100}`;
+}
+
 export class StreamPort {
 
 	private readonly streamType: SlangBehaviorSubject<StreamType>;
@@ -433,8 +441,6 @@ export class StreamPort {
 	}
 
 	public createGenericType(other: PortModel): { type: SlangType, portId: string[] } {
-		const maxRandomNumber = 100;
-
 		const [nextStreamType, nextStreamDepth] = this.getStreamType().getStreamStep(other.getStreamPort().getStreamType());
 		if (nextStreamDepth === -1) {
 			throw new Error(`cannot find suitable stream stack`);
@@ -447,7 +453,7 @@ export class StreamPort {
 			type = this.port.getType();
 		}
 
-		const subName = `gen_${other.getName()}_${(new Date().getTime()) % maxRandomNumber}`;
+		const subName = generateUniqueSubportName(type, other);
 
 		if (nextStreamDepth === 0) {
 			type.addMapSub(subName, new SlangType(type, other.getTypeIdentifier(), true));
@@ -492,7 +498,7 @@ export class StreamPort {
 			const newStreamType = new SlangType(newMapType, TypeIdentifier.Stream, true);
 
 			if (i === 0) {
-				const newStreamName = `gen_str_${(new Date().getTime()) % maxRandomNumber}`;
+				const newStreamName = generateUniqueSubportName(type, other);
 				newMapType.addMapSub(newStreamName, newStreamType);
 				portId.push(newStreamName);
 			} else { 
