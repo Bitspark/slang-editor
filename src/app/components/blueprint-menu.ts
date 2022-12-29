@@ -4,14 +4,27 @@ import { AppState } from "../state";
 
 export class BlueprintMenu implements ClassComponent<any> {
     private localBlueprints: BlueprintModel[] = []
-    private otherBlueprints: BlueprintModel[] = []
+    private otherBlueprintsByCat = new Map<string, BlueprintModel[]>();
 
 	// @ts-ignore
 	public oninit({attrs}: m.Vnode<any, this>) {
         const exclude = attrs.exclude ? attrs.exclude : () => false;
         const blueprints = AppState.blueprints.sort((l, r) => l.name.localeCompare(r.name))
         this.localBlueprints = blueprints.filter(bp => bp.isLocal() && !exclude(bp))
-        this.otherBlueprints = blueprints.filter(bp => !bp.isLocal())
+
+        blueprints.filter(bp => !bp.isLocal()).forEach((bp) => {
+            const category = bp.tags[0] || "misc"
+
+            let bpList = this.otherBlueprintsByCat.get(category)
+
+            if (!bpList) {
+                bpList = []
+            }
+
+            bpList.push(bp)
+            this.otherBlueprintsByCat.set(category, bpList)
+        })
+
 	}
 
 	public view({attrs}: CVnode<any>) {
@@ -27,16 +40,21 @@ export class BlueprintMenu implements ClassComponent<any> {
                         }
                     }, bp.getShortName())),
                 )),
-                m("p.menu-label", "Shared Blueprints"),
-                m("ul.menu-list", this.otherBlueprints.map(
-                    bp => m("li", m("a",
-                    {
-                        onclick() {
-                            attrs.onselect(bp);
-                        }
-                    }, bp.getShortName())),
-                )),
+
+                Array
+                    .from(this.otherBlueprintsByCat.entries())
+                    .map(([cat, bpList]) => [
+                        m("p.menu-label", cat),
+                        m("ul.menu-list",
+                            bpList.map(bp => m("li", m("a",
+                                {
+                                    onclick() {
+                                        attrs.onselect(bp);
+                                    }
+                                }, bp.getShortName())))
+                        )
+                    ])
             )
-        );
+        )
 	}
 }

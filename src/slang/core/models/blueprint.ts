@@ -111,6 +111,10 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		this.meta.name = newName;
 	}
 
+	public get tags(): string[] {
+		return this.meta.tags || [""];
+	}
+
 	public get help(): string {
 		return this.meta.shortDescription ? this.meta.shortDescription : "";
 	}
