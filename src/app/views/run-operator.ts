@@ -64,8 +64,11 @@ export class RunOperatorView implements ClassComponent<any> {
 	public onupdate({attrs}: m.Vnode<any>) {
 	}
 
+	public isSubmitAllowed(): boolean {
+		return RunningOperator.inType.isTriggerLike() || this.value !== undefined
+	}
+
 	public view({attrs}: CVnode<any>) {
-        //const blueprint = AppState.activeBlueprint!;
 		const that = this;
 
 		return m(".sle-view__run-opr", attrs,
@@ -88,9 +91,9 @@ export class RunOperatorView implements ClassComponent<any> {
 										}),
 										m(Button, {
 											full: true,
-											disabled: that.value === undefined,
+											disabled: !this.isSubmitAllowed(),
 											onclick:
-												that.value !== undefined
+												this.isSubmitAllowed()
 												? () => {
 													RunningOperator.sendData(that.value!).then(m.redraw)
 												}

@@ -488,4 +488,29 @@ export class SlangType {
 	public isTrigger(): boolean {
 		return this.typeIdentifier === TypeIdentifier.Trigger;
 	}
+
+	public isTriggerLike(): boolean {
+		if (this.isTrigger()) {
+			return true
+		}
+
+		if (!this.isMap()) {
+			return false
+		}
+
+		const mapSubs = Array.from(this.getMapSubs())
+
+		if (mapSubs.length > 1) {
+			return false
+		}
+
+		// @ts-ignore
+		const [portName, portType] = mapSubs[0]
+
+		if (!portType.isTrigger()) {
+			return false
+		}
+
+		return true
+	}
 }
