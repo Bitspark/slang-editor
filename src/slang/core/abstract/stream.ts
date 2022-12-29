@@ -330,9 +330,18 @@ export function containsMisplacedStreamTypeTo(searchStream: StreamType, stream: 
 export function generateUniqueSubportName(portType: SlangType, other: PortModel): string {
 	console.assert(portType.isMap())
 	const guessedPortName = (other.getName() ? other.getName() : other.getOwnerName()).replace(/[\W_]/gi, "_").replace("__", "_")
+
 	const portName = (guessedPortName !== "_") ? guessedPortName : "port"
-	//const similiarPortNames = Array.from(portType.getMapSubs()).filter(([subName, _]) => subName.startsWith(portName)).map(([subName, _]) => subName).sort()
-	return `${portName}_${(new Date().getTime()) % 100}`;
+	const similarPortNames = Array.from(portType.getMapSubs()).filter(([subName, _]) => subName.startsWith(portName)).map(([subName, _]) => subName).sort()
+
+	let newPortName = portName
+	let uniquifier = 0
+	while (similarPortNames.indexOf(newPortName) >= 0){
+		uniquifier = !uniquifier ?similarPortNames.length :uniquifier+1
+		newPortName = `${portName}_${uniquifier}`;
+	}
+
+	return newPortName;
 }
 
 export class StreamPort {
