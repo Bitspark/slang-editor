@@ -143,14 +143,15 @@ export class AppState {
 	private static async loadRunningOperator(): Promise<void> {
 		const runningOperators = await API.getRunningOperators();
 
-		runningOperators.forEach(({blueprint, handle, url}) => {
+		runningOperators.forEach((runOp) => {
+			const {blueprint, handle} = runOp;
 			const blueprintModel = this.getBlueprint(blueprint);
 
 			if (!blueprintModel) {
 				console.error("[LOAD_RUNNING_OPERATORS] no blueprint found for running operator:", blueprint, handle);
 				return;
 			}
-			blueprintModel.runningOperator = {handle, url};
+			blueprintModel.runningOperator = runOp;
 		});
 	}
 

@@ -15,7 +15,7 @@ function handleError(e: unknown) {
 
 export class ApiService {
 
-	private readonly url: string;
+	public readonly url: string;
 
 	constructor(host: string) {
 		this.url = host;

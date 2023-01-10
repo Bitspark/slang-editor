@@ -57,6 +57,8 @@ export interface RunningOperatorJson {
 	blueprint: string;
 	url: string;
 	handle: string;
+	in: TypeDefApiResponse;
+	out: TypeDefApiResponse;
 }
 
 export interface PortMessageJson {

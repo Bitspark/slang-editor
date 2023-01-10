@@ -76,19 +76,25 @@ body {
 			height: 100%;
 		}
 	}
-}
 
-.sle-comp__blueprint-editor__topbar {
-	position: absolute;
-	left: 10px;
-	top: 10px;
-}
+	.sle-comp__blueprint-bar {
+		position: absolute;
+		left: 10px;
+		top: 10px;
+	}
 
-.sle-comp__blueprint-editor__left-sidebar {
-	position: absolute;
-	left: 10px;
-	top: 100px;
-	height: 90vh;
+	.sle-comp__running-operator-bar {
+		position: absolute;
+		right: 10px;
+		top: 10px;
+	}
+
+	.sle-comp__left-side-bar {
+		position: absolute;
+		left: 10px;
+		top: 100px;
+		height: 90vh;
+	}
 }
 
 .sle-comp__datalog {
@@ -103,6 +109,15 @@ body {
 	}
 
 	.sle-comp__datalog__recv {
+	}
+}
+
+.sle-comp__running-operator {
+	font-family: monospace;
+	width: 400px;
+
+	> div {
+		margin-bottom: 1rem;
 	}
 }
 

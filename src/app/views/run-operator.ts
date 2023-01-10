@@ -7,7 +7,7 @@ import {Input} from "../components/console";
 import {SlangType, SlangTypeValue} from "../../slang/definitions/type";
 import {List, ListEntry} from "../components/toolkit/list";
 import {Button} from "../../slang/ui/toolkit/buttons";
-import {BlueprintEditor, BlueprintEditorTopBar} from "../components/blueprint-editor";
+import {BlueprintEditor, BlueprintEditorBlueprintBar} from "../components/blueprint-editor";
 import {UUID} from "../../slang/definitions/api";
 
 type RunningOperatorLog = {sent: SlangTypeValue, received: SlangTypeValue}[];
@@ -75,7 +75,7 @@ export class RunOperatorView implements ClassComponent<any> {
 				m(".sle-view__layout",
 					m(".sle-view__layout--half-screen",
 						m(BlueprintEditor,
-							m(BlueprintEditorTopBar, m(BlueprintControlBar)),
+							m(BlueprintEditorBlueprintBar, m(BlueprintControlBar)),
 						)
 					),
 					m(".sle-view__layout--half-screen",

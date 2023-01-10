@@ -203,14 +203,20 @@ export class BlueprintEditor implements ClassComponent<any> {
 	}
 }
 
-export class BlueprintEditorTopBar implements ClassComponent<any> {
+export class BlueprintEditorRunningOperatorBar implements ClassComponent<any> {
 	public view({children}: CVnode<any>) {
-		return m(Box, {class: "sle-comp__blueprint-editor__topbar"}, children);
+		return m(Box, {class: "sle-comp__running-operator-bar"}, children);
 	}
 }
 
-export class BlueprintEditorSideBar implements ClassComponent<any> {
+export class BlueprintEditorBlueprintBar implements ClassComponent<any> {
 	public view({children}: CVnode<any>) {
-		return m(Box, {class: "sle-comp__blueprint-editor__left-sidebar"}, children);
+		return m(Box, {class: "sle-comp__blueprint-bar"}, children);
+	}
+}
+
+export class BlueprintEditorLeftSideBar implements ClassComponent<any> {
+	public view({children}: CVnode<any>) {
+		return m(Box, {class: "sle-comp__left-side-bar"}, children);
 	}
 }
