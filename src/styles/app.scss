@@ -133,6 +133,10 @@ body {
 }
 
 .sle-comp__copyable-text {
+	&.is-small {
+		font-size: 0.875em;
+	}
+
 	button {
 		vertical-align: inherit;
 	}

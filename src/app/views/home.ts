@@ -1,6 +1,7 @@
 import m, {ClassComponent, CVnode} from "mithril";
 import { BlueprintModel } from "../../slang/core/models";
 import { AppState } from "../state";
+import {TextWithCopyButton} from "../components/toolkit/text-with-copy-button";
 
 export class HomeView implements ClassComponent<any> {
     private localBlueprints: BlueprintModel[] = []
@@ -33,7 +34,11 @@ export class HomeView implements ClassComponent<any> {
                     [
                         m("span.panel-icon",
                             m("i.fas.fa-circle")
-                        ), bp.getShortName()
+                        ),
+                        m("", [
+                            bp.name,
+                            m(TextWithCopyButton, {class: "is-small ctrl-bar__uuid"}, bp.uuid),
+                        ])
                     ]
                     )
                 )

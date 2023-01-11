@@ -24,7 +24,8 @@ export class TextWithCopyButton implements ClassComponent<{class: string}> {
                 fas: "clone",
                 color: "text",
                 size: "small",
-                onclick() {
+                onclick(event) {
+                    event.stopPropagation();
                     // @ts-ignore
                     copyToClipboard(children[0].children);
                 }

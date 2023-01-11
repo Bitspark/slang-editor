@@ -37,7 +37,7 @@ export class BlueprintControlBar implements ClassComponent<any> {
                 }
                 : undefined,
             }),
-            m(TextWithCopyButton, {class: "small ctrl-bar__uuid"}, blueprint.uuid),
+            m(TextWithCopyButton, {class: "is-small ctrl-bar__uuid"}, blueprint.uuid),
             m(".buttons.are-medium", 
                 m(IconButton, {
                     class: "is-flex-grow-1",
