@@ -2,6 +2,7 @@ import m, {ClassComponent, CVnode} from "mithril";
 import { IconButton } from "../../slang/ui/toolkit/buttons";
 import { AppState } from "../state";
 import {SlangFileJson} from "../../slang/definitions/api";
+import {TextWithCopyButton} from "./toolkit/text-with-copy-button";
 
 function download(slangFile: SlangFileJson) {
     const a = document.createElement("a");
@@ -36,7 +37,7 @@ export class BlueprintControlBar implements ClassComponent<any> {
                 }
                 : undefined,
             }),
-            m("small.ctrl-bar__uuid", blueprint.uuid),
+            m(TextWithCopyButton, {class: "small ctrl-bar__uuid"}, blueprint.uuid),
             m(".buttons.are-medium", 
                 m(IconButton, {
                     class: "is-flex-grow-1",

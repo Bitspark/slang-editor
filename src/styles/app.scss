@@ -132,6 +132,12 @@ body {
 	}
 }
 
+.sle-comp__copyable-text {
+	button {
+		vertical-align: inherit;
+	}
+}
+
 .sle-comp__opr-context-menu {
 	/*
 	border: 1px $fuchsia solid;

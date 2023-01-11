@@ -1,5 +1,6 @@
 import m, {ClassComponent, CVnode} from "mithril";
 import { AppState } from "../state";
+import {TextWithCopyButton} from "./toolkit/text-with-copy-button";
 
 export class RunningOperator implements ClassComponent<any> {
     // @ts-ignore
@@ -14,7 +15,7 @@ export class RunningOperator implements ClassComponent<any> {
 
         return m(".sle-comp__running-operator", [
             m("strong", "URL"),
-            m(".running-operator--url", rop.url ),
+            m(TextWithCopyButton, {class: "running-operator__url"}, rop.url),
             m("strong", "input format"),
             m(".running-operator__in-out-type", JSON.stringify(rop.in.jsonify()) ),
             m("strong", "output format"),
