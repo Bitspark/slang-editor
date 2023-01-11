@@ -11,6 +11,8 @@ import { UserEvent } from "../../slang/ui/views/user-events";
 import { ConnectionComponent } from "../../slang/ui/components/connection";
 import {Label, IconButton} from "../../slang/ui/toolkit/buttons";
 import {XY} from "../../slang/definitions/api";
+import {TypeSelect} from "../../slang/ui/toolkit/type";
+import {SlangType} from "../../slang/definitions/type";
 
 class Clipboard {
 	private copied: OperatorModel|null = null;
@@ -147,8 +149,23 @@ class Editor {
 					});
 				}
 				else {
+
+					console.dir(blueprint)
 					ContextMenu.show(e.target, {
-						view: () => m(".testing", "right click")
+						view: () => m(".testing", [m(TypeSelect, {
+							label: "In port",
+							type: blueprint.getPortIn()?.getType()!,
+							onInput: (nType: SlangType) => {
+								console.log("on input", nType);
+							},
+						}),
+							m(TypeSelect, {
+								label: "Out port",
+								type: blueprint.getPortOut()?.getType()!,
+								onInput: (nType: SlangType) => {
+									console.log("on input", nType);
+								},
+							})]),
 					});
 					ContextMenu.show2(e, {
 						view: () => m(".sle-comp__opr-context-menu",
