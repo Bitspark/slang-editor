@@ -76,12 +76,18 @@ class Editor {
 		blueprintView.onUserEvent((e: UserEvent) => {
             ContextMenu.hide();
 
+			if (!e.target) {
+				return;
+			}
+
 			if (e.target instanceof ConnectionComponent) {
 				if (e.left.click) {
 					e.target.css({
 						"sl-is-selected": true,
 					});
 				}
+
+				return;
 			}
 
 
@@ -141,6 +147,9 @@ class Editor {
 					});
 				}
 				else {
+					ContextMenu.show(e.target, {
+						view: () => m(".testing", "right click")
+					});
 					ContextMenu.show2(e, {
 						view: () => m(".sle-comp__opr-context-menu",
 							m(".buttons.are-normal", {},

@@ -64,6 +64,10 @@ export class WhiteBoxComponent extends CellComponent {
 		return this.blueprint;
 	}
 
+	public getShape(): dia.Element {
+		return super.getShape() as dia.Element;
+	}
+
 	public autoLayout() {
 		const operatorRectangles = this.operators.map((operatorComponent) => operatorComponent.getShape());
 		const connectionLinks = this.connections.map((connectionComponent) => connectionComponent.getShape());
