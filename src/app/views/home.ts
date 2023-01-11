@@ -37,7 +37,7 @@ export class HomeView implements ClassComponent<any> {
                         ),
                         m("", [
                             bp.name,
-                            m(TextWithCopyButton, {class: "is-small ctrl-bar__uuid"}, bp.uuid),
+                            m("", m(TextWithCopyButton, {class: "is-small ctrl-bar__uuid"}, bp.uuid))
                         ])
                     ]
                     )

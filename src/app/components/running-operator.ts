@@ -15,7 +15,7 @@ export class RunningOperator implements ClassComponent<any> {
 
         return m(".sle-comp__running-operator", [
             m("strong", "URL"),
-            m(TextWithCopyButton, {class: "running-operator__url"}, rop.url),
+            m(".running-operator__url", m(TextWithCopyButton, rop.url)),
             m("strong", "input format"),
             m(".running-operator__in-out-type", JSON.stringify(rop.in.jsonify()) ),
             m("strong", "output format"),

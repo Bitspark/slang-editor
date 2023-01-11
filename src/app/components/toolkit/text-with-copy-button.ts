@@ -1,6 +1,6 @@
 import m, {ClassComponent, CVnode} from "mithril";
 
-import {IconButton} from "../../../slang/ui/toolkit/buttons";
+import {Icon} from "../../../slang/ui/toolkit/buttons";
 
 function copyToClipboard(textToCopy: string) {
     const myTemporaryInputElement = document.createElement("input");
@@ -18,17 +18,18 @@ function copyToClipboard(textToCopy: string) {
 
 export class TextWithCopyButton implements ClassComponent<{class: string}> {
     public view({attrs, children}: CVnode<{class:string}>): any {
-        return m(".sle-comp__copyable-text", attrs, [
+        return m("span.sle-comp__copyable-text", {
+            ...attrs,
+            onclick(event: MouseEvent) {
+                event.stopPropagation();
+                // @ts-ignore
+                copyToClipboard(children[0].children);
+            }
+        }, [
             children,
-            m(IconButton, {
+            m(Icon, {
                 fas: "clone",
-                color: "text",
                 size: "small",
-                onclick(event) {
-                    event.stopPropagation();
-                    // @ts-ignore
-                    copyToClipboard(children[0].children);
-                }
             })
         ]);
     }

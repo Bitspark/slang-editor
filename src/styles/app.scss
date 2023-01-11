@@ -133,12 +133,29 @@ body {
 }
 
 .sle-comp__copyable-text {
-	&.is-small {
-		font-size: 0.875em;
+	border-radius: 6px;
+	border: 1px solid transparent;
+	padding: 0;
+
+	&:hover {
+		border-color: transparentize($dark, 0.85);
+		transition: 200ms;
 	}
 
-	button {
-		vertical-align: inherit;
+	&:active {
+		color: transparent;
+		border-color: transparent;
+		background: $dark;
+		transition: 200ms;
+	}
+
+	&.is-small {
+		font-size: 0.8em;
+	}
+
+	.icon {
+		margin-left: 2px;
+		vertical-align: sub;
 	}
 }
 
