@@ -13,9 +13,12 @@ export class RunningOperator implements ClassComponent<any> {
         const rop = blueprint.runningOperator
 
         return m(".sle-comp__running-operator", [
+            m("strong", "URL"),
             m(".running-operator--url", rop.url ),
-            m(".running-operator--url", JSON.stringify(rop.in) ),
-            m(".running-operator--url", JSON.stringify(rop.out) ),
+            m("strong", "input format"),
+            m(".running-operator__in-out-type", JSON.stringify(rop.in.jsonify()) ),
+            m("strong", "output format"),
+            m(".running-operator__in-out-type", JSON.stringify(rop.out.jsonify()) ),
         ]);
 	}
 }

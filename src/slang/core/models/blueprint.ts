@@ -1,8 +1,8 @@
 import {filter} from "rxjs/operators";
 
-import {OperatorGeometry, PortMessageJson, TypeDefApiResponse, UUID, XY} from "../../definitions/api";
+import {OperatorGeometry, PortMessageJson, UUID, XY} from "../../definitions/api";
 import {SlangParsing} from "../../definitions/parsing";
-import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
+import {SlangType, SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 import {BlackBox} from "../abstract/blackbox";
 import {PortModel, PortModelArgs} from "../abstract/port";
 import {Connections} from "../abstract/utils/connections";
@@ -68,8 +68,8 @@ export interface BlueprintModelArgs {
 export interface RunningOperator {
 	handle: string;
 	url: string;
-	in: TypeDefApiResponse;
-	out: TypeDefApiResponse;
+	in: SlangType;
+	out: SlangType;
 }
 
 export interface HasMoveablePortGroups {

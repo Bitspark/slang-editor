@@ -116,8 +116,19 @@ body {
 	font-family: monospace;
 	width: 400px;
 
-	> div {
+	> div:not(:last-child) {
 		margin-bottom: 1rem;
+	}
+
+	.running-operator__url {
+	}
+
+	.running-operator__in-out-type {
+		@extend %block;
+
+		color: $light;
+		background: $dark;
+		padding: 4px 8px;
 	}
 }
 

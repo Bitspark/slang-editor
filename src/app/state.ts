@@ -2,7 +2,7 @@ import uuidv4 from "uuid/v4";
 import { ApiService } from "./services";
 import { SlangAspects } from "../slang/aspects";
 import { PortDirection } from "../slang/core/abstract/port";
-import { blueprintModelToJson, loadBlueprints } from "../slang/core/mapper";
+import { blueprintModelToJson, loadBlueprints, createTypeModel } from "../slang/core/mapper";
 import { AppModel, BlueprintModel } from "../slang/core/models";
 import { BlueprintType } from "../slang/core/models/blueprint";
 import {SlangType, SlangTypeValue} from "../slang/definitions/type";
@@ -118,7 +118,13 @@ export class AppState {
 
 	public static async runOperator(blueprint: BlueprintModel) {
 		await AppState.storeBlueprint(blueprint);
-		blueprint.runningOperator = await API.runOperator(blueprint)
+		const runOp = await API.runOperator(blueprint)
+		blueprint.runningOperator = {
+			handle: runOp.handle,
+			url: runOp.url,
+			in: createTypeModel(runOp.in),
+			out: createTypeModel(runOp.out),
+		};
 	}
 
 	public static async stopOperator(blueprint: BlueprintModel) {
@@ -151,7 +157,12 @@ export class AppState {
 				console.error("[LOAD_RUNNING_OPERATORS] no blueprint found for running operator:", blueprint, handle);
 				return;
 			}
-			blueprintModel.runningOperator = runOp;
+			blueprintModel.runningOperator = {
+				handle,
+				url: runOp.url,
+				in: createTypeModel(runOp.in),
+				out: createTypeModel(runOp.out),
+			};
 		});
 	}
 

@@ -346,7 +346,7 @@ function createPort(typeDef: TypeDefApiResponse, owner: BlueprintModel | Bluepri
 	return owner.createPort({direction, name: "", type: createTypeModel(typeDef, {isGhostPort: true})});
 }
 
-function createTypeModel(typeDef: TypeDefApiResponse, {isGhostPort}: {isGhostPort: boolean} = {isGhostPort: false}): SlangType {
+export function createTypeModel(typeDef: TypeDefApiResponse, {isGhostPort}: {isGhostPort: boolean} = {isGhostPort: false}): SlangType {
 	// isGhostPort == true: SlangType is handle as if it was inferred --> for blueprint ports this is intented
 	// 						When ever a connection is removed all inferred ports will with no connection will be removed
 	const type = new SlangType(null, toTypeIdentifier(typeDef.type), isGhostPort);
