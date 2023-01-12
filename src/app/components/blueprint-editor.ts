@@ -100,7 +100,7 @@ class Editor {
 					const operatorBp = operator.blueprint;
 					const view = blueprintView;
 					ContextMenu.show(e.target, {
-						view: () => m(".sle-comp__opr-context-menu",
+						view: () => m(".sle-comp__context-menu",
 							m(".buttons.are-normal", {},
 
 								isEditable
@@ -152,7 +152,8 @@ class Editor {
 
 					console.dir(blueprint)
 					ContextMenu.show(e.target, {
-						view: () => m(".testing", [m(TypeSelect, {
+						view: () => m(".sle-comp__context-menu", m( Box ,
+							m(TypeSelect, {
 							label: "In port",
 							type: blueprint.getPortIn()?.getType()!,
 							onInput: (nType: SlangType) => {
@@ -165,10 +166,11 @@ class Editor {
 								onInput: (nType: SlangType) => {
 									console.log("on input", nType);
 								},
-							})]),
+							})) ),
 					});
+
 					ContextMenu.show2(e, {
-						view: () => m(".sle-comp__opr-context-menu",
+						view: () => m(".sle-comp__context-menu",
 							m(".buttons.are-normal", {},
 
 								isEditable
