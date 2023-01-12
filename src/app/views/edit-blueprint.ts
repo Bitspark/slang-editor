@@ -4,12 +4,10 @@ import {
 	BlueprintEditor,
 	BlueprintEditorLeftSideBar,
 	BlueprintEditorBlueprintBar,
-	BlueprintEditorRunningOperatorBar
 } from "../components/blueprint-editor";
 import { BlueprintMenu } from "../components/blueprint-menu";
 import {BlueprintModel} from "../../slang/core/models";
 import {AppState} from "../state";
-import {RunningOperator} from "../components/running-operator";
 
 export class EditBlueprintView implements ClassComponent<any> {
 	// @ts-ignore
@@ -35,7 +33,6 @@ export class EditBlueprintView implements ClassComponent<any> {
 						blueprint.createBlankOperator(bp, {position: {x: 0, y: 0}})
 					}
 				})),
-				m(BlueprintEditorRunningOperatorBar, m(RunningOperator)),
 			)
 		);
 	}

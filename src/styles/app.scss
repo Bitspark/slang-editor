@@ -126,6 +126,7 @@ body {
 	.running-operator__in-out-type {
 		@extend %block;
 
+		border-radius: 6px;
 		color: $light;
 		background: $dark;
 		padding: 4px 8px;

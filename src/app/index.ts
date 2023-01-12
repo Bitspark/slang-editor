@@ -14,6 +14,7 @@ import m, {buildPathname, ClassComponent, CVnode} from "mithril";
 import { EditBlueprintView } from "./views/edit-blueprint";
 import { HomeView } from "./views/home";
 import { AppState } from "./state";
+import {RunOperatorView} from "./views/run-operator";
 
 
 class SlangApp {
@@ -41,7 +42,12 @@ class SlangApp {
 
 						AppState.currentBlueprint = blueprint
 
-						return m(EditBlueprintView, attrs)
+						return m(
+							blueprint.isRunning
+								? RunOperatorView
+								: EditBlueprintView,
+							attrs
+						)
 					},
 				}
 			})
