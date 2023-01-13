@@ -38,7 +38,7 @@ export class BlueprintMenu implements ClassComponent<any> {
                         onclick() {
                             attrs.onselect(bp);
                         }
-                    }, bp.getShortName())),
+                    }, bp.name)),
                 )),
 
                 Array
@@ -51,7 +51,7 @@ export class BlueprintMenu implements ClassComponent<any> {
                                     onclick() {
                                         attrs.onselect(bp);
                                     }
-                                }, bp.getShortName())))
+                                }, bp.name)))
                         )
                     ])
             )

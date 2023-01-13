@@ -337,10 +337,10 @@ export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", 
 	}
 
 	public setupForBlueprint(blueprint: BlueprintModel) {
-		this.attr("label/text", blueprint.getShortName());
+		this.attr("label/text", blueprint.name);
 	}
 
 	public setupForOperator(operator: OperatorModel) {
-		this.attr("label/text", operator.getBlueprint().getShortName());
+		this.attr("label/text", operator.getBlueprint().name);
 	}
 }

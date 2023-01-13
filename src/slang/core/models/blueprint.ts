@@ -1,12 +1,10 @@
-import {filter} from "rxjs/operators";
-
-import {OperatorGeometry, PortMessageJson, UUID, XY} from "../../definitions/api";
+import {OperatorGeometry, UUID, XY} from "../../definitions/api";
 import {SlangParsing} from "../../definitions/parsing";
-import {SlangType, SlangTypeValue, TypeIdentifier} from "../../definitions/type";
+import {SlangType, TypeIdentifier} from "../../definitions/type";
 import {BlackBox} from "../abstract/blackbox";
 import {PortModel, PortModelArgs} from "../abstract/port";
 import {Connections} from "../abstract/utils/connections";
-import {SlangBehaviorSubject, SlangSubject, SlangSubjectTrigger} from "../abstract/utils/events";
+import {SlangBehaviorSubject, SlangSubjectTrigger} from "../abstract/utils/events";
 import {GenericSpecifications} from "../abstract/utils/generics";
 import {PropertyAssignments, PropertyModel} from "../abstract/utils/properties";
 
@@ -186,13 +184,11 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 
 	// Topics::Run Operator
 	private _runningOperator = new SlangBehaviorSubject<RunningOperator | null>("running-operator", null);
-	private inputPushed = new SlangSubject<SlangTypeValue>("input-pushed");
-	private outputPushed = new SlangSubject<PortMessageJson>("output-pushed");
 
 	// Properties
-	private readonly type: BlueprintType;
-	private readonly meta: BlueprintMeta;
-	private readonly geometry: BlueprintGeometry;
+	public readonly type: BlueprintType;
+	public readonly meta: BlueprintMeta;
+	public readonly geometry: BlueprintGeometry;
 	private readonly fakeGenerics = new GenericSpecifications(FAKE_GENERIC_VALUES);
 
 	private status: ExecuteStatus = ExecuteStatus.Stopped;
@@ -265,14 +261,6 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		return this.createChildNode(BlueprintPortModel, args);
 	}
 
-	public getShortName(): string {
-		return this.name;
-	}
-
-	public isStarted(): boolean {
-		return this._runningOperator.getValue() !== null;
-	}
-
 	public isLocal(): boolean {
 		return this.type === BlueprintType.Local;
 	}
@@ -281,16 +269,12 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		return this.type === BlueprintType.Elementary;
 	}
 
-	public getType(): BlueprintType {
-		return this.type;
-	}
-
 	public getOperators(): IterableIterator<OperatorModel> {
 		return this.getChildNodes(OperatorModel);
 	}
 
 	public findOperator(name: string): OperatorModel | undefined {
-		return this.scanChildNode(OperatorModel, (operator) => operator.getName() === name);
+		return this.scanChildNode(OperatorModel, (operator) => operator.name === name);
 	}
 
 	public getDelegates(): IterableIterator<BlueprintDelegateModel> {
@@ -299,14 +283,6 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 
 	public findDelegate(name: string): BlueprintDelegateModel | undefined {
 		return this.scanChildNode(BlueprintDelegateModel, (delegate) => delegate.getName() === name);
-	}
-
-	public getMeta(): BlueprintMeta {
-		return this.meta;
-	}
-
-	public getGeometry(): BlueprintGeometry {
-		return this.geometry;
 	}
 
 	public hasProperties(): boolean {
@@ -414,7 +390,7 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 	}
 
 	public getDisplayName(): string {
-		return this.getShortName();
+		return this.name;
 	}
 
 	public isStreamSource(): boolean {
@@ -494,19 +470,8 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		this.opened.subscribe(cb);
 	}
 
-	public subscribeInputPushed(cb: (inputData: SlangTypeValue) => void): void {
-		const subscription = this.inputPushed.subscribe(cb);
-		this._runningOperator.pipe(filter((ins) => !ins)).subscribe(() => {
-			subscription.unsubscribe();
-		});
-	}
-
-	public subscribeOutputPushed(cb: (outputData: PortMessageJson) => void): void {
-		this.outputPushed.subscribe(cb);
-	}
-
 	private getNextOperatorName(blueprint: BlueprintModel): string {
-		const operatorBaseName = blueprint.getShortName().toLowerCase().replace(/[^A-Za-z0-9]/g, "").replace(" ", "");
+		const operatorBaseName = blueprint.name.toLowerCase().replace(/[^A-Za-z0-9]/g, "").replace(" ", "");
 		if (!this.findOperator(operatorBaseName)) {
 			return operatorBaseName;
 		}

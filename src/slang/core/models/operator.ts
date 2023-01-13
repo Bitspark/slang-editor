@@ -69,8 +69,8 @@ export class OperatorModel extends BlackBox {
 		return this.name;
 	}
 
-	public getType(): BlueprintType {
-		return this.blueprint.getType();
+	public get type(): BlueprintType {
+		return this.blueprint.type;
 	}
 
 	public getBlueprint(): BlueprintModel {
