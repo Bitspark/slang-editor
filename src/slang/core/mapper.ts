@@ -188,6 +188,24 @@ function fromTypeIdentifier(t: TypeIdentifier): "string" | "number" | "boolean" 
 	return TypeIdentifier[t].toLowerCase() as "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic";
 }
 
+export function genericSpecificationToJSON(generics: GenericSpecifications): GenericSpecificationsApiResponse {
+	return Array
+		.from(generics.getIterator())
+		.reduce((genSpecsJson, [genId, type]) => {
+			genSpecsJson[genId] = typeModelToJSON(type)
+			return genSpecsJson;
+		}, {} as GenericSpecificationsApiResponse)
+}
+
+export function propertyAssignmentsToJSON(properties: PropertyAssignments): PropertyAssignmentsApiResponse {
+	return Array
+		.from(properties.getAssignments())
+		.reduce((propAssignJson, propAssign) => {
+			propAssignJson[propAssign.getName()] = propAssign.getValue()
+			return propAssignJson;
+		}, {} as PropertyAssignmentsApiResponse)
+}
+
 /*
 \
  \ JSON --> MODEL

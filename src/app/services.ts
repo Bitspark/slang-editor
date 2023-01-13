@@ -10,6 +10,7 @@ import {BlueprintModel} from "../slang/core/models";
 import {RunningOperator} from "../slang/core/models/blueprint";
 import {GenericSpecifications} from "../slang/core/abstract/utils/generics";
 import {PropertyAssignments} from "../slang/core/abstract/utils/properties";
+import {genericSpecificationToJSON, propertyAssignmentsToJSON} from "../slang/core/mapper";
 
 function handleError(e: unknown) {
 	console.error(e)
@@ -55,7 +56,11 @@ export class ApiService {
 	public async runOperator(blueprint: BlueprintModel, generics?: GenericSpecifications, properties?: PropertyAssignments): Promise<RunningOperatorJson> {
 		return this.httpPost<RunOperatorJson, RunningOperatorJson>(
 			"/run/",
-			{blueprint: blueprint.uuid},
+			{
+				blueprint: blueprint.uuid,
+				gens: generics? genericSpecificationToJSON(generics) :undefined,
+				props: properties? propertyAssignmentsToJSON(properties) :undefined
+			},
 			(data: {object: RunningOperatorJson} ) => data.object,
 			handleError,
 		);

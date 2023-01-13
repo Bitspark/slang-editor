@@ -34,8 +34,7 @@ export class PropertiesForm implements ClassComponent<PropertiesFormAttrs> {
     }
 
     protected getFormBody(): Map<string, { initValue?: SlangTypeValue, type: SlangType }> {
-        const propAssigns = this.properties;
-        return Array.from(propAssigns.getAssignments()).reduce((map, propAssign) => {
+        return Array.from(this.properties.getAssignments()).reduce((map, propAssign) => {
             const type = propAssign.getType();
             if (!type) {
                 return map;
@@ -96,6 +95,7 @@ export class GenericsForm implements ClassComponent<GenericsFormAttrs> {
             label: genId,
             type: genType,
             onInput: (nType: SlangType) => {
+                console.log("GENS", genId, nType)
                 this.generics.specify(genId, nType);
             },
         });
@@ -103,6 +103,22 @@ export class GenericsForm implements ClassComponent<GenericsFormAttrs> {
 }
 
 export class StartingOperatorDetails implements ClassComponent<any> {
+    private properties?: PropertyAssignments;
+    private generics?: GenericSpecifications;
+
+    // @ts-ignore
+    public oninit({attrs}: CVnode<any>): any {
+        const blueprint = AppState.currentBlueprint;
+
+        if (blueprint.hasProperties()) {
+            this.properties = new PropertyAssignments(blueprint.getProperties(), blueprint.getGenerics());
+        }
+
+        if (blueprint.hasGenerics()) {
+            this.generics = new GenericSpecifications(blueprint.getGenericIdentifiers());
+        }
+    }
+
     // @ts-ignore
     public view({attrs}: CVnode<any>) {
         const blueprint = AppState.currentBlueprint;
@@ -111,12 +127,8 @@ export class StartingOperatorDetails implements ClassComponent<any> {
             return;
         }
 
-        const properties = blueprint.hasProperties()
-            ? new PropertyAssignments(blueprint.getProperties(), blueprint.getGenerics())
-            : undefined;
-        const generics = blueprint.hasGenerics()
-            ? new GenericSpecifications(blueprint.getGenericIdentifiers())
-            : undefined;
+        const properties = this.properties
+        const generics = this.generics
 
         return m(".sle-comp__starting-operator",
             properties ? m(PropertiesForm, {properties}): undefined,
@@ -125,6 +137,8 @@ export class StartingOperatorDetails implements ClassComponent<any> {
                     class: "is-dark",
                     fas: "play",
                     async onclick() {
+                        console.dir(generics)
+                        console.dir(properties)
                         await AppState.run(blueprint, generics, properties);
                         m.redraw();
                     },

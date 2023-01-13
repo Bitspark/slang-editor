@@ -49,8 +49,8 @@ export interface GenericSpecificationsApiResponse {
 
 export interface RunOperatorJson {
 	blueprint: string;
-	properties?: PropertyAssignmentsApiResponse;
-	generics?: GenericSpecificationsApiResponse;
+	props?: PropertyAssignmentsApiResponse;
+	gens?: GenericSpecificationsApiResponse;
 }
 
 export interface RunningOperatorJson {
