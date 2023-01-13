@@ -43,9 +43,9 @@ class SlangApp {
 						AppState.currentBlueprint = blueprint
 
 						return m(
-							blueprint.isRunning
-							? RunOperatorView
-							: EditBlueprintView,
+							blueprint.isStopped
+								? EditBlueprintView
+								: RunOperatorView,
 							attrs
 						)
 					},

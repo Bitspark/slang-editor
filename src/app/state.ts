@@ -2,12 +2,14 @@ import uuidv4 from "uuid/v4";
 import { ApiService } from "./services";
 import { SlangAspects } from "../slang/aspects";
 import { PortDirection } from "../slang/core/abstract/port";
-import { blueprintModelToJson, loadBlueprints } from "../slang/core/mapper";
+import { blueprintModelToJson, loadBlueprints, createTypeModel } from "../slang/core/mapper";
 import { AppModel, BlueprintModel } from "../slang/core/models";
 import { BlueprintType } from "../slang/core/models/blueprint";
 import {SlangType, SlangTypeValue} from "../slang/definitions/type";
 import { OperatorDataExt } from "../extensions/operators";
 import {SlangFileJson} from "../slang/definitions/api";
+import {GenericSpecifications} from "../slang/core/abstract/utils/generics";
+import {PropertyAssignments} from "../slang/core/abstract/utils/properties";
 
 declare const APIURL: string;
 const API = new ApiService(APIURL);
@@ -116,12 +118,27 @@ export class AppState {
 		return newBlueprint;
 	}
 
-	public static async runOperator(blueprint: BlueprintModel) {
-		await AppState.storeBlueprint(blueprint);
-		blueprint.runningOperator = await API.runOperator(blueprint)
+	public static async start(blueprint: BlueprintModel) {
+		console.log(">>", blueprint.hasGenerics(), blueprint.hasProperties())
+		if (blueprint.hasGenerics() || blueprint.hasProperties()) {
+			blueprint.start()
+			return;
+		}
+		await AppState.run(blueprint)
 	}
 
-	public static async stopOperator(blueprint: BlueprintModel) {
+	public static async run(blueprint: BlueprintModel, generics?: GenericSpecifications, properties?: PropertyAssignments) {
+		await AppState.storeBlueprint(blueprint);
+		const runOp = await API.runOperator(blueprint, generics, properties)
+		blueprint.run({
+			handle: runOp.handle,
+			url: runOp.url,
+			in: createTypeModel(runOp.in),
+			out: createTypeModel(runOp.out),
+		})
+	}
+
+	public static async stop(blueprint: BlueprintModel) {
 		if (!blueprint.runningOperator) {
 			return;
 		}
@@ -143,14 +160,20 @@ export class AppState {
 	private static async loadRunningOperator(): Promise<void> {
 		const runningOperators = await API.getRunningOperators();
 
-		runningOperators.forEach(({blueprint, handle, url}) => {
+		runningOperators.forEach((runOp) => {
+			const {blueprint, handle} = runOp;
 			const blueprintModel = this.getBlueprint(blueprint);
 
 			if (!blueprintModel) {
 				console.error("[LOAD_RUNNING_OPERATORS] no blueprint found for running operator:", blueprint, handle);
 				return;
 			}
-			blueprintModel.runningOperator = {handle, url};
+			blueprintModel.runningOperator = {
+				handle,
+				url: runOp.url,
+				in: createTypeModel(runOp.in),
+				out: createTypeModel(runOp.out),
+			};
 		});
 	}
 

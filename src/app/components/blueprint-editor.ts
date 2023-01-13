@@ -44,8 +44,10 @@ class Clipboard {
 class Editor {
 	private static frame: ViewFrame;
 	private static clipboard = new Clipboard();
+	private static shownBlueprint?: BlueprintModel = undefined;
 
     public static init(rootEl: HTMLElement) {
+		this.shownBlueprint = undefined
 		this.frame = new ViewFrame(rootEl as HTMLElement);
 	}
 
@@ -54,6 +56,11 @@ class Editor {
 	}
 
 	public static show(blueprint: BlueprintModel) {
+		if (this.shownBlueprint && this.shownBlueprint.uuid === blueprint.uuid) {
+			return;
+		}
+		this.shownBlueprint = blueprint
+
 		const isEditable = !this.isReadonly(blueprint);
 
 		const viewArgs = {
@@ -177,6 +184,13 @@ export class BlueprintEditor implements ClassComponent<any> {
     }
 
 	// @ts-ignore
+	public onbeforeupdate({attrs}: m.Vnode<any, this>) {
+		const activeBlueprint = AppState.currentBlueprint;
+		Editor.show(activeBlueprint);
+	}
+
+
+	// @ts-ignore
 	public onupdate({attrs}: m.Vnode<any>) {
 	}
 
@@ -189,14 +203,20 @@ export class BlueprintEditor implements ClassComponent<any> {
 	}
 }
 
-export class BlueprintEditorTopBar implements ClassComponent<any> {
+export class BlueprintEditorRunningOperatorBar implements ClassComponent<any> {
 	public view({children}: CVnode<any>) {
-		return m(Box, {class: "sle-comp__blueprint-editor__topbar"}, children);
+		return m(Box, {class: "sle-comp__running-operator-bar"}, children);
 	}
 }
 
-export class BlueprintEditorSideBar implements ClassComponent<any> {
+export class BlueprintEditorBlueprintBar implements ClassComponent<any> {
 	public view({children}: CVnode<any>) {
-		return m(Box, {class: "sle-comp__blueprint-editor__left-sidebar"}, children);
+		return m(Box, {class: "sle-comp__blueprint-bar"}, children);
+	}
+}
+
+export class BlueprintEditorLeftSideBar implements ClassComponent<any> {
+	public view({children}: CVnode<any>) {
+		return m(Box, {class: "sle-comp__left-side-bar"}, children);
 	}
 }

@@ -6,11 +6,18 @@ import {PortModel} from "../port";
 import {SlangBehaviorSubject, SlangSubject} from "./events";
 
 export class GenericSpecifications {
+	private readonly genericIdentifiers: string[];
 	private readonly genericsChanged = new SlangSubject<[string, SlangType | null]>("specifications-changed");
 	private readonly genericTypes = new Map<string, SlangBehaviorSubject<SlangType | null>>();
 	private readonly ports = new Map<string, Set<PortModel>>();
 
-	public constructor(private genericIdentifiers: string[]) {}
+	public constructor(genIds: Iterable<string>) {
+		this.genericIdentifiers = Array.from(genIds)
+	}
+
+	public identifiers(): IterableIterator<string> {
+		return this.genericIdentifiers.values();
+	}
 
 	public copy(): GenericSpecifications {
 		const copy = new GenericSpecifications(this.genericIdentifiers)
@@ -44,6 +51,7 @@ export class GenericSpecifications {
 	}
 
 	public *getIterator(): IterableIterator<[string, SlangType]> {
+		// TODO don't return null but Unspecified
 		for (const [genName, subject] of this.genericTypes.entries()) {
 			const genType = subject.getValue();
 			if (genType) {

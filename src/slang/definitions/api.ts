@@ -49,14 +49,16 @@ export interface GenericSpecificationsApiResponse {
 
 export interface RunOperatorJson {
 	blueprint: string;
-	properties?: PropertyAssignmentsApiResponse;
-	generics?: GenericSpecificationsApiResponse;
+	props?: PropertyAssignmentsApiResponse;
+	gens?: GenericSpecificationsApiResponse;
 }
 
 export interface RunningOperatorJson {
 	blueprint: string;
 	url: string;
 	handle: string;
+	in: TypeDefApiResponse;
+	out: TypeDefApiResponse;
 }
 
 export interface PortMessageJson {

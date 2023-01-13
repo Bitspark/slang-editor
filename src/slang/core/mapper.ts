@@ -188,6 +188,24 @@ function fromTypeIdentifier(t: TypeIdentifier): "string" | "number" | "boolean" 
 	return TypeIdentifier[t].toLowerCase() as "string" | "number" | "boolean" | "binary" | "trigger" | "primitive" | "map" | "stream" | "generic";
 }
 
+export function genericSpecificationToJSON(generics: GenericSpecifications): GenericSpecificationsApiResponse {
+	return Array
+		.from(generics.getIterator())
+		.reduce((genSpecsJson, [genId, type]) => {
+			genSpecsJson[genId] = typeModelToJSON(type)
+			return genSpecsJson;
+		}, {} as GenericSpecificationsApiResponse)
+}
+
+export function propertyAssignmentsToJSON(properties: PropertyAssignments): PropertyAssignmentsApiResponse {
+	return Array
+		.from(properties.getAssignments())
+		.reduce((propAssignJson, propAssign) => {
+			propAssignJson[propAssign.getName()] = propAssign.getValue()
+			return propAssignJson;
+		}, {} as PropertyAssignmentsApiResponse)
+}
+
 /*
 \
  \ JSON --> MODEL
@@ -346,7 +364,7 @@ function createPort(typeDef: TypeDefApiResponse, owner: BlueprintModel | Bluepri
 	return owner.createPort({direction, name: "", type: createTypeModel(typeDef, {isGhostPort: true})});
 }
 
-function createTypeModel(typeDef: TypeDefApiResponse, {isGhostPort}: {isGhostPort: boolean} = {isGhostPort: false}): SlangType {
+export function createTypeModel(typeDef: TypeDefApiResponse, {isGhostPort}: {isGhostPort: boolean} = {isGhostPort: false}): SlangType {
 	// isGhostPort == true: SlangType is handle as if it was inferred --> for blueprint ports this is intented
 	// 						When ever a connection is removed all inferred ports will with no connection will be removed
 	const type = new SlangType(null, toTypeIdentifier(typeDef.type), isGhostPort);
@@ -397,7 +415,7 @@ function createPropertyAssignments(blueprint: BlueprintModel, propDefs: Property
 }
 
 function createGenericSpecifications(blueprint: BlueprintModel, genericsData: GenericSpecificationsApiResponse): GenericSpecifications {
-	const generics = new GenericSpecifications(Array.from(blueprint.getGenericIdentifiers()));
+	const generics = new GenericSpecifications(blueprint.getGenericIdentifiers());
 	if (genericsData) {
 		Object.keys(genericsData).forEach((genId: string) => {
 			generics.specify(genId, createTypeModel(genericsData[genId]));

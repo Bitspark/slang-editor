@@ -42,7 +42,7 @@ export class Button implements ClassComponent<ButtonAttrs> {
 		}
 
 		return m("button.button", {
-			class: buildCssClass(attrs, buttonColorCssClass(attrs)),
+			class: buildCssClass(attrs, `${attrs.class} ${buttonColorCssClass(attrs)}`),
 			title: attrs.tooltip,
 			type: attrs.type,
 			disabled: that.isDisabled(attrs),

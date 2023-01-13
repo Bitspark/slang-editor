@@ -2,7 +2,7 @@ import {filter} from "rxjs/operators";
 
 import {OperatorGeometry, PortMessageJson, UUID, XY} from "../../definitions/api";
 import {SlangParsing} from "../../definitions/parsing";
-import {SlangTypeValue, TypeIdentifier} from "../../definitions/type";
+import {SlangType, SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 import {BlackBox} from "../abstract/blackbox";
 import {PortModel, PortModelArgs} from "../abstract/port";
 import {Connections} from "../abstract/utils/connections";
@@ -14,6 +14,12 @@ import {BlueprintDelegateModel, BlueprintDelegateModelArgs} from "./delegate";
 import {LandscapeModel} from "./landscape";
 import {OperatorModel} from "./operator";
 import {BlueprintPortModel} from "./port";
+
+export enum ExecuteStatus {
+	Stopped,
+	Starting,
+	Running,
+}
 
 export enum BlueprintType {
 	Local,
@@ -68,6 +74,8 @@ export interface BlueprintModelArgs {
 export interface RunningOperator {
 	handle: string;
 	url: string;
+	in: SlangType;
+	out: SlangType;
 }
 
 export interface HasMoveablePortGroups {
@@ -78,7 +86,6 @@ export interface HasMoveablePortGroups {
 export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 
 	// Geometry
-
 	public get size(): Size {
 		return this.geometry.size;
 	}
@@ -111,16 +118,32 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		this.meta.name = newName;
 	}
 
+	public get tags(): string[] {
+		return this.meta.tags || [""];
+	}
+
 	public get help(): string {
 		return this.meta.shortDescription ? this.meta.shortDescription : "";
 	}
 
+	public get isStopped(): boolean {
+		return this.status === ExecuteStatus.Stopped;
+	}
+
+	public get isStarting(): boolean {
+		return this.status === ExecuteStatus.Starting;
+	}
+
 	public get isRunning(): boolean {
-		return !!this.runningOperator
+		return this.status === ExecuteStatus.Running;
 	}
 
 	public set runningOperator(runningOperator: RunningOperator|null) {
-		this._runningOperator.next(runningOperator);
+		if (runningOperator) {
+			this.run(runningOperator)
+			return;
+		}
+		this.stop()
 	}
 
 	public get runningOperator(): RunningOperator|null {
@@ -172,6 +195,7 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 	private readonly geometry: BlueprintGeometry;
 	private readonly fakeGenerics = new GenericSpecifications(FAKE_GENERIC_VALUES);
 
+	private status: ExecuteStatus = ExecuteStatus.Stopped;
 	private properties: PropertyModel[] = [];
 	private genericIdentifiers: Set<string>;
 
@@ -437,23 +461,22 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 		this.opened.next(false);
 	}
 
-	public pushInput(inputData: SlangTypeValue) {
-		if (this.isStarted()) {
-			this.inputPushed.next(inputData);
+	public start() {
+		if (this.status === ExecuteStatus.Stopped) {
+			this.status = ExecuteStatus.Starting;
+			return;
 		}
+
+		console.assert(`Blueprint ${this.uuid} is already running or starting.`)
 	}
 
-	public pushOutput(outputData: PortMessageJson) {
-		if (this.isStarted()) {
-			this.outputPushed.next(outputData);
-		}
+	public run(rop: RunningOperator) {
+		this.status = ExecuteStatus.Running
+		this._runningOperator.next(rop);
 	}
 
-	public run() {
-		this._runningOperator.next(null);
-	}
-
-	public shutdown() {
+	public stop() {
+		this.status = ExecuteStatus.Stopped
 		this._runningOperator.next(null);
 	}
 

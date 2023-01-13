@@ -202,6 +202,24 @@ export class SlangType {
 		}
 	}
 
+	public jsonify(): object|string {
+		switch (this.typeIdentifier) {
+			case TypeIdentifier.Map:
+				return Object
+				.fromEntries(
+					Array
+					.from(this.getMapSubs())
+					.map(([name, slType]) => [name, slType.jsonify()])
+				)
+			case TypeIdentifier.Stream:
+				return [this.getStreamSub().jsonify()]
+			case TypeIdentifier.Generic:
+				return `[${this.getGenericIdentifier()}]`;
+			default:
+				return TypeIdentifier[this.typeIdentifier];
+		}
+	}
+
 	public isVoid(): boolean {
 		if (this.typeIdentifier === TypeIdentifier.Map) {
 			for (const sub of this.getMapSubs()) {
@@ -487,5 +505,30 @@ export class SlangType {
 
 	public isTrigger(): boolean {
 		return this.typeIdentifier === TypeIdentifier.Trigger;
+	}
+
+	public isTriggerLike(): boolean {
+		if (this.isTrigger()) {
+			return true
+		}
+
+		if (!this.isMap()) {
+			return false
+		}
+
+		const mapSubs = Array.from(this.getMapSubs())
+
+		if (mapSubs.length > 1) {
+			return false
+		}
+
+		// @ts-ignore
+		const [portName, portType] = mapSubs[0]
+
+		if (!portType.isTrigger()) {
+			return false
+		}
+
+		return true
 	}
 }

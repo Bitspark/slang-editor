@@ -2,6 +2,7 @@ import m, {ClassComponent, CVnode} from "mithril";
 import { IconButton } from "../../slang/ui/toolkit/buttons";
 import { AppState } from "../state";
 import {SlangFileJson} from "../../slang/definitions/api";
+import {TextWithCopyButton} from "./toolkit/text-with-copy-button";
 
 function download(slangFile: SlangFileJson) {
     const a = document.createElement("a");
@@ -36,35 +37,42 @@ export class BlueprintControlBar implements ClassComponent<any> {
                 }
                 : undefined,
             }),
-            m("small.ctrl-bar__uuid", blueprint.uuid),
+            m(TextWithCopyButton, {class: "is-small ctrl-bar__uuid"}, blueprint.uuid),
             m(".buttons.are-medium", 
                 m(IconButton, {
-                    class: "is-flex-grow-1",
+                    class: "",
                     fas: "save",
                     disabled: blueprint.isRunning,
                     onclick() {
                         blueprint.save();
                     },
                 }),
-                blueprint.isRunning
-                ? m(IconButton, { // stop running operator
-                    class: "is-flex-grow-1",
-                    fas: "stop",
+
+                blueprint.isStopped
+                ? m(IconButton, { // start operator
+                    class: "",
+                    fas: "play",
                     async onclick() {
-                        await AppState.stopOperator(blueprint);
+                        await AppState.start(blueprint);
                         m.redraw();
                     },
                 })
-                : m(IconButton, { // run operator
-                    class: "is-flex-grow-1",
-                    fas: "play",
+                : blueprint.isStarting
+                ? m(IconButton, { // indicate operator is starting
+                    class: "is-loading",
+                    fas: "stop",
+                })
+                : m(IconButton, { // stop running operator
+                    class: "",
+                    fas: "stop",
                     async onclick() {
-                        await AppState.runOperator(blueprint);
+                        await AppState.stop(blueprint);
                         m.redraw();
                     },
                 }),
+
                 m(IconButton, { // download slang file
-                    class: "is-flex-grow-1",
+                    class: "",
                     fas: "download",
                     async onclick() {
                         download(AppState.exportSlangFile(blueprint));

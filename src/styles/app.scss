@@ -76,19 +76,25 @@ body {
 			height: 100%;
 		}
 	}
-}
 
-.sle-comp__blueprint-editor__topbar {
-	position: absolute;
-	left: 10px;
-	top: 10px;
-}
+	.sle-comp__blueprint-bar {
+		position: absolute;
+		left: 10px;
+		top: 10px;
+	}
 
-.sle-comp__blueprint-editor__left-sidebar {
-	position: absolute;
-	left: 10px;
-	top: 100px;
-	height: 90vh;
+	.sle-comp__running-operator-bar {
+		position: absolute;
+		right: 10px;
+		top: 10px;
+	}
+
+	.sle-comp__left-side-bar {
+		position: absolute;
+		left: 10px;
+		top: 100px;
+		height: 90vh;
+	}
 }
 
 .sle-comp__datalog {
@@ -103,6 +109,55 @@ body {
 	}
 
 	.sle-comp__datalog__recv {
+	}
+}
+
+.sle-comp__running-operator {
+	font-family: monospace;
+	width: 400px;
+
+	> div:not(:last-child) {
+		margin-bottom: 1rem;
+	}
+
+	.running-operator__url {
+	}
+
+	.running-operator__curl-example {
+		@extend %block;
+
+		border-radius: 6px;
+		color: $light;
+		background: $dark;
+		padding: 4px 8px;
+	}
+}
+
+.sle-comp__copyable-text {
+	cursor: copy;
+	border-radius: 6px;
+	border: 1px solid transparent;
+	padding: 0;
+
+	&:hover {
+		border-color: transparentize($dark, 0.85);
+		transition: 200ms;
+	}
+
+	&:active {
+		color: transparent;
+		border-color: transparent;
+		background: $dark;
+		transition: 200ms;
+	}
+
+	&.is-small {
+		font-size: 0.8em;
+	}
+
+	.icon {
+		margin-left: 2px;
+		vertical-align: sub;
 	}
 }
 
