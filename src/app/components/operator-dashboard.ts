@@ -7,6 +7,7 @@ import {PaperView} from "../../slang/ui/views/paper-view";
 import {Input} from "./console";
 import {Block, Box, Title} from "../../slang/ui/toolkit";
 import {TypeSelect} from "../../slang/ui/toolkit/type";
+import {TextWithCopyButton} from "./toolkit/text-with-copy-button";
 
 interface DashboardAttrs {
 	view: PaperView;
@@ -59,12 +60,11 @@ export class OperatorDetailsDashboardModule implements DashboardModule {
 
 		return m(Block, [
 			m("p", m("strong", op.blueprint.name)),
-			m("p", m("small", op.blueprint.uuid)),
+			m("p", m(TextWithCopyButton, {class: "is-small ctrl-bar__uuid"}, op.blueprint.uuid)),
 			m("p", op.blueprint.help)
 		]);
 	}
 }
-
 export class PropertyFormDashboardModule implements DashboardModule {
 	private blueprint!: BlueprintModel;
 	private operator!: OperatorModel;
