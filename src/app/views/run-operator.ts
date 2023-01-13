@@ -5,7 +5,7 @@ import {
 	BlueprintEditorBlueprintBar,
 	BlueprintEditorRunningOperatorBar
 } from "../components/blueprint-editor";
-import {RunningOperator} from "../components/running-operator";
+import {RunningOperatorDetails} from "../components/running-operator-details";
 
 export class RunOperatorView implements ClassComponent<any> {
 	// @ts-ignore
@@ -24,7 +24,7 @@ export class RunOperatorView implements ClassComponent<any> {
 		return m(".sle-view__edit-blueprint", attrs,
 			m(BlueprintEditor,
 				m(BlueprintEditorBlueprintBar, m(BlueprintControlBar)),
-				m(BlueprintEditorRunningOperatorBar, m(RunningOperator)),
+				m(BlueprintEditorRunningOperatorBar, m(RunningOperatorDetails)),
 			)
 		);
 	}
