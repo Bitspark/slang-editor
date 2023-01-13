@@ -8,6 +8,8 @@ import { BlueprintType } from "../slang/core/models/blueprint";
 import {SlangType, SlangTypeValue} from "../slang/definitions/type";
 import { OperatorDataExt } from "../extensions/operators";
 import {SlangFileJson} from "../slang/definitions/api";
+import {GenericSpecifications} from "../slang/core/abstract/utils/generics";
+import {PropertyAssignments} from "../slang/core/abstract/utils/properties";
 
 declare const APIURL: string;
 const API = new ApiService(APIURL);
@@ -116,18 +118,27 @@ export class AppState {
 		return newBlueprint;
 	}
 
-	public static async runOperator(blueprint: BlueprintModel) {
+	public static async start(blueprint: BlueprintModel) {
+		console.log(">>", blueprint.hasGenerics(), blueprint.hasProperties())
+		if (blueprint.hasGenerics() || blueprint.hasProperties()) {
+			blueprint.start()
+			return;
+		}
+		await AppState.run(blueprint)
+	}
+
+	public static async run(blueprint: BlueprintModel, generics?: GenericSpecifications, properties?: PropertyAssignments) {
 		await AppState.storeBlueprint(blueprint);
-		const runOp = await API.runOperator(blueprint)
-		blueprint.runningOperator = {
+		const runOp = await API.runOperator(blueprint, generics, properties)
+		blueprint.run({
 			handle: runOp.handle,
 			url: runOp.url,
 			in: createTypeModel(runOp.in),
 			out: createTypeModel(runOp.out),
-		};
+		})
 	}
 
-	public static async stopOperator(blueprint: BlueprintModel) {
+	public static async stop(blueprint: BlueprintModel) {
 		if (!blueprint.runningOperator) {
 			return;
 		}

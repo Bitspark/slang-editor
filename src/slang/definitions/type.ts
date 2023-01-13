@@ -216,7 +216,7 @@ export class SlangType {
 			case TypeIdentifier.Generic:
 				return `[${this.getGenericIdentifier()}]`;
 			default:
-				return TypeIdentifier[this.typeIdentifier].toLowerCase();
+				return TypeIdentifier[this.typeIdentifier];
 		}
 	}
 

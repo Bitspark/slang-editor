@@ -397,7 +397,7 @@ function createPropertyAssignments(blueprint: BlueprintModel, propDefs: Property
 }
 
 function createGenericSpecifications(blueprint: BlueprintModel, genericsData: GenericSpecificationsApiResponse): GenericSpecifications {
-	const generics = new GenericSpecifications(Array.from(blueprint.getGenericIdentifiers()));
+	const generics = new GenericSpecifications(blueprint.getGenericIdentifiers());
 	if (genericsData) {
 		Object.keys(genericsData).forEach((genId: string) => {
 			generics.specify(genId, createTypeModel(genericsData[genId]));

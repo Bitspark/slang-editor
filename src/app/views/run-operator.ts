@@ -5,6 +5,8 @@ import {
 	BlueprintEditorBlueprintBar,
 	BlueprintEditorRunningOperatorBar
 } from "../components/blueprint-editor";
+import {AppState} from "../state";
+import {StartingOperatorDetails} from "../components/starting-operator-details";
 import {RunningOperatorDetails} from "../components/running-operator-details";
 
 export class RunOperatorView implements ClassComponent<any> {
@@ -21,10 +23,13 @@ export class RunOperatorView implements ClassComponent<any> {
 	}
 
 	public view({attrs}: CVnode<any>) {
+		const blueprint = AppState.getBlueprint(attrs.uuid)!;
+
 		return m(".sle-view__edit-blueprint", attrs,
 			m(BlueprintEditor,
 				m(BlueprintEditorBlueprintBar, m(BlueprintControlBar)),
-				m(BlueprintEditorRunningOperatorBar, m(RunningOperatorDetails)),
+				// @ts-ignore
+				m(BlueprintEditorRunningOperatorBar, m(blueprint.isStarting ? StartingOperatorDetails : RunningOperatorDetails)),
 			)
 		);
 	}
