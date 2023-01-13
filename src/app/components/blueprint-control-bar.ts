@@ -61,6 +61,10 @@ export class BlueprintControlBar implements ClassComponent<any> {
                 ? m(IconButton, { // indicate operator is starting
                     class: "is-loading",
                     fas: "stop",
+                    async onclick() {
+                        await AppState.stop(blueprint);
+                        m.redraw();
+                    },
                 })
                 : m(IconButton, { // stop running operator
                     class: "",

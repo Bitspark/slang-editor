@@ -5,7 +5,7 @@ import { PortDirection } from "../slang/core/abstract/port";
 import { blueprintModelToJson, loadBlueprints, createTypeModel } from "../slang/core/mapper";
 import { AppModel, BlueprintModel } from "../slang/core/models";
 import { BlueprintType } from "../slang/core/models/blueprint";
-import {SlangType, SlangTypeValue} from "../slang/definitions/type";
+import {SlangType} from "../slang/definitions/type";
 import { OperatorDataExt } from "../extensions/operators";
 import {SlangFileJson} from "../slang/definitions/api";
 import {GenericSpecifications} from "../slang/core/abstract/utils/generics";
@@ -119,7 +119,6 @@ export class AppState {
 	}
 
 	public static async start(blueprint: BlueprintModel) {
-		console.log(">>", blueprint.hasGenerics(), blueprint.hasProperties())
 		if (blueprint.hasGenerics() || blueprint.hasProperties()) {
 			blueprint.start()
 			return;
@@ -139,18 +138,10 @@ export class AppState {
 	}
 
 	public static async stop(blueprint: BlueprintModel) {
-		if (!blueprint.runningOperator) {
-			return;
+		if (blueprint.runningOperator) {
+			await API.stopOperator(blueprint.runningOperator)
 		}
-		await API.stopOperator(blueprint.runningOperator)
-		blueprint.runningOperator = null;
-	}
-
-	public static async sendData(blueprint: BlueprintModel, data: SlangTypeValue): Promise<SlangTypeValue> {
-		if (!blueprint.runningOperator) {
-			throw new Error("operator not running");
-		}
-		return await API.sendData(blueprint.runningOperator, data);
+		blueprint.stop();
 	}
 
 	private static async loadBlueprints(): Promise<void> {

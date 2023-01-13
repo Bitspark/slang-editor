@@ -204,6 +204,10 @@ body {
 		}
 	}
 
+	.button.is-loading {
+		pointer-events: auto;
+	}
+
 	.ctrl-bar__name {
 		width: 320px;
 	}
