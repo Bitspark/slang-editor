@@ -2,7 +2,7 @@ import {DelegateModel} from "./delegate";
 import {PortOwner} from "./port-owner";
 import {GenericSpecifications} from "./utils/generics";
 
-export abstract class BlackBox extends PortOwner {
+export abstract class BlackBoxModel extends PortOwner {
 	public abstract getDisplayName(): string;
 
 	public abstract findDelegate(name: string): DelegateModel | undefined;

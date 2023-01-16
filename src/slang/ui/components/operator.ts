@@ -1,7 +1,7 @@
 import {dia, g, shapes} from "jointjs";
 
 import {Styles} from "../../../styles/studio";
-import {BlackBox} from "../../core/abstract/blackbox";
+import {BlackBoxModel} from "../../core/abstract/blackbox";
 import {PortModel} from "../../core/abstract/port";
 import {SlangSubject} from "../../core/abstract/utils/events";
 import {OperatorModel} from "../../core/models";
@@ -12,7 +12,7 @@ import {DiaCanvasElement} from "./base";
 import {PortGroupComponent} from "./port-group";
 import RectangleSelectors = shapes.standard.RectangleSelectors;
 
-function createPortGroups(blackBox: BlackBox): PortGroupComponent[] {
+function createPortGroups(blackBox: BlackBoxModel): PortGroupComponent[] {
 	const portGroups: PortGroupComponent[] = [];
 
 	{
@@ -90,7 +90,7 @@ export abstract class BlackBoxElement extends DiaCanvasElement {
 		super(paperView, {x: 0, y: 0});
 	}
 
-	public abstract getModel(): BlackBox;
+	public abstract getModel(): BlackBoxModel;
 
 	public refresh(): void {
 		this.portGroups = this.createPortGroups();
@@ -129,7 +129,7 @@ export abstract class BlackBoxElement extends DiaCanvasElement {
 
 	protected abstract createShape(): BlackBoxShape;
 
-	protected attachPortEvents(blackbox: BlackBox) {
+	protected attachPortEvents(blackbox: BlackBoxModel) {
 		this.shape.on("port:mouseover",
 			(_cellView: dia.CellView, _event: MouseEvent, x: number, y: number, portId: string) => {
 				const port = blackbox.findNodeById(portId);

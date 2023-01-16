@@ -1,5 +1,5 @@
 import m, {ClassComponent, CVnode} from "mithril";
-import { OperatorBox } from "../../slang/ui/components/blackbox";
+import { OperatorBox } from "../../slang/ui/components/operator";
 import {BlueprintModel, OperatorModel} from "../../slang/core/models";
 import { ViewFrame } from "../../slang/ui/frame";
 import { BlueprintView } from "../../slang/ui/views/blueprint";

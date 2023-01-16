@@ -1,7 +1,7 @@
 import {dia} from "jointjs";
 
 import {Styles} from "../../../styles/studio";
-import {BlackBox} from "../../core/abstract/blackbox";
+import {BlackBoxModel} from "../../core/abstract/blackbox";
 import {PortModel} from "../../core/abstract/port";
 import {PortOwner} from "../../core/abstract/port-owner";
 import {StreamType} from "../../core/abstract/stream";
@@ -56,8 +56,8 @@ export class ConnectionElement extends DiaCanvasElement {
 	}
 
 	public static getBoxOwnerIds(connection: Connection): [string, string] {
-		const sourceOwner = connection.source.getAncestorNode(BlackBox);
-		const destinationOwner = connection.destination.getAncestorNode(BlackBox);
+		const sourceOwner = connection.source.getAncestorNode(BlackBoxModel);
+		const destinationOwner = connection.destination.getAncestorNode(BlackBoxModel);
 
 		if (!sourceOwner) {
 			throw new Error(`no source owner found`);

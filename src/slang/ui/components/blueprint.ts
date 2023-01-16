@@ -14,7 +14,7 @@ import {tid2css} from "../utils";
 import {PaperView} from "../views/paper-view";
 
 import {FloatingHtmlElement, DiaCanvasElement} from "./base";
-import {OperatorBox} from "./blackbox";
+import {OperatorBox} from "./operator";
 import {BlueprintPortElement} from "./blueprint-port";
 import {ConnectionElement} from "./connection";
 import {PortGroupPosition} from "./port-group";

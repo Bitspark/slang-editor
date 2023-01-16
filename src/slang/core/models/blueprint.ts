@@ -1,7 +1,7 @@
 import {OperatorGeometry, UUID, XY} from "../../definitions/api";
 import {SlangParsing} from "../../definitions/parsing";
 import {SlangType, TypeIdentifier} from "../../definitions/type";
-import {BlackBox} from "../abstract/blackbox";
+import {BlackBoxModel} from "../abstract/blackbox";
 import {PortModel, PortModelArgs} from "../abstract/port";
 import {Connections} from "../abstract/utils/connections";
 import {SlangBehaviorSubject, SlangSubjectTrigger} from "../abstract/utils/events";
@@ -81,7 +81,7 @@ export interface HasMoveablePortGroups {
 	outPosition: number;
 }
 
-export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
+export class BlueprintModel extends BlackBoxModel implements HasMoveablePortGroups {
 
 	// Geometry
 	public get size(): Size {
@@ -329,7 +329,7 @@ export class BlueprintModel extends BlackBox implements HasMoveablePortGroups {
 			return undefined;
 		}
 
-		let blackbox: BlackBox | undefined;
+		let blackbox: BlackBoxModel | undefined;
 		let port: PortModel | null | undefined;
 
 		if (portInfo.instance === "") {
