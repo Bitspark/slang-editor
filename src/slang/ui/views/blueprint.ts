@@ -6,20 +6,20 @@ import {SlangSubject} from "../../core/abstract/utils/events";
 import {BlueprintModel} from "../../core/models";
 import {TypeIdentifier} from "../../definitions/type";
 import {BlackBoxShape} from "../components/blackbox";
-import {ConnectionComponent} from "../components/connection";
-import {WhiteBoxComponent} from "../components/whitebox";
+import {ConnectionElement} from "../components/connection";
+import {BlueprintBox} from "../components/whitebox";
 import {ViewFrame} from "../frame";
 import {PaperView, PaperViewArgs} from "./paper-view";
 import {TargetableComponent, UserEvent } from "./user-events";
 
 export class BlueprintView extends PaperView {
-	public readonly whiteBox: WhiteBoxComponent;
+	public readonly whiteBox: BlueprintBox;
 	public readonly userInteracted = new SlangSubject<UserEvent>("user-interacted");
 
 	constructor(frame: ViewFrame, aspects: SlangAspects, public readonly blueprint: BlueprintModel, args: PaperViewArgs) {
 		super(frame, aspects, args);
 		this.addPanning();
-		this.whiteBox = new WhiteBoxComponent(this, blueprint);
+		this.whiteBox = new BlueprintBox(this, blueprint);
 		this.attachEventHandlers();
 		this.fit();
 	}
@@ -61,7 +61,7 @@ export class BlueprintView extends PaperView {
 			defaultLink: (_cellView: dia.CellView, magnet: SVGElement): dia.Link => {
 				const port = that.getPortFromMagnet(magnet);
 				if (port) {
-					const link = ConnectionComponent.createGhostLink(port);
+					const link = ConnectionElement.createGhostLink(port);
 					link.on("remove", () => {
 						link.transition("attrs/.connection/stroke-opacity", 0);
 					});

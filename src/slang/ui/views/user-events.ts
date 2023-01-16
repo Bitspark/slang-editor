@@ -1,8 +1,6 @@
-import { OperatorBoxComponent } from "../components/blackbox";
-import { ConnectionComponent } from "../components/connection";
-import { WhiteBoxComponent } from "../components/whitebox";
+import {DiaCanvasElement} from "../components/base";
 
-export type TargetableComponent = OperatorBoxComponent | WhiteBoxComponent | ConnectionComponent;
+export type TargetableComponent = DiaCanvasElement;
 
 export interface UserEvent {
 	xy: {x:  number, y: number}

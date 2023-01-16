@@ -1,5 +1,5 @@
 import m, {ClassComponent, CVnode} from "mithril";
-import { OperatorBoxComponent } from "../../slang/ui/components/blackbox";
+import { OperatorBox } from "../../slang/ui/components/blackbox";
 import {BlueprintModel, OperatorModel} from "../../slang/core/models";
 import { ViewFrame } from "../../slang/ui/frame";
 import { BlueprintView } from "../../slang/ui/views/blueprint";
@@ -8,7 +8,7 @@ import { OperatorDashboard } from "./operator-dashboard";
 import { ContextMenu } from "./toolkit/context-menu";
 import { Box } from "../../slang/ui/toolkit";
 import { UserEvent } from "../../slang/ui/views/user-events";
-import { ConnectionComponent } from "../../slang/ui/components/connection";
+import { ConnectionElement } from "../../slang/ui/components/connection";
 import {Label, IconButton} from "../../slang/ui/toolkit/buttons";
 import {XY} from "../../slang/definitions/api";
 import {BlueprintConfigForm} from "./blueprint-config-form";
@@ -82,20 +82,19 @@ class Editor {
 				return;
 			}
 
-			if (e.target instanceof ConnectionComponent) {
+			if (e.target instanceof ConnectionElement) {
 				if (e.left.click) {
 					e.target.css({
 						"sl-is-selected": true,
 					});
 				}
-
 				return;
 			}
 
 
 			if (e.right.click) {
 
-				if (e.target instanceof OperatorBoxComponent) {
+				if (e.target instanceof OperatorBox) {
 					const operator = e.target.getModel();
 					const operatorBp = operator.blueprint;
 					const view = blueprintView;
@@ -152,7 +151,7 @@ class Editor {
 					ContextMenu.show(e.target, {
 						view: () => m(".sle-comp__context-menu", m(BlueprintConfigForm))
 					});
-					
+
 					ContextMenu.show2(e, {
 						view: () => m(".sle-comp__context-menu",
 							m(".buttons.are-normal", {},

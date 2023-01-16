@@ -4,13 +4,13 @@ import {Styles} from "../../../styles/studio";
 import {PortModel} from "../../core/abstract/port";
 import {TypeIdentifier} from "../../definitions/type";
 
-import {PortComponent} from "./port";
+import {PortElement} from "./port";
 
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";
 
 /* isStreamSub: port is a sub of a stream --> is primitive port is direct child of a stream, it will be visualized accordingly */
-function createPortItems(parent: PortGroupComponent, position: PortGroupPosition, port: PortModel, createGhostPorts: boolean, isBlackBox: boolean, isStreamSub: boolean): PortComponent[] {
-	const portItems: PortComponent[] = [];
+function createPortItems(parent: PortGroupComponent, position: PortGroupPosition, port: PortModel, createGhostPorts: boolean, isBlackBox: boolean, isStreamSub: boolean): PortElement[] {
+	const portItems: PortElement[] = [];
 
 	switch (port.getTypeIdentifier()) {
 		case TypeIdentifier.Map:
@@ -28,12 +28,12 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
 			break;
 
 		default:
-			portItems.push(new PortComponent(port, parent, false, isBlackBox, isStreamSub));
+			portItems.push(new PortElement(port, parent, false, isBlackBox, isStreamSub));
 	}
 
 	if (createGhostPorts && port.isGenericLike() &&
 		(port.getTypeIdentifier() === TypeIdentifier.Map || port.getTypeIdentifier() === TypeIdentifier.Unspecified)) {
-		portItems.push(new PortComponent(port, parent, true, isBlackBox, isStreamSub));
+		portItems.push(new PortElement(port, parent, true, isBlackBox, isStreamSub));
 	}
 
 	return portItems;
@@ -48,9 +48,9 @@ export class PortGroupComponent {
 
 	// STATIC:
 
-	public static layoutFunction(portComponents: PortComponent[], position: PortGroupPosition, offset: number, space: number, isBlackBox: boolean): (ports: any[], elBBox: g.Rect, opt: any) => g.Point[] {
-		return (ports: PortComponent[], elBBox: g.Rect): g.Point[] => {
-			return ports.map((_port: PortComponent, index: number) => {
+	public static layoutFunction(portComponents: PortElement[], position: PortGroupPosition, offset: number, space: number, isBlackBox: boolean): (ports: any[], elBBox: g.Rect, opt: any) => g.Point[] {
+		return (ports: PortElement[], elBBox: g.Rect): g.Point[] => {
+			return ports.map((_port: PortElement, index: number) => {
 				const count = ports.length;
 
 				let total = 0;
@@ -100,7 +100,7 @@ export class PortGroupComponent {
 		};
 	}
 
-	private readonly ports: PortComponent[] = [];
+	private readonly ports: PortElement[] = [];
 	private parentElement: dia.Element | null = null;
 	private portGroupElement: dia.Element.PortGroup = {};
 
@@ -150,14 +150,14 @@ export class PortGroupComponent {
 			throw new Error(`need parent`);
 		}
 
-		parentElement.removePorts(this.ports.map((port) => port.getPortElement()));
+		parentElement.removePorts(this.ports.map((port) => port.getShape()));
 
 		const ports = createPortItems(this, this.getGroupPosition(), this.port, createGhostPorts, this.isBlackBox, false);
 
 		this.ports.length = 0;
 		this.ports.push.apply(this.ports, ports);
 
-		parentElement.addPorts(this.ports.map((port) => port.getPortElement()));
+		parentElement.addPorts(this.ports.map((port) => port.getShape()));
 	}
 
 }

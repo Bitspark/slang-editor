@@ -1,9 +1,9 @@
 import m from "mithril";
 
 import {FloatingHtmlElement} from "../../../slang/ui/components/base";
-import {OperatorBoxComponent} from "../../../slang/ui/components/blackbox";
+import {OperatorBox} from "../../../slang/ui/elements/operator";
 import {UserEvent} from "../../../slang/ui/views/user-events";
-import {WhiteBoxComponent} from "../../../slang/ui/components/whitebox";
+import {BlueprintBox} from "../../../slang/ui/elements/blueprint";
 
 export class ContextMenu {
     private static contextMenu?: FloatingHtmlElement;
@@ -14,10 +14,10 @@ export class ContextMenu {
         return;
     }
 
-    public static show(cellComp: OperatorBoxComponent | WhiteBoxComponent , comp: m.Component) {
-        this.contextMenu = cellComp
+    public static show(box: OperatorBox | BlueprintBox, comp: m.Component) {
+        this.contextMenu = box
             .createComponent({x: 0, y: 0, align: "tl"})
-            .attachTo(cellComp.getShape(), "tr")
+            .attachTo(box.getShape(), "tr")
             .mount(comp)
     }
 

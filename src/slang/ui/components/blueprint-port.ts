@@ -6,7 +6,7 @@ import {SlangSubject} from "../../core/abstract/utils/events";
 
 import {PortGroupComponent, PortGroupPosition} from "./port-group";
 
-export class IsolatedBlueprintPortComponent {
+export class BlueprintPortElement {
 
 	public static size = {
 		width: 100, height: 100,
@@ -26,7 +26,7 @@ export class IsolatedBlueprintPortComponent {
 
 		this.rectangle = new shapes.standard.Rectangle({
 			id,
-			size: IsolatedBlueprintPortComponent.size,
+			size: BlueprintPortElement.size,
 			attrs: {
 				root: {
 					class: "joint-cell joint-element sl-blueprint-port",

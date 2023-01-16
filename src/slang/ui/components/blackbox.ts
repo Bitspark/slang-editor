@@ -4,7 +4,6 @@ import {Styles} from "../../../styles/studio";
 import {BlackBox} from "../../core/abstract/blackbox";
 import {PortModel} from "../../core/abstract/port";
 import {SlangSubject} from "../../core/abstract/utils/events";
-import {BlueprintModel} from "../../core/models";
 import {OperatorModel} from "../../core/models";
 import {XY} from "../../definitions/api";
 import {PaperView} from "../views/paper-view";
@@ -74,7 +73,7 @@ function createPortGroups(blackBox: BlackBox): PortGroupComponent[] {
 	return portGroups;
 }
 
-export abstract class BlackBoxComponent extends DiaCanvasElement {
+export abstract class BlackBoxElement extends DiaCanvasElement {
 	protected readonly cssAttr = "root/class";
 
 	public get bbox(): g.Rect {
@@ -155,54 +154,7 @@ export abstract class BlackBoxComponent extends DiaCanvasElement {
 
 }
 
-export class BlueprintBoxComponent extends BlackBoxComponent {
-	constructor(paperView: PaperView, protected blueprint: BlueprintModel) {
-		super(paperView, false);
-		this.refresh();
-	}
-
-	public refresh(): void {
-		super.refresh();
-
-		this.shape.attr("draggable", false);
-		this.shape.set("obstacle", true);
-
-		this.shape.attr({
-			body: {
-				cursor: "pointer",
-			},
-			label: {
-				cursor: "pointer",
-			},
-		});
-		this.attachPortEvents(this.blueprint);
-	}
-
-	public getModel(): BlueprintModel {
-		return this.blueprint;
-	}
-
-	public getShape(): BlackBoxShape {
-		return this.shape;
-	}
-
-	protected createShape(): BlackBoxShape {
-		const blackBoxShapeType = this.paperView.getFactory().getBlackBoxShape(this.blueprint);
-		const shape = new blackBoxShapeType({
-			id: this.blueprint.getIdentity(),
-			portGroups: this.portGroups,
-		});
-		shape.setupForBlueprint(this.blueprint);
-		return shape;
-	}
-
-	protected createPortGroups(): PortGroupComponent[] {
-		return createPortGroups(this.blueprint);
-	}
-
-}
-
-export class OperatorBoxComponent extends BlackBoxComponent {
+export class OperatorBox extends BlackBoxElement {
 	constructor(paperView: PaperView, protected readonly operator: OperatorModel) {
 		super(paperView, paperView.isEditable);
 
@@ -305,19 +257,6 @@ function constructRectAttrs(attrs: BlackBoxShapeAttrs): dia.Element.GenericAttri
 }
 
 export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", Styles.Defaults.blackBox) {
-	public static place(paperView: PaperView, blueprint: BlueprintModel, position?: g.PlainPoint): BlackBoxShape {
-		const shape = new BlueprintBoxComponent(paperView, blueprint).getShape();
-		if (position) {
-			const {width, height} = shape.size();
-			shape.position(position.x - width / 2, position.y - height / 2);
-		}
-
-		shape.set("obstacle", true);
-		shape.attr("draggable", true);
-
-		return shape;
-	}
-
 	public static placeGhost(paperView: PaperView, label: string, position?: g.PlainPoint): BlackBoxShape {
 		const shape = new BlackBoxShape({
 			label,
@@ -334,10 +273,6 @@ export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", 
 
 	constructor(attrs: BlackBoxShapeAttrs) {
 		super(constructRectAttrs(attrs) as any);
-	}
-
-	public setupForBlueprint(blueprint: BlueprintModel) {
-		this.attr("label/text", blueprint.name);
 	}
 
 	public setupForOperator(operator: OperatorModel) {

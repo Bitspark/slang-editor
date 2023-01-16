@@ -4,7 +4,7 @@ import {PaperView} from "./ui/views/paper-view";
 
 export interface BlueprintToolBoxType {
 	label: string;
-	icon?: string;
+	icon?: string
 	class?: string;
 
 	onclick?(): void;

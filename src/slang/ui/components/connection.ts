@@ -39,7 +39,7 @@ const ghostConnectionLink = dia.Link.define("GhostConnection", {
 		"</g>"].join(""),
 });
 
-export class ConnectionComponent extends DiaCanvasElement {
+export class ConnectionElement extends DiaCanvasElement {
 
 	// STATIC
 
@@ -51,7 +51,7 @@ export class ConnectionComponent extends DiaCanvasElement {
 				},
 			},
 		} as any);
-		ConnectionComponent.refresh(sourcePort, null, link);
+		ConnectionElement.refresh(sourcePort, null, link);
 		return link;
 	}
 
@@ -84,7 +84,7 @@ export class ConnectionComponent extends DiaCanvasElement {
 	}
 
 	public static findLink(paperView: PaperView, connection: Connection): dia.Link | undefined {
-		const linkId = ConnectionComponent.getLinkId(connection);
+		const linkId = ConnectionElement.getLinkId(connection);
 		const link = paperView.getCell(linkId);
 
 		if (!link) {
@@ -134,8 +134,8 @@ export class ConnectionComponent extends DiaCanvasElement {
 
 	constructor(paperView: PaperView, private connection: Connection) {
 		super(paperView, {x: 0, y: 0});
-		const ownerIds = ConnectionComponent.getBoxOwnerIds(connection);
-		this.id = ConnectionComponent.getLinkId(connection);
+		const ownerIds = ConnectionElement.getBoxOwnerIds(connection);
+		this.id = ConnectionElement.getLinkId(connection);
 		this.shape = new connectionLink({
 			id: this.id,
 			source: {
@@ -181,7 +181,7 @@ export class ConnectionComponent extends DiaCanvasElement {
 	}
 
 	public refresh(): void {
-		ConnectionComponent.refresh(this.connection.source, this.connection.destination, this.shape);
+		ConnectionElement.refresh(this.connection.source, this.connection.destination, this.shape);
 		if (!this.getShape().graph) {
 			this.render();
 		}
