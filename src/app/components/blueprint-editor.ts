@@ -1,13 +1,13 @@
 import m, {ClassComponent, CVnode} from "mithril";
 import { OperatorBox } from "../../slang/ui/components/operator";
 import {BlueprintModel, OperatorModel} from "../../slang/core/models";
-import { ViewFrame } from "../../slang/ui/frame";
-import { BlueprintView } from "../../slang/ui/views/blueprint";
+import { Frame } from "../../slang/ui/frame";
+import { BlueprintCanvas } from "../../slang/ui/canvas/blueprint";
 import { AppState } from "../state";
 import { OperatorDashboard } from "./operator-dashboard";
 import { ContextMenu } from "./toolkit/context-menu";
 import { Box } from "../../slang/ui/toolkit";
-import { UserEvent } from "../../slang/ui/views/user-events";
+import { UserEvent } from "../../slang/ui/canvas/user-events";
 import { ConnectionElement } from "../../slang/ui/components/connection";
 import {Label, IconButton} from "../../slang/ui/toolkit/buttons";
 import {XY} from "../../slang/definitions/api";
@@ -44,13 +44,13 @@ class Clipboard {
 }
 
 class Editor {
-	private static frame: ViewFrame;
+	private static frame: Frame;
 	private static clipboard = new Clipboard();
 	private static shownBlueprint?: BlueprintModel = undefined;
 
     public static init(rootEl: HTMLElement) {
 		this.shownBlueprint = undefined
-		this.frame = new ViewFrame(rootEl as HTMLElement);
+		this.frame = new Frame(rootEl as HTMLElement);
 	}
 
 	public static isReadonly(blueprint: BlueprintModel): boolean {
@@ -73,7 +73,7 @@ class Editor {
 			runnable: true,
 		};
 
-        const blueprintView = new BlueprintView(this.frame, AppState.aspects, blueprint, viewArgs);
+        const blueprintView = new BlueprintCanvas(this.frame, AppState.aspects, blueprint, viewArgs);
 
 		blueprintView.onUserEvent((e: UserEvent) => {
             ContextMenu.hide();

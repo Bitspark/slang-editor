@@ -3,17 +3,17 @@ import {STYLING} from "../../styles";
 import {SlangAspects} from "../aspects";
 import {AppModel, BlueprintModel, LandscapeModel} from "../core/models";
 import {SlangFileJson} from "../definitions/api";
-import {ViewFrame} from "../ui/frame";
-import {BlueprintView} from "../ui/views/blueprint";
+import {Frame} from "../ui/frame";
+import {BlueprintCanvas} from "../ui/canvas/blueprint";
 
 const template = document.createElement("template");
 template.innerHTML = `
-<div class="ViewFrame"></div>
+<div class="Frame"></div>
 <style>
 :host {
 	display: block;
 }
-.ViewFrame {
+.Frame {
 	height: 100%;
 }
 ${STYLING}
@@ -21,10 +21,10 @@ ${STYLING}
 `;
 
 export class SlangEditor extends HTMLElement {
-	public blueprintView?: BlueprintView;
+	public blueprintView?: BlueprintCanvas;
 
 	private blueprint?: BlueprintModel;
-	private viewFrame?: ViewFrame;
+	private frame?: Frame;
 	private readonly landscape: LandscapeModel;
 	private readonly aspects: SlangAspects;
 
@@ -63,7 +63,7 @@ export class SlangEditor extends HTMLElement {
 			return;
 		}
 		const frame = this.shadowRoot.firstElementChild as HTMLElement;
-		this.viewFrame = new ViewFrame(frame);
+		this.frame = new Frame(frame);
 
 		if (this.blueprint) {
 			this.displayBlueprint(this.blueprint);
@@ -73,7 +73,7 @@ export class SlangEditor extends HTMLElement {
 	public displayBlueprint(blueprint: BlueprintModel) {
 		this.blueprint = blueprint;
 
-		if (!this.viewFrame) {
+		if (!this.frame) {
 			return;
 		}
 
@@ -84,7 +84,7 @@ export class SlangEditor extends HTMLElement {
 			descendable: true,
 			runnable: true,
 		};
-		this.blueprintView = new BlueprintView(this.viewFrame, this.aspects, blueprint, viewArgs);
-		this.viewFrame.setView(this.blueprintView);
+		this.blueprintView = new BlueprintCanvas(this.frame, this.aspects, blueprint, viewArgs);
+		this.frame.setView(this.blueprintView);
 	}
 }

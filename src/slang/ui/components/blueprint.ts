@@ -11,7 +11,7 @@ import {OperatorModel} from "../../core/models";
 import {BlueprintPortModel} from "../../core/models";
 import {TypeIdentifier} from "../../definitions/type";
 import {tid2css} from "../utils";
-import {PaperView} from "../views/paper-view";
+import {Canvas} from "../canvas/base";
 
 import {FloatingHtmlElement, DiaCanvasElement} from "./base";
 import {OperatorBox} from "./operator";
@@ -42,7 +42,7 @@ export class BlueprintBox extends DiaCanvasElement {
 		right: [] as BlueprintPortElement[],
 	};
 
-	constructor(paperView: PaperView, public readonly blueprint: BlueprintModel) {
+	constructor(paperView: Canvas, public readonly blueprint: BlueprintModel) {
 		super(paperView, {x: 0, y: 0});
 		this.subscribe();
 

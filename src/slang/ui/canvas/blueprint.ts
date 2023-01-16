@@ -8,15 +8,15 @@ import {TypeIdentifier} from "../../definitions/type";
 import {BlackBoxShape} from "../components/operator";
 import {ConnectionElement} from "../components/connection";
 import {BlueprintBox} from "../components/blueprint";
-import {ViewFrame} from "../frame";
-import {PaperView, PaperViewArgs} from "./paper-view";
+import {Frame} from "../frame";
+import {Canvas, PaperViewArgs} from "./base";
 import {TargetableComponent, UserEvent } from "./user-events";
 
-export class BlueprintView extends PaperView {
+export class BlueprintCanvas extends Canvas {
 	public readonly whiteBox: BlueprintBox;
 	public readonly userInteracted = new SlangSubject<UserEvent>("user-interacted");
 
-	constructor(frame: ViewFrame, aspects: SlangAspects, public readonly blueprint: BlueprintModel, args: PaperViewArgs) {
+	constructor(frame: Frame, aspects: SlangAspects, public readonly blueprint: BlueprintModel, args: PaperViewArgs) {
 		super(frame, aspects, args);
 		this.addPanning();
 		this.whiteBox = new BlueprintBox(this, blueprint);

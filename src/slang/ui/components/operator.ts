@@ -6,7 +6,7 @@ import {PortModel} from "../../core/abstract/port";
 import {SlangSubject} from "../../core/abstract/utils/events";
 import {OperatorModel} from "../../core/models";
 import {XY} from "../../definitions/api";
-import {PaperView} from "../views/paper-view";
+import {Canvas} from "../canvas/base";
 
 import {DiaCanvasElement} from "./base";
 import {PortGroupComponent} from "./port-group";
@@ -86,7 +86,7 @@ export abstract class BlackBoxElement extends DiaCanvasElement {
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
 
-	protected constructor(paperView: PaperView, private readonly createGhostPorts: boolean) {
+	protected constructor(paperView: Canvas, private readonly createGhostPorts: boolean) {
 		super(paperView, {x: 0, y: 0});
 	}
 
@@ -155,7 +155,7 @@ export abstract class BlackBoxElement extends DiaCanvasElement {
 }
 
 export class OperatorBox extends BlackBoxElement {
-	constructor(paperView: PaperView, protected readonly operator: OperatorModel) {
+	constructor(paperView: Canvas, protected readonly operator: OperatorModel) {
 		super(paperView, paperView.isEditable);
 
 		operator.getGenerics().subscribeGenericsChanged(() => {
@@ -257,7 +257,7 @@ function constructRectAttrs(attrs: BlackBoxShapeAttrs): dia.Element.GenericAttri
 }
 
 export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", Styles.Defaults.blackBox) {
-	public static placeGhost(paperView: PaperView, label: string, position?: g.PlainPoint): BlackBoxShape {
+	public static placeGhost(paperView: Canvas, label: string, position?: g.PlainPoint): BlackBoxShape {
 		const shape = new BlackBoxShape({
 			label,
 			position,

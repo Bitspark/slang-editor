@@ -2,7 +2,7 @@ import m, {ClassComponent, CVnode} from "mithril";
 
 import {BlueprintModel, OperatorModel} from "../../slang/core/models";
 import {SlangType, SlangTypeValue} from "../../slang/definitions/type";
-import {PaperView} from "../../slang/ui/views/paper-view";
+import {Canvas} from "../../slang/ui/canvas/base";
 
 import {Input} from "./console";
 import {Block, Box, Title} from "../../slang/ui/toolkit";
@@ -10,7 +10,7 @@ import {TypeSelect} from "../../slang/ui/toolkit/type";
 import {TextWithCopyButton} from "./toolkit/text-with-copy-button";
 
 interface DashboardAttrs {
-	view: PaperView;
+	view: Canvas;
 	operator: OperatorModel;
 }
 

@@ -1,6 +1,6 @@
 import {BlueprintModel} from "./core/models";
 import {ComponentFactory} from "./ui/factory";
-import {PaperView} from "./ui/views/paper-view";
+import {Canvas} from "./ui/canvas/base";
 
 export interface BlueprintToolBoxType {
 	label: string;
@@ -13,13 +13,13 @@ export interface BlueprintToolBoxType {
 export class SlangAspects {
 	public readonly factory = new ComponentFactory();
 
-	private aspectBlueprintToolbox = new Array<(view: PaperView, blupr: BlueprintModel, redraw: () => void) => BlueprintToolBoxType[]>();
+	private aspectBlueprintToolbox = new Array<(view: Canvas, blupr: BlueprintModel, redraw: () => void) => BlueprintToolBoxType[]>();
 
-	public getBlueprintToolboxButtons(view: PaperView, blueprint: BlueprintModel, redraw: () => void): BlueprintToolBoxType[] {
+	public getBlueprintToolboxButtons(view: Canvas, blueprint: BlueprintModel, redraw: () => void): BlueprintToolBoxType[] {
 		return this.aspectBlueprintToolbox.reduce((accumBtnAttrs: BlueprintToolBoxType[], cBtnAttrs) => accumBtnAttrs.concat(cBtnAttrs(view, blueprint, redraw)), []);
 	}
 
-	public registerBlueprintToolboxButton(f: (view: PaperView, blupr: BlueprintModel, redraw: () => void) => BlueprintToolBoxType[]) {
+	public registerBlueprintToolboxButton(f: (view: Canvas, blupr: BlueprintModel, redraw: () => void) => BlueprintToolBoxType[]) {
 		this.aspectBlueprintToolbox.push(f);
 	}
 }

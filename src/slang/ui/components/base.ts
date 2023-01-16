@@ -4,8 +4,8 @@ import m from "mithril";
 import {SlangSubject} from "../../core/abstract/utils/events";
 import {XY} from "../../definitions/api";
 import {cssattr, cssobj, CSSType, cssupdate} from "../utils";
-import {PaperView} from "../views/paper-view";
-import { UserEvent, UserEvents } from "../views/user-events";
+import {Canvas} from "../canvas/base";
+import { UserEvent, UserEvents } from "../canvas/user-events";
 
 export type Alignment = "tl" | "t" | "tr" | "l" | "c" | "r" | "bl" | "b" | "br";
 
@@ -36,7 +36,7 @@ export abstract class DiaCanvasElement extends CanvasElement {
 	protected abstract readonly cssAttr: string;
 	private components: CanvasElement[] = [];
 
-	protected constructor(public readonly paperView: PaperView, xy: XY) {
+	protected constructor(public readonly paperView: Canvas, xy: XY) {
 		super(xy);
 	}
 
@@ -98,7 +98,7 @@ abstract class HtmlCanvasElement extends CanvasElement {
 	protected readonly htmlRoot: HTMLElement;
 	protected readonly align: Alignment;
 
-	protected constructor(protected paperView: PaperView, position: Position) {
+	protected constructor(protected paperView: Canvas, position: Position) {
 		super(position);
 		this.align = position.align;
 		this.htmlRoot = HtmlCanvasElement.createRoot();
@@ -189,7 +189,7 @@ abstract class HtmlCanvasElement extends CanvasElement {
 }
 
 export class FloatingHtmlElement extends HtmlCanvasElement {
-	public constructor(paperView: PaperView, offset: Position) {
+	public constructor(paperView: Canvas, offset: Position) {
 		super(paperView, offset);
 	}
 

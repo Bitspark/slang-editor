@@ -11,7 +11,7 @@ import {TypeIdentifier} from "../../definitions/type";
 import {slangConnector} from "../link/connector";
 import {slangRouter} from "../link/router";
 import {tid2css} from "../utils";
-import {PaperView} from "../views/paper-view";
+import {Canvas} from "../canvas/base";
 
 import {DiaCanvasElement} from "./base";
 
@@ -83,7 +83,7 @@ export class ConnectionElement extends DiaCanvasElement {
 		return `${connection.source.getIdentity()}:${connection.destination.getIdentity()}`;
 	}
 
-	public static findLink(paperView: PaperView, connection: Connection): dia.Link | undefined {
+	public static findLink(paperView: Canvas, connection: Connection): dia.Link | undefined {
 		const linkId = ConnectionElement.getLinkId(connection);
 		const link = paperView.getCell(linkId);
 
@@ -132,7 +132,7 @@ export class ConnectionElement extends DiaCanvasElement {
 	protected shape: dia.Link;
 	private readonly id: string;
 
-	constructor(paperView: PaperView, private connection: Connection) {
+	constructor(paperView: Canvas, private connection: Connection) {
 		super(paperView, {x: 0, y: 0});
 		const ownerIds = ConnectionElement.getBoxOwnerIds(connection);
 		this.id = ConnectionElement.getLinkId(connection);
