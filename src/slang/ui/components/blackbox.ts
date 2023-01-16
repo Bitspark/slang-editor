@@ -9,7 +9,7 @@ import {OperatorModel} from "../../core/models";
 import {XY} from "../../definitions/api";
 import {PaperView} from "../views/paper-view";
 
-import {CellComponent} from "./base";
+import {DiaCanvasElement} from "./base";
 import {PortGroupComponent} from "./port-group";
 import RectangleSelectors = shapes.standard.RectangleSelectors;
 
@@ -74,7 +74,7 @@ function createPortGroups(blackBox: BlackBox): PortGroupComponent[] {
 	return portGroups;
 }
 
-export abstract class BlackBoxComponent extends CellComponent {
+export abstract class BlackBoxComponent extends DiaCanvasElement {
 	protected readonly cssAttr = "root/class";
 
 	public get bbox(): g.Rect {

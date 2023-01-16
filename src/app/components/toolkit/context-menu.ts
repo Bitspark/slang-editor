@@ -1,16 +1,16 @@
 import m from "mithril";
 
-import {AttachableComponent} from "../../../slang/ui/components/base";
+import {FloatingHtmlElement} from "../../../slang/ui/components/base";
 import {OperatorBoxComponent} from "../../../slang/ui/components/blackbox";
 import {UserEvent} from "../../../slang/ui/views/user-events";
 import {WhiteBoxComponent} from "../../../slang/ui/components/whitebox";
 
 export class ContextMenu {
-    private static contextMenu?: AttachableComponent;
+    private static contextMenu?: FloatingHtmlElement;
 
     public static show2(event: UserEvent, comp: m.Component) {
         const paperView = event.target!.paperView;
-        this.contextMenu = new AttachableComponent(paperView, {...event.xy, align: "tl"}).mount(comp)
+        this.contextMenu = new FloatingHtmlElement(paperView, {...event.xy, align: "tl"}).mount(comp)
         return;
     }
 

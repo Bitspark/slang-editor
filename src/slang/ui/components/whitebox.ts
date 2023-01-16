@@ -13,13 +13,13 @@ import {TypeIdentifier} from "../../definitions/type";
 import {tid2css} from "../utils";
 import {PaperView} from "../views/paper-view";
 
-import {AttachableComponent, CellComponent} from "./base";
+import {FloatingHtmlElement, DiaCanvasElement} from "./base";
 import {OperatorBoxComponent} from "./blackbox";
 import {IsolatedBlueprintPortComponent} from "./blueprint-port";
 import {ConnectionComponent} from "./connection";
 import {PortGroupPosition} from "./port-group";
 
-export class WhiteBoxComponent extends CellComponent {
+export class WhiteBoxComponent extends DiaCanvasElement {
 	private static readonly padding = 60;
 
 	public connectionAdded = new SlangSubject<ConnectionComponent>("connection-added");
@@ -33,7 +33,7 @@ export class WhiteBoxComponent extends CellComponent {
 
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
-	private readonly portInfos: AttachableComponent[] = [];
+	private readonly portInfos: FloatingHtmlElement[] = [];
 
 	private readonly ports = {
 		top: [] as IsolatedBlueprintPortComponent[],
@@ -528,7 +528,7 @@ export class WhiteBoxComponent extends CellComponent {
 		});
 	}
 
-	private trackPortInfo(portInfo: AttachableComponent) {
+	private trackPortInfo(portInfo: FloatingHtmlElement) {
 		this.portInfos.push(portInfo);
 	}
 

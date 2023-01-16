@@ -13,7 +13,7 @@ export interface Position extends XY {
 	align: Alignment;
 }
 
-abstract class Component {
+abstract class CanvasElement {
 	protected constructor(private svgXY: XY) {}
 
 	public destroy() {
@@ -29,12 +29,12 @@ abstract class Component {
 	}
 }
 
-export abstract class CellComponent extends Component {
+export abstract class DiaCanvasElement extends CanvasElement {
 	public readonly userInteracted = new SlangSubject<UserEvent>("user-interacted");
 
 	protected abstract readonly shape: dia.Cell;
 	protected abstract readonly cssAttr: string;
-	private components: Component[] = [];
+	private components: CanvasElement[] = [];
 
 	protected constructor(public readonly paperView: PaperView, xy: XY) {
 		super(xy);
@@ -49,13 +49,13 @@ export abstract class CellComponent extends Component {
 		this.shape.remove();
 	}
 
-	public createComponent(offset: Position): AttachableComponent {
-		const comp = new AttachableComponent(this.paperView, offset);
+	public createComponent(offset: Position): FloatingHtmlElement {
+		const comp = new FloatingHtmlElement(this.paperView, offset);
 		this.addComponent(comp);
 		return comp;
 	}
 
-	public addComponent(comp: Component) {
+	public addComponent(comp: CanvasElement) {
 		this.components.push(comp);
 	}
 
@@ -88,7 +88,7 @@ export abstract class CellComponent extends Component {
 	}
 }
 
-abstract class HtmlComponent extends Component {
+abstract class HtmlCanvasElement extends CanvasElement {
 	private static createRoot(): HTMLElement {
 		const el = document.createElement("div");
 		el.style.position = "absolute";
@@ -101,7 +101,7 @@ abstract class HtmlComponent extends Component {
 	protected constructor(protected paperView: PaperView, position: Position) {
 		super(position);
 		this.align = position.align;
-		this.htmlRoot = HtmlComponent.createRoot();
+		this.htmlRoot = HtmlCanvasElement.createRoot();
 		this.paperView.rootEl.appendChild(this.htmlRoot);
 		this.paperView.subscribePositionChanged(() => {
 			this.draw();
@@ -188,7 +188,7 @@ abstract class HtmlComponent extends Component {
 	}
 }
 
-export class AttachableComponent extends HtmlComponent {
+export class FloatingHtmlElement extends HtmlCanvasElement {
 	public constructor(paperView: PaperView, offset: Position) {
 		super(paperView, offset);
 	}

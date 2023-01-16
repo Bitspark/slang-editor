@@ -13,7 +13,7 @@ import {slangRouter} from "../link/router";
 import {tid2css} from "../utils";
 import {PaperView} from "../views/paper-view";
 
-import {CellComponent} from "./base";
+import {DiaCanvasElement} from "./base";
 
 const connectionLink = dia.Link.define("Connection", {
 	router: slangRouter,
@@ -39,7 +39,7 @@ const ghostConnectionLink = dia.Link.define("GhostConnection", {
 		"</g>"].join(""),
 });
 
-export class ConnectionComponent extends CellComponent {
+export class ConnectionComponent extends DiaCanvasElement {
 
 	// STATIC
 
