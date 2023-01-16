@@ -1,2 +1,2 @@
-export {SlangEditor} from "./slang/components";
+export {SlangEditor} from "./slang/webcomponents";
 export {SlangFileJson} from "./slang/definitions/api";
