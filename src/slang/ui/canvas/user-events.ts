@@ -1,4 +1,4 @@
-import {DiaCanvasElement} from "../components/base";
+import {DiaCanvasElement} from "../elements/base";
 
 export type TargetableComponent = DiaCanvasElement;
 

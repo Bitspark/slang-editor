@@ -2,7 +2,7 @@ import {BlueprintModel} from "../core/models";
 import {OperatorModel} from "../core/models";
 import {UUID} from "../definitions/api";
 
-import {BlackBoxShape, OperatorBox} from "./components/operator";
+import {BlackBoxShape, OperatorBox} from "./elements/operator";
 import {Canvas} from "./canvas/base";
 
 export class ComponentFactory {

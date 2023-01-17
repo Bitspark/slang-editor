@@ -1,6 +1,6 @@
 import m from "mithril";
 
-import {FloatingHtmlElement} from "../../../slang/ui/components/base";
+import {FloatingHtmlElement} from "../../../slang/ui/elements/base";
 import {OperatorBox} from "../../../slang/ui/elements/operator";
 import {UserEvent} from "../../../slang/ui/canvas/user-events";
 import {BlueprintBox} from "../../../slang/ui/elements/blueprint";

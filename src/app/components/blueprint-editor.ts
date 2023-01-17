@@ -1,5 +1,5 @@
 import m, {ClassComponent, CVnode} from "mithril";
-import { OperatorBox } from "../../slang/ui/components/operator";
+import { OperatorBox } from "../../slang/ui/elements/operator";
 import {BlueprintModel, OperatorModel} from "../../slang/core/models";
 import { Frame } from "../../slang/ui/frame";
 import { BlueprintCanvas } from "../../slang/ui/canvas/blueprint";
@@ -8,7 +8,7 @@ import { OperatorDashboard } from "./operator-dashboard";
 import { ContextMenu } from "./toolkit/context-menu";
 import { Box } from "../../slang/ui/toolkit";
 import { UserEvent } from "../../slang/ui/canvas/user-events";
-import { ConnectionElement } from "../../slang/ui/components/connection";
+import { ConnectionElement } from "../../slang/ui/elements/connection";
 import {Label, IconButton} from "../../slang/ui/toolkit/buttons";
 import {XY} from "../../slang/definitions/api";
 import {BlueprintConfigForm} from "./blueprint-config-form";
