@@ -3,6 +3,7 @@ import m from "mithril";
 import {AttachableComponent} from "../../../slang/ui/components/base";
 import {OperatorBoxComponent} from "../../../slang/ui/components/blackbox";
 import {UserEvent} from "../../../slang/ui/views/user-events";
+import {WhiteBoxComponent} from "../../../slang/ui/components/whitebox";
 
 export class ContextMenu {
     private static contextMenu?: AttachableComponent;
@@ -13,10 +14,10 @@ export class ContextMenu {
         return;
     }
 
-    public static show(oprBox: OperatorBoxComponent, comp: m.Component) {
-        this.contextMenu = oprBox
+    public static show(cellComp: OperatorBoxComponent | WhiteBoxComponent , comp: m.Component) {
+        this.contextMenu = cellComp
             .createComponent({x: 0, y: 0, align: "tl"})
-            .attachTo(oprBox.getShape(), "tr")
+            .attachTo(cellComp.getShape(), "tr")
             .mount(comp)
     }
 

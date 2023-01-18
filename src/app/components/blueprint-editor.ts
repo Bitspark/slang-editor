@@ -11,6 +11,8 @@ import { UserEvent } from "../../slang/ui/views/user-events";
 import { ConnectionComponent } from "../../slang/ui/components/connection";
 import {Label, IconButton} from "../../slang/ui/toolkit/buttons";
 import {XY} from "../../slang/definitions/api";
+import {BlueprintConfigForm} from "./blueprint-config-form";
+
 
 class Clipboard {
 	private copied: OperatorModel|null = null;
@@ -76,12 +78,18 @@ class Editor {
 		blueprintView.onUserEvent((e: UserEvent) => {
             ContextMenu.hide();
 
+			if (!e.target) {
+				return;
+			}
+
 			if (e.target instanceof ConnectionComponent) {
 				if (e.left.click) {
 					e.target.css({
 						"sl-is-selected": true,
 					});
 				}
+
+				return;
 			}
 
 
@@ -92,7 +100,7 @@ class Editor {
 					const operatorBp = operator.blueprint;
 					const view = blueprintView;
 					ContextMenu.show(e.target, {
-						view: () => m(".sle-comp__opr-context-menu",
+						view: () => m(".sle-comp__context-menu",
 							m(".buttons.are-normal", {},
 
 								isEditable
@@ -141,10 +149,13 @@ class Editor {
 					});
 				}
 				else {
+					ContextMenu.show(e.target, {
+						view: () => m(".sle-comp__context-menu", m(BlueprintConfigForm))
+					});
+					
 					ContextMenu.show2(e, {
-						view: () => m(".sle-comp__opr-context-menu",
+						view: () => m(".sle-comp__context-menu",
 							m(".buttons.are-normal", {},
-
 								isEditable
 									? m(IconButton, {
 										color: "black",
