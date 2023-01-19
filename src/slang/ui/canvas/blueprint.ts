@@ -10,16 +10,16 @@ import {ConnectionElement} from "../elements/connection";
 import {BlueprintBox} from "../elements/blueprint";
 import {Frame} from "../frame";
 import {Canvas, PaperViewArgs} from "./base";
-import {TargetableComponent, UserEvent } from "./user-events";
+import {InteractableDiaElement, UserEvent } from "./user-events";
 
 export class BlueprintCanvas extends Canvas {
-	public readonly whiteBox: BlueprintBox;
+	public readonly blueprintBox: BlueprintBox;
 	public readonly userInteracted = new SlangSubject<UserEvent>("user-interacted");
 
 	constructor(frame: Frame, aspects: SlangAspects, public readonly blueprint: BlueprintModel, args: PaperViewArgs) {
 		super(frame, aspects, args);
 		this.addPanning();
-		this.whiteBox = new BlueprintBox(this, blueprint);
+		this.blueprintBox = new BlueprintBox(this, blueprint);
 		this.attachEventHandlers();
 		this.fit();
 	}
@@ -130,29 +130,20 @@ export class BlueprintCanvas extends Canvas {
 			this.fitOuter(false);
 		});
 
-		/*
-		this.paper.on("blank:pointerdown cell:pointerdown", () => {
-			unselectCurrentOne();
-		});
-		*/
-
-		const handleUserEvents = (comp: TargetableComponent) => (event: UserEvent) => {
-			event.target = comp
+		const registerUserEventsHandle = (comp: InteractableDiaElement) => comp.onUserEvent((event: UserEvent) => {
 			this.userInteracted.next(event);
-		};
+		});
 
-		const registerUserEventsHandle = (comp: TargetableComponent) => comp.userInteracted.subscribe(handleUserEvents(comp));
-
-		const whiteBox = this.whiteBox;
-		registerUserEventsHandle(whiteBox);
-		whiteBox.operatorAdded.subscribe(registerUserEventsHandle);
-		whiteBox.operators.map(registerUserEventsHandle);
-		whiteBox.connectionAdded.subscribe(registerUserEventsHandle);
-		whiteBox.connections.map(registerUserEventsHandle);
+		const blueprintBox = this.blueprintBox;
+		registerUserEventsHandle(blueprintBox);
+		blueprintBox.operatorAdded.subscribe(registerUserEventsHandle);
+		blueprintBox.operators.map(registerUserEventsHandle);
+		blueprintBox.connectionAdded.subscribe(registerUserEventsHandle);
+		blueprintBox.connections.map(registerUserEventsHandle);
 	}
 
 	private fitOuter(animation: boolean) {
-		this.whiteBox.fitOuter(animation);
+		this.blueprintBox.fitOuter(animation);
 	}
 
 	private getPortFromMagnet(magnet: SVGElement): PortModel | undefined {
@@ -175,6 +166,7 @@ export class BlueprintCanvas extends Canvas {
 
 	public onUserEvent(cb: (e: UserEvent) => void) {
 		this.userInteracted.subscribe((event) => {
+			console.log("*", event)
 			cb(event);
 		});
 	}

@@ -12,6 +12,7 @@ import { ConnectionElement } from "../../slang/ui/elements/connection";
 import {Label, IconButton} from "../../slang/ui/toolkit/buttons";
 import {XY} from "../../slang/definitions/api";
 import {BlueprintConfigForm} from "./blueprint-config-form";
+import {BlueprintPortElement} from "../../slang/ui/elements/blueprint-port";
 
 
 class Clipboard {
@@ -146,33 +147,38 @@ class Editor {
 							m(OperatorDashboard, {operator, view})
 						)
 					});
+
+					return;
 				}
-				else {
-					ContextMenu.show(e.target, {
+
+				if (e.target instanceof BlueprintPortElement) {
+					ContextMenu.show2(e, {
 						view: () => m(".sle-comp__context-menu", m(BlueprintConfigForm))
 					});
 
-					ContextMenu.show2(e, {
-						view: () => m(".sle-comp__context-menu",
-							m(".buttons.are-normal", {},
-								isEditable
-									? m(IconButton, {
-										color: "black",
-										fas: "paste",
-										tooltip: "Paste operator from clipboard",
-										disabled: !Editor.clipboard.notEmpty(),
-										onclick() {
-											ContextMenu.hide();
-											Editor.clipboard.paste(blueprint, e.xy)
-										}
-									},
-										m(Label, "paste")
-									)
-									: undefined,
-							),
-						)
-					});
+					return;
 				}
+
+				ContextMenu.show2(e, {
+					view: () => m(".sle-comp__context-menu",
+						m(".buttons.are-normal", {},
+							isEditable
+								? m(IconButton, {
+									color: "black",
+									fas: "paste",
+									tooltip: "Paste operator from clipboard",
+									disabled: !Editor.clipboard.notEmpty(),
+									onclick() {
+										ContextMenu.hide();
+										Editor.clipboard.paste(blueprint, e.xy)
+									}
+								},
+									m(Label, "paste")
+								)
+								: undefined,
+						),
+					)
+				});
 			}
 
 

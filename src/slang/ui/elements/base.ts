@@ -1,11 +1,11 @@
-import {dia} from "jointjs";
 import m from "mithril";
+import {dia} from "jointjs";
 
 import {SlangSubject} from "../../core/abstract/utils/events";
 import {XY} from "../../definitions/api";
 import {cssattr, cssobj, CSSType, cssupdate} from "../utils";
 import {Canvas} from "../canvas/base";
-import { UserEvent, UserEvents } from "../canvas/user-events";
+import {UserEvent, UserEvents} from "../canvas/user-events";
 
 export type Alignment = "tl" | "t" | "tr" | "l" | "c" | "r" | "bl" | "b" | "br";
 
@@ -38,6 +38,13 @@ export abstract class DiaCanvasElement extends CanvasElement {
 
 	protected constructor(public readonly paperView: Canvas, xy: XY) {
 		super(xy);
+	}
+
+	public onUserEvent(cb: (e: UserEvent) => void) {
+		this.userInteracted.subscribe((event) => {
+			event.target = this
+			cb(event);
+		});
 	}
 
 	public destroy() {

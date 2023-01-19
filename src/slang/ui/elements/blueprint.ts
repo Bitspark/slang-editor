@@ -18,6 +18,7 @@ import {OperatorBox} from "./operator";
 import {BlueprintPortElement} from "./blueprint-port";
 import {ConnectionElement} from "./connection";
 import {PortGroupPosition} from "./port-group";
+import {UserEvent} from "../canvas/user-events";
 
 export class BlueprintBox extends DiaCanvasElement {
 	private static readonly padding = 60;
@@ -373,6 +374,17 @@ export class BlueprintBox extends DiaCanvasElement {
 		});
 	}
 
+	public onUserEvent(cb: (e: UserEvent) => void) {
+		console.log("BLUEPRINT BOX, onUserEvent");
+		super.onUserEvent(cb)
+		Object
+			.values(this.ports)
+			.reduce((allPorts, sidePorts) => allPorts.concat(sidePorts), [])
+			.forEach((port) => {
+				port.onUserEvent(cb);
+			})
+	}
+
 	private createPort(port: BlueprintPortModel, owner: BlueprintModel | BlueprintDelegateModel, pos: PortGroupPosition): BlueprintPortElement {
 		const portDir = port.isDirectionIn() ? "in" : "out";
 		const offset = port.isDirectionIn() ? owner.inPosition : owner.outPosition;
@@ -385,7 +397,7 @@ export class BlueprintBox extends DiaCanvasElement {
 			right: "left",
 		};
 
-		const portComponent = new BlueprintPortElement(id, port, invertedPosition[pos], this.paperView.isEditable);
+		const portComponent = new BlueprintPortElement(this.paperView, id, port, invertedPosition[pos], this.paperView.isEditable);
 		const portElement = portComponent.getShape();
 		this.paperView.renderCell(portElement);
 		const outerEdgeSize = 2;

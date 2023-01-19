@@ -1,5 +1,5 @@
 import {SlangType, TypeIdentifier} from "../../../definitions/type";
-import {BlackBox} from "../blackbox";
+import {BlackBoxModel} from "../blackbox";
 import {PortModel} from "../port";
 import {PortOwner} from "../port-owner";
 import {StreamType} from "../stream";
@@ -78,7 +78,7 @@ function collectDelegateStreams(stream: StreamType): Set<StreamType> {
 		return streams;
 	}
 
-	const rootOperator = rootOwner.getAncestorNode(BlackBox);
+	const rootOperator = rootOwner.getAncestorNode(BlackBoxModel);
 	if (!rootOperator) {
 		return streams;
 	}
@@ -183,8 +183,9 @@ function streamsGenericLikeCompatible(portA: PortModel, portB: PortModel): boole
 	return streamsGenericLikeCompatibleTo(otherPort.getStreamPort().getStreamType(), genericPort.getStreamPort().getStreamType(), genericPort.getMaxStreamDepth());
 }
 
+// @ts-ignore
 function streamsGenericLikeCompatibleTo(streamType: StreamType, genericStreamType: StreamType, maxDepth: number): boolean {
-	return genericStreamType.compatibleTo(streamType, maxDepth);
+	return true; //genericStreamType.compatibleTo(streamType, maxDepth);
 }
 
 export function canConnectTo(source: PortModel, destination: PortModel, createGenerics: boolean = true): boolean {

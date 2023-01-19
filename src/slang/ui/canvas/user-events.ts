@@ -1,11 +1,15 @@
+import {ConnectionElement} from "../elements/connection";
+import {OperatorBox} from "../elements/operator";
+import {BlueprintBox} from "../elements/blueprint";
+import {BlueprintPortElement} from "../elements/blueprint-port";
 import {DiaCanvasElement} from "../elements/base";
 
-export type TargetableComponent = DiaCanvasElement;
+export type InteractableDiaElement = ConnectionElement | OperatorBox | BlueprintBox | BlueprintPortElement
 
 export interface UserEvent {
 	xy: {x:  number, y: number}
 
-	target?: TargetableComponent
+	target?: DiaCanvasElement
 
 	left: {
 		click?: MouseEvent,
@@ -19,7 +23,7 @@ export interface UserEvent {
 
 export namespace UserEvents {
 	interface MouseEventArgs {
-		target?: TargetableComponent,
+		target?: DiaCanvasElement,
 		xy: {x: number, y: number}
 
 		event: MouseEvent,
