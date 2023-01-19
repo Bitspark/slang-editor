@@ -13,7 +13,7 @@ import {slangRouter} from "../link/router";
 import {tid2css} from "../utils";
 import {Canvas} from "../canvas/base";
 
-import {DiaCanvasElement} from "./base";
+import {ShapeCanvasElement} from "./base";
 
 const connectionLink = dia.Link.define("Connection", {
 	router: slangRouter,
@@ -39,7 +39,7 @@ const ghostConnectionLink = dia.Link.define("GhostConnection", {
 		"</g>"].join(""),
 });
 
-export class ConnectionElement extends DiaCanvasElement {
+export class ConnectionElement extends ShapeCanvasElement {
 
 	// STATIC
 

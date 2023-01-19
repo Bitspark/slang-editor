@@ -1,10 +1,7 @@
 import m from "mithril";
 
-import {FloatingHtmlElement} from "../../../slang/ui/elements/base";
-import {InteractableDiaElement, UserEvent} from "../../../slang/ui/canvas/user-events";
-import {OperatorBox} from "../../../slang/ui/elements/operator";
-import {BlueprintBox} from "../../../slang/ui/elements/blueprint";
-import {BlueprintPortElement} from "../../../slang/ui/elements/blueprint-port";
+import {BoxCanvasElement, FloatingHtmlElement, ShapeCanvasElement} from "../../../slang/ui/elements/base";
+import {UserEvent} from "../../../slang/ui/canvas/user-events";
 
 export class ContextMenu {
     private static contextMenu?: FloatingHtmlElement;
@@ -15,17 +12,15 @@ export class ContextMenu {
         return;
     }
 
-    public static show(box: InteractableDiaElement, comp: m.Component) {
-        this.contextMenu = box
+    public static show(el: ShapeCanvasElement, comp: m.Component) {
+        this.contextMenu = el
             .createComponent({x: 0, y: 0, align: "tl"})
+            .mount(comp)
 
-        if (box instanceof OperatorBox || box instanceof BlueprintBox || box instanceof BlueprintPortElement) {
+        if (el instanceof BoxCanvasElement) {
            this.contextMenu
-               .attachTo(box.getShape(), "tr")
+               .attachTo(el, "tr")
         }
-
-       this.contextMenu
-           .mount(comp)
     }
 
     public static hide() {

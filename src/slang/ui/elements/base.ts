@@ -29,12 +29,12 @@ abstract class CanvasElement {
 	}
 }
 
-export abstract class DiaCanvasElement extends CanvasElement {
+export abstract class ShapeCanvasElement extends CanvasElement {
 	public readonly userInteracted = new SlangSubject<UserEvent>("user-interacted");
-
-	protected abstract readonly shape: dia.Cell;
-	protected abstract readonly cssAttr: string;
 	private components: CanvasElement[] = [];
+
+	protected abstract readonly cssAttr: string;
+	protected abstract readonly shape: dia.Cell;
 
 	protected constructor(public readonly paperView: Canvas, xy: XY) {
 		super(xy);
@@ -95,6 +95,14 @@ export abstract class DiaCanvasElement extends CanvasElement {
 	}
 }
 
+export abstract class BoxCanvasElement extends ShapeCanvasElement {
+	protected abstract readonly shape: dia.Element;
+
+	public getShape(): dia.Element {
+		return this.shape;
+	}
+}
+
 abstract class HtmlCanvasElement extends CanvasElement {
 	private static createRoot(): HTMLElement {
 		const el = document.createElement("div");
@@ -105,12 +113,12 @@ abstract class HtmlCanvasElement extends CanvasElement {
 	protected readonly htmlRoot: HTMLElement;
 	protected readonly align: Alignment;
 
-	protected constructor(protected paperView: Canvas, position: Position) {
+	protected constructor(protected canvas: Canvas, position: Position) {
 		super(position);
 		this.align = position.align;
 		this.htmlRoot = HtmlCanvasElement.createRoot();
-		this.paperView.rootEl.appendChild(this.htmlRoot);
-		this.paperView.subscribePositionChanged(() => {
+		this.canvas.rootEl.appendChild(this.htmlRoot);
+		this.canvas.subscribePositionChanged(() => {
 			this.draw();
 		});
 	}
@@ -144,7 +152,7 @@ abstract class HtmlCanvasElement extends CanvasElement {
 	}
 
 	protected getBrowserXY(): XY {
-		return this.paperView.toBrowserXY(this.position);
+		return this.canvas.toBrowserXY(this.position);
 	}
 
 	protected updateXY(xy: XY) {
@@ -195,21 +203,22 @@ abstract class HtmlCanvasElement extends CanvasElement {
 	}
 }
 
+
 export class FloatingHtmlElement extends HtmlCanvasElement {
 	public constructor(paperView: Canvas, offset: Position) {
 		super(paperView, offset);
 	}
 
-	public attachTo(elem: dia.Element, align?: Alignment) {
-		this.update(elem, align);
-		elem.on("change:position change:size", () => {
-			this.update(elem, align);
+	public attachTo(box: BoxCanvasElement, align?: Alignment) {
+		this.update(box, align);
+		box.getShape().on("change:position change:size", () => {
+			this.update(box, align);
 		});
 		return this;
 	}
 
-	protected update(elem: dia.Element, align?: Alignment) {
-		const bbox = elem.getBBox();
+	protected update(box: BoxCanvasElement, align?: Alignment) {
+		const bbox = box.getShape().getBBox();
 		let originPos = bbox.center();
 
 		switch (align) {

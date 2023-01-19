@@ -13,14 +13,14 @@ import {TypeIdentifier} from "../../definitions/type";
 import {tid2css} from "../utils";
 import {Canvas} from "../canvas/base";
 
-import {FloatingHtmlElement, DiaCanvasElement} from "./base";
+import {BoxCanvasElement, FloatingHtmlElement} from "./base";
 import {OperatorBox} from "./operator";
 import {BlueprintPortElement} from "./blueprint-port";
 import {ConnectionElement} from "./connection";
 import {PortGroupPosition} from "./port-group";
 import {UserEvent} from "../canvas/user-events";
 
-export class BlueprintBox extends DiaCanvasElement {
+export class BlueprintBox extends BoxCanvasElement {
 	private static readonly padding = 60;
 
 	public connectionAdded = new SlangSubject<ConnectionElement>("connection-added");
@@ -63,10 +63,6 @@ export class BlueprintBox extends DiaCanvasElement {
 
 	public getModel(): BlueprintModel {
 		return this.blueprint;
-	}
-
-	public getShape(): dia.Element {
-		return super.getShape() as dia.Element;
 	}
 
 	public autoLayout() {

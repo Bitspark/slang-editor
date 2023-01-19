@@ -8,9 +8,9 @@ import {OperatorModel} from "../../core/models";
 import {XY} from "../../definitions/api";
 import {Canvas} from "../canvas/base";
 
-import {DiaCanvasElement} from "./base";
 import {PortGroupComponent} from "./port-group";
 import RectangleSelectors = shapes.standard.RectangleSelectors;
+import {BoxCanvasElement} from "./base";
 
 function createPortGroups(blackBox: BlackBoxModel): PortGroupComponent[] {
 	const portGroups: PortGroupComponent[] = [];
@@ -73,13 +73,12 @@ function createPortGroups(blackBox: BlackBoxModel): PortGroupComponent[] {
 	return portGroups;
 }
 
-export abstract class BlackBoxElement extends DiaCanvasElement {
-	protected readonly cssAttr = "root/class";
-
+export abstract class BlackBoxElement extends BoxCanvasElement {
 	public get bbox(): g.Rect {
 		return this.shape.getBBox();
 	}
 
+	protected readonly cssAttr = "root/class";
 	protected shape!: BlackBoxShape;
 	protected portGroups!: PortGroupComponent[];
 
@@ -119,10 +118,6 @@ export abstract class BlackBoxElement extends DiaCanvasElement {
 		this.portMouseLeft.subscribe(({port, x, y}) => {
 			cb(port, x, y);
 		});
-	}
-
-	public getShape(): dia.Element {
-		return super.getShape() as dia.Element;
 	}
 
 	protected abstract createPortGroups(): PortGroupComponent[];

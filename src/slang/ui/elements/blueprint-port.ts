@@ -5,11 +5,11 @@ import {PortModel} from "../../core/abstract/port";
 import {SlangSubject} from "../../core/abstract/utils/events";
 
 import {PortGroupComponent, PortGroupPosition} from "./port-group";
-import {DiaCanvasElement} from "./base";
+import {ShapeCanvasElement} from "./base";
 import {Canvas} from "../canvas/base";
 import {UserEvents} from "../canvas/user-events";
 
-export class BlueprintPortElement extends DiaCanvasElement {
+export class BlueprintPortElement extends ShapeCanvasElement {
 	protected readonly cssAttr = "root/class";
 
 	public static size = {
