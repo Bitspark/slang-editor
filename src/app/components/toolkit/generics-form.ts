@@ -35,7 +35,6 @@ export class GenericsForm implements ClassComponent<GenericsFormAttrs> {
             label: genId,
             type: genType,
             onInput: (nType: SlangType) => {
-                console.log("GENS", genId, nType)
                 this.generics.specify(genId, nType);
             },
         });

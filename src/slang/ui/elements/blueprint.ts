@@ -371,7 +371,6 @@ export class BlueprintBox extends BoxCanvasElement {
 	}
 
 	public onUserEvent(cb: (e: UserEvent) => void) {
-		console.log("BLUEPRINT BOX, onUserEvent");
 		super.onUserEvent(cb)
 		Object
 			.values(this.ports)

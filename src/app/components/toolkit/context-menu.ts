@@ -1,26 +1,34 @@
 import m from "mithril";
 
-import {BoxCanvasElement, FloatingHtmlElement, ShapeCanvasElement} from "../../../slang/ui/elements/base";
+import {BoxCanvasElement, FloatingHtmlElement} from "../../../slang/ui/elements/base";
 import {UserEvent} from "../../../slang/ui/canvas/user-events";
 
 export class ContextMenu {
     private static contextMenu?: FloatingHtmlElement;
 
-    public static show2(event: UserEvent, comp: m.Component) {
-        const paperView = event.target!.paperView;
-        this.contextMenu = new FloatingHtmlElement(paperView, {...event.xy, align: "tl"}).mount(comp)
+    public static show(event: UserEvent, comp: m.Component) {
+        console.assert(!this.contextMenu, "Don't forget to close one context menu before opening another.")
+
+        if (event.target instanceof BoxCanvasElement) {
+            this.showNextToBox(event.target, comp)
+            return
+        }
+
+        this.showAtXY(event, comp)
+
         return;
     }
 
-    public static show(el: ShapeCanvasElement, comp: m.Component) {
+    public static showAtXY({target, xy}: UserEvent, comp: m.Component) {
+        this.contextMenu = new FloatingHtmlElement(target!.paperView, {...xy, align: "tl"}).mount(comp)
+        return;
+    }
+
+    private static showNextToBox(el: BoxCanvasElement, comp: m.Component) {
         this.contextMenu = el
             .createComponent({x: 0, y: 0, align: "tl"})
+            .attachTo(el, "tr")
             .mount(comp)
-
-        if (el instanceof BoxCanvasElement) {
-           this.contextMenu
-               .attachTo(el, "tr")
-        }
     }
 
     public static hide() {

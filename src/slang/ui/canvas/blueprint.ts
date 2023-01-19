@@ -10,7 +10,8 @@ import {ConnectionElement} from "../elements/connection";
 import {BlueprintBox} from "../elements/blueprint";
 import {Frame} from "../frame";
 import {Canvas, PaperViewArgs} from "./base";
-import {InteractableDiaElement, UserEvent } from "./user-events";
+import {UserEvent } from "./user-events";
+import {ShapeCanvasElement} from "../elements/base";
 
 export class BlueprintCanvas extends Canvas {
 	public readonly blueprintBox: BlueprintBox;
@@ -130,7 +131,7 @@ export class BlueprintCanvas extends Canvas {
 			this.fitOuter(false);
 		});
 
-		const registerUserEventsHandle = (comp: InteractableDiaElement) => comp.onUserEvent((event: UserEvent) => {
+		const registerUserEventsHandle = (comp: ShapeCanvasElement) => comp.onUserEvent((event: UserEvent) => {
 			this.userInteracted.next(event);
 		});
 
@@ -166,7 +167,6 @@ export class BlueprintCanvas extends Canvas {
 
 	public onUserEvent(cb: (e: UserEvent) => void) {
 		this.userInteracted.subscribe((event) => {
-			console.log("*", event)
 			cb(event);
 		});
 	}

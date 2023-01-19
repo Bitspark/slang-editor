@@ -68,19 +68,16 @@ export class BlueprintPortElement extends ShapeCanvasElement {
 		// @ts-ignore
 		this.shape.on("pointerclick",
 			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
-				console.log("LEFT CLICK")
 			this.userInteracted.next(UserEvents.pointerClick({event, xy: {x, y}}));
 		});
 		// @ts-ignore
 		this.shape.on("pointerdblclick",
 			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
-				console.log("DOUBLE CLICK")
 			this.userInteracted.next(UserEvents.pointerDbclick({event, xy: {x, y}}));
 		});
 		// @ts-ignore
 		this.shape.on("contextmenu",
 			(_cellView: dia.CellView, event: MouseEvent, x: number, y: number) => {
-			console.log("RIGHT CLICK")
 			this.userInteracted.next(UserEvents.contextmenu({event, xy: {x, y}}));
 		});
 

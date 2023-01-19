@@ -99,7 +99,7 @@ class Editor {
 					const operator = e.target.getModel();
 					const operatorBp = operator.blueprint;
 					const view = blueprintView;
-					ContextMenu.show(e.target, {
+					ContextMenu.show(e, {
 						view: () => m(".sle-comp__context-menu",
 							m(".buttons.are-normal", {},
 
@@ -152,14 +152,13 @@ class Editor {
 				}
 
 				if (e.target instanceof BlueprintPortElement) {
-					ContextMenu.show2(e, {
+					ContextMenu.show(e, {
 						view: () => m(".sle-comp__context-menu", m(BlueprintConfigForm))
 					});
-
 					return;
 				}
 
-				ContextMenu.show2(e, {
+				ContextMenu.showAtXY(e, {
 					view: () => m(".sle-comp__context-menu",
 						m(".buttons.are-normal", {},
 							isEditable
@@ -179,6 +178,7 @@ class Editor {
 						),
 					)
 				});
+				return;
 			}
 
 
