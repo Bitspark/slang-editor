@@ -1,5 +1,5 @@
 import m, {ClassComponent, CVnode} from "mithril";
-import {Box} from "../../slang/ui/toolkit";
+import {Block, Box, Subtitle, Title} from "../../slang/ui/toolkit";
 import {TypeSelect} from "../../slang/ui/toolkit/type";
 import {SlangType} from "../../slang/definitions/type";
 import {BlueprintFakeGeneric} from "../../slang/core/models/blueprint";
@@ -13,20 +13,22 @@ export class BlueprintConfigForm implements ClassComponent<any> {
 
 
 		return m(Box, {class: "sle-comp__blueprint-config-form"},
-			m(TypeSelect, {
-				label: "In port",
-				type: blueprint.getPortIn()?.getType()!,
-				onInput: (nType: SlangType) => {
-					blueprint.getGenerics().specify(BlueprintFakeGeneric.In, nType);
-				},
-			}),
-			m(TypeSelect, {
-				label: "Out port",
-				type: blueprint.getPortOut()?.getType()!,
-				onInput: (nType: SlangType) => {
-					blueprint.getGenerics().specify(BlueprintFakeGeneric.Out, nType);
-				},
-			}),
+			m(Block,
+                m(Title, "In port"),
+				m(TypeSelect, {
+                    type: blueprint.getPortIn()?.getType()!,
+                    onInput: (nType: SlangType) => {
+                        blueprint.getGenerics().specify(BlueprintFakeGeneric.In, nType);
+                    },
+                }),
+				m(Title, "Out port"),
+                m(TypeSelect, {
+                    type: blueprint.getPortOut()?.getType()!,
+                    onInput: (nType: SlangType) => {
+                        blueprint.getGenerics().specify(BlueprintFakeGeneric.Out, nType);
+                    },
+                }),
+			)
 		);
 	}
 }
