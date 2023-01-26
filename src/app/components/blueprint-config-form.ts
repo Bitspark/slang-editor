@@ -1,6 +1,6 @@
 import m, {ClassComponent, CVnode} from "mithril";
 import {Block, Box, Subtitle, Title} from "../../slang/ui/toolkit";
-import {TypeSelect} from "../../slang/ui/toolkit/type";
+import {MapTypeSelectInput, TypeSelect} from "../../slang/ui/toolkit/type";
 import {SlangType} from "../../slang/definitions/type";
 import {BlueprintFakeGeneric} from "../../slang/core/models/blueprint";
 import {AppState} from "../state";
@@ -13,6 +13,15 @@ export class BlueprintConfigForm implements ClassComponent<any> {
 
 
 		return m(Box, {class: "sle-comp__blueprint-config-form"},
+			m(Block,
+				m(Title, "Properties"),
+				m(MapTypeSelectInput, {
+					type: SlangType.newMap(),
+					onInput: (nType: SlangType) => {
+						// @TODO, update blueprint properties
+					},
+				}),
+			),
 			m(Block,
                 m(Title, "In port"),
 				m(TypeSelect, {
