@@ -11,42 +11,43 @@ import {OperatorModel} from "../../core/models";
 import {BlueprintPortModel} from "../../core/models";
 import {TypeIdentifier} from "../../definitions/type";
 import {tid2css} from "../utils";
-import {PaperView} from "../views/paper-view";
+import {Canvas} from "../canvas/base";
 
-import {AttachableComponent, CellComponent} from "./base";
-import {OperatorBoxComponent} from "./blackbox";
-import {IsolatedBlueprintPortComponent} from "./blueprint-port";
-import {ConnectionComponent} from "./connection";
+import {BoxCanvasElement, FloatingHtmlElement} from "./base";
+import {OperatorBox} from "./operator";
+import {BlueprintPortElement} from "./blueprint-port";
+import {ConnectionElement} from "./connection";
 import {PortGroupPosition} from "./port-group";
+import {UserEvent} from "../canvas/user-events";
 
-export class WhiteBoxComponent extends CellComponent {
+export class BlueprintBox extends BoxCanvasElement {
 	private static readonly padding = 60;
 
-	public connectionAdded = new SlangSubject<ConnectionComponent>("connection-added");
-	public operatorAdded = new SlangSubject<OperatorBoxComponent>("operator-added");
+	public connectionAdded = new SlangSubject<ConnectionElement>("connection-added");
+	public operatorAdded = new SlangSubject<OperatorBox>("operator-added");
 
-	public readonly operators: OperatorBoxComponent[] = [];
-	public readonly connections: ConnectionComponent[] = [];
+	public readonly operators: OperatorBox[] = [];
+	public readonly connections: ConnectionElement[] = [];
 
 	protected readonly cssAttr = "root/class";
-	protected readonly shape: WhiteBoxComponent.Rect;
+	protected readonly shape: BlueprintBox.Rect;
 
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
-	private readonly portInfos: AttachableComponent[] = [];
+	private readonly portInfos: FloatingHtmlElement[] = [];
 
 	private readonly ports = {
-		top: [] as IsolatedBlueprintPortComponent[],
-		bottom: [] as IsolatedBlueprintPortComponent[],
-		left: [] as IsolatedBlueprintPortComponent[],
-		right: [] as IsolatedBlueprintPortComponent[],
+		top: [] as BlueprintPortElement[],
+		bottom: [] as BlueprintPortElement[],
+		left: [] as BlueprintPortElement[],
+		right: [] as BlueprintPortElement[],
 	};
 
-	constructor(paperView: PaperView, public readonly blueprint: BlueprintModel) {
+	constructor(paperView: Canvas, public readonly blueprint: BlueprintModel) {
 		super(paperView, {x: 0, y: 0});
 		this.subscribe();
 
-		this.shape = new WhiteBoxComponent.Rect(this.blueprint);
+		this.shape = new BlueprintBox.Rect(this.blueprint);
 
 		this.shape.on("change:size", () => {
 			blueprint.size = this.shape.size();
@@ -62,10 +63,6 @@ export class WhiteBoxComponent extends CellComponent {
 
 	public getModel(): BlueprintModel {
 		return this.blueprint;
-	}
-
-	public getShape(): dia.Element {
-		return super.getShape() as dia.Element;
 	}
 
 	public autoLayout() {
@@ -105,7 +102,7 @@ export class WhiteBoxComponent extends CellComponent {
 
 		bbox.width = Math.max(width, bbox.width);
 		bbox.height = Math.max(height, bbox.height);
-		const [pWidth, pHeight] = [IsolatedBlueprintPortComponent.size.width, IsolatedBlueprintPortComponent.size.height];
+		const [pWidth, pHeight] = [BlueprintPortElement.size.width, BlueprintPortElement.size.height];
 
 		bbox.x = -bbox.width / 2;
 		bbox.y = -bbox.height / 2;
@@ -149,10 +146,10 @@ export class WhiteBoxComponent extends CellComponent {
 			return;
 		}
 
-		const padding = WhiteBoxComponent.padding;
+		const padding = BlueprintBox.padding;
 		const currentPosition = this.shape.get("position");
 		const currentSize = this.shape.get("size");
-		const [, pHeight] = [IsolatedBlueprintPortComponent.size.width, IsolatedBlueprintPortComponent.size.height];
+		const [, pHeight] = [BlueprintPortElement.size.width, BlueprintPortElement.size.height];
 
 		let newX: number = currentPosition.x + padding;
 		let newY: number = currentPosition.y + padding;
@@ -373,7 +370,17 @@ export class WhiteBoxComponent extends CellComponent {
 		});
 	}
 
-	private createPort(port: BlueprintPortModel, owner: BlueprintModel | BlueprintDelegateModel, pos: PortGroupPosition): IsolatedBlueprintPortComponent {
+	public onUserEvent(cb: (e: UserEvent) => void) {
+		super.onUserEvent(cb)
+		Object
+			.values(this.ports)
+			.reduce((allPorts, sidePorts) => allPorts.concat(sidePorts), [])
+			.forEach((port) => {
+				port.onUserEvent(cb);
+			})
+	}
+
+	private createPort(port: BlueprintPortModel, owner: BlueprintModel | BlueprintDelegateModel, pos: PortGroupPosition): BlueprintPortElement {
 		const portDir = port.isDirectionIn() ? "in" : "out";
 		const offset = port.isDirectionIn() ? owner.inPosition : owner.outPosition;
 		const id = `${owner.getIdentity()}_${portDir}`;
@@ -385,7 +392,7 @@ export class WhiteBoxComponent extends CellComponent {
 			right: "left",
 		};
 
-		const portComponent = new IsolatedBlueprintPortComponent(id, port, invertedPosition[pos], this.paperView.isEditable);
+		const portComponent = new BlueprintPortElement(this.paperView, id, port, invertedPosition[pos], this.paperView.isEditable);
 		const portElement = portComponent.getShape();
 		this.paperView.renderCell(portElement);
 		const outerEdgeSize = 2;
@@ -493,22 +500,22 @@ export class WhiteBoxComponent extends CellComponent {
 		return portComponent;
 	}
 
-	private addConnection(connection: Connection): ConnectionComponent {
-		const connComp = new ConnectionComponent(this.paperView, connection);
+	private addConnection(connection: Connection): ConnectionElement {
+		const connComp = new ConnectionElement(this.paperView, connection);
 		this.connectionAdded.next(connComp);
 		this.connections.push(connComp);
 		return connComp;
 	}
 
-	private addOperator(opr: OperatorModel): OperatorBoxComponent {
-		const oprComp = this.paperView.getFactory().createOperatorComponent(this.paperView, opr);
+	private addOperator(opr: OperatorModel): OperatorBox {
+		const oprComp = this.paperView.getFactory().createOperatorBox(this.paperView, opr);
 		this.attachPortInfo(oprComp);
 		this.operatorAdded.next(oprComp);
 		this.operators.push(oprComp);
 		return oprComp;
 	}
 
-	private attachPortInfo(portOwnerComp: OperatorBoxComponent | IsolatedBlueprintPortComponent) {
+	private attachPortInfo(portOwnerComp: OperatorBox | BlueprintPortElement) {
 		portOwnerComp.onPortMouseEnter((port: PortModel, x: number, y: number) => {
 			// in order to avoid multiple portInfos to be drawn we keep track of them and clear them out if needed
 			// since there are so many different events that can and should trigger a dismissal this solution is not
@@ -528,7 +535,7 @@ export class WhiteBoxComponent extends CellComponent {
 		});
 	}
 
-	private trackPortInfo(portInfo: AttachableComponent) {
+	private trackPortInfo(portInfo: FloatingHtmlElement) {
 		this.portInfos.push(portInfo);
 	}
 
@@ -542,8 +549,8 @@ export class WhiteBoxComponent extends CellComponent {
 	}
 
 	private removeConnection(connection: Connection) {
-		const linkId = ConnectionComponent.getLinkId(connection);
-		const link = ConnectionComponent.findLink(this.paperView, connection);
+		const linkId = ConnectionElement.getLinkId(connection);
+		const link = ConnectionElement.findLink(this.paperView, connection);
 		if (link) {
 			link.remove();
 		}
@@ -580,7 +587,7 @@ class PortInfo implements ClassComponent<Attrs> {
 	}
 }
 
-export namespace WhiteBoxComponent {
+export namespace BlueprintBox {
 	import RectangleSelectors = shapes.standard.RectangleSelectors;
 
 	interface Size {

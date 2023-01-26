@@ -1,8 +1,8 @@
-import {BlackBox} from "./blackbox";
+import {BlackBoxModel} from "./blackbox";
 import {PortOwner} from "./port-owner";
 import {Connections} from "./utils/connections";
 
-export abstract class GenericDelegateModel<B extends BlackBox> extends PortOwner {
+export abstract class GenericDelegateModel<B extends BlackBoxModel> extends PortOwner {
 	protected constructor(parent: B, public readonly name: string, streamSource: boolean) {
 		super(parent, streamSource);
 	}
@@ -36,4 +36,4 @@ export abstract class GenericDelegateModel<B extends BlackBox> extends PortOwner
 	}
 }
 
-export type DelegateModel = GenericDelegateModel<BlackBox>;
+export type DelegateModel = GenericDelegateModel<BlackBoxModel>;

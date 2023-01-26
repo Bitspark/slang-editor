@@ -1,11 +1,11 @@
-import {dia} from "jointjs";
 import m from "mithril";
+import {dia} from "jointjs";
 
 import {SlangSubject} from "../../core/abstract/utils/events";
 import {XY} from "../../definitions/api";
 import {cssattr, cssobj, CSSType, cssupdate} from "../utils";
-import {PaperView} from "../views/paper-view";
-import { UserEvent, UserEvents } from "../views/user-events";
+import {Canvas} from "../canvas/base";
+import {UserEvent, UserEvents} from "../canvas/user-events";
 
 export type Alignment = "tl" | "t" | "tr" | "l" | "c" | "r" | "bl" | "b" | "br";
 
@@ -13,7 +13,7 @@ export interface Position extends XY {
 	align: Alignment;
 }
 
-abstract class Component {
+abstract class CanvasElement {
 	protected constructor(private svgXY: XY) {}
 
 	public destroy() {
@@ -29,15 +29,22 @@ abstract class Component {
 	}
 }
 
-export abstract class CellComponent extends Component {
+export abstract class ShapeCanvasElement extends CanvasElement {
 	public readonly userInteracted = new SlangSubject<UserEvent>("user-interacted");
+	private components: CanvasElement[] = [];
 
-	protected abstract readonly shape: dia.Cell;
 	protected abstract readonly cssAttr: string;
-	private components: Component[] = [];
+	protected abstract readonly shape: dia.Cell;
 
-	protected constructor(public readonly paperView: PaperView, xy: XY) {
+	protected constructor(public readonly paperView: Canvas, xy: XY) {
 		super(xy);
+	}
+
+	public onUserEvent(cb: (e: UserEvent) => void) {
+		this.userInteracted.subscribe((event) => {
+			event.target = this
+			cb(event);
+		});
 	}
 
 	public destroy() {
@@ -49,13 +56,13 @@ export abstract class CellComponent extends Component {
 		this.shape.remove();
 	}
 
-	public createComponent(offset: Position): AttachableComponent {
-		const comp = new AttachableComponent(this.paperView, offset);
+	public createComponent(offset: Position): FloatingHtmlElement {
+		const comp = new FloatingHtmlElement(this.paperView, offset);
 		this.addComponent(comp);
 		return comp;
 	}
 
-	public addComponent(comp: Component) {
+	public addComponent(comp: CanvasElement) {
 		this.components.push(comp);
 	}
 
@@ -88,7 +95,15 @@ export abstract class CellComponent extends Component {
 	}
 }
 
-abstract class HtmlComponent extends Component {
+export abstract class BoxCanvasElement extends ShapeCanvasElement {
+	protected abstract readonly shape: dia.Element;
+
+	public getShape(): dia.Element {
+		return this.shape;
+	}
+}
+
+abstract class HtmlCanvasElement extends CanvasElement {
 	private static createRoot(): HTMLElement {
 		const el = document.createElement("div");
 		el.style.position = "absolute";
@@ -98,12 +113,12 @@ abstract class HtmlComponent extends Component {
 	protected readonly htmlRoot: HTMLElement;
 	protected readonly align: Alignment;
 
-	protected constructor(protected paperView: PaperView, position: Position) {
+	protected constructor(protected canvas: Canvas, position: Position) {
 		super(position);
 		this.align = position.align;
-		this.htmlRoot = HtmlComponent.createRoot();
-		this.paperView.rootEl.appendChild(this.htmlRoot);
-		this.paperView.subscribePositionChanged(() => {
+		this.htmlRoot = HtmlCanvasElement.createRoot();
+		this.canvas.rootEl.appendChild(this.htmlRoot);
+		this.canvas.subscribePositionChanged(() => {
 			this.draw();
 		});
 	}
@@ -137,7 +152,7 @@ abstract class HtmlComponent extends Component {
 	}
 
 	protected getBrowserXY(): XY {
-		return this.paperView.toBrowserXY(this.position);
+		return this.canvas.toBrowserXY(this.position);
 	}
 
 	protected updateXY(xy: XY) {
@@ -188,21 +203,22 @@ abstract class HtmlComponent extends Component {
 	}
 }
 
-export class AttachableComponent extends HtmlComponent {
-	public constructor(paperView: PaperView, offset: Position) {
+
+export class FloatingHtmlElement extends HtmlCanvasElement {
+	public constructor(paperView: Canvas, offset: Position) {
 		super(paperView, offset);
 	}
 
-	public attachTo(elem: dia.Element, align?: Alignment) {
-		this.update(elem, align);
-		elem.on("change:position change:size", () => {
-			this.update(elem, align);
+	public attachTo(box: BoxCanvasElement, align?: Alignment) {
+		this.update(box, align);
+		box.getShape().on("change:position change:size", () => {
+			this.update(box, align);
 		});
 		return this;
 	}
 
-	protected update(elem: dia.Element, align?: Alignment) {
-		const bbox = elem.getBBox();
+	protected update(box: BoxCanvasElement, align?: Alignment) {
+		const bbox = box.getShape().getBBox();
 		let originPos = bbox.center();
 
 		switch (align) {

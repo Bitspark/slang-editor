@@ -3,7 +3,7 @@ import {Subject, Subscription} from "rxjs";
 import {PortMessageJson} from "../../definitions/api";
 import {SlangType, SlangTypeValue, TypeIdentifier} from "../../definitions/type";
 
-import {BlackBox} from "./blackbox";
+import {BlackBoxModel} from "./blackbox";
 import {SlangNode} from "./nodes";
 import {PortOwner} from "./port-owner";
 import {StreamPort} from "./stream";
@@ -206,8 +206,8 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		return owner as O;
 	}
 
-	public getBlackBox(): BlackBox {
-		const blackBox = this.getAncestorNode(BlackBox);
+	public getBlackBox(): BlackBoxModel {
+		const blackBox = this.getAncestorNode(BlackBoxModel);
 		if (!blackBox) {
 			throw new Error(`port without blackBox detected`);
 		}
@@ -257,7 +257,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 	}
 
 	public getOwnerName(): string {
-		const ownerBox = this.getAncestorNode(BlackBox);
+		const ownerBox = this.getAncestorNode(BlackBoxModel);
 		if (ownerBox) {
 			return ownerBox.getDisplayName();
 		}

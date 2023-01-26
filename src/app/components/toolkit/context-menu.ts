@@ -1,23 +1,33 @@
 import m from "mithril";
 
-import {AttachableComponent} from "../../../slang/ui/components/base";
-import {OperatorBoxComponent} from "../../../slang/ui/components/blackbox";
-import {UserEvent} from "../../../slang/ui/views/user-events";
-import {WhiteBoxComponent} from "../../../slang/ui/components/whitebox";
+import {BoxCanvasElement, FloatingHtmlElement} from "../../../slang/ui/elements/base";
+import {UserEvent} from "../../../slang/ui/canvas/user-events";
 
 export class ContextMenu {
-    private static contextMenu?: AttachableComponent;
+    private static contextMenu?: FloatingHtmlElement;
 
-    public static show2(event: UserEvent, comp: m.Component) {
-        const paperView = event.target!.paperView;
-        this.contextMenu = new AttachableComponent(paperView, {...event.xy, align: "tl"}).mount(comp)
+    public static show(event: UserEvent, comp: m.Component) {
+        console.assert(!this.contextMenu, "Don't forget to close one context menu before opening another.")
+
+        if (event.target instanceof BoxCanvasElement) {
+            this.showNextToBox(event.target, comp)
+            return
+        }
+
+        this.showAtXY(event, comp)
+
         return;
     }
 
-    public static show(cellComp: OperatorBoxComponent | WhiteBoxComponent , comp: m.Component) {
-        this.contextMenu = cellComp
+    public static showAtXY({target, xy}: UserEvent, comp: m.Component) {
+        this.contextMenu = new FloatingHtmlElement(target!.paperView, {...xy, align: "tl"}).mount(comp)
+        return;
+    }
+
+    private static showNextToBox(el: BoxCanvasElement, comp: m.Component) {
+        this.contextMenu = el
             .createComponent({x: 0, y: 0, align: "tl"})
-            .attachTo(cellComp.getShape(), "tr")
+            .attachTo(el, "tr")
             .mount(comp)
     }
 

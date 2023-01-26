@@ -10,7 +10,7 @@ import {PortGroupComponent, PortGroupPosition} from "./port-group";
 /**
  * Component representing a Slang port.
  */
-export class PortComponent {
+export class PortElement {
 
 	// STATIC:
 
@@ -48,7 +48,7 @@ export class PortComponent {
 			} else {
 				classes.push(`sl-stripe`);
 			}
-			markup += `<path class="${classes.join(" ")}" d="${PortComponent.getPortShape(width, height)}"></path>`;
+			markup += `<path class="${classes.join(" ")}" d="${PortElement.getPortShape(width, height)}"></path>`;
 		}
 		return `<g>${markup}</g>`;
 	}
@@ -83,27 +83,27 @@ export class PortComponent {
 	}
 
 	private position: g.PlainPoint | undefined;
-	private readonly portElement: dia.Element.Port = {};
+	private readonly portShape: dia.Element.Port = {};
 
 	/* isStreamSub: port is a sub of a stream --> is primitive port is direct child of a stream, it will be visualized accordingly */
 	constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent, readonly ghost: boolean, isBlackBox: boolean, isStreamSub: boolean) {
 		if (ghost) {
-			this.portElement.id = `${port.getIdentity()}.*`;
+			this.portShape.id = `${port.getIdentity()}.*`;
 		} else {
-			this.portElement.id = `${port.getIdentity()}`;
+			this.portShape.id = `${port.getIdentity()}`;
 		}
-		this.portElement.group = parent.getName();
-		this.portElement.markup = PortComponent.getPortMarkup(port, ghost, isStreamSub);
-		this.portElement.attrs = {
-			path: PortComponent.getPortAttributes(parent.getGroupPosition(), port, isBlackBox),
+		this.portShape.group = parent.getName();
+		this.portShape.markup = PortElement.getPortMarkup(port, ghost, isStreamSub);
+		this.portShape.attrs = {
+			path: PortElement.getPortAttributes(parent.getGroupPosition(), port, isBlackBox),
 			g: {
 				magnet: true,
 			},
 		};
 	}
 
-	public getPortElement(): dia.Element.Port {
-		return this.portElement;
+	public getShape(): dia.Element.Port {
+		return this.portShape;
 	}
 
 	public getModel(): PortModel {

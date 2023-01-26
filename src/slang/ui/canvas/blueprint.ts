@@ -5,21 +5,22 @@ import {GenericPortModel, PortModel} from "../../core/abstract/port";
 import {SlangSubject} from "../../core/abstract/utils/events";
 import {BlueprintModel} from "../../core/models";
 import {TypeIdentifier} from "../../definitions/type";
-import {BlackBoxShape} from "../components/blackbox";
-import {ConnectionComponent} from "../components/connection";
-import {WhiteBoxComponent} from "../components/whitebox";
-import {ViewFrame} from "../frame";
-import {PaperView, PaperViewArgs} from "./paper-view";
-import {TargetableComponent, UserEvent } from "./user-events";
+import {BlackBoxShape} from "../elements/operator";
+import {ConnectionElement} from "../elements/connection";
+import {BlueprintBox} from "../elements/blueprint";
+import {Frame} from "../frame";
+import {Canvas, PaperViewArgs} from "./base";
+import {UserEvent } from "./user-events";
+import {ShapeCanvasElement} from "../elements/base";
 
-export class BlueprintView extends PaperView {
-	public readonly whiteBox: WhiteBoxComponent;
+export class BlueprintCanvas extends Canvas {
+	public readonly blueprintBox: BlueprintBox;
 	public readonly userInteracted = new SlangSubject<UserEvent>("user-interacted");
 
-	constructor(frame: ViewFrame, aspects: SlangAspects, public readonly blueprint: BlueprintModel, args: PaperViewArgs) {
+	constructor(frame: Frame, aspects: SlangAspects, public readonly blueprint: BlueprintModel, args: PaperViewArgs) {
 		super(frame, aspects, args);
 		this.addPanning();
-		this.whiteBox = new WhiteBoxComponent(this, blueprint);
+		this.blueprintBox = new BlueprintBox(this, blueprint);
 		this.attachEventHandlers();
 		this.fit();
 	}
@@ -61,7 +62,7 @@ export class BlueprintView extends PaperView {
 			defaultLink: (_cellView: dia.CellView, magnet: SVGElement): dia.Link => {
 				const port = that.getPortFromMagnet(magnet);
 				if (port) {
-					const link = ConnectionComponent.createGhostLink(port);
+					const link = ConnectionElement.createGhostLink(port);
 					link.on("remove", () => {
 						link.transition("attrs/.connection/stroke-opacity", 0);
 					});
@@ -130,29 +131,20 @@ export class BlueprintView extends PaperView {
 			this.fitOuter(false);
 		});
 
-		/*
-		this.paper.on("blank:pointerdown cell:pointerdown", () => {
-			unselectCurrentOne();
-		});
-		*/
-
-		const handleUserEvents = (comp: TargetableComponent) => (event: UserEvent) => {
-			event.target = comp
+		const registerUserEventsHandle = (comp: ShapeCanvasElement) => comp.onUserEvent((event: UserEvent) => {
 			this.userInteracted.next(event);
-		};
+		});
 
-		const registerUserEventsHandle = (comp: TargetableComponent) => comp.userInteracted.subscribe(handleUserEvents(comp));
-
-		const whiteBox = this.whiteBox;
-		registerUserEventsHandle(whiteBox);
-		whiteBox.operatorAdded.subscribe(registerUserEventsHandle);
-		whiteBox.operators.map(registerUserEventsHandle);
-		whiteBox.connectionAdded.subscribe(registerUserEventsHandle);
-		whiteBox.connections.map(registerUserEventsHandle);
+		const blueprintBox = this.blueprintBox;
+		registerUserEventsHandle(blueprintBox);
+		blueprintBox.operatorAdded.subscribe(registerUserEventsHandle);
+		blueprintBox.operators.map(registerUserEventsHandle);
+		blueprintBox.connectionAdded.subscribe(registerUserEventsHandle);
+		blueprintBox.connections.map(registerUserEventsHandle);
 	}
 
 	private fitOuter(animation: boolean) {
-		this.whiteBox.fitOuter(animation);
+		this.blueprintBox.fitOuter(animation);
 	}
 
 	private getPortFromMagnet(magnet: SVGElement): PortModel | undefined {

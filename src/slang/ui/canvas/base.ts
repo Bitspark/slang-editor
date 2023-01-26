@@ -1,11 +1,9 @@
-import {dia, g, util} from "jointjs";
-
 import {SlangAspects} from "../../aspects";
+import {ComponentFactory} from "../factory";
+import {Frame} from "../frame";
+import {dia, g, util} from "jointjs";
 import {SlangSubjectTrigger} from "../../core/abstract/utils/events";
 import {XY} from "../../definitions/api";
-import {ViewFrame} from "../frame";
-
-import {View} from "./view";
 
 export interface PaperViewArgs {
 	hscrollable: boolean;
@@ -14,7 +12,8 @@ export interface PaperViewArgs {
 	descendable?: boolean;
 }
 
-export abstract class PaperView extends View {
+
+export abstract class Canvas {
 	public readonly paper: dia.Paper;
 
 	protected readonly graph = new dia.Graph();
@@ -25,11 +24,18 @@ export abstract class PaperView extends View {
 	private minScale: number = 0.35;
 	private maxScale: number = 2.5;
 
-	protected constructor(frame: ViewFrame, aspects: SlangAspects, private args: PaperViewArgs) {
-		super(frame, aspects);
+	protected constructor(private readonly frame: Frame, public readonly aspects: SlangAspects, private args: PaperViewArgs) {
 		this.paper = this.createPaper();
 		this.paintGrid();
 		this.redirectPaperEvents();
+	}
+
+	public getFactory(): ComponentFactory {
+		return this.aspects.factory;
+	}
+
+	public get rootEl(): HTMLElement {
+		return this.frame.getHTMLElement();
 	}
 
 	public paintGrid() {

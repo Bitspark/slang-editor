@@ -1,17 +1,18 @@
 import m, {ClassComponent, CVnode} from "mithril";
-import { OperatorBoxComponent } from "../../slang/ui/components/blackbox";
+import { OperatorBox } from "../../slang/ui/elements/operator";
 import {BlueprintModel, OperatorModel} from "../../slang/core/models";
-import { ViewFrame } from "../../slang/ui/frame";
-import { BlueprintView } from "../../slang/ui/views/blueprint";
+import { Frame } from "../../slang/ui/frame";
+import { BlueprintCanvas } from "../../slang/ui/canvas/blueprint";
 import { AppState } from "../state";
 import { OperatorDashboard } from "./operator-dashboard";
 import { ContextMenu } from "./toolkit/context-menu";
 import { Box } from "../../slang/ui/toolkit";
-import { UserEvent } from "../../slang/ui/views/user-events";
-import { ConnectionComponent } from "../../slang/ui/components/connection";
+import { UserEvent } from "../../slang/ui/canvas/user-events";
+import { ConnectionElement } from "../../slang/ui/elements/connection";
 import {Label, IconButton} from "../../slang/ui/toolkit/buttons";
 import {XY} from "../../slang/definitions/api";
 import {BlueprintConfigForm} from "./blueprint-config-form";
+import {BlueprintPortElement} from "../../slang/ui/elements/blueprint-port";
 
 
 class Clipboard {
@@ -44,13 +45,13 @@ class Clipboard {
 }
 
 class Editor {
-	private static frame: ViewFrame;
+	private static frame: Frame;
 	private static clipboard = new Clipboard();
 	private static shownBlueprint?: BlueprintModel = undefined;
 
     public static init(rootEl: HTMLElement) {
 		this.shownBlueprint = undefined
-		this.frame = new ViewFrame(rootEl as HTMLElement);
+		this.frame = new Frame(rootEl as HTMLElement);
 	}
 
 	public static isReadonly(blueprint: BlueprintModel): boolean {
@@ -73,7 +74,7 @@ class Editor {
 			runnable: true,
 		};
 
-        const blueprintView = new BlueprintView(this.frame, AppState.aspects, blueprint, viewArgs);
+        const blueprintView = new BlueprintCanvas(this.frame, AppState.aspects, blueprint, viewArgs);
 
 		blueprintView.onUserEvent((e: UserEvent) => {
             ContextMenu.hide();
@@ -82,24 +83,23 @@ class Editor {
 				return;
 			}
 
-			if (e.target instanceof ConnectionComponent) {
+			if (e.target instanceof ConnectionElement) {
 				if (e.left.click) {
 					e.target.css({
 						"sl-is-selected": true,
 					});
 				}
-
 				return;
 			}
 
 
 			if (e.right.click) {
 
-				if (e.target instanceof OperatorBoxComponent) {
+				if (e.target instanceof OperatorBox) {
 					const operator = e.target.getModel();
 					const operatorBp = operator.blueprint;
 					const view = blueprintView;
-					ContextMenu.show(e.target, {
+					ContextMenu.show(e, {
 						view: () => m(".sle-comp__context-menu",
 							m(".buttons.are-normal", {},
 
@@ -147,33 +147,38 @@ class Editor {
 							m(OperatorDashboard, {operator, view})
 						)
 					});
+
+					return;
 				}
-				else {
-					ContextMenu.show(e.target, {
+
+				if (e.target instanceof BlueprintPortElement) {
+					ContextMenu.show(e, {
 						view: () => m(".sle-comp__context-menu", m(BlueprintConfigForm))
 					});
-					
-					ContextMenu.show2(e, {
-						view: () => m(".sle-comp__context-menu",
-							m(".buttons.are-normal", {},
-								isEditable
-									? m(IconButton, {
-										color: "black",
-										fas: "paste",
-										tooltip: "Paste operator from clipboard",
-										disabled: !Editor.clipboard.notEmpty(),
-										onclick() {
-											ContextMenu.hide();
-											Editor.clipboard.paste(blueprint, e.xy)
-										}
-									},
-										m(Label, "paste")
-									)
-									: undefined,
-							),
-						)
-					});
+					return;
 				}
+
+				ContextMenu.showAtXY(e, {
+					view: () => m(".sle-comp__context-menu",
+						m(".buttons.are-normal", {},
+							isEditable
+								? m(IconButton, {
+									color: "black",
+									fas: "paste",
+									tooltip: "Paste operator from clipboard",
+									disabled: !Editor.clipboard.notEmpty(),
+									onclick() {
+										ContextMenu.hide();
+										Editor.clipboard.paste(blueprint, e.xy)
+									}
+								},
+									m(Label, "paste")
+								)
+								: undefined,
+						),
+					)
+				});
+				return;
 			}
 
 

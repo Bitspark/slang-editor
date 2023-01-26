@@ -1,13 +1,9 @@
-import { OperatorBoxComponent } from "../components/blackbox";
-import { ConnectionComponent } from "../components/connection";
-import { WhiteBoxComponent } from "../components/whitebox";
-
-export type TargetableComponent = OperatorBoxComponent | WhiteBoxComponent | ConnectionComponent;
+import {ShapeCanvasElement} from "../elements/base";
 
 export interface UserEvent {
 	xy: {x:  number, y: number}
 
-	target?: TargetableComponent
+	target?: ShapeCanvasElement
 
 	left: {
 		click?: MouseEvent,
@@ -21,7 +17,7 @@ export interface UserEvent {
 
 export namespace UserEvents {
 	interface MouseEventArgs {
-		target?: TargetableComponent,
+		target?: ShapeCanvasElement,
 		xy: {x: number, y: number}
 
 		event: MouseEvent,

@@ -1,6 +1,6 @@
 import {OperatorGeometry, XY} from "../../definitions/api";
 import {SlangTypeValue} from "../../definitions/type";
-import {BlackBox} from "../abstract/blackbox";
+import {BlackBoxModel} from "../abstract/blackbox";
 import {PortModelArgs} from "../abstract/port";
 import {Connections} from "../abstract/utils/connections";
 import {GenericSpecifications} from "../abstract/utils/generics";
@@ -24,7 +24,7 @@ export type OperatorModelArgs = {
 	geometry?: OperatorGeometry,
 };
 
-export class OperatorModel extends BlackBox {
+export class OperatorModel extends BlackBoxModel {
 
 	// Topics
 	// self
@@ -69,8 +69,8 @@ export class OperatorModel extends BlackBox {
 		return this.name;
 	}
 
-	public getType(): BlueprintType {
-		return this.blueprint.getType();
+	public get type(): BlueprintType {
+		return this.blueprint.type;
 	}
 
 	public getBlueprint(): BlueprintModel {

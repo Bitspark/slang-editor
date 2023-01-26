@@ -32,15 +32,15 @@ function iter2map<S, T>(iter: Iterable<S>, process: (result: T, curr: S) => void
 }
 
 export function blueprintModelToJson(blueprint: BlueprintModel): BlueprintJson {
-	const blueprintGeometry = blueprint.getGeometry();
+	const blueprintGeometry = blueprint.geometry;
 	return {
 		id: blueprint.uuid,
 		tests: blueprint.tests,
-		meta: blueprint.getMeta(),
+		meta: blueprint.meta,
 		geometry: blueprintGeometry,
 		operators: iter2map<OperatorModel, { [_: string]: OperatorJson }>(blueprint.getOperators(),
 			(result, operator) => {
-				result[operator.getName()] = operatorModelToJSON(operator);
+				result[operator.name] = operatorModelToJSON(operator);
 			}),
 		services: {
 			main: iter2map<PortModel, PortGroupApiResponse>(blueprint.getPorts(),
@@ -168,10 +168,10 @@ function operatorPortDef(port: OperatorPortModel): string {
 
 	if (owner instanceof OperatorDelegateModel) {
 		const operator = owner.getParentNode() as OperatorModel;
-		ownerRefParts.push(operator.getName());
+		ownerRefParts.push(operator.name);
 		ownerRefParts.push(owner.getName());
 	} else if (owner instanceof OperatorModel) {
-		ownerRefParts.push(owner.getName());
+		ownerRefParts.push(owner.name);
 	} else {
 		// ...
 	}

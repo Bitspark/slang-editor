@@ -2,7 +2,7 @@ import {SlangExtension} from "../../slang/extension";
 import {BlueprintModel, LandscapeModel, OperatorModel} from "../../slang/core/models";
 import {UUID} from "../../slang/definitions/api";
 import {TypeIdentifier} from "../../slang/definitions/type";
-import {BlackBoxShape, BlackBoxShapeAttrs} from "../../slang/ui/components/blackbox";
+import {BlackBoxShape, BlackBoxShapeAttrs} from "../../slang/ui/elements/operator";
 
 const ROUND_CORNER = 5;
 const FONT_SIZE = 9;

@@ -1,7 +1,7 @@
 import {dia} from "jointjs";
 
 import {Styles} from "../../../styles/studio";
-import {BlackBox} from "../../core/abstract/blackbox";
+import {BlackBoxModel} from "../../core/abstract/blackbox";
 import {PortModel} from "../../core/abstract/port";
 import {PortOwner} from "../../core/abstract/port-owner";
 import {StreamType} from "../../core/abstract/stream";
@@ -11,9 +11,9 @@ import {TypeIdentifier} from "../../definitions/type";
 import {slangConnector} from "../link/connector";
 import {slangRouter} from "../link/router";
 import {tid2css} from "../utils";
-import {PaperView} from "../views/paper-view";
+import {Canvas} from "../canvas/base";
 
-import {CellComponent} from "./base";
+import {ShapeCanvasElement} from "./base";
 
 const connectionLink = dia.Link.define("Connection", {
 	router: slangRouter,
@@ -39,7 +39,7 @@ const ghostConnectionLink = dia.Link.define("GhostConnection", {
 		"</g>"].join(""),
 });
 
-export class ConnectionComponent extends CellComponent {
+export class ConnectionElement extends ShapeCanvasElement {
 
 	// STATIC
 
@@ -51,13 +51,13 @@ export class ConnectionComponent extends CellComponent {
 				},
 			},
 		} as any);
-		ConnectionComponent.refresh(sourcePort, null, link);
+		ConnectionElement.refresh(sourcePort, null, link);
 		return link;
 	}
 
 	public static getBoxOwnerIds(connection: Connection): [string, string] {
-		const sourceOwner = connection.source.getAncestorNode(BlackBox);
-		const destinationOwner = connection.destination.getAncestorNode(BlackBox);
+		const sourceOwner = connection.source.getAncestorNode(BlackBoxModel);
+		const destinationOwner = connection.destination.getAncestorNode(BlackBoxModel);
 
 		if (!sourceOwner) {
 			throw new Error(`no source owner found`);
@@ -83,8 +83,8 @@ export class ConnectionComponent extends CellComponent {
 		return `${connection.source.getIdentity()}:${connection.destination.getIdentity()}`;
 	}
 
-	public static findLink(paperView: PaperView, connection: Connection): dia.Link | undefined {
-		const linkId = ConnectionComponent.getLinkId(connection);
+	public static findLink(paperView: Canvas, connection: Connection): dia.Link | undefined {
+		const linkId = ConnectionElement.getLinkId(connection);
 		const link = paperView.getCell(linkId);
 
 		if (!link) {
@@ -132,10 +132,10 @@ export class ConnectionComponent extends CellComponent {
 	protected shape: dia.Link;
 	private readonly id: string;
 
-	constructor(paperView: PaperView, private connection: Connection) {
+	constructor(paperView: Canvas, private connection: Connection) {
 		super(paperView, {x: 0, y: 0});
-		const ownerIds = ConnectionComponent.getBoxOwnerIds(connection);
-		this.id = ConnectionComponent.getLinkId(connection);
+		const ownerIds = ConnectionElement.getBoxOwnerIds(connection);
+		this.id = ConnectionElement.getLinkId(connection);
 		this.shape = new connectionLink({
 			id: this.id,
 			source: {
@@ -181,7 +181,7 @@ export class ConnectionComponent extends CellComponent {
 	}
 
 	public refresh(): void {
-		ConnectionComponent.refresh(this.connection.source, this.connection.destination, this.shape);
+		ConnectionElement.refresh(this.connection.source, this.connection.destination, this.shape);
 		if (!this.getShape().graph) {
 			this.render();
 		}

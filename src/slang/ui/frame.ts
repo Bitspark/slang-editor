@@ -1,7 +1,7 @@
-import {View} from "./views/view";
+import {Canvas} from "./canvas/base";
 
-export class ViewFrame {
-	private view: View | null = null;
+export class Frame {
+	private canvas: Canvas | null = null;
 	private readonly viewEl: HTMLElement;
 
 	public constructor(private readonly container: HTMLElement) {
@@ -13,19 +13,19 @@ export class ViewFrame {
 		this.viewEl = viewEl;
 
 		window.addEventListener("resize", () => {
-			if (this.view) {
-				this.view.resize(this.container.clientWidth, this.container.clientHeight);
+			if (this.canvas) {
+				this.canvas.resize(this.container.clientWidth, this.container.clientHeight);
 			}
 		});
 		window.addEventListener("load", () => {
-			if (this.view) {
-				this.view.resize(this.container.clientWidth, this.container.clientHeight);
+			if (this.canvas) {
+				this.canvas.resize(this.container.clientWidth, this.container.clientHeight);
 			}
 		});
 	}
 
-	public setView(view: View) {
-		this.view = view;
+	public setView(view: Canvas) {
+		this.canvas = view;
 		view.resize(this.container.clientWidth, this.container.clientHeight);
 	}
 
