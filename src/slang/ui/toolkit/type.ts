@@ -8,7 +8,7 @@ import {MithrilKeyboardEvent} from "./events";
 import {BaseInputAttrs, SelectInput, StringInput} from "./input"
 import {Block} from "./";
 
-interface MapEntriesInputAttrs {
+export interface MapEntriesInputAttrs {
 	entries: Array<[string, SlangType]>;
 
 	onremoveEntry(idx: number): void;
@@ -18,7 +18,7 @@ interface MapEntriesInputAttrs {
 	oneditEntry(idx: number, entry: [string, SlangType]): void;
 }
 
-class MapEntriesInput implements ClassComponent<MapEntriesInputAttrs> {
+export class MapEntriesInput implements ClassComponent<MapEntriesInputAttrs> {
 	private static hasNameCollision(idx: number, ntname: string, entries: Array<[string, SlangType]>): boolean {
 		return entries.filter((e: [string, SlangType], i) => i !== idx && e[0] === ntname).length > 0;
 	}
@@ -178,7 +178,7 @@ export class TypeSelect implements ClassComponent<TypeSelectAttrs> {
 
 		return m(SelectInput, {
 			label,
-			size: "small", 
+			size: "small",
 			selected: ti,
 			options: (fixed) ? [ti] : this.portTypeOptions,
 			onInput: (fixed) ? () => null :
