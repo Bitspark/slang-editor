@@ -423,6 +423,9 @@ export class BlueprintModel extends BlackBoxModel implements HasMoveablePortGrou
 	}
 
 	// Actions
+	public updateProperties(props: Iterable<PropertyModel>) {
+		this.properties = Array.from(props);
+	}
 
 	public addProperty(property: PropertyModel): PropertyModel {
 		this.properties.push(property);
