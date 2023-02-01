@@ -84,7 +84,7 @@ export class ApiService {
 		);
 	}
 
-	public async storeBlueprint(blueprintDefJSON: BlueprintJson): Promise<any> {
+	public async saveBlueprint(blueprintDefJSON: BlueprintJson): Promise<any> {
 		const process = (data: any) => {
 			if (data) {
 				console.error(data);
