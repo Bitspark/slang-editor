@@ -3,13 +3,14 @@ import m, {ClassComponent, CVnode} from "mithril";
 import {toTypeIdentifier} from "../../core/mapper";
 import {SlangType, TYPEID_NAMES_NOGEN, TypeIdentifier} from "../../definitions/type";
 
+import {Block} from "./";
 import {IconButton} from "./buttons";
 import {MithrilKeyboardEvent} from "./events";
-import {BaseInputAttrs, SelectInput, StringInput} from "./input"
-import {Block} from "./";
+import {BaseInputAttrs, SelectInput, StringInput} from "./input";
 
 export interface MapEntriesInputAttrs {
 	entries: Array<[string, SlangType]>;
+	excludeTypes?: TypeIdentifier[];
 
 	onremoveEntry(idx: number): void;
 
@@ -25,6 +26,7 @@ export class MapEntriesInput implements ClassComponent<MapEntriesInputAttrs> {
 
 	public view({attrs}: CVnode<MapEntriesInputAttrs>) {
 		const entries = attrs.entries;
+		const excludeTypes = attrs.excludeTypes;
 
 		return m("", [
 			entries.map(([tname, type], index: number) => {
@@ -58,6 +60,7 @@ export class MapEntriesInput implements ClassComponent<MapEntriesInputAttrs> {
 					}),
 					m(TypeSelect, {
 						type,
+						excludeTypes,
 						label: "",
 						size: "small",
 						onInput: (ntype: SlangType) => {
@@ -83,6 +86,7 @@ export class MapEntriesInput implements ClassComponent<MapEntriesInputAttrs> {
 
 interface TypeSelectAttrs extends BaseInputAttrs<SlangType> {
 	type: SlangType;
+	excludeTypes?: TypeIdentifier[];
 }
 
 export class MapTypeSelectInput implements ClassComponent<TypeSelectAttrs> {
@@ -97,6 +101,7 @@ export class MapTypeSelectInput implements ClassComponent<TypeSelectAttrs> {
 		const that = this;
 		return m(MapEntriesInput, {
 			entries: this.mapEntries,
+			excludeTypes: attrs.excludeTypes,
 
 			onremoveEntry(idx: number) {
 				that.mapEntries.splice(idx, 1);
@@ -128,6 +133,7 @@ export class StreamTypeSelectInput implements ClassComponent<TypeSelectAttrs> {
 		const t = attrs.type;
 		return m(TypeSelect, {
 			type: t.getStreamSub(),
+			excludeTypes: attrs.excludeTypes,
 			onInput: (ntype: SlangType) => {
 				attrs.onInput(that.getStreamSlangType(ntype));
 			},
@@ -142,8 +148,9 @@ export class StreamTypeSelectInput implements ClassComponent<TypeSelectAttrs> {
 export class TypeSelect implements ClassComponent<TypeSelectAttrs> {
 	private portTypeOptions!: string[];
 
-	public oninit(): any {
-		this.portTypeOptions = TYPEID_NAMES_NOGEN;
+	public oninit({attrs}: CVnode<TypeSelectAttrs>): any {
+		const excludeTypes = attrs.excludeTypes ? attrs.excludeTypes.map((ti) => TypeIdentifier[ti]) : [];
+		this.portTypeOptions = TYPEID_NAMES_NOGEN.filter((i) => !excludeTypes.includes(i));
 	}
 
 	public view({attrs}: CVnode<TypeSelectAttrs>): m.Children {
@@ -153,26 +160,24 @@ export class TypeSelect implements ClassComponent<TypeSelectAttrs> {
 		switch (ti) {
 			case TypeIdentifier.Map:
 				return m(Block,
-					this.renderInput(t, attrs.onInput, attrs.label),
+					this.renderInput(attrs),
 					m(MapTypeSelectInput, {
-						type: t,
-						onInput: attrs.onInput,
+						...attrs,
 					}));
 
 			case TypeIdentifier.Stream:
 				return m(".is-flex.is-flex-direction-row",
-					this.renderInput(t, attrs.onInput, attrs.label),
+					this.renderInput(attrs),
 					m(StreamTypeSelectInput, {
-						type: t,
-						onInput: attrs.onInput,
+						...attrs,
 					}));
 			default:
-				return this.renderInput(t, attrs.onInput, attrs.label);
+				return this.renderInput(attrs);
 		}
 
 	}
 
-	protected renderInput(type: SlangType, oninput: (t: SlangType) => void, label?: string): m.Children {
+	protected renderInput({type, onInput, label}: TypeSelectAttrs): m.Children {
 		const ti = TypeIdentifier[type.getTypeIdentifier()];
 		const fixed = false;
 
@@ -186,7 +191,7 @@ export class TypeSelect implements ClassComponent<TypeSelectAttrs> {
 					if (this.portTypeOptions.indexOf(opt) < 0) {
 						return;
 					}
-					oninput(SlangType.new(toTypeIdentifier(opt)));
+					onInput(SlangType.new(toTypeIdentifier(opt)));
 				},
 		});
 	}

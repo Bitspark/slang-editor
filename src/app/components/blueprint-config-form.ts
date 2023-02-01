@@ -1,7 +1,7 @@
 import m, {ClassComponent, CVnode} from "mithril";
 import {Block, Box, Title} from "../../slang/ui/toolkit";
 import {MapEntriesInput, TypeSelect} from "../../slang/ui/toolkit/type";
-import {SlangType} from "../../slang/definitions/type";
+import {SlangType, TypeIdentifier} from "../../slang/definitions/type";
 import {BlueprintFakeGeneric} from "../../slang/core/models/blueprint";
 import {AppState} from "../state";
 import {PropertyModel} from "../../slang/core/abstract/utils/properties";
@@ -56,6 +56,7 @@ class BlueprintPropertiesConfig implements ClassComponent<BlueprintPropertiesAtt
 			m(Title, "Properties"),
 			m(MapEntriesInput, {
 				entries: this.properties,
+				excludeTypes: [TypeIdentifier.Unspecified, TypeIdentifier.Trigger],
 
 				onremoveEntry(idx: number) {
 					that.properties.splice(idx, 1);
