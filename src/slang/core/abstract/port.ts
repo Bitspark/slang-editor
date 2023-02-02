@@ -462,6 +462,16 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		return this.typeIdentifier === TypeIdentifier.Stream;
 	}
 
+	// true if parent is a Port
+	public isSubport(): boolean {
+		const parent = this.getParentNode();
+		return parent instanceof GenericPortModel
+	}
+
+	public isStreamSub(): boolean {
+		return this.isSubport() && (this.getParentNode() as GenericPortModel<O>).isStream()
+	}
+
 	/**
 	 * Returns the maximum allowed stream depth.
 	 * For convert operators, the maximum allowed depth is 0.

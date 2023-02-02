@@ -9,31 +9,33 @@ import {PortElement} from "./port";
 export type PortGroupPosition = "top" | "right" | "bottom" | "left";
 
 /* isStreamSub: port is a sub of a stream --> is primitive port is direct child of a stream, it will be visualized accordingly */
-function createPortItems(parent: PortGroupComponent, position: PortGroupPosition, port: PortModel, createGhostPorts: boolean, isBlackBox: boolean, isStreamSub: boolean): PortElement[] {
+function createPortItems(parent: PortGroupComponent, position: PortGroupPosition, port: PortModel, createGhostPorts: boolean, isBlackBox: boolean): PortElement[] {
 	const portItems: PortElement[] = [];
-
 	switch (port.getTypeIdentifier()) {
 		case TypeIdentifier.Map:
 			for (const sub of port.getMapSubs()) {
-				portItems.push.apply(portItems, createPortItems(parent, position, sub, createGhostPorts, isBlackBox, false));
+				portItems.push.apply(portItems, createPortItems(parent, position, sub, createGhostPorts, isBlackBox));
 			}
 			break;
 
 		case TypeIdentifier.Stream:
 			const streamSub = port.getStreamSub()
-			portItems.push.apply(portItems, createPortItems(parent, position, streamSub, createGhostPorts, isBlackBox, true));
+			portItems.push.apply(portItems, createPortItems(parent, position, streamSub, createGhostPorts, isBlackBox));
 			break;
 
 		case TypeIdentifier.Unspecified:
+			if (port.isSubport()) {
+				portItems.push(new PortElement(port, parent, false, isBlackBox));
+			}
 			break;
 
 		default:
-			portItems.push(new PortElement(port, parent, false, isBlackBox, isStreamSub));
+			portItems.push(new PortElement(port, parent, false, isBlackBox));
 	}
 
 	if (createGhostPorts && port.isGenericLike() &&
 		(port.getTypeIdentifier() === TypeIdentifier.Map || port.getTypeIdentifier() === TypeIdentifier.Unspecified)) {
-		portItems.push(new PortElement(port, parent, true, isBlackBox, isStreamSub));
+		portItems.push(new PortElement(port, parent, true, isBlackBox));
 	}
 
 	return portItems;
@@ -152,7 +154,7 @@ export class PortGroupComponent {
 
 		parentElement.removePorts(this.ports.map((port) => port.getShape()));
 
-		const ports = createPortItems(this, this.getGroupPosition(), this.port, createGhostPorts, this.isBlackBox, false);
+		const ports = createPortItems(this, this.getGroupPosition(), this.port, createGhostPorts, this.isBlackBox);
 
 		this.ports.length = 0;
 		this.ports.push.apply(this.ports, ports);
