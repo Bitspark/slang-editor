@@ -462,12 +462,22 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		return this.typeIdentifier === TypeIdentifier.Stream;
 	}
 
+	public isMap(): boolean {
+		return this.typeIdentifier === TypeIdentifier.Map;
+	}
+
 	// true if parent is a Port
 	public isSubport(): boolean {
 		const parent = this.getParentNode();
 		return parent instanceof GenericPortModel
 	}
 
+	// true if parent is a Port of type Map
+	public isMapSub(): boolean {
+		return this.isSubport() && (this.getParentNode() as GenericPortModel<O>).isMap()
+	}
+
+	// true is parent is a Port of type Stream
 	public isStreamSub(): boolean {
 		return this.isSubport() && (this.getParentNode() as GenericPortModel<O>).isStream()
 	}
