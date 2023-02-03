@@ -1,12 +1,14 @@
 import m, {ClassComponent, CVnode} from "mithril";
 
 import {toTypeIdentifier} from "../../core/mapper";
-import {SlangType, TYPEID_NAMES_NOGEN, TypeIdentifier} from "../../definitions/type";
+import {SlangType, TypeIdentifier} from "../../definitions/type";
 
 import {Block} from "./";
 import {IconButton} from "./buttons";
 import {MithrilKeyboardEvent} from "./events";
 import {BaseInputAttrs, SelectInput, StringInput} from "./input";
+
+const TYPE_OPTIONS = Object.keys(TypeIdentifier).filter((i) => typeof (TypeIdentifier as any)[i] === "number")
 
 export interface MapEntriesInputAttrs {
 	entries: Array<[string, SlangType]>;
@@ -94,7 +96,6 @@ export class MapTypeSelectInput implements ClassComponent<TypeSelectAttrs> {
 
 	public oninit({attrs}: CVnode<TypeSelectAttrs>) {
 		this.mapEntries = Array.from(attrs.type.getMapSubs());
-
 	}
 
 	public view({attrs}: CVnode<TypeSelectAttrs>) {
@@ -147,10 +148,11 @@ export class StreamTypeSelectInput implements ClassComponent<TypeSelectAttrs> {
 
 export class TypeSelect implements ClassComponent<TypeSelectAttrs> {
 	private portTypeOptions!: string[];
+	private dfltExcludeTypes = [TypeIdentifier.Generic]
 
 	public oninit({attrs}: CVnode<TypeSelectAttrs>): any {
-		const excludeTypes = attrs.excludeTypes ? attrs.excludeTypes.map((ti) => TypeIdentifier[ti]) : [];
-		this.portTypeOptions = TYPEID_NAMES_NOGEN.filter((i) => !excludeTypes.includes(i));
+		const excludeTypes = this.dfltExcludeTypes.concat(attrs.excludeTypes || []).map((ti) => TypeIdentifier[ti]);
+		this.portTypeOptions = TYPE_OPTIONS.filter((i) => !excludeTypes.includes(i));
 	}
 
 	public view({attrs}: CVnode<TypeSelectAttrs>): m.Children {
@@ -163,6 +165,7 @@ export class TypeSelect implements ClassComponent<TypeSelectAttrs> {
 					this.renderInput(attrs),
 					m(MapTypeSelectInput, {
 						...attrs,
+						excludeTypes: this.dfltExcludeTypes.concat([TypeIdentifier.Unspecified], attrs.excludeTypes || [])
 					}));
 
 			case TypeIdentifier.Stream:
@@ -170,6 +173,7 @@ export class TypeSelect implements ClassComponent<TypeSelectAttrs> {
 					this.renderInput(attrs),
 					m(StreamTypeSelectInput, {
 						...attrs,
+						excludeTypes: this.dfltExcludeTypes.concat([TypeIdentifier.Unspecified], attrs.excludeTypes || [])
 					}));
 			default:
 				return this.renderInput(attrs);
@@ -178,14 +182,18 @@ export class TypeSelect implements ClassComponent<TypeSelectAttrs> {
 	}
 
 	protected renderInput({type, onInput, label}: TypeSelectAttrs): m.Children {
-		const ti = TypeIdentifier[type.getTypeIdentifier()];
+		const selected = TypeIdentifier[type.getTypeIdentifier()];
 		const fixed = false;
+
+		if (!this.portTypeOptions.includes(selected)) {
+			onInput(SlangType.new(toTypeIdentifier(this.portTypeOptions[0])));
+		}
 
 		return m(SelectInput, {
 			label,
+			selected,
 			size: "small",
-			selected: ti,
-			options: (fixed) ? [ti] : this.portTypeOptions,
+			options: (fixed) ? [selected] : this.portTypeOptions,
 			onInput: (fixed) ? () => null :
 				(opt: string) => {
 					if (this.portTypeOptions.indexOf(opt) < 0) {

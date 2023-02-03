@@ -24,7 +24,7 @@ export class PortElement {
 			`L 0 ${height / 2} z`;
 	}
 
-	private static getPortMarkup(port: PortModel, ghost: boolean, isStreamSub: boolean): string {
+	private static getPortMarkup(port: PortModel, ghost: boolean): string {
 		const streamDepth = 0; // TODO
 		if (streamDepth < 0) {
 			throw new Error(`stream depth cannot be negative`);
@@ -40,7 +40,7 @@ export class PortElement {
 					classes.push(tid2css("ghost"));
 				} else {
 					classes.push(tid2css(port.getTypeIdentifier()));
-					if (isStreamSub) {
+					if (port.isStreamSub()) {
 						// this port is a subport of a stream
 						classes.push(tid2css(TypeIdentifier.Stream))
 					}
@@ -85,15 +85,14 @@ export class PortElement {
 	private position: g.PlainPoint | undefined;
 	private readonly portShape: dia.Element.Port = {};
 
-	/* isStreamSub: port is a sub of a stream --> is primitive port is direct child of a stream, it will be visualized accordingly */
-	constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent, readonly ghost: boolean, isBlackBox: boolean, isStreamSub: boolean) {
+	constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent, readonly ghost: boolean, isBlackBox: boolean) {
 		if (ghost) {
 			this.portShape.id = `${port.getIdentity()}.*`;
 		} else {
 			this.portShape.id = `${port.getIdentity()}`;
 		}
 		this.portShape.group = parent.getName();
-		this.portShape.markup = PortElement.getPortMarkup(port, ghost, isStreamSub);
+		this.portShape.markup = PortElement.getPortMarkup(port, ghost);
 		this.portShape.attrs = {
 			path: PortElement.getPortAttributes(parent.getGroupPosition(), port, isBlackBox),
 			g: {

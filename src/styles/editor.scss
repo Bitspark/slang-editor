@@ -136,6 +136,11 @@ $blackbox-color-label: $black;
 		fill: $type-color-generic;
 	}
 
+	&.sl-type-unspecified {
+		stroke: $black;
+		fill: $black;
+	}
+
 	&.sl-type-ghost {
 		stroke: $type-color-ghost;
 		fill: $type-color-ghost;
