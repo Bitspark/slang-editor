@@ -24,6 +24,8 @@ function createPortItems(parent: PortGroupComponent, position: PortGroupPosition
 			break;
 
 		case TypeIdentifier.Unspecified:
+			break;
+			// don't display ports of type unspecified
 			if (port.isSubport()) {
 				portItems.push(new PortElement(port, parent, false, isBlackBox));
 			}
