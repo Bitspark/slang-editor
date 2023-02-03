@@ -96,7 +96,6 @@ export class MapTypeSelectInput implements ClassComponent<TypeSelectAttrs> {
 
 	public oninit({attrs}: CVnode<TypeSelectAttrs>) {
 		this.mapEntries = Array.from(attrs.type.getMapSubs());
-
 	}
 
 	public view({attrs}: CVnode<TypeSelectAttrs>) {
@@ -183,14 +182,18 @@ export class TypeSelect implements ClassComponent<TypeSelectAttrs> {
 	}
 
 	protected renderInput({type, onInput, label}: TypeSelectAttrs): m.Children {
-		const ti = TypeIdentifier[type.getTypeIdentifier()];
+		const selected = TypeIdentifier[type.getTypeIdentifier()];
 		const fixed = false;
+
+		if (!this.portTypeOptions.includes(selected)) {
+			onInput(SlangType.new(toTypeIdentifier(this.portTypeOptions[0])));
+		}
 
 		return m(SelectInput, {
 			label,
+			selected,
 			size: "small",
-			selected: ti,
-			options: (fixed) ? [ti] : this.portTypeOptions,
+			options: (fixed) ? [selected] : this.portTypeOptions,
 			onInput: (fixed) ? () => null :
 				(opt: string) => {
 					if (this.portTypeOptions.indexOf(opt) < 0) {
