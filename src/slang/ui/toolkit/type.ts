@@ -163,6 +163,7 @@ export class TypeSelect implements ClassComponent<TypeSelectAttrs> {
 					this.renderInput(attrs),
 					m(MapTypeSelectInput, {
 						...attrs,
+						excludeTypes: [TypeIdentifier.Unspecified].concat(attrs.excludeTypes?attrs.excludeTypes:[]),
 					}));
 
 			case TypeIdentifier.Stream:
@@ -170,6 +171,7 @@ export class TypeSelect implements ClassComponent<TypeSelectAttrs> {
 					this.renderInput(attrs),
 					m(StreamTypeSelectInput, {
 						...attrs,
+						excludeTypes: [TypeIdentifier.Unspecified].concat(attrs.excludeTypes?attrs.excludeTypes:[]),
 					}));
 			default:
 				return this.renderInput(attrs);

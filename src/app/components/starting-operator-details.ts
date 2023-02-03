@@ -42,8 +42,6 @@ export class StartingOperatorDetails implements ClassComponent<any> {
                     class: "is-dark",
                     fas: "play",
                     async onclick() {
-                        console.dir(generics)
-                        console.dir(properties)
                         await AppState.run(blueprint, generics, properties);
                         m.redraw();
                     },
