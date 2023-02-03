@@ -89,7 +89,9 @@ export class AppState {
 		});
 
 		AppState.appModel.subscribeStoreRequested(async (blueprint: BlueprintModel) => {
-			await AppState.storeBlueprint(blueprint);
+			await AppState.saveBlueprint(blueprint);
+			// Force page reload, to ensure all blueprints and operators are up-to-date
+			window.location.reload();
 		});
 	}
 
@@ -127,7 +129,7 @@ export class AppState {
 	}
 
 	public static async run(blueprint: BlueprintModel, generics?: GenericSpecifications, properties?: PropertyAssignments) {
-		await AppState.storeBlueprint(blueprint);
+		await AppState.saveBlueprint(blueprint);
 		const runOp = await API.runOperator(blueprint, generics, properties)
 		blueprint.run({
 			handle: runOp.handle,
@@ -135,11 +137,14 @@ export class AppState {
 			in: createTypeModel(runOp.in),
 			out: createTypeModel(runOp.out),
 		})
+
+		// Force page reload, to ensure all blueprints and operators are up-to-date
+		window.location.reload();
 	}
 
 	public static async stop(blueprint: BlueprintModel) {
 		if (blueprint.runningOperator) {
-			await API.stopOperator(blueprint.runningOperator)
+			await API.stopOperator(blueprint.runningOperator);
 		}
 		blueprint.stop();
 	}
@@ -168,8 +173,8 @@ export class AppState {
 		});
 	}
 
-	private static async storeBlueprint(blueprint: BlueprintModel) {
-		await API.storeBlueprint(blueprintModelToJson(blueprint));
+	private static async saveBlueprint(blueprint: BlueprintModel) {
+		await API.saveBlueprint(blueprintModelToJson(blueprint));
 	}
 
 	public static exportSlangFile(blueprint: BlueprintModel): SlangFileJson {
