@@ -84,15 +84,12 @@ export class StringInput implements BaseInput<string> {
 						const regex = new RegExp(attrs.validationPattern);
 						if (e.currentTarget.value) {
 							this.validationResult = regex.test(e.currentTarget.value) ? ValidationResultType.Valid : ValidationResultType.Invalid;
-							if (this.validationResult === ValidationResultType.Valid) {
-								attrs.onInput(e.currentTarget.value, e);
-							}
 						} else {
 							this.validationResult = ValidationResultType.Ready;
 						}
-					} else {
-						attrs.onInput(e.currentTarget.value, e);
 					}
+
+					attrs.onInput(e.currentTarget.value, e);
 				},
 				onkeydown: attrs.onkeydown,
 				onkeyup: attrs.onkeyup,
