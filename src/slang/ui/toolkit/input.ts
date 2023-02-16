@@ -93,8 +93,6 @@ export class StringInput implements BaseInput<string> {
 					} else {
 						attrs.onInput(e.currentTarget.value, e);
 					}
-
-					attrs.onInput(e.currentTarget.value, e);
 				},
 				onkeydown: attrs.onkeydown,
 				onkeyup: attrs.onkeyup,
