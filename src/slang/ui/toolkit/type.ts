@@ -49,6 +49,7 @@ export class MapEntriesInput implements ClassComponent<MapEntriesInputAttrs> {
 						label: "",
 						size: "small",
 						initValue: tname,
+						validationPattern: /^[a-zA-Z_][a-zA-Z0-9_]*$/,
 						onInput(ntname: string) {
 							attrs.oneditEntry(index, [ntname, type]);
 						},
