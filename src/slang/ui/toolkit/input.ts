@@ -21,7 +21,7 @@ export interface BaseInputAttrs<T> extends HasSizeAttrs {
 }
 
 
-export interface StringInputAttrs<T> extends BaseInputAttrs<T> {
+export interface StringInputAttrs extends BaseInputAttrs<string> {
 	validationPattern?: RegExp;
 }
 
@@ -68,9 +68,16 @@ function wrapInput<T>(attrs: BaseInputAttrs<T>, input: m.Children): any {
 export class StringInput implements BaseInput<string> {
 	private validationResult: ValidationResultType = ValidationResultType.Ready;
 
-	public view({attrs}: CVnode<StringInputAttrs<string>>) {
+	public view({attrs}: CVnode<StringInputAttrs>) {
+
+
 		return wrapInput(attrs, m("input",
 			{
+				oninit: () => {
+					if (attrs.validationPattern && attrs.initValue) {
+						this.validationResult = attrs.validationPattern.test(attrs.initValue) ? ValidationResultType.Valid : ValidationResultType.Invalid;
+					}
+				},
 				class: `${buildCssClass(attrs, "input")} ${attrs.validationPattern ? this.validationResult : ""}`,
 				type: "text",
 				value: attrs.initValue,
@@ -80,16 +87,17 @@ export class StringInput implements BaseInput<string> {
 					}
 				},
 				oninput: (e: MithrilEvent) => {
+					const value = e.currentTarget.value;
+
 					if (attrs.validationPattern) {
-						const regex = new RegExp(attrs.validationPattern);
-						if (e.currentTarget.value) {
-							this.validationResult = regex.test(e.currentTarget.value) ? ValidationResultType.Valid : ValidationResultType.Invalid;
+						if (value) {
+							this.validationResult = attrs.validationPattern.test(value) ? ValidationResultType.Valid : ValidationResultType.Invalid;
 						} else {
 							this.validationResult = ValidationResultType.Ready;
 						}
 					}
 
-					attrs.onInput(e.currentTarget.value, e);
+					attrs.onInput(value, e);
 				},
 				onkeydown: attrs.onkeydown,
 				onkeyup: attrs.onkeyup,
@@ -102,47 +110,19 @@ export class StringInput implements BaseInput<string> {
 /*
 * NumberInput:
 * We use type:"text" as input, to allow user to enter the property's name as variable - for example ```$propertyName```
+* const validJsonKeyRegex: RegExp = /^([$][a-zA-Z]\w*|[-]?\d+(\.\d+)?)$/;
  */
 export class NumberInput implements BaseInput<number> {
-	private validationResult: ValidationResultType = ValidationResultType.Ready;
-
-
 	public view({attrs}: CVnode<BaseInputAttrs<number>>) {
-		return wrapInput(attrs, m("input",
-			{
-				class: `input special-number-text-input ${buildCssClass(attrs)} ${this.validationResult}`,
-				type: "text",
-				value: attrs.initValue,
-				oncreate: (v: CVnodeDOM<any>) => {
-					if (v.attrs.autofocus) {
-						(v.dom as HTMLElement).focus();
-					}
-				},
-				oninput: (e: MithrilEvent) => {
-					const value = e.currentTarget.value;
-					let regex: RegExp;
-
-					if (value.startsWith("$")) {
-						const validJsonKeyRegex: RegExp = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
-						regex = new RegExp(validJsonKeyRegex);
-						this.validationResult = regex.test(value) ? ValidationResultType.Valid : ValidationResultType.Invalid;
-					} else if (value.length === 0) {
-						this.validationResult = ValidationResultType.Ready;
-					} else {
-						const validNumberRegex: RegExp = /^-?\d+(\.\d+)?$/;
-						regex = new RegExp(validNumberRegex);
-						this.validationResult = regex.test(value) ? ValidationResultType.Valid : ValidationResultType.Invalid;
-					}
-
-					if (this.validationResult === ValidationResultType.Valid) {
-						attrs.onInput(value, e);
-					}
-				},
-				onkeydown: attrs.onkeydown,
-				onkeyup: attrs.onkeyup,
-				autofocus: attrs.autofocus,
+		return m(StringInput, {
+			...attrs,
+			initValue: attrs.initValue ? String(attrs.initValue) : undefined,
+			validationPattern: /^([$][a-zA-Z]\w*|[-]?\d+(\.\d+)?)$/,
+			onInput(value: string, e: MithrilEvent) {
+				// @ts-ignore
+				attrs.onInput(isNaN(parseFloat(value)) ? value : parseFloat(value), e);
 			},
-		));
+		});
 	}
 }
 
