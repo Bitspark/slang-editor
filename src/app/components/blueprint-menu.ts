@@ -13,16 +13,16 @@ export class BlueprintMenu implements ClassComponent<any> {
         this.localBlueprints = blueprints.filter(bp => bp.isLocal() && !exclude(bp))
 
         blueprints.filter(bp => !bp.isLocal()).forEach((bp) => {
-            const category = bp.tags[0] || "misc"
+            const tags = (bp.tags.length > 0 ? bp.tags : ["misc"]).join(" ")
 
-            let bpList = this.otherBlueprintsByCat.get(category)
+            let bpList = this.otherBlueprintsByCat.get(tags)
 
             if (!bpList) {
                 bpList = []
             }
 
             bpList.push(bp)
-            this.otherBlueprintsByCat.set(category, bpList)
+            this.otherBlueprintsByCat.set(tags, bpList)
         })
 
 	}
@@ -43,6 +43,7 @@ export class BlueprintMenu implements ClassComponent<any> {
 
                 Array
                     .from(this.otherBlueprintsByCat.entries())
+                    .sort((a, b) => a[0].localeCompare(b[0]) )
                     .map(([cat, bpList]) => [
                         m("p.menu-label", cat),
                         m("ul.menu-list",
