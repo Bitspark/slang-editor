@@ -15,6 +15,17 @@ input {
 	&:focus {
 		outline: none;
 	}
+
+	&.invalid {
+		color: $red;
+		border-color: $red;
+	}
+
+	&.invalid:focus {
+		outline: none !important;
+		border:1px solid $red;
+		box-shadow: 0 0 10px $red;
+	}
 }
 
 body {
@@ -217,5 +228,4 @@ body {
 		left: 19px;
 	}
 }
-
 @import "./editor";

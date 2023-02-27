@@ -1,6 +1,5 @@
 import m, {ClassComponent, CVnode, CVnodeDOM} from "mithril";
-import { buildCssClass, HasSizeAttrs } from ".";
-
+import {buildCssClass, HasSizeAttrs} from ".";
 import {MithrilEvent, MithrilKeyboardEvent} from "./events";
 import {Icon} from "./icons";
 
@@ -12,7 +11,7 @@ export interface BaseInputAttrs<T> extends HasSizeAttrs {
 	readonly?: boolean;
 
 	// XXX obsolete, rename to lower case
-	onInput(value: T, e?: { redraw: boolean }): void;
+	onInput(value: T, e?: {redraw: boolean}): void;
 
 	onchange?(file: File): void;
 
@@ -21,7 +20,19 @@ export interface BaseInputAttrs<T> extends HasSizeAttrs {
 	onkeyup?(e: MithrilKeyboardEvent): void;
 }
 
+
+export interface StringInputAttrs extends BaseInputAttrs<string> {
+	validationPattern?: RegExp;
+}
+
 export interface BaseInput<T> extends ClassComponent<BaseInputAttrs<T>> {
+}
+
+
+export enum ValidationResultType {
+	Ready = "ready",
+	Valid = "valid",
+	Invalid = "invalid",
 }
 
 // @ts-ignore
@@ -41,8 +52,8 @@ function wrapInput<T>(attrs: BaseInputAttrs<T>, input: m.Children): any {
 		? m(".field-label", { class: buildCssClass(attrs) }, attrs.label)
 		: undefined,
 
-		m(".field-body", 
-			m(".field", 
+		m(".field-body",
+			m(".field",
 				m("p.control", input)
 			)
 		),
@@ -55,10 +66,19 @@ function wrapInput<T>(attrs: BaseInputAttrs<T>, input: m.Children): any {
 }
 
 export class StringInput implements BaseInput<string> {
-	public view({attrs}: CVnode<BaseInputAttrs<string>>) {
+	private validationResult: ValidationResultType = ValidationResultType.Ready;
+
+	public view({attrs}: CVnode<StringInputAttrs>) {
+
+
 		return wrapInput(attrs, m("input",
 			{
-				class: buildCssClass(attrs, "input"),
+				oninit: () => {
+					if (attrs.validationPattern && attrs.initValue) {
+						this.validationResult = attrs.validationPattern.test(attrs.initValue) ? ValidationResultType.Valid : ValidationResultType.Invalid;
+					}
+				},
+				class: `${buildCssClass(attrs, "input")} ${attrs.validationPattern ? this.validationResult : ""}`,
 				type: "text",
 				value: attrs.initValue,
 				oncreate: (v: CVnodeDOM<any>) => {
@@ -67,7 +87,17 @@ export class StringInput implements BaseInput<string> {
 					}
 				},
 				oninput: (e: MithrilEvent) => {
-					attrs.onInput(e.currentTarget.value, e);
+					const value = e.currentTarget.value;
+
+					if (attrs.validationPattern) {
+						if (value) {
+							this.validationResult = attrs.validationPattern.test(value) ? ValidationResultType.Valid : ValidationResultType.Invalid;
+						} else {
+							this.validationResult = ValidationResultType.Ready;
+						}
+					}
+
+					attrs.onInput(value, e);
 				},
 				onkeydown: attrs.onkeydown,
 				onkeyup: attrs.onkeyup,
@@ -77,26 +107,22 @@ export class StringInput implements BaseInput<string> {
 	}
 }
 
+/*
+* NumberInput:
+* We use type:"text" as input, to allow user to enter the property's name as variable - for example ```$propertyName```
+* const validJsonKeyRegex: RegExp = /^([$][a-zA-Z]\w*|[-]?\d+(\.\d+)?)$/;
+ */
 export class NumberInput implements BaseInput<number> {
 	public view({attrs}: CVnode<BaseInputAttrs<number>>) {
-		return wrapInput(attrs, m("input",
-			{
-				class: buildCssClass(attrs),
-				type: "number",
-				value: attrs.initValue,
-				oncreate: (v: CVnodeDOM<any>) => {
-					if (v.attrs.autofocus) {
-						(v.dom as HTMLElement).focus();
-					}
-				},
-				oninput: (e: MithrilEvent) => {
-					attrs.onInput(Number(e.currentTarget.value), e);
-				},
-				onkeydown: attrs.onkeydown,
-				onkeyup: attrs.onkeyup,
-				autofocus: attrs.autofocus,
+		return m(StringInput, {
+			...attrs,
+			initValue: attrs.initValue ? String(attrs.initValue) : undefined,
+			validationPattern: /^([$][a-zA-Z]\w*|[-]?\d+(\.\d+)?)$/,
+			onInput(value: string, e: MithrilEvent) {
+				// @ts-ignore
+				attrs.onInput(isNaN(parseFloat(value)) ? value : parseFloat(value), e);
 			},
-		));
+		});
 	}
 }
 
