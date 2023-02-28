@@ -1,6 +1,6 @@
 const Path = require("path");
 const Webpack = require("webpack");
-const merge = require("webpack-merge");
+const {merge} = require("webpack-merge");
 const common = require("./webpack.common.js");
 const Html = require("html-webpack-plugin");
 
@@ -9,17 +9,20 @@ const dest = Path.join(__dirname, "../dist");
 module.exports = env => (merge(common(env), {
 	mode: "production",
 	entry: {
-		index: Path.resolve(__dirname, `../src/bundle/index.ts`),
+		index: Path.resolve(__dirname, `../src/app/index.ts`),
 	},
 	output: {
-		path: Path.join(__dirname, `../bundle`),
+		path: Path.join(__dirname, `../dist`),
 	},
 	plugins: [
 		new Webpack.DefinePlugin({
 			"process.env.NODE_ENV": JSON.stringify("production"),
 		}),
 		new Html({
-			template: Path.resolve(__dirname, `../src/bundle/index.html`),
+			template: Path.resolve(__dirname, `../src/app/index.html`),
+			templateParameters: {
+				'BASEHREF': (env.baseHref) ? env.baseHref : "/",
+			},
 		}),
 	],
 	module: {

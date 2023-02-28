@@ -9,11 +9,6 @@ module.exports = env => {
 		entry: {
 			index: Path.resolve(__dirname, `../src/example/index.ts`),
 		},
-		output: {
-			path: Path.join(__dirname, `../dist`),
-			filename: "[name].js",
-			chunkFilename: "[name].chunk.js",
-		},
 		optimization: {
 			splitChunks: {
 				chunks: "all",

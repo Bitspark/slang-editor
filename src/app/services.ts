@@ -21,7 +21,7 @@ export class ApiService {
 	public readonly url: string;
 
 	constructor(host: string) {
-		this.url = host;
+		this.url = host || "";
 		//this.ws = this.createSocketService();
 	}
 
