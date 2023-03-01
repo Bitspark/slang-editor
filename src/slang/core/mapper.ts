@@ -221,8 +221,12 @@ export function loadBlueprints(landscape: LandscapeModel, blueprintsJson: Bluepr
 		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Library);
 	});
 	blueprintsJson.local.forEach((blueprintJson) => {
-	//blueprintJsonList.forEach((blueprintJson) => {
-		createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Local);
+		try {
+			createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Local);
+		} catch (err) {
+			console.error(err)
+			return;
+		}
 	});
 
 	// 2) Add Operators. Use previously defined Blueprints for assigning Operator.blueprint
