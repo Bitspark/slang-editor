@@ -5,6 +5,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const {BaseHrefWebpackPlugin} = require('base-href-webpack-plugin');
 
 module.exports = env => {
+	env.apiUrl = env.apiUrl.endsWith('/') ? env.apiUrl.slice(0, -1) : env.apiUrl
 	return {
 		entry: {
 			index: Path.resolve(__dirname, `../src/example/index.ts`),

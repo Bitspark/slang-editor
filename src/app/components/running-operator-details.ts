@@ -1,11 +1,11 @@
 import m, {ClassComponent, CVnode} from "mithril";
-import { AppState } from "../state";
+import {AppState} from "../state";
 import {TextWithCopyButton} from "./toolkit/text-with-copy-button";
 import {RunningOperator} from "../../slang/core/models/blueprint";
 import {SlangType} from "../../slang/definitions/type";
 
 function getCurlRequestExample(rop: RunningOperator): string {
-    return `curl -X POST http://localhost:5149${rop.url} -H "Content-Type: application/json" -d '${stringifySlangType(rop.in)}' `
+    return `curl -X POST ${AppState.APIURL}${rop.url} -H "Content-Type: application/json" -d '${stringifySlangType(rop.in)}' `
 }
 
 function stringifySlangType(t: SlangType) {

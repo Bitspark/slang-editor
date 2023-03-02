@@ -54,6 +54,10 @@ export class AppState {
 		AppState.appModel.load()
 	}
 
+	public static get APIURL(): string {
+		return API.url
+	}
+
 	public static get currentBlueprint(): BlueprintModel {
 		if (!this._currentBlueprint) {
 			throw Error("no current blueprint set")
