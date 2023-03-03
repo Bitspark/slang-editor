@@ -7,7 +7,7 @@
   "source": "index.ts",
   "scripts": {
     "start": "webpack serve --config webpack/webpack.dev.js --color --env apiUrl=http://localhost:5149",
-    "build": "webpack --config webpack/webpack.build.js --color --env baseHref=/app/",
+    "build": "webpack --config webpack/webpack.build.js --color --env apiUrl=http://localhost:5149 baseHref=/app/",
     "test": "jest",
     "package": "webpack --config webpack/webpack.package.js && grunt",
     "link": "npm run package; cd dist/; npm link",
