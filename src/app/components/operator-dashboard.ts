@@ -27,10 +27,10 @@ export class OperatorDashboard implements ClassComponent<DashboardAttrs> {
 				m(OperatorDetailsDashboardModule, {operator: attrs.operator})
 			),
 
-			view.isEditable
+			operator.hasGenerics() || operator.hasProperties()
 			? m(Box,
-				operator.hasProperties() ? m(PropertiesForm, {properties: operator.getProperties()}) :undefined,
-				operator.hasGenerics()? m(GenericsForm, {generics: operator.getGenerics()}) :undefined,
+				operator.hasProperties() ? m(PropertiesForm, {properties: operator.getProperties(), readonly: view.isReadOnly}) :undefined,
+				operator.hasGenerics()? m(GenericsForm, {generics: operator.getGenerics(), readonly: view.isReadOnly}) :undefined,
 			)
 			: undefined
 		);

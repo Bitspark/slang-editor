@@ -6,13 +6,16 @@ import {TypeSelect} from "../../../slang/ui/toolkit/type";
 
 export interface GenericsFormAttrs {
     generics: GenericSpecifications;
+    readonly: boolean;
 }
 
 export class GenericsForm implements ClassComponent<GenericsFormAttrs> {
     private generics!: GenericSpecifications;
+    private readonly = false;
 
     public oninit({attrs}: CVnode<GenericsFormAttrs>): any {
         this.generics = attrs.generics;
+        this.readonly = attrs.readonly;
     }
 
     public view(_: CVnode<GenericsFormAttrs>): any {
@@ -35,6 +38,9 @@ export class GenericsForm implements ClassComponent<GenericsFormAttrs> {
             label: genId,
             type: genType,
             onInput: (nType: SlangType) => {
+                if (this.readonly) {
+                    return;
+                }
                 this.generics.specify(genId, nType);
             },
         });
