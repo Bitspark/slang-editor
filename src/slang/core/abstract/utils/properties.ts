@@ -1,6 +1,6 @@
 import {BehaviorSubject, Subject, Subscription} from "rxjs";
 
-import {SlangType, SlangTypeValue, TypeIdentifier} from "../../../definitions/type";
+import {SlangType, SlangTypeMap, SlangTypeStream, SlangTypeValue, TypeIdentifier} from "../../../definitions/type";
 
 import {GenericSpecifications} from "./generics";
 
@@ -123,6 +123,66 @@ export class PropertyAssignments {
 		return this.assignmentChanged.subscribe(cb);
 	}
 
+	private QetType(qExpr: string): SlangType | null {
+		const qParts = qExpr.split(".")
+
+		let pType = this.get(qParts[0]).getType()
+		if (pType === null) {
+			return null
+		}
+
+		for(let i = 1; i < qParts.length; i++) {
+			const q = qParts[i]
+			if (q === "#") {
+				pType = pType.getStreamSub()
+				continue
+			}
+			pType = pType.findMapSub(q)
+
+			if (pType === null) {
+				return null
+			}
+		}
+
+		return pType
+	}
+
+	public Qet(qExpr: string): {type: SlangType, values: Array<SlangTypeValue>} | undefined {
+		const qParts = qExpr.split(".")
+		const propValue = this.get(qParts[0]).getValue()
+
+		if (propValue === undefined) {
+			return undefined
+		}
+
+		let propValues = [propValue];
+
+		qParts.slice(1).forEach((q) => {
+			let newPropValues = new Array<SlangTypeValue>()
+
+			for(let i = 0; i < propValues.length; i++) {
+				const pv = propValues[i]
+
+				if (q === "#") {
+					newPropValues.push(...pv as SlangTypeStream)
+					continue
+				}
+
+				newPropValues.push((pv as SlangTypeMap)[q])
+			}
+
+			propValues = newPropValues
+		})
+
+		const pType = this.QetType(qExpr)
+
+		if (pType === null) {
+			return undefined
+		}
+
+		return {type: pType, values: propValues}
+	}
+
 	private getByName(propertyName: string): PropertyAssignment {
 		const propVal = this.assignments.get(propertyName);
 		if (!propVal) {
@@ -182,26 +242,24 @@ export class PropertyEvaluator {
 	}
 
 	private static expandExpr(exprPart: string, propAssigns: PropertyAssignments): string[] {
-		const vals: string[] = [];
+		const qProp = propAssigns.Qet(exprPart);
 
-		if (!propAssigns.isDefined(exprPart)) {
-			return [];
+		if (qProp === undefined) {
+			return []
 		}
 
-		const propAssign = propAssigns.get(exprPart);
-		const propValue: any = propAssign.getValue();
-
-		if (propAssign.isStream()) {
-			if (typeof propValue === "string" && (propValue as string).startsWith("$")) {
-				vals.push(`{${propValue.substr(1)}}`);
-			} else {
-				for (const el of propValue) {
+		if (qProp.type.isStream()) {
+			const vals: string[] = [];
+			qProp.values.forEach((propValue) => {
+				for (const el of propValue as SlangTypeStream) {
 					vals.push((typeof el === "string") ? el : JSON.stringify(el));
 				}
-			}
-		} else {
-			vals.push((typeof propValue === "string") ? propValue : JSON.stringify(propValue));
+			})
+			return vals
 		}
-		return vals;
+
+		return qProp.values.map((propValue) => {
+			return (typeof propValue === "string") ? propValue : JSON.stringify(propValue)
+		})
 	}
 }
