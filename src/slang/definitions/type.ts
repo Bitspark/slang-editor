@@ -136,6 +136,10 @@ export class SlangType {
 		return SlangType.new(TypeIdentifier.Unspecified);
 	}
 
+	public static newNumber(): SlangType {
+		return SlangType.new(TypeIdentifier.Number);
+	}
+
 	public static newString(): SlangType {
 		return SlangType.new(TypeIdentifier.String);
 	}

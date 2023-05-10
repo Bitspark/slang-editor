@@ -4,6 +4,7 @@ import {Frame} from "../frame";
 import {dia, g, util} from "jointjs";
 import {SlangSubjectTrigger} from "../../core/abstract/utils/events";
 import {XY} from "../../definitions/api";
+import {Styles} from "../../../styles/studio";
 
 export interface PaperViewArgs {
 	hscrollable: boolean;
@@ -129,7 +130,7 @@ export abstract class Canvas {
 				{
 					el: inner,
 					model: this.graph,
-					gridSize: 5,
+					gridSize: Styles.Canvas.gridSize,
 					drawGrid: false,
 					interactive(cellView: dia.CellView) {
 						if (view.isReadOnly) {

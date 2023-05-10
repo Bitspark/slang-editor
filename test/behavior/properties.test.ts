@@ -2,12 +2,10 @@ import uuidv4 from "uuid/v4";
 
 import {GenericSpecifications} from "../../src/slang/core/abstract/utils/generics";
 import {PropertyAssignments, PropertyModel} from "../../src/slang/core/abstract/utils/properties";
-import {AppModel} from "../../src/slang/core/models/app";
+import {AppModel, LandscapeModel} from "../../src/slang/core/models";
 import {BlueprintType} from "../../src/slang/core/models/blueprint";
-import {LandscapeModel} from "../../src/slang/core/models/landscape";
 import {SlangType, TypeIdentifier} from "../../src/slang/definitions/type";
-import {TestStorageApp} from "../helpers/TestStorageApp";
-import data from "../resources/definitions.json";
+//import data from "../resources/definitions.json";
 
 // tslint:disable:no-magic-numbers
 
@@ -18,7 +16,6 @@ describe("A property", () => {
 	beforeEach(async () => {
 		appModel = AppModel.create("test-app");
 		landscapeModel = appModel.createLandscape();
-		new TestStorageApp(appModel, data);
 	});
 
 	it("can be changed while retaining type and connections", () => {

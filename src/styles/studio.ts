@@ -4,6 +4,10 @@ import "@fortawesome/fontawesome-free/js/all";
 
 export namespace Styles {
 
+	export class Canvas {
+		public static gridSize = 4;
+	}
+
 	const typeColors: { [key in TypeIdentifier | "ghost"]: string } = {
 		[TypeIdentifier.Number]: "#2e49b3",
 		[TypeIdentifier.String]: "#a52e2e",
@@ -41,7 +45,7 @@ export namespace Styles {
 	}
 
 	export class PortGroup {
-		public static portSpacing = Port.width;
+		public static portSpacing = Port.width + Canvas.gridSize/2;
 		public static translationIn = 4;
 		public static translationOut = -4;
 	}
@@ -58,7 +62,7 @@ export namespace Styles {
 	export class BlackBox {
 		public static rx = 2;
 		public static ry = 2;
-		public static size = {width: 80, height: 49};
+		public static size = {width: 80, height: 46};
 		public static filter = {
 			name: "dropShadow",
 			args: {

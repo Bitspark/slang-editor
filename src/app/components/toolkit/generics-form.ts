@@ -6,7 +6,7 @@ import {TypeSelect} from "../../../slang/ui/toolkit/type";
 
 export interface GenericsFormAttrs {
     generics: GenericSpecifications;
-    readonly: boolean;
+    readonly?: boolean;
 }
 
 export class GenericsForm implements ClassComponent<GenericsFormAttrs> {
@@ -15,7 +15,9 @@ export class GenericsForm implements ClassComponent<GenericsFormAttrs> {
 
     public oninit({attrs}: CVnode<GenericsFormAttrs>): any {
         this.generics = attrs.generics;
-        this.readonly = attrs.readonly;
+        if (attrs.readonly) {
+            this.readonly = attrs.readonly;
+        }
     }
 
     public view(_: CVnode<GenericsFormAttrs>): any {

@@ -371,8 +371,12 @@ export class BlueprintModel extends BlackBoxModel implements HasMoveablePortGrou
 
 		for (const pathPart of pathSplit) {
 			if (pathPart === "~") {
-				port = port.getStreamSub();
-				continue;
+				try {
+					port = port.getStreamSub();
+					continue;
+				} catch (err) {
+					return undefined
+				}
 			}
 
 			if (port.getTypeIdentifier() !== TypeIdentifier.Map) {

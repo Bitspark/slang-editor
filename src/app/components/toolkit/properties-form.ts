@@ -6,7 +6,7 @@ import {Input} from "../console";
 
 export interface PropertiesFormAttrs {
     properties: PropertyAssignments;
-    readonly: boolean;
+    readonly?: boolean;
 }
 
 export class PropertiesForm implements ClassComponent<PropertiesFormAttrs> {
@@ -17,7 +17,9 @@ export class PropertiesForm implements ClassComponent<PropertiesFormAttrs> {
 
     public oninit({attrs}: CVnode<PropertiesFormAttrs>): any {
         this.properties = attrs.properties;
-        this.readonly = attrs.readonly;
+        if (attrs.readonly) {
+            this.readonly = attrs.readonly;
+        }
         this.formBody = this.getFormBody();
         this.formData = new Map<string, { value: SlangTypeValue }>();
     }

@@ -4,8 +4,8 @@ import {UUID} from "../../slang/definitions/api";
 import {TypeIdentifier} from "../../slang/definitions/type";
 import {BlackBoxShape, BlackBoxShapeAttrs} from "../../slang/ui/elements/operator";
 
-const ROUND_CORNER = 5;
-const FONT_SIZE = 9;
+const ROUND_CORNER = 1;
+const FONT_SIZE = 8;
 
 export interface SlangAspectImpl {
 	shape?: typeof BlackBoxShape;
@@ -29,6 +29,9 @@ export class OperatorDataExt extends SlangExtension {
 	}
 
 	protected onReady() {
+		// slang.data.ValueSet & slang.data.ValueGet
+		this.registerBlackBox("3be41b5b-5a43-4f94-a7ae-7f0bacc4ae77", ValueSetOperator);
+		this.registerBlackBox("b8771c73-cddf-4eb1-a10c-bf78c2552efe", ValueGetOperator);
 		// slang.data.Value
 		this.registerBlackBox("8b62495a-e482-4a3e-8020-0ab8a350ad2d", ValueOperator);
 		// slang.data.Evaluate
@@ -61,13 +64,60 @@ class ValueOperator implements SlangAspectImpl {
 
 			const value = operator.getPropertyValue("value");
 			const label = (typeof value !== "undefined") ? JSON.stringify(value) : "value?";
-			const maxLength = 24;
+			this.attr("label/text", label);
 
+			const width = Math.max(70, label.length*5+4)
+			const height = 24;
+			this.resize(width, height);
+
+			this.attr("body/rx", 1);
+			this.attr("body/ry", 1);
+
+			/*
 			const dots = "...";
+			const maxLength = 24;
 			this.attr("label/text",
 				label.length <= maxLength ? label :
 					`${label.substr(0, maxLength - dots.length)}${dots}`,
 			);
+			 */
+		}
+	};
+
+}
+
+class ValueSetOperator implements SlangAspectImpl {
+	public static shape = class extends DataBlackBoxShape {
+		public setupForOperator(operator: OperatorModel) {
+			super.setupForOperator(operator);
+
+			const value = operator.getPropertyValue("valueName");
+			const label = `SET "${value}"`;
+
+
+			this.attr("label/text", label);
+
+			const width = 100;
+			const height = 24;
+			this.resize(width, height);
+		}
+	};
+
+}
+
+class ValueGetOperator implements SlangAspectImpl {
+	public static shape = class extends DataBlackBoxShape {
+		public setupForOperator(operator: OperatorModel) {
+			super.setupForOperator(operator);
+
+			const value = operator.getPropertyValue("valueName");
+			const label = `GET "${value}"`;
+
+			this.attr("label/text", label);
+
+			const width = 100;
+			const height = 24;
+			this.resize(width, height);
 		}
 	};
 

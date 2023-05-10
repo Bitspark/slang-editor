@@ -266,7 +266,7 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 
 	public getStreamSub(): GenericPortModel<O> {
 		if (this.typeIdentifier !== TypeIdentifier.Stream) {
-			throw new Error(`accessing stream port of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);
+			throw new Error(`[${this.getOwnerName()}] accessing stream port of a port of type '${TypeIdentifier[this.typeIdentifier]}' not possible`);
 		}
 		const streamSub = this.getChildNode(GenericPortModel);
 		if (!streamSub) {

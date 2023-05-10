@@ -44,6 +44,7 @@ export class OperatorModel extends BlackBoxModel {
 		this.blueprint = args.blueprint;
 
 		this.geometry = args.geometry;
+
 		if (args.properties && args.generics) {
 			this.properties = args.properties;
 			this.generics = args.generics;
