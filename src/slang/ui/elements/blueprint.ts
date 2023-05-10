@@ -153,8 +153,8 @@ export class BlueprintBox extends BoxCanvasElement {
 
 		let newX: number = currentPosition.x + padding;
 		let newY: number = currentPosition.y + padding;
-		let newCornerX: number = currentPosition.x /*+ currentSize.width*/ - 2 * padding;
-		let newCornerY: number = currentPosition.y /*+ currentSize.height*/ - 2 * padding;
+		let newCornerX: number = currentPosition.x + currentSize.width - 2 * padding;
+		let newCornerY: number = currentPosition.y + currentSize.height - 2 * padding;
 
 		this.operators.forEach((operator) => {
 			const childBBox = operator.bbox;
@@ -183,10 +183,6 @@ export class BlueprintBox extends BoxCanvasElement {
 		set.size.width = newCornerX - newX + 2 * padding;
 		set.size.height = newCornerY - newY + 2 * padding;
 
-		console.log("-->", set.position, set.size)
-		console.log("  >", currentPosition, currentSize)
-
-
 		let newPosition = {x: currentPosition.x, y: currentPosition.y};
 		let newSize = {width: currentPosition.width, height: currentPosition.height};
 
@@ -206,21 +202,16 @@ export class BlueprintBox extends BoxCanvasElement {
 			newSize = set.size;
 		}
 
-		/*
 		if (set.size.width <= currentSize.width && set.size.height <= currentSize.height) {
 			delete set.size;
 		} else {
-		 */
-		/*
 			if (set.size.width <= currentSize.width) {
 				set.size.width = currentSize.width;
 			} else if (set.size.height <= currentSize.height) {
 				set.size.height = currentSize.height;
 			}
-
-		 */
 			newSize = set.size;
-		//}
+		}
 
 		if (!set.position && !set.size) {
 			return;

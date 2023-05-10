@@ -234,7 +234,6 @@ export function canConnectTo(source: PortModel, destination: PortModel, createGe
 		}
 
 		if (!streamsCompatible(sourceStream, destinationStream)) {
-			console.log(">>>> L237 not compatible")
 			return false;
 		}
 	} else if (!streamsGenericLikeCompatible(source, destination)) {
