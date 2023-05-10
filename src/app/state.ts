@@ -92,11 +92,13 @@ export class AppState {
 			await AppState.loadRunningOperator();
 		});
 
+		/* DELETE
 		AppState.appModel.subscribeStoreRequested(async (blueprint: BlueprintModel) => {
-			await AppState.saveBlueprint(blueprint);
+			// DELETE await AppState.saveBlueprint(blueprint);
 			// Force page reload, to ensure all blueprints and operators are up-to-date
 			window.location.reload();
 		});
+		 */
 	}
 
 	public static getBlueprint(uuid: string): BlueprintModel|null {
@@ -133,7 +135,7 @@ export class AppState {
 	}
 
 	public static async run(blueprint: BlueprintModel, generics?: GenericSpecifications, properties?: PropertyAssignments) {
-		await AppState.saveBlueprint(blueprint);
+		await API.saveBlueprint(blueprintModelToJson(blueprint));
 		const runOp = await API.runOperator(blueprint, generics, properties)
 		blueprint.run({
 			handle: runOp.handle,
@@ -177,8 +179,9 @@ export class AppState {
 		});
 	}
 
-	private static async saveBlueprint(blueprint: BlueprintModel) {
+	public static async saveBlueprint(blueprint: BlueprintModel) {
 		await API.saveBlueprint(blueprintModelToJson(blueprint));
+		window.location.reload();
 	}
 
 	public static exportSlangFile(blueprint: BlueprintModel): SlangFileJson {

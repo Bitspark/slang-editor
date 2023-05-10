@@ -21,7 +21,6 @@ export class BlueprintControlBar implements ClassComponent<any> {
     // @ts-ignore
     public view({attrs}: CVnode<any>) {
         const blueprint = AppState.currentBlueprint;
-
         return m("nav.sle-comp__blueprint-ctrl-bar", {
             class: "is-flex is-flex-wrap-nowrap is-align-content-stretch"
         }, [
@@ -43,8 +42,9 @@ export class BlueprintControlBar implements ClassComponent<any> {
                     class: "",
                     fas: "save",
                     disabled: blueprint.isRunning,
-                    onclick() {
-                        blueprint.save();
+                    async onclick() {
+                        await AppState.saveBlueprint(blueprint);
+                        m.redraw();
                     },
                 }),
 
