@@ -130,7 +130,7 @@ const config = {
 		return {
 			0: 0,
 			45: this.step / 2,
-			90: this.step / 2,
+			90: this.step,
 		};
 	},
 
