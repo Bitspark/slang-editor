@@ -84,7 +84,7 @@ export class AppState {
 	private static subscribe(): void {
 		AppState.landscape.subscribeChildCreated(BlueprintModel, (blueprint) => {
 			AppState.blueprintsByUUID.set(blueprint.uuid, blueprint)
-			AppState.blueprints.push(blueprint)
+			AppState.blueprints = Array.from(AppState.blueprintsByUUID.values())
 		});
 
 		AppState.appModel.subscribeLoadRequested( async () => {
@@ -179,9 +179,23 @@ export class AppState {
 		});
 	}
 
-	public static async saveBlueprint(blueprint: BlueprintModel) {
-		await API.saveBlueprint(blueprintModelToJson(blueprint));
-		window.location.reload();
+	public static async saveBlueprint(blueprint: BlueprintModel, reload: boolean = false) {
+		const result = Promise.all(Array
+			.from(this.landscape.getDependencies(blueprint, true))
+			.map((bp) => API.saveBlueprint(blueprintModelToJson(bp)))
+		)
+
+		if (reload) {
+			window.location.reload();
+		}
+
+		return result
+	}
+
+	public static async importSlangFile(slangFile: SlangFileJson): Promise<BlueprintModel> {
+		const bp = this.landscape.import(slangFile);
+		await this.saveBlueprint(bp)
+		return bp
 	}
 
 	public static exportSlangFile(blueprint: BlueprintModel): SlangFileJson {

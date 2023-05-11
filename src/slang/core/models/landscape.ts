@@ -31,6 +31,30 @@ export class LandscapeModel extends SlangNode {
 
 	// Import and export
 
+	public getDependencies(blueprint: BlueprintModel, onlyLocalBlueprint: boolean = false): IterableIterator<BlueprintModel> {
+		const remainingBlueprints: BlueprintModel[] = [blueprint];
+		const dependencies = new Map<String, BlueprintModel>()
+
+		while (remainingBlueprints.length > 0) {
+			const currBp = remainingBlueprints.pop();
+			if (!currBp || dependencies.has(currBp.uuid)) {
+				continue;
+			}
+
+			if (onlyLocalBlueprint && !currBp.isLocal()) {
+				continue
+			}
+
+			dependencies.set(currBp.uuid, currBp)
+
+			for (const op of currBp.getOperators()) {
+				remainingBlueprints.push(op.getBlueprint());
+			}
+		}
+
+		return dependencies.values()
+	}
+
 	public export(mainId: UUID): SlangFileJson {
 		const mainBp = this.findBlueprint(mainId);
 		if (!mainBp) {
@@ -60,7 +84,14 @@ export class LandscapeModel extends SlangNode {
 	}
 
 	public import(bundle: SlangFileJson): BlueprintModel {
-		const blueprintJsonList = Object.keys(bundle.blueprints).filter((bpId) => !this.findBlueprint(bpId)).map((bpId) => bundle.blueprints[bpId]);
+		const blueprintJsonList = Object
+			.keys(bundle.blueprints)
+			.filter((bpId) => {
+				const bp = this.findBlueprint(bpId)
+				// allow override, if imported bp is new or would override a local blueprint
+				return !bp || bp.isLocal()
+			})
+			.map((bpId) => bundle.blueprints[bpId]);
 		loadBlueprints(this, {local: blueprintJsonList, library: [], elementary: []});
 
 		const blueprint = this.findBlueprint(bundle.main);

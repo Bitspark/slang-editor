@@ -222,7 +222,7 @@ export function loadBlueprints(landscape: LandscapeModel, blueprintsJson: Bluepr
 	});
 	blueprintsJson.local.forEach((blueprintJson) => {
 		try {
-			createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Local);
+			createUnfinishedBlueprintModel(landscape, blueprintJson, BlueprintType.Local, true);
 		} catch (err) {
 			console.error(err)
 			return;
@@ -255,13 +255,19 @@ export function loadBlueprints(landscape: LandscapeModel, blueprintsJson: Bluepr
 	});
 }
 
+/*
 export function addBlueprint(landscape: LandscapeModel, bpDef: BlueprintJson, bpType: BlueprintType): BlueprintModel {
 	return createUnfinishedBlueprintModel(landscape, bpDef, bpType);
 }
+ */
 
-function createUnfinishedBlueprintModel(landscape: LandscapeModel, bpDef: BlueprintJson, bpType: BlueprintType): BlueprintModel {
-	if (!!landscape.findBlueprint(bpDef.id)) {
-		throw new BlueprintExistsError(bpDef.id);
+function createUnfinishedBlueprintModel(landscape: LandscapeModel, bpDef: BlueprintJson, bpType: BlueprintType, replace: boolean = false): BlueprintModel {
+	const existingBp = landscape.findBlueprint(bpDef.id)
+	if (!!existingBp) {
+		if (!replace) {
+			throw new BlueprintExistsError(existingBp.uuid);
+		}
+		existingBp.destroy()
 	}
 
 	const services = bpDef.services;
