@@ -33,26 +33,38 @@ export class HomeView implements ClassComponent<any> {
             .filter(bp => bp.isLocal())
             .sort((l, r) => l.name.localeCompare(r.name));
         return m("section.section.sle-view__blueprint-overview", m(".container",
-            m("",
-                m(".file.is-boxed", {
-                        // @ts-ignore
-                        onchange: (event) => upload(event.target.files[0]),
-                    },
-                    m("label.file-label",
-                        m("input.file-input", {type: "file", name: "resume"}),
-                        m("span.file-cta",
-                            m("span.file-icon", m("i.fas.fa-upload")),
-                            m("span.file-label", "Choose a file..."),
+            m(".columns",
+                m(".column",
+                    m(".file.is-boxed.is-fullwidth",
+                        m("label.file-label",
+                            m("input.file-input", {
+                                type: "button",
+                                onclick: () => m.route.set("/:uuid", {uuid: AppState.createEmptyBlueprint().uuid})
+                            }),
+                            m("span.file-cta",
+                                m("span.file-icon", m("i.fas.fa-plus")),
+                                m("span.file-label.has-text-centered", "New Blueprint"),
+                            )
                         )
                     )
-                )
+                ),
+                m(".column",
+                    m(".file.is-boxed.is-fullwidth", {
+                            // @ts-ignore
+                            onchange: (event) => upload(event.target.files[0]),
+                        },
+                        m("label.file-label",
+                            m("input.file-input", {type: "file"}),
+                            m("span.file-cta",
+                                m("span.file-icon", m("i.fas.fa-upload")),
+                                m("span.file-label.has-text-centered", "Upload Blueprints"),
+                            )
+                        )
+                    )
+                ),
             ),
             m(".panel",
                 m(".panel-heading", `Blueprints (${localBlueprints.length})`),
-
-                m("a.panel-block", {
-                    onclick:() => m.route.set("/:uuid", {uuid: AppState.createEmptyBlueprint().uuid})
-                }, [m("span.panel-icon", m("i.fas.fa-plus")), "New Blueprint"]),
 
                 localBlueprints.map(bp =>
                     m("a.panel-block.blueprint", {
