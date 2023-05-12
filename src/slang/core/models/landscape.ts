@@ -1,4 +1,4 @@
-import {BlueprintJson, SlangFileJson, UUID} from "../../definitions/api";
+import {SlangFileJson, UUID} from "../../definitions/api";
 import {SlangNode} from "../abstract";
 import {SlangBehaviorSubject, SlangSubjectTrigger} from "../abstract/utils/events";
 import {blueprintModelToJson, loadBlueprints} from "../mapper";
@@ -31,12 +31,34 @@ export class LandscapeModel extends SlangNode {
 
 	// Import and export
 
-	public export(mainId: UUID): SlangFileJson {
-		const mainBp = this.findBlueprint(mainId);
-		if (!mainBp) {
-			throw new BundleError(mainId);
+	public getDependencies(blueprint: BlueprintModel, args?: {onlyLocals: boolean}): IterableIterator<BlueprintModel> {
+		const onlyLocals = Boolean(args?.onlyLocals)
+
+		const remainingBlueprints: BlueprintModel[] = [blueprint];
+		const dependencies = new Map<String, BlueprintModel>()
+
+		while (remainingBlueprints.length > 0) {
+			const currBp = remainingBlueprints.pop();
+			if (!currBp || dependencies.has(currBp.uuid)) {
+				continue;
+			}
+
+			if (onlyLocals && !currBp.isLocal()) {
+				continue
+			}
+
+			dependencies.set(currBp.uuid, currBp)
+
+			for (const op of currBp.getOperators()) {
+				remainingBlueprints.push(op.getBlueprint());
+			}
 		}
 
+		return dependencies.values()
+	}
+
+	public export(blueprint: BlueprintModel, args?: {onlyLocals: boolean}): SlangFileJson {
+		/*
 		const blueprints: { [id: string]: BlueprintJson } = {};
 		const remainingBlueprints: BlueprintModel[] = [mainBp];
 
@@ -52,15 +74,27 @@ export class LandscapeModel extends SlangNode {
 				remainingBlueprints.push(op.getBlueprint());
 			}
 		}
+		 */
 
 		return {
-			blueprints,
-			main: mainId,
+			blueprints: Object.fromEntries(
+					Array
+						.from(this.getDependencies(blueprint, args))
+						.map(bp => [bp.uuid, blueprintModelToJson(bp)])
+				),
+			main: blueprint.uuid,
 		};
 	}
 
 	public import(bundle: SlangFileJson): BlueprintModel {
-		const blueprintJsonList = Object.keys(bundle.blueprints).filter((bpId) => !this.findBlueprint(bpId)).map((bpId) => bundle.blueprints[bpId]);
+		const blueprintJsonList = Object
+			.keys(bundle.blueprints)
+			.filter((bpId) => {
+				const bp = this.findBlueprint(bpId)
+				// allow override, if imported bp is new or would override a local blueprint
+				return !bp || bp.isLocal()
+			})
+			.map((bpId) => bundle.blueprints[bpId]);
 		loadBlueprints(this, {local: blueprintJsonList, library: [], elementary: []});
 
 		const blueprint = this.findBlueprint(bundle.main);

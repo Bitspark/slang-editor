@@ -1,7 +1,6 @@
 import m, {ClassComponent, CVnode, CVnodeDOM} from "mithril";
 import {buildCssClass, HasSizeAttrs} from ".";
 import {MithrilEvent, MithrilKeyboardEvent} from "./events";
-import {Icon} from "./icons";
 
 export interface BaseInputAttrs<T> extends HasSizeAttrs {
 	label?: string;
@@ -161,8 +160,8 @@ export class FileInput implements BaseInput<File> {
 	protected accept: string = "";
 
 	public view({attrs}: CVnode<BaseInputAttrs<File>>) {
-		return m(".file",
-			m("file-label",
+		return m(".file.is-boxed",
+			m(".file-label",
 				m("input",
 					{
 						class: buildCssClass(attrs, "file-input"),
@@ -175,6 +174,7 @@ export class FileInput implements BaseInput<File> {
 						},
 						// @ts-ignore
 						oninput: m.withAttr("files", (files: File[]) => {
+							console.log("UPLOAD")
 							attrs.onInput(files[0]);
 						}),
 						onkeydown: attrs.onkeydown,
@@ -183,7 +183,7 @@ export class FileInput implements BaseInput<File> {
 					},
 				),
 				m("span.file-cta",
-					m("span.file-icon", m(Icon, "upload")),
+					m("span.file-icon", m("i.fas.fa-upload")),
 					m("span.file-label", "Choose a file..."),
 				),
 			),

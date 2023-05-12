@@ -49,7 +49,7 @@ export class SlangEditor extends HTMLElement {
 
 	public export(): SlangFileJson | null {
 		if (this.blueprint) {
-			return this.landscape.export(this.blueprint.uuid);
+			return this.landscape.export(this.blueprint);
 		}
 		return null;
 	}

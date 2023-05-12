@@ -2,7 +2,7 @@ import uuidv4 from "uuid/v4";
 import { ApiService } from "./services";
 import { SlangAspects } from "../slang/aspects";
 import { PortDirection } from "../slang/core/abstract/port";
-import { blueprintModelToJson, loadBlueprints, createTypeModel } from "../slang/core/mapper";
+import { loadBlueprints, createTypeModel } from "../slang/core/mapper";
 import { AppModel, BlueprintModel } from "../slang/core/models";
 import { BlueprintType } from "../slang/core/models/blueprint";
 import {SlangType} from "../slang/definitions/type";
@@ -84,7 +84,7 @@ export class AppState {
 	private static subscribe(): void {
 		AppState.landscape.subscribeChildCreated(BlueprintModel, (blueprint) => {
 			AppState.blueprintsByUUID.set(blueprint.uuid, blueprint)
-			AppState.blueprints.push(blueprint)
+			AppState.blueprints = Array.from(AppState.blueprintsByUUID.values())
 		});
 
 		AppState.appModel.subscribeLoadRequested( async () => {
@@ -135,7 +135,7 @@ export class AppState {
 	}
 
 	public static async run(blueprint: BlueprintModel, generics?: GenericSpecifications, properties?: PropertyAssignments) {
-		await API.saveBlueprint(blueprintModelToJson(blueprint));
+		await this.saveBlueprint(blueprint)
 		const runOp = await API.runOperator(blueprint, generics, properties)
 		blueprint.run({
 			handle: runOp.handle,
@@ -179,13 +179,22 @@ export class AppState {
 		});
 	}
 
-	public static async saveBlueprint(blueprint: BlueprintModel) {
-		await API.saveBlueprint(blueprintModelToJson(blueprint));
-		window.location.reload();
+	public static async saveBlueprint(blueprint: BlueprintModel, reload: boolean = false) {
+		const slFile = this.landscape.export(blueprint)
+		await API.saveBlueprint(slFile)
+		if (reload) {
+			window.location.reload();
+		}
+	}
+
+	public static async importSlangFile(slangFile: SlangFileJson): Promise<BlueprintModel> {
+		const bp = this.landscape.import(slangFile);
+		await this.saveBlueprint(bp)
+		return bp
 	}
 
 	public static exportSlangFile(blueprint: BlueprintModel): SlangFileJson {
-		return this.landscape.export(blueprint.uuid);
+		return this.landscape.export(blueprint);
 	}
 
 }

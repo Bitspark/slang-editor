@@ -135,7 +135,8 @@ describe("The landscape", () => {
 	});
 
 	it("can export a bundle", () => {
-		const bundle = landscapeModel.export("8019ef19-94c1-46d4-9a34-6dcd4a5281a8");
+		const bp = landscapeModel.findBlueprint("8019ef19-94c1-46d4-9a34-6dcd4a5281a8");
+		const bundle = landscapeModel.export(bp!);
 		expect(Object.keys(bundle.blueprints)).toEqual(["8019ef19-94c1-46d4-9a34-6dcd4a5281a8", "ba24c37f-2b04-44b4-97ad-fd931c9ab77b"]);
 	});
 });

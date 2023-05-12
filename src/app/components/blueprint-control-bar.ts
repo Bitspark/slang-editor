@@ -43,7 +43,7 @@ export class BlueprintControlBar implements ClassComponent<any> {
                     fas: "save",
                     disabled: blueprint.isRunning,
                     async onclick() {
-                        await AppState.saveBlueprint(blueprint);
+                        await AppState.saveBlueprint(blueprint, true);
                         m.redraw();
                     },
                 }),
