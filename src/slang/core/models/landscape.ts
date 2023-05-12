@@ -1,4 +1,4 @@
-import {BlueprintJson, SlangFileJson, UUID} from "../../definitions/api";
+import {SlangFileJson, UUID} from "../../definitions/api";
 import {SlangNode} from "../abstract";
 import {SlangBehaviorSubject, SlangSubjectTrigger} from "../abstract/utils/events";
 import {blueprintModelToJson, loadBlueprints} from "../mapper";
@@ -31,7 +31,9 @@ export class LandscapeModel extends SlangNode {
 
 	// Import and export
 
-	public getDependencies(blueprint: BlueprintModel, onlyLocalBlueprint: boolean = false): IterableIterator<BlueprintModel> {
+	public getDependencies(blueprint: BlueprintModel, args?: {onlyLocals: boolean}): IterableIterator<BlueprintModel> {
+		const onlyLocals = Boolean(args?.onlyLocals)
+
 		const remainingBlueprints: BlueprintModel[] = [blueprint];
 		const dependencies = new Map<String, BlueprintModel>()
 
@@ -41,7 +43,7 @@ export class LandscapeModel extends SlangNode {
 				continue;
 			}
 
-			if (onlyLocalBlueprint && !currBp.isLocal()) {
+			if (onlyLocals && !currBp.isLocal()) {
 				continue
 			}
 
@@ -55,12 +57,8 @@ export class LandscapeModel extends SlangNode {
 		return dependencies.values()
 	}
 
-	public export(mainId: UUID): SlangFileJson {
-		const mainBp = this.findBlueprint(mainId);
-		if (!mainBp) {
-			throw new BundleError(mainId);
-		}
-
+	public export(blueprint: BlueprintModel, args?: {onlyLocals: boolean}): SlangFileJson {
+		/*
 		const blueprints: { [id: string]: BlueprintJson } = {};
 		const remainingBlueprints: BlueprintModel[] = [mainBp];
 
@@ -76,10 +74,15 @@ export class LandscapeModel extends SlangNode {
 				remainingBlueprints.push(op.getBlueprint());
 			}
 		}
+		 */
 
 		return {
-			blueprints,
-			main: mainId,
+			blueprints: Object.fromEntries(
+					Array
+						.from(this.getDependencies(blueprint, args))
+						.map(bp => [bp.uuid, blueprintModelToJson(bp)])
+				),
+			main: blueprint.uuid,
 		};
 	}
 

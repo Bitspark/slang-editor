@@ -1,10 +1,9 @@
 import {SlangTypeValue} from "../slang/definitions/type";
 import {
 	BlueprintsJson,
-	BlueprintJson,
 	BlueprintApiResponse,
 	RunningOperatorJson,
-	RunOperatorJson
+	RunOperatorJson, SlangFileJson
 } from "../slang/definitions/api";
 import {BlueprintModel} from "../slang/core/models";
 import {RunningOperator} from "../slang/core/models/blueprint";
@@ -84,7 +83,7 @@ export class ApiService {
 		);
 	}
 
-	public async saveBlueprint(blueprintDefJSON: BlueprintJson): Promise<any> {
+	public async saveBlueprint(slangFileJson: SlangFileJson): Promise<any> {
 		const process = (data: any) => {
 			if (data) {
 				console.error(data);
@@ -94,8 +93,10 @@ export class ApiService {
 		};
 		const error = handleError;
 
+		console.log("-->", slangFileJson)
+
 		return new Promise<boolean>((resolve) => {
-			const reqInit = {method: "post", body: JSON.stringify(blueprintDefJSON)};
+			const reqInit = {method: "post", body: JSON.stringify(slangFileJson)};
 			fetch(`${this.url}/operator/def/`, reqInit)
 				.then((response: Response) => response.json())
 				.then((data: any) => {
