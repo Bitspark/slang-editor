@@ -131,7 +131,7 @@ class Editor {
 									)
 									: undefined,
 
-								view.isDescendable && !blueprint.isRunning && !operatorBp.isElementary()
+								view.isDescendable && !operatorBp.isElementary()
 									? m(IconButton, {
 										color: "black",
 										fas: "project-diagram",

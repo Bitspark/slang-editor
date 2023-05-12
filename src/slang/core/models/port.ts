@@ -6,6 +6,7 @@ import {BlueprintDelegateModel, OperatorDelegateModel} from "./delegate";
 import {OperatorModel} from "./operator";
 
 const CONVERT_UUID = "d1191456-3583-4eaf-8ec1-e486c3818c60";
+const VALUE_UUID = "8b62495a-e482-4a3e-8020-0ab8a350ad2d";
 
 export class BlueprintPortModel extends GenericPortModel<BlueprintModel | BlueprintDelegateModel> {
 	public constructor(parent: BlueprintModel | BlueprintDelegateModel | BlueprintPortModel, args: PortModelArgs) {
@@ -55,20 +56,30 @@ export class OperatorPortModel extends GenericPortModel<OperatorModel | Operator
 
 		// TODO see #192
 		const owner = this.getAncestorNode(OperatorModel);
-		if (owner && owner.getBlueprint().uuid === CONVERT_UUID) {
-			if (this.typeIdentifier === TypeIdentifier.Unspecified) {
-				specifications.specify(identifier, other.getType());
+		if (owner) {
+			const bpId = owner.getBlueprint().uuid
+			if (bpId === CONVERT_UUID || bpId === VALUE_UUID) {
+				if (this.typeIdentifier === TypeIdentifier.Unspecified) {
+					specifications.specify(identifier, other.getType());
+				}
+				return this;
 			}
-			return this;
 		}
+
 		return super.specifyGenericPort(generics, other);
 	}
 
 	public getMaxStreamDepth(): number {
 		const owner = this.getAncestorNode(OperatorModel);
-		if (owner && owner.getBlueprint().uuid === CONVERT_UUID) {
-			return 0;
+
+		if (owner) {
+			const bpId = owner.getBlueprint().uuid
+
+			if (bpId === CONVERT_UUID || bpId === VALUE_UUID) {
+				return 0
+			}
 		}
+
 		return Number.MAX_VALUE;
 	}
 

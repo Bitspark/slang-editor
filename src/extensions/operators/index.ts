@@ -66,7 +66,7 @@ class ValueOperator implements SlangAspectImpl {
 			const label = (typeof value !== "undefined") ? JSON.stringify(value) : "value?";
 			this.attr("label/text", label);
 
-			const width = Math.max(70, label.length*5+4)
+			const width = Math.max(70, label.length*3.8)
 			const height = 24;
 			this.resize(width, height);
 
