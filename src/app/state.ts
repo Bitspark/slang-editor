@@ -180,7 +180,7 @@ export class AppState {
 	}
 
 	public static async saveBlueprint(blueprint: BlueprintModel, reload: boolean = false) {
-		const slFile = this.landscape.export(blueprint)
+		const slFile = this.landscape.export(blueprint, {onlyLocals: true})
 		await API.saveBlueprint(slFile)
 		if (reload) {
 			window.location.reload();
