@@ -1,7 +1,7 @@
 import {SlangExtension} from "../../slang/extension";
 import {BlueprintModel, LandscapeModel, OperatorModel} from "../../slang/core/models";
 import {UUID} from "../../slang/definitions/api";
-import {TypeIdentifier} from "../../slang/definitions/type";
+import {SlangTypeStream, TypeIdentifier} from "../../slang/definitions/type";
 import {BlackBoxShape, BlackBoxShapeAttrs} from "../../slang/ui/elements/operator";
 
 const ROUND_CORNER = 1;
@@ -40,6 +40,8 @@ export class OperatorDataExt extends SlangExtension {
 		this.registerBlackBox("d1191456-3583-4eaf-8ec1-e486c3818c60", ConvertOperator);
 		// Log
 		this.registerBlackBox("8f9c02df-da41-4266-b486-0c22173a6383", LogOperator);
+		// Switch
+		this.registerBlackBox("cd6fc5c8-5b64-4b1a-9885-59ede141b398", SwitchOperator);
 	}
 }
 
@@ -185,4 +187,33 @@ class LogOperator implements SlangAspectImpl {
 			this.resize(width, height);
 		}
 	};
+}
+
+class SwitchOperator implements SlangAspectImpl {
+	public static shape = class extends DataBlackBoxShape {
+		constructor(attrs: BlackBoxShapeAttrs) {
+			super(attrs);
+
+			/*
+			const width = 80;
+			const height = 200;
+
+
+
+			this.attr("label/font-size", FONT_SIZE);
+			this.resize(width, height);
+			 */
+		}
+
+		public setupForOperator(operator: OperatorModel) {
+			super.setupForOperator(operator);
+			const propertyCases = operator.getPropertyValue("cases") as SlangTypeStream
+
+			const width = 80;
+			const height = 40 * ((propertyCases?.length) ? propertyCases.length : 1)
+
+			this.resize(width, height);
+		}
+	};
+
 }
