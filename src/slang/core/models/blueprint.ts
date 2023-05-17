@@ -351,7 +351,7 @@ export class BlueprintModel extends BlackBoxModel implements HasMoveablePortGrou
 		if (portInfo.delegate) {
 			const delegate = blackbox.findDelegate(portInfo.delegate);
 			if (!delegate) {
-				throw new Error(`delegate ${portInfo.delegate} not found`);
+				throw new Error(`[${this.getDisplayName()}:${portInfo.instance}] delegate ${portInfo.delegate} not found`);
 			}
 			if (portInfo.directionIn) {
 				port = delegate.getPortIn();

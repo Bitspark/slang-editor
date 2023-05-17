@@ -274,3 +274,19 @@ export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", 
 		this.attr("label/text", operator.getBlueprint().name);
 	}
 }
+
+export class OperatorBlackBoxShape extends BlackBoxShape {
+	constructor(attrs: BlackBoxShapeAttrs) {
+		super(attrs);
+	}
+
+	public setupForOperator(operator: OperatorModel) {
+		this.attr("label/text", operator.getBlueprint().name);
+
+		const portMaxCount = Math.max(...Array.from(operator.getPorts()).map(op=>op.count()))
+		const width = (portMaxCount && (portMaxCount+1) * Styles.Port.width > Styles.Defaults.blackBox.size.width) ? (portMaxCount+2) * Styles.Port.width : Styles.Defaults.blackBox.size.width
+		const height = Styles.Defaults.blackBox.size.height
+
+		this.resize(width, height);
+	}
+}

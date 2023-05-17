@@ -8,6 +8,10 @@ export class PropertyModel {
 	public constructor(private name: string, private type: SlangType) {
 	}
 
+	public copy(): PropertyModel {
+		return new PropertyModel(this.name, this.type)
+	}
+
 	public getName(): string {
 		return this.name;
 	}

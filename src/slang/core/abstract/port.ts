@@ -101,6 +101,24 @@ export abstract class GenericPortModel<O extends PortOwner> extends SlangNode {
 		this.streamPort.initialize();
 	}
 
+	public count(): number {
+		/*
+		 * Count of ports.
+		 *
+		 * Primitive, Number, String, Boolean, Trigger, Binary and Stream of these types count as 1
+		 * Map -> count of sub ports
+		 *
+		 */
+		switch (this.typeIdentifier) {
+			case TypeIdentifier.Map:
+				return Array.from(this.getMapSubs()).reduce((count, r) => count + r.count(), 0)
+			case TypeIdentifier.Stream:
+				return this.getStreamSub().count()
+			default:
+				return 1
+		}
+	}
+
 	public reconstruct(type: SlangType, portCtor: new (p: GenericPortModel<O> | O, args: PortModelArgs) => PortModel, direction: PortDirection, generic: boolean = false): void {
 		/*
 		 * When generic == true then this method is called because this port is generic-like and its specification has changed

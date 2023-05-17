@@ -2,7 +2,7 @@ import {BlueprintModel} from "../core/models";
 import {OperatorModel} from "../core/models";
 import {UUID} from "../definitions/api";
 
-import {BlackBoxShape, OperatorBox} from "./elements/operator";
+import {BlackBoxShape, OperatorBlackBoxShape, OperatorBox} from "./elements/operator";
 import {Canvas} from "./canvas/base";
 
 export class ComponentFactory {
@@ -20,7 +20,7 @@ export class ComponentFactory {
 	public getBlackBoxShape(blueprint: BlueprintModel): typeof BlackBoxShape {
 		const newBlackBoxShape = this.blackBoxShape.get(blueprint.uuid);
 		if (!newBlackBoxShape) {
-			return BlackBoxShape;
+			return OperatorBlackBoxShape;
 		}
 		return newBlackBoxShape;
 
