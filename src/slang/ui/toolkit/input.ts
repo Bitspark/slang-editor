@@ -21,6 +21,7 @@ export interface BaseInputAttrs<T> extends HasSizeAttrs {
 
 
 export interface StringInputAttrs extends BaseInputAttrs<string> {
+	inputType?: ["text", "password"]
 	validationPattern?: RegExp;
 }
 
@@ -64,7 +65,7 @@ function wrapInput<T>(attrs: BaseInputAttrs<T>, input: m.Children): any {
 
 }
 
-export class StringInput implements BaseInput<string> {
+export class StringInput implements ClassComponent<StringInputAttrs> {
 	private validationResult: ValidationResultType = ValidationResultType.Ready;
 
 	public view({attrs}: CVnode<StringInputAttrs>) {
@@ -78,7 +79,7 @@ export class StringInput implements BaseInput<string> {
 					}
 				},
 				class: `${buildCssClass(attrs, "input")} ${attrs.validationPattern ? this.validationResult : ""}`,
-				type: "text",
+				type: attrs.inputType ? attrs.inputType : "text",
 				value: attrs.initValue,
 				oncreate: (v: CVnodeDOM<any>) => {
 					if (v.attrs.autofocus) {

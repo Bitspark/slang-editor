@@ -62,6 +62,11 @@ export namespace Input {
 					return;
 
 				default:
+					if (attrs.label) {
+						const l = attrs.label.toLowerCase()
+						attrs = (["key", "passw", "token"].some(s => l.includes(s))) ? Object.assign({inputType: "password"}, attrs) : attrs
+					}
+
 					return m(StringInput, attrs);
 			}
 		}
