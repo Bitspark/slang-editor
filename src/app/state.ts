@@ -145,7 +145,7 @@ export class AppState {
 		})
 
 		// Force page reload, to ensure all blueprints and operators are up-to-date
-		window.location.reload();
+		//window.location.reload();
 	}
 
 	public static async stop(blueprint: BlueprintModel) {
