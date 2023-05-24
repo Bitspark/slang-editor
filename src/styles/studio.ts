@@ -45,9 +45,7 @@ export namespace Styles {
 	}
 
 	export class PortGroup {
-		public static portSpacing = Port.width + Canvas.gridSize/2;
-		public static translationIn = 4;
-		public static translationOut = -4;
+		public static portSpacing = Port.width;
 	}
 
 	export class BlueprintPort {
@@ -60,6 +58,11 @@ export namespace Styles {
 	}
 
 	export class BlackBox {
+		public static translatePort = {
+			0: -4,	// In
+			1: -4 	// Out
+		}
+
 		public static rx = 2;
 		public static ry = 2;
 		public static size = {width: 80, height: 46};
@@ -75,6 +78,10 @@ export namespace Styles {
 	}
 
 	export class Outer {
+		public static translatePort = {
+			0: -1,	// In
+			1: -2 	// Out
+		}
 		public static rx = 5;
 		public static ry = 5;
 		public static size = {width: 240, height: 147};
