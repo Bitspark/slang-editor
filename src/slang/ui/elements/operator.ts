@@ -12,7 +12,7 @@ import {PortGroupComponent} from "./port-group";
 import RectangleSelectors = shapes.standard.RectangleSelectors;
 import {BoxCanvasElement} from "./base";
 
-export abstract class BlackBoxElement extends BoxCanvasElement {
+export class OperatorBox extends BoxCanvasElement {
 	public get bbox(): g.Rect {
 		return this.shape.getBBox();
 	}
@@ -24,11 +24,23 @@ export abstract class BlackBoxElement extends BoxCanvasElement {
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
 
-	protected constructor(paperView: Canvas, protected readonly operator: OperatorModel ) {
+	constructor(paperView: Canvas, protected readonly operator: OperatorModel ) {
 		super(paperView, {x: 0, y: 0});
+
+		operator.getGenerics().subscribeGenericsChanged(() => {
+			this.refresh();
+		});
+		operator.getProperties().subscribeAssignmentChanged(() => {
+			this.refresh();
+		});
+
+		this.refresh();
 	}
 
-	public abstract getModel(): BlackBoxModel;
+	public getModel(): OperatorModel {
+		return this.operator;
+	}
+
 
 	public refresh(): void {
 		this.portGroups = this.createPortGroups();
@@ -40,6 +52,32 @@ export abstract class BlackBoxElement extends BoxCanvasElement {
 			group.setParent(this.shape, this.paperView.isEditable);
 		});
 
+		const operator = this.operator;
+		const view = this.paperView;
+
+		if (operator.xy) {
+			this.updateXY(operator.xy);
+		}
+
+		this.shape.on("change:position change:size", () => {
+			operator.xy = this.shape.getBBox().center();
+		});
+
+		this.shape.set("obstacle", true);
+		this.shape.attr("draggable", true);
+
+		if (view.isReadOnly) {
+			this.shape.attr({
+				body: {
+					cursor: "default",
+				},
+				label: {
+					cursor: "default",
+				},
+			});
+		}
+
+		this.attachPortEvents(operator);
 		this.render();
 	}
 
@@ -152,57 +190,6 @@ export abstract class BlackBoxElement extends BoxCanvasElement {
 		super.updateXY({x, y});
 		const {width, height} = this.shape.size();
 		this.shape.position(x - width / 2, y - height / 2);
-	}
-
-}
-
-export class OperatorBox extends BlackBoxElement {
-	constructor(paperView: Canvas, protected readonly operator: OperatorModel) {
-		super(paperView, operator);
-
-		operator.getGenerics().subscribeGenericsChanged(() => {
-			this.refresh();
-		});
-
-		operator.getProperties().subscribeAssignmentChanged(() => {
-			this.refresh();
-		});
-
-		this.refresh();
-	}
-
-	public refresh(): void {
-		super.refresh();
-		const operator = this.operator;
-		const view = this.paperView;
-
-		if (operator.xy) {
-			this.updateXY(operator.xy);
-		}
-
-		this.shape.on("change:position change:size", () => {
-			operator.xy = this.shape.getBBox().center();
-		});
-
-		this.shape.set("obstacle", true);
-		this.shape.attr("draggable", true);
-
-		if (view.isReadOnly) {
-			this.shape.attr({
-				body: {
-					cursor: "default",
-				},
-				label: {
-					cursor: "default",
-				},
-			});
-		}
-
-		this.attachPortEvents(operator);
-	}
-
-	public getModel(): OperatorModel {
-		return this.operator;
 	}
 
 }
