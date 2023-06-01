@@ -24,7 +24,7 @@ export abstract class BlackBoxElement extends BoxCanvasElement {
 	private portMouseEntered = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseentered");
 	private portMouseLeft = new SlangSubject<{ port: PortModel, x: number, y: number }>("port-mouseleft");
 
-	protected constructor(paperView: Canvas, private readonly createGhostPorts: boolean) {
+	protected constructor(paperView: Canvas, protected readonly operator: OperatorModel ) {
 		super(paperView, {x: 0, y: 0});
 	}
 
@@ -37,7 +37,7 @@ export abstract class BlackBoxElement extends BoxCanvasElement {
 		}
 		this.shape = this.createShape();
 		this.portGroups.forEach((group) => {
-			group.setParent(this.shape, this.createGhostPorts);
+			group.setParent(this.shape, this.paperView.isEditable);
 		});
 
 		this.render();
@@ -57,95 +57,6 @@ export abstract class BlackBoxElement extends BoxCanvasElement {
 		this.portMouseLeft.subscribe(({port, x, y}) => {
 			cb(port, x, y);
 		});
-	}
-
-	protected abstract createPortGroups(): PortGroupComponent[];
-
-	protected abstract createShape(): BlackBoxShape;
-
-	protected attachPortEvents(blackbox: BlackBoxModel) {
-		this.shape.on("port:mouseover",
-			(_cellView: dia.CellView, _event: MouseEvent, x: number, y: number, portId: string) => {
-				const port = blackbox.findNodeById(portId);
-				if (port) {
-					this.portMouseEntered.next({x, y, port: port as PortModel});
-				}
-			});
-		this.shape.on("port:mouseout",
-			(_cellView: dia.CellView, _event: MouseEvent, x: number, y: number, portId: string) => {
-				const port = blackbox.findNodeById(portId);
-				if (port) {
-					this.portMouseLeft.next({x, y, port: port as PortModel});
-				}
-			});
-	}
-
-	protected updateXY({x, y}: XY) {
-		super.updateXY({x, y});
-		const {width, height} = this.shape.size();
-		this.shape.position(x - width / 2, y - height / 2);
-	}
-
-}
-
-export class OperatorBox extends BlackBoxElement {
-	constructor(paperView: Canvas, protected readonly operator: OperatorModel) {
-		super(paperView, paperView.isEditable);
-
-		operator.getGenerics().subscribeGenericsChanged(() => {
-			this.refresh();
-		});
-
-		operator.getProperties().subscribeAssignmentChanged(() => {
-			this.refresh();
-		});
-
-		this.refresh();
-	}
-
-	public refresh(): void {
-		super.refresh();
-		const operator = this.operator;
-		const view = this.paperView;
-
-		if (operator.xy) {
-			this.updateXY(operator.xy);
-		}
-
-		this.shape.on("change:position change:size", () => {
-			operator.xy = this.shape.getBBox().center();
-		});
-
-		this.shape.set("obstacle", true);
-		this.shape.attr("draggable", true);
-
-		if (view.isReadOnly) {
-			this.shape.attr({
-				body: {
-					cursor: "default",
-				},
-				label: {
-					cursor: "default",
-				},
-			});
-		}
-
-		this.attachPortEvents(operator);
-	}
-
-	public getModel(): OperatorModel {
-		return this.operator;
-	}
-
-	protected createShape(): BlackBoxShape {
-		const blackBoxShapeType = this.paperView.getFactory().getBlackBoxShape(this.operator.getBlueprint());
-		const shape = new blackBoxShapeType({
-			id: this.operator.getIdentity(),
-			position: this.operator.xy,
-			portGroups: this.portGroups,
-		});
-		shape.setupForOperator(this.operator);
-		return shape;
 	}
 
 	protected createPortGroups(): PortGroupComponent[] {
@@ -207,6 +118,91 @@ export class OperatorBox extends BlackBoxElement {
 		}
 
 		return portGroups;
+	}
+
+	protected createShape(): BlackBoxShape {
+		const blackBoxShapeType = this.paperView.getFactory().getBlackBoxShape(this.operator.getBlueprint());
+		const shape = new blackBoxShapeType({
+			id: this.operator.getIdentity(),
+			position: this.operator.xy,
+			portGroups: this.portGroups,
+		});
+		shape.setupForOperator(this.operator);
+		return shape;
+	}
+
+	protected attachPortEvents(blackbox: BlackBoxModel) {
+		this.shape.on("port:mouseover",
+			(_cellView: dia.CellView, _event: MouseEvent, x: number, y: number, portId: string) => {
+				const port = blackbox.findNodeById(portId);
+				if (port) {
+					this.portMouseEntered.next({x, y, port: port as PortModel});
+				}
+			});
+		this.shape.on("port:mouseout",
+			(_cellView: dia.CellView, _event: MouseEvent, x: number, y: number, portId: string) => {
+				const port = blackbox.findNodeById(portId);
+				if (port) {
+					this.portMouseLeft.next({x, y, port: port as PortModel});
+				}
+			});
+	}
+
+	protected updateXY({x, y}: XY) {
+		super.updateXY({x, y});
+		const {width, height} = this.shape.size();
+		this.shape.position(x - width / 2, y - height / 2);
+	}
+
+}
+
+export class OperatorBox extends BlackBoxElement {
+	constructor(paperView: Canvas, protected readonly operator: OperatorModel) {
+		super(paperView, operator);
+
+		operator.getGenerics().subscribeGenericsChanged(() => {
+			this.refresh();
+		});
+
+		operator.getProperties().subscribeAssignmentChanged(() => {
+			this.refresh();
+		});
+
+		this.refresh();
+	}
+
+	public refresh(): void {
+		super.refresh();
+		const operator = this.operator;
+		const view = this.paperView;
+
+		if (operator.xy) {
+			this.updateXY(operator.xy);
+		}
+
+		this.shape.on("change:position change:size", () => {
+			operator.xy = this.shape.getBBox().center();
+		});
+
+		this.shape.set("obstacle", true);
+		this.shape.attr("draggable", true);
+
+		if (view.isReadOnly) {
+			this.shape.attr({
+				body: {
+					cursor: "default",
+				},
+				label: {
+					cursor: "default",
+				},
+			});
+		}
+
+		this.attachPortEvents(operator);
+	}
+
+	public getModel(): OperatorModel {
+		return this.operator;
 	}
 
 }
