@@ -12,67 +12,6 @@ import {PortGroupComponent} from "./port-group";
 import RectangleSelectors = shapes.standard.RectangleSelectors;
 import {BoxCanvasElement} from "./base";
 
-function createPortGroups(blackBox: BlackBoxModel): PortGroupComponent[] {
-	const portGroups: PortGroupComponent[] = [];
-
-	{
-		const portIn = blackBox.getPortIn();
-		if (portIn) {
-			portGroups.push(new PortGroupComponent("MainIn", portIn, "top", 0, 1, true));
-		}
-
-		const portOut = blackBox.getPortOut();
-		if (portOut) {
-			portGroups.push(new PortGroupComponent("MainOut", portOut, "bottom", 0, 1, true));
-		}
-	}
-
-	const delegates = Array.from(blackBox.getDelegates());
-
-	const countRight = Math.ceil(delegates.length / 2);
-	const widthRight = 0.5 / countRight;
-	const stepRight = 0.5 / countRight;
-	let posRight = 0;
-
-	const countLeft = Math.floor(delegates.length / 2);
-	const widthLeft = 0.5 / countLeft;
-	const stepLeft = 0.5 / countLeft;
-	let posLeft = 0;
-
-	let right = true;
-	for (const delegate of delegates) {
-		if (right) {
-			const portOut = delegate.getPortOut();
-			if (portOut) {
-				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "right", posRight, widthRight, true));
-			}
-			posRight += stepRight;
-
-			const portIn = delegate.getPortIn();
-			if (portIn) {
-				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "right", posRight, widthRight, true));
-			}
-			posRight += stepRight;
-		} else {
-			const portOut = delegate.getPortOut();
-			if (portOut) {
-				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "left", posLeft, widthLeft, true));
-			}
-			posLeft += stepLeft;
-
-			const portIn = delegate.getPortIn();
-			if (portIn) {
-				portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "left", posLeft, widthLeft, true));
-			}
-			posLeft += stepLeft;
-		}
-
-		right = !right;
-	}
-
-	return portGroups;
-}
-
 export abstract class BlackBoxElement extends BoxCanvasElement {
 	public get bbox(): g.Rect {
 		return this.shape.getBBox();
@@ -210,7 +149,64 @@ export class OperatorBox extends BlackBoxElement {
 	}
 
 	protected createPortGroups(): PortGroupComponent[] {
-		return createPortGroups(this.operator);
+		const portGroups: PortGroupComponent[] = [];
+
+		{
+			const portIn = this.operator.getPortIn();
+			if (portIn) {
+				portGroups.push(new PortGroupComponent("MainIn", portIn, "top", 0, 1, true));
+			}
+
+			const portOut = this.operator.getPortOut();
+			if (portOut) {
+				portGroups.push(new PortGroupComponent("MainOut", portOut, "bottom", 0, 1, true));
+			}
+		}
+
+		const delegates = Array.from(this.operator.getDelegates());
+
+		const countRight = Math.ceil(delegates.length / 2);
+		const widthRight = 0.5 / countRight;
+		const stepRight = 0.5 / countRight;
+		let posRight = 0;
+
+		const countLeft = Math.floor(delegates.length / 2);
+		const widthLeft = 0.5 / countLeft;
+		const stepLeft = 0.5 / countLeft;
+		let posLeft = 0;
+
+		let right = true;
+		for (const delegate of delegates) {
+			if (right) {
+				const portOut = delegate.getPortOut();
+				if (portOut) {
+					portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "right", posRight, widthRight, true));
+				}
+				posRight += stepRight;
+
+				const portIn = delegate.getPortIn();
+				if (portIn) {
+					portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "right", posRight, widthRight, true));
+				}
+				posRight += stepRight;
+			} else {
+				const portOut = delegate.getPortOut();
+				if (portOut) {
+					portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}Out`, portOut, "left", posLeft, widthLeft, true));
+				}
+				posLeft += stepLeft;
+
+				const portIn = delegate.getPortIn();
+				if (portIn) {
+					portGroups.push(new PortGroupComponent(`Delegate${delegate.getName()}In`, portIn, "left", posLeft, widthLeft, true));
+				}
+				posLeft += stepLeft;
+			}
+
+			right = !right;
+		}
+
+		return portGroups;
 	}
 
 }
