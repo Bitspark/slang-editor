@@ -2,7 +2,7 @@ import {dia, g, shapes} from "jointjs";
 
 import {Styles} from "../../../styles/studio";
 import {BlackBoxModel} from "../../core/abstract/blackbox";
-import {PortModel} from "../../core/abstract/port";
+import {GenericPortModel, PortModel} from "../../core/abstract/port";
 import {SlangSubject} from "../../core/abstract/utils/events";
 import {OperatorModel} from "../../core/models";
 import {XY} from "../../definitions/api";
@@ -28,10 +28,35 @@ export class OperatorBox extends BoxCanvasElement {
 		super(paperView, {x: 0, y: 0});
 
 		operator.getGenerics().subscribeGenericsChanged(() => {
+			if (!this.shape) {
+				return
+			}
+
 			this.refresh();
 		});
 		operator.getProperties().subscribeAssignmentChanged(() => {
+			if (!this.shape) {
+				return
+			}
+
 			this.refresh();
+		});
+
+		operator.subscribeDescendantCreated(GenericPortModel, (port) => {
+			port.subscribeConnected(() => {
+				if (!this.shape) {
+					return
+				}
+
+				this.portGroups[port.isDirectionIn()?0:1].refreshPort(port)
+			});
+			port.subscribeDisconnected(() => {
+				if (!this.shape) {
+					return
+				}
+
+				this.portGroups[port.isDirectionIn()?0:1].refreshPort(port)
+			});
 		});
 
 		this.refresh();
@@ -43,14 +68,15 @@ export class OperatorBox extends BoxCanvasElement {
 
 
 	public refresh(): void {
-		this.portGroups = this.createPortGroups();
+		if (!this.portGroups) {
+			this.portGroups = this.createPortGroups();
+		}
+
 		if (this.shape) {
 			this.shape.remove();
 		}
-		this.shape = this.createShape();
-		this.portGroups.forEach((group) => {
-			group.setParent(this.shape, this.paperView.isEditable);
-		});
+
+		this.shape = this.createShape(this.portGroups);
 
 		const operator = this.operator;
 		const view = this.paperView;
@@ -158,12 +184,15 @@ export class OperatorBox extends BoxCanvasElement {
 		return portGroups;
 	}
 
-	protected createShape(): BlackBoxShape {
+	protected createShape(portGroups: PortGroupComponent[]): BlackBoxShape {
 		const blackBoxShapeType = this.paperView.getFactory().getBlackBoxShape(this.operator.getBlueprint());
 		const shape = new blackBoxShapeType({
 			id: this.operator.getIdentity(),
 			position: this.operator.xy,
-			portGroups: this.portGroups,
+			portGroups: portGroups,
+		});
+		portGroups.forEach((group) => {
+			group.setParent(shape, this.paperView.isEditable);
 		});
 		shape.setupForOperator(this.operator);
 		return shape;
@@ -221,13 +250,16 @@ function constructRectAttrs(attrs: BlackBoxShapeAttrs): dia.Element.GenericAttri
 			},
 		},
 		ports: !attrs.portGroups ? undefined : {
-			groups: attrs.portGroups!
-				.reduce((result: { [key: string]: dia.Element.PortGroup }, group) => {
-					result[group.getName()] = group.getPortGroupElement();
-					return result;
-				}, {} as { [key: string]: dia.Element.PortGroup }),
+			groups: constructPortGroupAttrs(attrs.portGroups),
 		},
 	};
+}
+
+function constructPortGroupAttrs(portGroups: PortGroupComponent[]): {[key: string]: dia.Element.PortGroup} {
+	return portGroups.reduce((result: { [key: string]: dia.Element.PortGroup }, group) => {
+			result[group.getName()] = group.getPortGroupElement();
+			return result;
+		}, {} as { [key: string]: dia.Element.PortGroup })
 }
 
 export class BlackBoxShape extends shapes.standard.Rectangle.define("BlackBox", Styles.Defaults.blackBox) {

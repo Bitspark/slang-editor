@@ -109,7 +109,7 @@ export class PortGroupComponent {
 
 	constructor(
 		private readonly name: string,
-		private readonly port: PortModel,
+		public readonly port: PortModel,
 		private readonly groupPosition: PortGroupPosition,
 		start: number,
 		width: number,
@@ -153,14 +153,25 @@ export class PortGroupComponent {
 			throw new Error(`need parent`);
 		}
 
-		parentElement.removePorts(this.ports.map((port) => port.getShape()));
+		parentElement.removePorts(this.ports.map((port) => port.shape));
 
 		const ports = createPortItems(this, this.getGroupPosition(), this.port, createGhostPorts, this.isBlackBox);
 
 		this.ports.length = 0;
 		this.ports.push.apply(this.ports, ports);
 
-		parentElement.addPorts(this.ports.map((port) => port.getShape()));
+		parentElement.addPorts(this.ports.map((port) => port.shape));
+	}
+
+	public refreshPort(port: PortModel) {
+		const parentElement = this.parentElement;
+		if (!parentElement) {
+			throw new Error(`need parent`);
+		}
+
+		const pe = this.ports.find((p) => port === p.getModel())!
+		pe.refresh()
+		parentElement.portProp(port.getIdentity(), "markup", pe.shape.markup)
 	}
 
 }
