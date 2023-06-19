@@ -48,15 +48,6 @@ export namespace Styles {
 		public static portSpacing = Port.width;
 	}
 
-	export class BlueprintPort {
-		public static transformations = {
-			top: "translate(0 -20)",
-			right: "translate(-40 0)",
-			bottom: "translate(0 20)",
-			left: "translate(40 0)",
-		};
-	}
-
 	export class BlackBox {
 		public static translatePort = {
 			0: -4,	// In
