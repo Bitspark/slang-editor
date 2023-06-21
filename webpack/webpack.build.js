@@ -11,6 +11,13 @@ module.exports = env => (merge(common(env), {
 	entry: {
 		index: Path.resolve(__dirname, `../src/app/index.ts`),
 	},
+	optimization: {
+		minimize: true,
+		splitChunks: {
+			chunks: "all",
+			name: false,
+		},
+	},
 	output: {
 		path: Path.join(__dirname, `../dist`),
 	},

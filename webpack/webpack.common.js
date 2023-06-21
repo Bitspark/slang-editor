@@ -10,12 +10,6 @@ module.exports = env => {
 		entry: {
 			index: Path.resolve(__dirname, `../src/example/index.ts`),
 		},
-		optimization: {
-			splitChunks: {
-				chunks: "all",
-				name: false,
-			},
-		},
 		plugins: [
 			new Webpack.DefinePlugin({
 				'APIURL': JSON.stringify(env.apiUrl)

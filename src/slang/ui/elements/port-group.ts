@@ -80,21 +80,20 @@ export class PortGroupComponent {
 				let portPosition: g.PlainPoint = {x: 0, y: 0};
 
 				const portModel = portComponents[index].getModel();
-				const translate = portModel.isDirectionIn() ? Styles.PortGroup.translationIn : Styles.PortGroup.translationOut;
-				const factor = isBlackBox ? 1 : -1;
+				const translate = (isBlackBox ? Styles.BlackBox : Styles.Outer).translatePort[portModel.getDirection()];
 
 				switch (position) {
 					case "top":
-						portPosition = {x: positionAbs, y: -factor * translate};
+						portPosition = {x: positionAbs, y: translate};
 						break;
 					case "bottom":
-						portPosition = {x: positionAbs, y: elBBox.height + factor * translate};
+						portPosition = {x: positionAbs, y: elBBox.height + translate};
 						break;
 					case "left":
-						portPosition = {x: -factor * translate, y: positionAbs};
+						portPosition = {x: translate, y: positionAbs};
 						break;
 					case "right":
-						portPosition = {x: elBBox.width + factor * translate, y: positionAbs};
+						portPosition = {x: elBBox.width + translate, y: positionAbs};
 						break;
 				}
 
@@ -110,7 +109,7 @@ export class PortGroupComponent {
 
 	constructor(
 		private readonly name: string,
-		private readonly port: PortModel,
+		public readonly port: PortModel,
 		private readonly groupPosition: PortGroupPosition,
 		start: number,
 		width: number,
@@ -154,14 +153,25 @@ export class PortGroupComponent {
 			throw new Error(`need parent`);
 		}
 
-		parentElement.removePorts(this.ports.map((port) => port.getShape()));
+		parentElement.removePorts(this.ports.map((port) => port.shape));
 
 		const ports = createPortItems(this, this.getGroupPosition(), this.port, createGhostPorts, this.isBlackBox);
 
 		this.ports.length = 0;
 		this.ports.push.apply(this.ports, ports);
 
-		parentElement.addPorts(this.ports.map((port) => port.getShape()));
+		parentElement.addPorts(this.ports.map((port) => port.shape));
+	}
+
+	public refreshPort(port: PortModel) {
+		const parentElement = this.parentElement;
+		if (!parentElement) {
+			throw new Error(`need parent`);
+		}
+
+		const pe = this.ports.find((p) => port === p.getModel())!
+		pe.refresh()
+		parentElement.portProp(port.getIdentity(), "markup", pe.shape.markup)
 	}
 
 }

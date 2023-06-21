@@ -1,6 +1,5 @@
 import {dia, shapes} from "jointjs";
 
-import {Styles} from "../../../styles/studio";
 import {PortModel} from "../../core/abstract/port";
 import {SlangSubject} from "../../core/abstract/utils/events";
 
@@ -27,8 +26,6 @@ export class BlueprintPortElement extends ShapeCanvasElement {
 		this.portGroup = new PortGroupComponent("PortGroup", port, position, 0, 1, false);
 		const portGroups = {PortGroup: this.portGroup.getPortGroupElement()};
 
-		const transform = Styles.BlueprintPort.transformations[position];
-
 		this.shape = new shapes.standard.Rectangle({
 			id,
 			size: BlueprintPortElement.size,
@@ -39,10 +36,6 @@ export class BlueprintPortElement extends ShapeCanvasElement {
 				body: {
 					fill: "none",
 					stroke: "none",
-				},
-				label: {
-					transform,
-					class: "sl-label",
 				},
 			},
 			ports: {

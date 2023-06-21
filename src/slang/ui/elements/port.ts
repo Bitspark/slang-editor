@@ -10,19 +10,25 @@ import {PortGroupComponent, PortGroupPosition} from "./port-group";
 /**
  * Component representing a Slang port.
  */
+
+export function getTrianglePortShape(width: number, height: number): string {
+	// reduce with and height of port because every port gets a 2px outer edge
+	width -= 3
+	height -= 2
+	return `<path class="CSSCLASS" d="M ${-width / 2} ${-height / 2} L ${width / 2} ${-height / 2} L 0 ${height / 2} z" />`;
+}
+
+function getRoundPortShape(width: number, height: number): string {
+	// reduce with and height of port because every port gets a 2px outer edge
+	return `<circle class="CSSCLASS" cx="${-width/2}" cy="${-height/2}" r="${width}" />`
+}
+
 export class PortElement {
 
 	// STATIC:
 
-	private static getPortShape(width: number, height: number): string {
-		// reduce with and height of port because every port gets a 2px outer edge
-		width -= 3
-		height -= 2
-
-		return `M ${-width / 2} ${-height / 2} ` +
-			`L ${width / 2} ${-height / 2} ` +
-			`L 0 ${height / 2} z`;
-	}
+	private static readonly triangleShape = getTrianglePortShape(Styles.Port.width, Styles.Port.height)
+	private static readonly roundShape = getRoundPortShape(2, 2)
 
 	private static getPortMarkup(port: PortModel, ghost: boolean): string {
 		const streamDepth = 0; // TODO
@@ -31,9 +37,6 @@ export class PortElement {
 		}
 		let markup = ``;
 		for (let i = 0; i < streamDepth + 1; i++) {
-			const factor = 1 - (i / (streamDepth + 1));
-			const width = Styles.Port.width * factor;
-			const height = Styles.Port.height * factor;
 			const classes = ["sl-port"];
 			if (i % 2 === 0) {
 				if (ghost) {
@@ -48,7 +51,7 @@ export class PortElement {
 			} else {
 				classes.push(`sl-stripe`);
 			}
-			markup += `<path class="${classes.join(" ")}" d="${PortElement.getPortShape(width, height)}"></path>`;
+			markup += (port.isConnected() ? PortElement.triangleShape : PortElement.roundShape).replace("CSSCLASS", classes.join(" "))
 		}
 		return `<g>${markup}</g>`;
 	}
@@ -83,26 +86,28 @@ export class PortElement {
 	}
 
 	private position: g.PlainPoint | undefined;
-	private readonly portShape: dia.Element.Port = {};
+	public readonly shape: dia.Element.Port = {};
 
 	constructor(private readonly port: PortModel, private readonly parent: PortGroupComponent, readonly ghost: boolean, isBlackBox: boolean) {
 		if (ghost) {
-			this.portShape.id = `${port.getIdentity()}.*`;
+			this.shape.id = `${port.getIdentity()}.*`;
 		} else {
-			this.portShape.id = `${port.getIdentity()}`;
+			this.shape.id = `${port.getIdentity()}`;
 		}
-		this.portShape.group = parent.getName();
-		this.portShape.markup = PortElement.getPortMarkup(port, ghost);
-		this.portShape.attrs = {
+		this.shape.group = parent.getName();
+
+		this.shape.markup = PortElement.getPortMarkup(port, ghost);
+		this.shape.attrs = {
 			path: PortElement.getPortAttributes(parent.getGroupPosition(), port, isBlackBox),
 			g: {
 				magnet: true,
 			},
 		};
+
 	}
 
-	public getShape(): dia.Element.Port {
-		return this.portShape;
+	public refresh() {
+		this.shape.markup = PortElement.getPortMarkup(this.port, this.ghost);
 	}
 
 	public getModel(): PortModel {

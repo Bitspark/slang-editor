@@ -395,9 +395,6 @@ export class BlueprintBox extends BoxCanvasElement {
 		const portComponent = new BlueprintPortElement(this.paperView, id, port, invertedPosition[pos], this.paperView.isEditable);
 		const portElement = portComponent.getShape();
 		this.paperView.renderCell(portElement);
-		const outerEdgeSize = 2;
-
-		let calculateRestrictedRect: (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => g.PlainRect;
 		const elementSize = portElement.get("size") as g.PlainRect;
 		switch (pos) {
 			case "top":
@@ -407,13 +404,6 @@ export class BlueprintBox extends BoxCanvasElement {
 						x: offset - elementSize.width / 2,
 						y: -elementSize.height,
 					},
-				});
-
-				calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
-					x: outerPosition.x,
-					y: outerPosition.y - elementSize.height - outerEdgeSize,
-					width: outerSize.width,
-					height: elementSize.height,
 				});
 
 				portElement.on("change:position", () => {
@@ -428,13 +418,6 @@ export class BlueprintBox extends BoxCanvasElement {
 						x: offset - elementSize.width / 2,
 						y: 0,
 					},
-				});
-
-				calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
-					x: outerPosition.x,
-					y: outerPosition.y + outerSize.height - outerEdgeSize,
-					width: outerSize.width,
-					height: elementSize.height,
 				});
 
 				portElement.on("change:position", () => {
@@ -453,12 +436,6 @@ export class BlueprintBox extends BoxCanvasElement {
 					},
 				});
 
-				calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
-					x: outerPosition.x - elementSize.width,
-					y: outerPosition.y,
-					width: elementSize.width,
-					height: outerSize.height,
-				});
 				break;
 
 			case "right":
@@ -469,13 +446,6 @@ export class BlueprintBox extends BoxCanvasElement {
 					},
 				});
 				this.ports.right.push(portComponent);
-
-				calculateRestrictedRect = (outerPosition: g.PlainPoint, outerSize: g.PlainRect) => ({
-					x: outerPosition.x + outerSize.width,
-					y: outerPosition.y,
-					width: elementSize.width,
-					height: outerSize.height,
-				});
 
 				if (port.isDirectionIn()) {
 					portElement.on("change:position", () => {
@@ -488,12 +458,6 @@ export class BlueprintBox extends BoxCanvasElement {
 				}
 				break;
 		}
-
-		portElement.set("restrictTranslate", (): g.PlainRect => {
-			const outerPosition = this.shape.get("position") as g.PlainPoint;
-			const outerSize = this.shape.get("size") as g.PlainRect;
-			return calculateRestrictedRect(outerPosition, outerSize);
-		});
 
 		this.attachPortInfo(portComponent);
 
