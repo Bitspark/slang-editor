@@ -121,4 +121,18 @@ describe("A PropertyEvaluator", () => {
         expect(PropertyEvaluator.expand("Hello {user.name}", props)).toEqual(
             ["Hello John"])
     });
+
+    it("does not interpolate when assigning $placeholder to property", () => {
+        const gens = new GenericSpecifications([]);
+        const props = new PropertyAssignments([
+            new PropertyModel("name", SlangType.newString()),
+            new PropertyModel("colors", SlangType.newStream(TypeIdentifier.String))
+        ], gens);
+
+        props.get("name").assign("$placeholder");
+        props.get("colors").assign("$placeholder");
+
+        expect(PropertyEvaluator.expand("Hello, {name}", props)).toContain("Hello, {name}")
+        expect(PropertyEvaluator.expand("I love {colors}", props)).toContain("I love {colors}")
+    });
 });

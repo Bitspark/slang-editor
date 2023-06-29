@@ -255,15 +255,25 @@ export class PropertyEvaluator {
 		if (qProp.type.isStream()) {
 			const vals: string[] = [];
 			qProp.values.forEach((propValue) => {
-				for (const el of propValue as SlangTypeStream) {
-					vals.push((typeof el === "string") ? el : JSON.stringify(el));
+				if (typeof propValue === "string" && propValue.startsWith("$")) {
+					vals.push(`{${exprPart}}`) // ==> don't interpolate property value
+				} else {
+					for (const el of propValue as SlangTypeStream) {
+						vals.push((typeof el === "string") ? el : JSON.stringify(el));
+					}
 				}
 			})
 			return vals
 		}
 
 		return qProp.values.map((propValue) => {
-			return (typeof propValue === "string") ? propValue : JSON.stringify(propValue)
+			if (typeof propValue === "string") {
+				if (propValue.startsWith("$")) {
+					return `{${exprPart}}`
+				}
+				return propValue
+			}
+			return JSON.stringify(propValue)
 		})
 	}
 }
