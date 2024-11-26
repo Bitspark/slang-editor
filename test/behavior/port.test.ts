@@ -38,7 +38,14 @@ describe("A port", () => {
 	});
 
 	it("can be generated and deleted automatically", () => {
+		// bpS2S ports:
+		// In: string
+		// Out: string
 		const bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
+
+		// bpG2G ports:
+		// In: Generic("itemType")
+		// Out: Generic("itemType")
 		const bpG2G = landscapeModel.findBlueprint("dc1aa556-d62e-4e07-adbb-53dc317481b0")!;
 
 		const bpNew2 = landscapeModel.createBlueprint({
@@ -51,20 +58,79 @@ describe("A port", () => {
 		const opS2S2 = bpNew2.createBlankOperator(bpS2S);
 		const opG2G = bpNew2.createBlankOperator(bpG2G);
 
+		// Connect out-port of first S2S operator with generic in-port of the G2G operator
 		opS2S1.getPortOut()!.connect(opG2G.getPortIn()!, true);
+
+		// The blueprint should look like this now:
+		// +-------------------------------+
+		// |    +---+    +---+    +---+    |
+		// |    |S2S|--->|G2G|    |S2S|    |
+		// |    | 1 |    |   |    | 2 |    |
+		// |    +---+    +---+    +---+    |
+		// +-------------------------------+
+
+		// We expect the generic in-port to have a map now with one entry:
 		expect(Array.from(opG2G.getPortIn()!.getMapSubs()).length).toEqual(1);
 
+		// The out-port of the generic operator should have one entry as well which is fetched here:
 		const generatedPortOut = opG2G.getPortOut()!.getMapSubs().next().value;
 
+		// Now, connect out-port of S2S 1 with in-port of the generic operator again
 		opS2S1.getPortOut()!.connect(opG2G.getPortIn()!, true);
+
+		// The blueprint should look like this now:
+		// +-------------------------------+
+		// |    +---+    +---+    +---+    |
+		// |    |S2S|-+->|G2G|    |S2S|    |
+		// |    | 1 | |  |   |    | 2 |    |
+		// |    |   | +->|   |    |   |    |
+		// |    +---+    +---+    +---+    |
+		// +-------------------------------+
+
+		// So we expect two entries in the in-port map now:
 		expect(Array.from(opG2G.getPortIn()!.getMapSubs()).length).toEqual(2);
 
+		// Connect the out-port originating from the first connect with the in-port of the second S2S operator:
 		generatedPortOut.connect(opS2S2.getPortIn()!, true);
 
+		// The blueprint should look like this now:
+		// +-------------------------------+
+		// |    +---+    +---+    +---+    |
+		// |    |S2S|-+->|G2G|--->|S2S|    |
+		// |    | 1 | |  |   |    | 2 |    |
+		// |    |   | +->|   |    |   |    |
+		// |    +---+    +---+    +---+    |
+		// +-------------------------------+
+
+		// Now, we disconnect all connections of the out-port of the first S2S operator
 		opS2S1.getPortOut()!.disconnectAll();
+
+		// The blueprint should look like this now:
+		// +-------------------------------+
+		// |    +---+    +---+    +---+    |
+		// |    |S2S|    |G2G|--->|S2S|    |
+		// |    | 1 |    |   |    | 2 |    |
+		// |    |   |    |   |    |   |    |
+		// |    +---+    +---+    +---+    |
+		// +-------------------------------+
+
+		// So the generic map should only have 1 remaining port,
+		// the second should have been deleted because it has not been connected:
 		expect(Array.from(opG2G.getPortIn()!.getMapSubs()).length).toEqual(1);
 
+		// Now, also disonnect the remaining entry:
 		generatedPortOut.disconnectAll();
+
+		// The blueprint should look like this now:
+		// +-------------------------------+
+		// |    +---+    +---+    +---+    |
+		// |    |S2S|    |G2G|    |S2S|    |
+		// |    | 1 |    |   |    | 2 |    |
+		// |    |   |    |   |    |   |    |
+		// |    +---+    +---+    +---+    |
+		// +-------------------------------+
+
+		// So the map has zero entries now:
 		expect(Array.from(opG2G.getPortIn()!.getMapSubs()).length).toEqual(0);
 	});
 

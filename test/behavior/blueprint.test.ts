@@ -65,9 +65,9 @@ describe("A new blueprint", () => {
 	});
 
 	it("can have ports created and removed dynamically", () => {
-		// Test setup:
-		// [ -> [S2S] ]
-
+		// bpS2S ports:
+		// In: string
+		// Out: string
 		const bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
 
 		const bpNew = landscapeModel.createBlueprint({
@@ -83,27 +83,58 @@ describe("A new blueprint", () => {
 		const bpPortIn = bpNew.getPortIn()!;
 		const opPortIn = opNew.getPortIn()!;
 
+		// The blueprint should look like this now:
+		// +---------------+
+		// |    +-----+    |
+		// |    O S2S |    |
+		// |    |     |    |
+		// |    +-----+    |
+		// +---------------+
+
+		// We expect these types:
 		expect(bpPortIn.getTypeIdentifier()).toBe(TypeIdentifier.Unspecified);
 		expect(opPortIn.getTypeIdentifier()).toBe(TypeIdentifier.String);
 
+		// Now, connect in-port of the operator with in-port of the blueprint
 		opPortIn.connect(bpPortIn, true);
 
+		// The blueprint should look like this now:
+		// +---------------+
+		// |    +-----+    |
+		// O--->O S2S |    |
+		// |    |     |    |
+		// |    +-----+    |
+		// +---------------+
+
+		// So we expect 1 entry in the generic in-port map of the blueprint:
 		expect(Array.from(bpPortIn.getMapSubs()).length).toEqual(1);
 
+		// Fetch this automatically created in-port of the blueprint:
 		const newPort = bpPortIn.getMapSubs().next().value;
 
+		// Test if the connections are as expected (see ASCII sketch above)
 		expect(newPort.isConnectedWith(opPortIn)).toBeTruthy();
 		expect(opPortIn.isConnectedWith(newPort)).toBeTruthy();
 
+		// Disconnect the port now:
 		newPort.disconnectTo(opPortIn);
 
+		// The blueprint should look like this now:
+		// +---------------+
+		// |    +-----+    |
+		// |    O S2S |    |
+		// |    |     |    |
+		// |    +-----+    |
+		// +---------------+
+
+		// And test if the automatically created in-port has vanished:
 		expect(Array.from(bpPortIn.getMapSubs()).length).toEqual(0);
 	});
 
 	it("can have blueprint ports removed when deleting connected operator", () => {
-		// Test setup:
-		// [ -> [S2S] ]
-
+		// bpS2S ports:
+		// In: string
+		// Out: string
 		const bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
 
 		const bpNew = landscapeModel.createBlueprint({
@@ -119,26 +150,64 @@ describe("A new blueprint", () => {
 		const bpPortIn = bpNew.getPortIn()!;
 		const opPortIn = opNew.getPortIn()!;
 
+		// The blueprint should look like this now:
+		// +---------------+
+		// |    +-----+    |
+		// |    O S2S |    |
+		// |    |     |    |
+		// |    +-----+    |
+		// +---------------+
+
+		// Now, connect in-port of the operator with in-port of the blueprint
 		opPortIn.connect(bpPortIn, true);
 
+		// The blueprint should look like this now:
+		// +---------------+
+		// |    +-----+    |
+		// O--->O S2S |    |
+		// |    |     |    |
+		// |    +-----+    |
+		// +---------------+
+
+		// So we expect 1 entry in the generic in-port map of the blueprint:
 		expect(Array.from(bpPortIn.getMapSubs()).length).toEqual(1);
 
+		// Fetch this automatically created in-port of the blueprint:
 		const newPort = bpPortIn.getMapSubs().next().value;
 
+		// Test if the connections are as expected (see ASCII sketch above)
 		expect(newPort.isConnectedWith(opPortIn)).toBeTruthy();
 		expect(opPortIn.isConnectedWith(newPort)).toBeTruthy();
 
+		// Now we remove the operator entirely:
 		opNew.destroy();
 
+		// The blueprint should look like this now:
+		// +---------------+
+		// |               |
+		// |               |
+		// |               |
+		// |               |
+		// +---------------+
+
+		// The port should no longer be connected
 		expect(newPort.isConnected()).toBeFalsy();
+
+		// And test if the automatically created in-port has vanished:
 		expect(Array.from(bpPortIn.getMapSubs()).length).toEqual(0);
+
+		// newPort still exists (because it is referenced in this test), but should be disconnected from any operator
 	});
 
 	it("can have generic operator ports created and removed dynamically", () => {
-		// Test setup:
-		// [S2S] -> [G2G] -> [S2S]
-
+		// bpS2S ports:
+		// In: string
+		// Out: string
 		const bpS2S = landscapeModel.findBlueprint("ba24c37f-2b04-44b4-97ad-fd931c9ab77b")!;
+
+		// bpG2G ports:
+		// In: Generic("itemType")
+		// Out: Generic("itemType")
 		const bpG2G = landscapeModel.findBlueprint("dc1aa556-d62e-4e07-adbb-53dc317481b0")!;
 
 		const bpNew = landscapeModel.createBlueprint({
@@ -151,25 +220,82 @@ describe("A new blueprint", () => {
 		const gens = new GenericSpecifications(["itemType"]);
 		const opG2G = bpNew.createOperator("g2g", bpG2G, new PropertyAssignments([].values(), gens), gens);
 
+		// The blueprint should look like this now:
+		// +--------------------------+
+		// |    +-----+    +-----+    |
+		// |    O S2S O    | G2G |    |
+		// |    |  1  |    |     |    |
+		// |    +-----+    +-----+    |
+		// +--------------------------+
+
+		// Connect out-port of S2S1 with in-port of the generic operator:
 		opS2S1.getPortOut()!.connect(opG2G.getPortIn()!, true);
 
+		// The blueprint should look like this now:
+		// +--------------------------+
+		// |    +-----+    +-----+    |
+		// |    O S2S O--->O G2G O    |
+		// |    |  1  |    |     |    |
+		// |    +-----+    +-----+    |
+		// +--------------------------+
+
+		// We expect the generic operator to have an entry at its in- and out-ports:
 		expect(Array.from(opG2G.getPortIn()!.getMapSubs()).length).toBe(1);
 		expect(Array.from(opG2G.getPortOut()!.getMapSubs()).length).toBe(1);
 
+		// Create a second S2S operator:
 		const opS2S2 = bpNew.createBlankOperator(bpS2S);
 
+		// The blueprint should look like this now:
+		// +-------------------------------------+
+		// |    +-----+    +-----+    +-----+    |
+		// |    O S2S O--->O G2G O    O S2S O    |
+		// |    |  1  |    |     |    |  2  |    |
+		// |    +-----+    +-----+    +-----+    |
+		// +-------------------------------------+
+
+		// Connect in-port of the newly created S2S2 operator with the out-port of the generic operator:
 		opS2S2.getPortIn()!.connect(opG2G.getPortOut()!.getMapSubs().next().value, true);
 
+		// The blueprint should look like this now:
+		// +-------------------------------------+
+		// |    +-----+    +-----+    +-----+    |
+		// |    O S2S O--->O G2G O--->O S2S O    |
+		// |    |  1  |    |     |    |  2  |    |
+		// |    +-----+    +-----+    +-----+    |
+		// +-------------------------------------+
+
+		// The generic operator remains unchanged:
 		expect(Array.from(opG2G.getPortIn()!.getMapSubs()).length).toBe(1);
 		expect(Array.from(opG2G.getPortOut()!.getMapSubs()).length).toBe(1);
 
+		// Disconnect connection between S2S1 and the generic operator:
 		opS2S1.getPortOut()!.disconnectTo(opG2G.getPortIn()!.getMapSubs().next().value);
 
+		// The blueprint should look like this now:
+		// +-------------------------------------+
+		// |    +-----+    +-----+    +-----+    |
+		// |    O S2S O    O G2G O--->O S2S O    |
+		// |    |  1  |    |     |    |  2  |    |
+		// |    +-----+    +-----+    +-----+    |
+		// +-------------------------------------+
+
+		// The generic operator remains unchanged, because its out-port is still connected to S2S2:
 		expect(Array.from(opG2G.getPortIn()!.getMapSubs()).length).toBe(1);
 		expect(Array.from(opG2G.getPortOut()!.getMapSubs()).length).toBe(1);
 
+		// Now also disconnect the second connection:
 		opG2G.getPortOut()!.getMapSubs().next().value.disconnectTo(opS2S2.getPortIn()!);
 
+		// The blueprint should look like this now:
+		// +-------------------------------------+
+		// |    +-----+    +-----+    +-----+    |
+		// |    O S2S O    | G2G |    O S2S O    |
+		// |    |  1  |    |     |    |  2  |    |
+		// |    +-----+    +-----+    +-----+    |
+		// +-------------------------------------+
+
+		// Now that G2G is no longer connected at all its ports should have vanished:
 		expect(Array.from(opG2G.getPortIn()!.getMapSubs()).length).toBe(0);
 		expect(Array.from(opG2G.getPortOut()!.getMapSubs()).length).toBe(0);
 	});
